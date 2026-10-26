@@ -1,27 +1,38 @@
 :host {
   display: block;
-  --tone: var(--jl-text-2);
+  /* Coloured as jl-alert is, from the same tokens: a toned toast is tinted, its border and icon in its tone. */
+  --fg: var(--jl-text-2);
+  --bg: var(--jl-surface);
+  --border: var(--jl-line);
   --bar: var(--jl-brand);
 }
 
+:host([tone="ok"]),
+:host([tone="warn"]),
+:host([tone="danger"]),
+:host([tone="info"]) {
+  --border: color-mix(in srgb, var(--fg) 24%, var(--bg));
+  --bar: var(--fg);
+}
+
 :host([tone="ok"]) {
-  --tone: var(--jl-ok);
-  --bar: var(--jl-ok);
+  --fg: var(--jl-ok);
+  --bg: var(--jl-ok-soft);
 }
 
 :host([tone="warn"]) {
-  --tone: var(--jl-warn);
-  --bar: var(--jl-warn);
+  --fg: var(--jl-warn);
+  --bg: var(--jl-warn-soft);
 }
 
 :host([tone="danger"]) {
-  --tone: var(--jl-danger);
-  --bar: var(--jl-danger);
+  --fg: var(--jl-danger);
+  --bg: var(--jl-danger-soft);
 }
 
 :host([tone="info"]) {
-  --tone: var(--jl-info);
-  --bar: var(--jl-info);
+  --fg: var(--jl-info);
+  --bg: var(--jl-info-soft);
 }
 
 .toast {
@@ -31,9 +42,9 @@
   gap: 12px;
   padding: 14px 12px 14px 16px;
   overflow: hidden;
-  border: 1px solid var(--jl-line);
+  border: 1px solid var(--border);
   border-radius: var(--jl-radius-lg);
-  background: var(--jl-surface);
+  background: var(--bg);
   color: var(--jl-text);
   font-size: var(--jl-font-md);
   line-height: 20px;
@@ -42,7 +53,7 @@
 
 .icon {
   margin-top: 1px;
-  color: var(--tone);
+  color: var(--fg);
 }
 
 .content {
@@ -80,8 +91,8 @@
 }
 
 .close {
-  --jl-accent: var(--jl-muted);
-  --jl-accent-soft: var(--jl-surface-3);
+  --jl-accent: var(--fg);
+  --jl-accent-soft: color-mix(in srgb, var(--fg) 12%, transparent);
 }
 
 .progress {

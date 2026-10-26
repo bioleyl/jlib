@@ -1,7 +1,7 @@
 {
   "all": {
-    "gzip": 91843,
-    "raw": 381972
+    "gzip": 91979,
+    "raw": 382326
   },
   "baseline": {
     "gzip": 3897,
@@ -624,12 +624,12 @@
       "level": "molecules",
       "tag": "jl-toast",
       "added": {
-        "gzip": 5532,
-        "raw": 19601
+        "gzip": 5661,
+        "raw": 19955
       },
       "total": {
-        "gzip": 9429,
-        "raw": 30855
+        "gzip": 9558,
+        "raw": 31209
       }
     },
     {
@@ -767,12 +767,12 @@
       "level": "organisms",
       "tag": "jl-toaster",
       "added": {
-        "gzip": 6518,
-        "raw": 22887
+        "gzip": 6644,
+        "raw": 23241
       },
       "total": {
-        "gzip": 10415,
-        "raw": 34141
+        "gzip": 10541,
+        "raw": 34495
       }
     },
     {
