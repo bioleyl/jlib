@@ -28,7 +28,7 @@ export const phones: PatternDoc = {
         "Controls are 44px high on a touch screen (`pointer: coarse`), with 8px at least between them. jlib's tokens grow there by themselves: 36, 44 and 48px.",
         'Text in fields is 16px, or the phone zooms in when the field takes the focus: `--jl-control-font` does it.',
         'The main action of a task stays in a bar along the bottom, full width: **Send order**, **Approve** and **Reject**, **Confirm**. The page scrolls under it.',
-        'Nothing needs a hover: no actions that appear on hover, no information only in a tooltip.',
+        'Nothing needs a hover: no actions that appear on hover, no information only in a tooltip. A `jl-tooltip` shows on a long press on a phone, but few people try it.',
         'Each field asks for its keyboard: `inputmode="numeric"` for quantities and codes, `type="email"`, `type="tel"`.'
       )
     ),

@@ -1,6 +1,15 @@
 :host {
   display: inline-flex;
   vertical-align: middle;
+  /* A long press shows the bubble: no callout over it, and (below) no text selected under the finger. */
+  -webkit-touch-callout: none;
+}
+
+@media (pointer: coarse) {
+  ::slotted(*) {
+    -webkit-user-select: none;
+    user-select: none;
+  }
 }
 
 /* Ink on the page's ground: dark on a light theme, light on a dark one. */

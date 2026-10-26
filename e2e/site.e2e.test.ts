@@ -27,6 +27,10 @@ const DESIGN = [
 ].map((page) => `/design${page}`);
 const PATTERN_DOCS = join(ROOT, 'site', 'src', 'docs', 'patterns');
 const PATTERN_PATH = /path: '(\/patterns\/[^']+)'/;
+// A phone, and how long a finger holds a tooltip's trigger (its long press is 500 ms) and waits for it to go (1.5 s).
+const PHONE = { height: 844, width: 390 };
+const LONG_PRESS_WAIT_MS = 700;
+const TOUCH_LINGER_WAIT_MS = 1800;
 // Long enough for a page's components to connect and draw (onConnect runs a task after connection).
 const SETTLE_MS = 300;
 const ICON_WARNING = 'jl-icon:';
@@ -224,6 +228,67 @@ describe('the flow editor', () => {
     // The page heard the flow's drop alone, not the browser's own drop crossing the shadow root as well.
     expect(await labels()).toEqual(['Start', 'Wait a day']);
     expect(state.errors).toEqual([]);
+  });
+});
+
+describe('the tooltip', () => {
+  it("shows its bubble alone: the button's own title steps aside while pointed at, and comes back", async () => {
+    const page = await open('/components/tooltip');
+    const tooltip = page.locator('jl-tooltip[text="Bold (⌘B)"]');
+    const look = (tooltip: Element) => ({
+      open: tooltip.shadowRoot?.querySelector('.bubble')?.matches(':popover-open'),
+      title: tooltip.querySelector('jl-button')?.shadowRoot?.querySelector('button')?.getAttribute('title'),
+    });
+    await tooltip.scrollIntoViewIfNeeded();
+    await tooltip.hover();
+    await page.waitForTimeout(SETTLE_MS);
+    expect(await tooltip.evaluate(look)).toEqual({ open: true, title: null });
+    await page.mouse.move(0, 0);
+    await page.waitForTimeout(SETTLE_MS);
+    expect(await tooltip.evaluate(look)).toEqual({ open: false, title: 'Bold' });
+  });
+
+  it('shows on a long press on a touch screen, without pressing the button; a tap still presses it', async () => {
+    const context = await state.browser?.newContext({ hasTouch: true, isMobile: true, viewport: PHONE });
+    if (context === undefined) {
+      throw new Error('The browser did not start');
+    }
+    const page = await context.newPage();
+    await page.goto(new URL('components/tooltip', state.base).href);
+    await page.waitForTimeout(SETTLE_MS);
+    const cdp = await context.newCDPSession(page);
+    const touch = (type: 'touchStart' | 'touchEnd', x = 0, y = 0) =>
+      cdp.send('Input.dispatchTouchEvent', { touchPoints: type === 'touchEnd' ? [] : [{ x, y }], type });
+    const tooltip = page.locator('jl-tooltip[text="Copy the link to this page"]');
+    await tooltip.scrollIntoViewIfNeeded();
+    await tooltip.evaluate((element) => {
+      const counter = window as unknown as { presses: number };
+      counter.presses = 0;
+      const button = element.querySelector('jl-button') as unknown as {
+        events: { register(name: string, callback: () => void): void };
+      };
+      button.events.register('press', () => {
+        counter.presses += 1;
+      });
+    });
+    const isOpen = () =>
+      tooltip.evaluate((element) => element.shadowRoot?.querySelector('.bubble')?.matches(':popover-open'));
+    const box = await tooltip.boundingBox();
+    const [x, y] = [(box?.x ?? 0) + (box?.width ?? 0) / 2, (box?.y ?? 0) + (box?.height ?? 0) / 2];
+
+    await touch('touchStart', x, y);
+    await page.waitForTimeout(LONG_PRESS_WAIT_MS);
+    await touch('touchEnd');
+    expect(await isOpen()).toBe(true);
+    expect(await page.evaluate('window.presses')).toBe(0);
+
+    await page.waitForTimeout(TOUCH_LINGER_WAIT_MS);
+    await touch('touchStart', x, y);
+    await touch('touchEnd');
+    await page.waitForTimeout(SETTLE_MS);
+    expect(await isOpen()).toBe(false);
+    expect(await page.evaluate('window.presses')).toBe(1);
+    await context.close();
   });
 });
 

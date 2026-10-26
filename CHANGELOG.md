@@ -3,6 +3,17 @@
 What changed in each version of [@syware/jlib](https://www.npmjs.com/package/@syware/jlib). Every component is shown
 and documented on [the documentation site](https://bioleyl.github.io/jlib/).
 
+## 0.5.1 (2026-10-26)
+
+### Fixed
+
+- **Tooltip**: over a button with a `hint`, the browser's own tooltip showed a moment after the bubble, one over the
+  other. While the pointer or the focus is on its trigger, the tooltip now sets the trigger's `title` aside, and
+  gives it back when the pointer leaves.
+- **Tooltip** on touch screens, which have no hover: it never showed. Pressing and holding the trigger now shows
+  the bubble (the press does not act), which stays 1.5 seconds after the finger lifts; a trigger that does nothing
+  on a tap, such as a word, shows or hides it on a tap. A tap elsewhere puts it away.
+
 ## 0.5.0 (2026-10-26)
 
 What swai and swstock each wrote for themselves, made one for every app, and the UX patterns that say how SyWare

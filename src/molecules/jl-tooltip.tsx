@@ -19,12 +19,28 @@ const GAP = 9;
 // The arrow keeps this far from the bubble's corners.
 const ARROW_MARGIN = 10;
 const DESCRIPTION = 'aria-description';
+const TITLE = 'title';
+const TOUCH = 'touch';
+// Press and hold this long on a touch screen to read the bubble, as phones do for icon buttons.
+const LONG_PRESS_MS = 500;
+// A finger that moves further than this is scrolling, not holding.
+const MOVE_TOLERANCE_PX = 10;
+// How long the bubble stays once the finger lifts.
+const TOUCH_LINGER_MS = 1500;
+// Triggers that do something when tapped: there, a tap acts and only a long press shows the bubble.
+const INTERACTIVE = 'a[href], button, input, select, textarea, summary, [role="button"], [role="link"]';
 
 const sideOf = (placement: Placement): Side => placement.split('-')[0] as Side;
 
 /**
  * A short hint in a dark bubble by its trigger (the slotted element): it shows on hover and on keyboard focus after
- * a `delay`, and hides on leave, blur and Escape. The trigger gets the text as its accessible description.
+ * a `delay`, and hides on leave, blur and Escape. The trigger gets the text as its accessible description. While
+ * the pointer or the focus is on it, the trigger's own `title` (a button's `hint`) is set aside, so the browser's
+ * tooltip does not show over the bubble.
+ *
+ * Touch screens have no hover: pressing and holding a trigger shows the bubble (and the press does not act), and
+ * it stays a moment after the finger lifts; a trigger that does nothing on a tap (a word, an icon) shows or hides
+ * it on a tap.
  */
 export class JlTooltip extends JlElement {
   static readonly selector = 'jl-tooltip';
@@ -44,7 +60,12 @@ export class JlTooltip extends JlElement {
   private readonly _state = {
     described: null as Element | null,
     following: new AbortController(),
+    // The native titles set aside while the trigger is pointed at or focused, to give back after.
+    heldTitles: [] as { element: Element; title: string }[],
     hideTimer: 0,
+    // A finger on the trigger: whether it is down, where it went down, the timer of the long press, and whether
+    // that showed the bubble.
+    press: { down: false, opened: false, timer: 0, x: 0, y: 0 },
     showTimer: 0,
   };
 
@@ -73,11 +94,40 @@ export class JlTooltip extends JlElement {
   onConnect(): void {
     this.describeTrigger();
     this.on(this._refs.slot, 'slotchange', () => this.describeTrigger());
-    this.on(this, 'pointerenter', () => this.scheduleShow());
-    this.on(this, 'pointerleave', () => this.scheduleHide());
-    this.on(this, 'pointerdown', () => this.close());
+    this.on(this, 'pointerenter', (event) => {
+      if (event.pointerType === TOUCH) {
+        return;
+      }
+      this.holdTitles();
+      this.scheduleShow();
+    });
+    this.on(this, 'pointerleave', (event) => {
+      // A finger leaves when it lifts: the press decides how long the bubble stays.
+      if (event.pointerType !== TOUCH) {
+        this.scheduleHide();
+      }
+    });
+    this.on(this, 'pointerdown', (event) => {
+      if (event.pointerType === TOUCH) {
+        this.pressStart(event);
+        return;
+      }
+      // A click hides the bubble; the titles come back once the pointer leaves, or the browser would show them.
+      this.hideBubble();
+    });
+    this.on(this, 'pointermove', (event) => this.pressMove(event));
+    this.on(this, 'pointerup', () => this.pressEnd());
+    this.on(this, 'pointercancel', () => this.pressEnd());
+    // Some phones open a menu on a long press: the bubble shows instead, except over a link, whose menu matters.
+    this.on(this, 'contextmenu', (event) => this.pressHeld(event));
+    // A long press shows the bubble instead of pressing the trigger: the click it may end with does nothing.
+    this.addEventListener('click', (event) => this.swallowLongPress(event), {
+      capture: true,
+      signal: this.killSignal,
+    });
     this.on(this, 'focusin', () => {
       if (deepActiveElement(document)?.matches(':focus-visible') === true) {
+        this.holdTitles();
         this.scheduleShow();
       }
     });
@@ -99,6 +149,82 @@ export class JlTooltip extends JlElement {
   }
 
   private close(): void {
+    this.hideBubble();
+    this.restoreTitles();
+  }
+
+  /** A trigger that acts on a tap (a button, a link, a field), as opposed to a word or an icon. */
+  private isInteractive(): boolean {
+    return accessibleTarget(this.trigger()).matches(INTERACTIVE);
+  }
+
+  private pressStart(event: PointerEvent): void {
+    const press = this._state.press;
+    window.clearTimeout(press.timer);
+    press.opened = false;
+    if (!this.isInteractive()) {
+      // A tap does nothing else there: it shows the bubble, or hides it.
+      if (this.isOpen()) {
+        this.close();
+        return;
+      }
+      this.open();
+      return;
+    }
+    press.down = true;
+    press.x = event.clientX;
+    press.y = event.clientY;
+    press.timer = window.setTimeout(() => this.openFromPress(), LONG_PRESS_MS);
+  }
+
+  private pressMove(event: PointerEvent): void {
+    const press = this._state.press;
+    const moved = Math.hypot(event.clientX - press.x, event.clientY - press.y);
+    if (press.down && moved > MOVE_TOLERANCE_PX) {
+      window.clearTimeout(press.timer);
+    }
+  }
+
+  /** The finger lifted, or the page took it to scroll: a bubble the press showed stays a moment, then goes. */
+  private pressEnd(): void {
+    const press = this._state.press;
+    window.clearTimeout(press.timer);
+    press.down = false;
+    if (!press.opened) {
+      return;
+    }
+    window.clearTimeout(this._state.hideTimer);
+    this._state.hideTimer = window.setTimeout(() => this.close(), TOUCH_LINGER_MS);
+  }
+
+  /** The system's own long press: the bubble shows now, and the menu it would open does not, but over a link. */
+  private pressHeld(event: MouseEvent): void {
+    if (!this._state.press.down || !this.isInteractive()) {
+      return;
+    }
+    this.openFromPress();
+    if (!accessibleTarget(this.trigger()).matches('a[href]')) {
+      event.preventDefault();
+    }
+  }
+
+  private openFromPress(): void {
+    window.clearTimeout(this._state.press.timer);
+    this._state.press.opened = true;
+    this.open();
+  }
+
+  private swallowLongPress(event: MouseEvent): void {
+    const press = this._state.press;
+    if (!press.opened) {
+      return;
+    }
+    press.opened = false;
+    event.preventDefault();
+    event.stopPropagation();
+  }
+
+  private hideBubble(): void {
     window.clearTimeout(this._state.showTimer);
     window.clearTimeout(this._state.hideTimer);
     this._state.following.abort();
@@ -106,6 +232,37 @@ export class JlTooltip extends JlElement {
     if (bubble.matches(':popover-open')) {
       bubble.hidePopover();
     }
+  }
+
+  /**
+   * Sets aside the native `title` of the trigger and of its inner control: the bubble says it, and the browser's
+   * own tooltip would show over it a moment later. The control keeps its name for screen readers (a button's hint
+   * is its `aria-label` too).
+   */
+  private holdTitles(): void {
+    if (this.text.get() === '' || this._state.heldTitles.length > 0) {
+      return;
+    }
+    const trigger = this.trigger();
+    const elements = [...new Set([trigger, accessibleTarget(trigger)])];
+    this._state.heldTitles = elements.flatMap((element) => {
+      const title = element.getAttribute(TITLE);
+      if (title === null) {
+        return [];
+      }
+      element.removeAttribute(TITLE);
+      return [{ element, title }];
+    });
+  }
+
+  /** Gives the titles back, unless the trigger wrote new ones meanwhile. */
+  private restoreTitles(): void {
+    for (const { element, title } of this._state.heldTitles) {
+      if (!element.hasAttribute(TITLE)) {
+        element.setAttribute(TITLE, title);
+      }
+    }
+    this._state.heldTitles = [];
   }
 
   private trigger(): Element {
@@ -147,6 +304,16 @@ export class JlTooltip extends JlElement {
       signal: following.signal,
     });
     window.addEventListener('resize', () => this.placeArrow(), { passive: true, signal: following.signal });
+    // A tap or a click elsewhere puts it away: on a touch screen, nothing else would.
+    document.addEventListener(
+      'pointerdown',
+      (event) => {
+        if (!event.composedPath().includes(this)) {
+          this.close();
+        }
+      },
+      { signal: following.signal }
+    );
     document.addEventListener(
       'keydown',
       (event) => {

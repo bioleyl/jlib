@@ -8,7 +8,13 @@ can move onto the bubble without it closing.
 
 The bubble floats in the top layer, so no overflow or stacking context cuts it. It goes on the placement side and
 flips when there is no room; its arrow points at the trigger. The trigger gets the text as its accessible description:
-a tooltip adds to a name, it never replaces it, so an icon-only button still needs its own (a jl-button's hint).`,
+a tooltip adds to a name, it never replaces it, so an icon-only button still needs its own (a jl-button's hint).
+While the pointer or the focus is on the trigger, its own title (that hint) steps aside, so the browser's tooltip does
+not show over the bubble.
+
+Touch screens have no hover. There, pressing and holding the trigger shows the bubble, and the press does not act;
+the bubble stays a moment after the finger lifts. A trigger that does nothing on a tap (a word, an icon) shows or
+hides its bubble on a tap. A tap elsewhere puts it away.`,
   examples: [
     {
       html: `
