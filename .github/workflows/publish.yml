@@ -73,7 +73,10 @@ jobs:
           NAME: ${{ steps.package.outputs.name }}
           VERSION: ${{ steps.package.outputs.version }}
         run: |
-          if ! npm stage publish ./*.tgz > stage.log 2> stage-errors.log; then
+          # A pre-release (0.2.0-beta.1) goes under the next tag: npm keeps latest for stable versions.
+          tag=latest
+          case "$VERSION" in *-*) tag=next ;; esac
+          if ! npm stage publish ./*.tgz --tag "$tag" > stage.log 2> stage-errors.log; then
             cat stage.log stage-errors.log
             echo "::error title=npm stage publish failed::$(grep -E 'npm (error|ERR)' stage-errors.log | head -12 | tr '\n' ' ')"
             exit 1
@@ -108,4 +111,6 @@ jobs:
             exit 0
           fi
           notes="Install it with \`npm install $NAME@$VERSION\`: [npm](https://www.npmjs.com/package/$NAME/v/$VERSION) · [documentation](https://bioleyl.github.io/jlib/)"
-          gh release create "$GITHUB_REF_NAME" ./*.tgz --title "$GITHUB_REF_NAME" --notes "$notes" --generate-notes
+          prerelease=()
+          case "$VERSION" in *-*) prerelease=(--prerelease) ;; esac
+          gh release create "$GITHUB_REF_NAME" ./*.tgz --title "$GITHUB_REF_NAME" --notes "$notes" --generate-notes "${prerelease[@]}"
