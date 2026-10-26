@@ -90,7 +90,7 @@ button.head {
 }
 
 .step[data-status="current"] .label {
-  color: var(--jl-text);
+  color: var(--jl-accent);
   font-weight: 700;
 }
 
@@ -101,9 +101,10 @@ button.head:hover .label {
 
 .line {
   flex: 1;
-  min-width: 16px;
+  min-width: 24px;
   height: 1px;
-  margin: calc(var(--marker) / 2) 12px 0;
+  /* Further from the label before it than from the next marker: a label reads as its own step's. */
+  margin: calc(var(--marker) / 2) 12px 0 20px;
   background: var(--jl-line-strong);
 }
 
@@ -158,6 +159,28 @@ button.head:hover .label {
   }
 
   :host(:not([orientation="vertical"])) .line {
+    min-width: 8px;
     margin: calc(var(--marker) / 2) 8px 0;
+  }
+
+  /* The current step takes three shares of the room, the others one, never less than their marker and line: the
+     label never runs into the next step, and takes an ellipsis only when there is no room at all. */
+  :host(:not([orientation="vertical"])) .step:not([data-status="current"]) {
+    min-width: min-content;
+  }
+
+  :host(:not([orientation="vertical"])) .step[data-status="current"] {
+    flex: 3 1 0;
+  }
+
+  :host(:not([orientation="vertical"])) .step[data-status="current"] .label {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  :host(:not([orientation="vertical"])) .step[data-status="current"] .line {
+    min-width: 24px;
+    margin-left: 16px;
   }
 }
