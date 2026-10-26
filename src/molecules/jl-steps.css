@@ -135,7 +135,7 @@ button.head:hover .label {
   position: absolute;
   top: calc(var(--marker) + 4px);
   bottom: 4px;
-  left: calc(var(--marker) / 2);
+  left: calc(var(--marker) / 2 - 0.5px);
   width: 1px;
   height: auto;
   min-width: 0;

@@ -12,10 +12,11 @@
 }
 
 .timeline {
-  /* The markers, the times and the texts in three columns shared by every event: the times line up beside their
-     markers, each next to its title, however wide the timeline. Without any time, the middle column takes no room. */
+  /* The markers (and the room after them), the times and the texts in three columns shared by every event: the times
+     line up beside their markers, each next to its title, however wide the timeline. Without any time, the middle
+     column takes no room. */
   display: grid;
-  grid-template-columns: var(--marker) auto minmax(0, 1fr);
+  grid-template-columns: calc(var(--marker) + 12px) auto minmax(0, 1fr);
   margin: 0;
   padding: 0;
   list-style: none;
@@ -26,7 +27,7 @@
   display: grid;
   grid-column: 1 / -1;
   /* Browsers without subgrid keep the columns per event. */
-  grid-template-columns: var(--marker) auto minmax(0, 1fr);
+  grid-template-columns: calc(var(--marker) + 12px) auto minmax(0, 1fr);
   padding-bottom: var(--gap);
   --tone: var(--jl-muted);
   --soft: var(--jl-surface-3);
@@ -81,7 +82,7 @@
 .rail {
   position: relative;
   grid-column: 1;
-  margin-right: 12px;
+  width: var(--marker);
   z-index: 1;
   display: flex;
   align-items: center;

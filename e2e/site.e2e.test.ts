@@ -141,6 +141,26 @@ describe('the date picker', () => {
   });
 });
 
+describe('the timeline', () => {
+  it('runs its line through the centre of every marker', async () => {
+    const page = await open('/components/timeline');
+    const offsets = await page
+      .locator('jl-timeline')
+      .first()
+      .evaluate((host) =>
+        [...(host.shadowRoot?.querySelectorAll('.event:not(:last-child)') ?? [])].map((event) => {
+          const marker = event.querySelector('.marker')?.getBoundingClientRect();
+          const line = getComputedStyle(event, '::before');
+          const lineX =
+            event.getBoundingClientRect().left + Number.parseFloat(line.left) + Number.parseFloat(line.width) / 2;
+          return marker === undefined ? Number.NaN : Math.abs(marker.left + marker.width / 2 - lineX);
+        })
+      );
+    expect(offsets.length).toBeGreaterThan(0);
+    expect(Math.max(...offsets)).toBeLessThan(1);
+  });
+});
+
 describe('the flow editor', () => {
   it('joins an exit to a node by dragging, and removes the edge with Delete', async () => {
     const page = await open('/components/flow');
