@@ -1,4 +1,4 @@
-import { JlIcon } from 'jlib';
+import { JlIcon } from '@syware/jlib';
 
 type Guidance = 'do' | 'dont';
 

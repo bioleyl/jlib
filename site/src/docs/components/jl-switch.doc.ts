@@ -1,4 +1,4 @@
-import type { JlBadge, JlSwitch } from 'jlib';
+import type { JlBadge, JlSwitch } from '@syware/jlib';
 import type { ComponentDoc } from '../../types/docs.types';
 
 export const doc: ComponentDoc = {

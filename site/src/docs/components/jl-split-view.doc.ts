@@ -1,4 +1,4 @@
-import type { JlSplitView } from 'jlib';
+import type { JlSplitView } from '@syware/jlib';
 import type { ComponentDoc } from '../../types/docs.types';
 
 const CODE_PANE = `

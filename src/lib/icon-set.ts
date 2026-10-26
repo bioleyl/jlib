@@ -93,7 +93,7 @@ import type { IconNode } from 'lucide';
 /**
  * The usual icons of an interface, by name: `registerIcons(COMMON_ICONS)` lets pages write any of them
  * (`<jl-icon name="settings">`, `<jl-button icon="plus">`). It costs about 5 kB compressed; an app that names a few
- * icons registers just those instead. `jlib/all` registers them all.
+ * icons registers just those instead. `@syware/jlib/all` registers them all.
  */
 export const COMMON_ICONS = {
   'arrow-down': ArrowDown,

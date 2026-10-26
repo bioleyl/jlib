@@ -1,6 +1,6 @@
 import { css } from '@jadis/core';
-import { JlElement } from 'jlib';
-import { BASE_STYLES } from 'jlib/styles/shared';
+import { JlElement } from '@syware/jlib';
+import { BASE_STYLES } from '@syware/jlib/styles/shared';
 
 import { codeSample } from '../../lib/blocks';
 import { designIntro, guideline } from '../../lib/design-blocks';

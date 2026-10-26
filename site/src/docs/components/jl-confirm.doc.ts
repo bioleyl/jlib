@@ -1,6 +1,6 @@
-import { confirmDialog } from 'jlib';
+import { confirmDialog } from '@syware/jlib';
 
-import type { ConfirmOptions, JlButton, JlConfirm } from 'jlib';
+import type { ConfirmOptions, JlButton, JlConfirm } from '@syware/jlib';
 import type { ComponentDoc } from '../../types/docs.types';
 
 /** Asks when the button is pressed, and writes the answer in the example. */
@@ -55,7 +55,7 @@ question several times, with ask().`,
           <span class="muted answer">No answer yet.</span>
         </div>`,
       script: `
-        import { confirmDialog } from 'jlib';
+        import { confirmDialog } from '@syware/jlib';
 
         const answer = root.querySelector('.answer');
         root.querySelector('.delete').events.register('press', async () => {

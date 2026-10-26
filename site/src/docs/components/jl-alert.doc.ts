@@ -1,4 +1,4 @@
-import type { JlAlert, JlButton } from 'jlib';
+import type { JlAlert, JlButton } from '@syware/jlib';
 import type { ComponentDoc } from '../../types/docs.types';
 
 const TONE_OPTIONS = ['info', 'ok', 'warn', 'danger', 'neutral', 'accent'];

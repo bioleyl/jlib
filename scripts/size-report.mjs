@@ -43,7 +43,7 @@ async function measure(code) {
           if (id === ENTRY_ID) {
             return id;
           }
-          return id === 'jlib' ? DIST_INDEX : null;
+          return id === '@syware/jlib' ? DIST_INDEX : null;
         },
       },
     ],
@@ -54,11 +54,14 @@ async function measure(code) {
   return { gzip: gzipSync(text).length, raw: Buffer.byteLength(text) };
 }
 
-const usage = (names) => `import { ${names.join(', ')} } from 'jlib';\nconsole.log(${names.join(', ')});\n`;
+const usage = (names) =>
+  `import { ${names.join(', ')} } from '@syware/jlib';\nconsole.log(${names.join(', ')});\n`;
 
 const list = components();
 const baseline = await measure(usage(['JlElement']));
-const all = await measure(`import 'jlib/all';\n`.replace('jlib/all', join(ROOT, 'dist', 'all.js')));
+const all = await measure(
+  `import '@syware/jlib/all';\n`.replace('@syware/jlib/all', join(ROOT, 'dist', 'all.js'))
+);
 const sizes = [];
 for (const component of list) {
   const total = await measure(usage([component.className]));
@@ -70,7 +73,7 @@ writeFileSync(OUTPUT, `${JSON.stringify({ all, baseline, components: sizes }, nu
 
 const kb = (bytes) => `${(bytes / 1024).toFixed(1)} kB`;
 console.log(`Baseline (Jadis, tokens, base class): ${kb(baseline.gzip)} gzip`);
-console.log(`Everything (jlib/all): ${kb(all.gzip)} gzip`);
+console.log(`Everything (@syware/jlib/all): ${kb(all.gzip)} gzip`);
 for (const size of sizes) {
   console.log(`${size.tag.padEnd(24)} +${kb(size.added.gzip)} gzip`);
 }

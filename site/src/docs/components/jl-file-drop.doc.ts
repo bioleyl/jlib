@@ -1,4 +1,4 @@
-import type { JlButton, JlFileDrop } from 'jlib';
+import type { JlButton, JlFileDrop } from '@syware/jlib';
 import type { ComponentDoc } from '../../types/docs.types';
 
 const TWO_MB = String(2 * 1024 * 1024);

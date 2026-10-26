@@ -1,4 +1,4 @@
-import type { JlButton, JlCommandPalette, PaletteCommand } from 'jlib';
+import type { JlButton, JlCommandPalette, PaletteCommand } from '@syware/jlib';
 import type { ComponentDoc } from '../../types/docs.types';
 
 const APP_COMMANDS: PaletteCommand[] = [

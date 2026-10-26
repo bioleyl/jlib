@@ -1,6 +1,6 @@
 import { css } from '@jadis/core';
-import { JlButton, JlCodeBlock, JlElement, JlIcon } from 'jlib';
-import { BASE_STYLES } from 'jlib/styles/shared';
+import { JlButton, JlCodeBlock, JlElement, JlIcon } from '@syware/jlib';
+import { BASE_STYLES } from '@syware/jlib/styles/shared';
 
 import { SiteLogo } from '../components/site-logo';
 import { COMPONENT_DOCS, docsOfLevel, LEVEL_DESCRIPTIONS, LEVEL_LABELS, LEVELS } from '../docs/registry';
@@ -104,7 +104,7 @@ export class HomePage extends JlElement {
                 <span>GitHub</span>
               </a>
             </div>
-            <JlCodeBlock language="bash" code="npm install jlib @jadis/core" />
+            <JlCodeBlock language="bash" code="npm install @syware/jlib @jadis/core" />
           </div>
           <div class="hero-demo">{showcase()}</div>
         </section>
@@ -143,7 +143,7 @@ export class HomePage extends JlElement {
             {codeSample(
               'ts',
               `
-              import { JlButton } from 'jlib';
+              import { JlButton } from '@syware/jlib';
 
               <JlButton variant="primary" icon="plus" label="New project" />`,
               'app.tsx'

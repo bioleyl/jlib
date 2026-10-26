@@ -2,7 +2,7 @@ import { DESIGN_PAGES } from '../docs/design';
 import { COMPONENT_DOCS, GUIDES, LEVEL_LABELS, slugOf } from '../docs/registry';
 import { REPOSITORY_URL } from './project';
 
-import type { PaletteCommand } from 'jlib';
+import type { PaletteCommand } from '@syware/jlib';
 import type { ThemeMode } from '../types/site.types';
 
 const GO_PREFIX = 'go:';

@@ -1,4 +1,4 @@
-import type { JlButton, JlSteps } from 'jlib';
+import type { JlButton, JlSteps } from '@syware/jlib';
 import type { ComponentDoc } from '../../types/docs.types';
 
 const CHECKOUT =

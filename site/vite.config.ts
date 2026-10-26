@@ -56,8 +56,8 @@ export default defineConfig(({ command, isPreview }) => ({
   plugins: [staticRoutes()],
   resolve: {
     alias: [
-      { find: /^jlib$/, replacement: resolve(SRC, 'index.ts') },
-      { find: /^jlib\/(.*)$/, replacement: `${SRC}/$1` },
+      { find: /^@syware\/jlib$/, replacement: resolve(SRC, 'index.ts') },
+      { find: /^@syware\/jlib\/(.*)$/, replacement: `${SRC}/$1` },
     ],
   },
   root: SITE,

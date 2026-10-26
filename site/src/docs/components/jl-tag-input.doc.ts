@@ -1,4 +1,4 @@
-import type { JlTagInput } from 'jlib';
+import type { JlTagInput } from '@syware/jlib';
 import type { ComponentDoc } from '../../types/docs.types';
 
 const SKILLS = JSON.stringify([

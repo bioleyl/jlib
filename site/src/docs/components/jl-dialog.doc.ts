@@ -1,4 +1,4 @@
-import type { JlButton, JlDialog } from 'jlib';
+import type { JlButton, JlDialog } from '@syware/jlib';
 import type { ComponentDoc } from '../../types/docs.types';
 
 /** Opens the dialog of an example when its button is pressed. */
@@ -85,7 +85,7 @@ Open it with the open attribute, or show() from code; it emits close however it 
         <jl-dialog class="large" size="lg" heading="Release notes" description="Version 0.1">
           <div class="stack">
             <p>The first release of jlib: atoms, molecules, organisms and templates on native Web Components.</p>
-            <jl-code-block language="bash" code="npm install jlib @jadis/core"></jl-code-block>
+            <jl-code-block language="bash" code="npm install @syware/jlib @jadis/core"></jl-code-block>
           </div>
         </jl-dialog>`,
       setup: (root) => openOnPress(root, '.open-large', 'jl-dialog.large'),

@@ -1,7 +1,7 @@
 import { css } from '@jadis/core';
-import { JlButton, JlCodeBlock, JlElement } from 'jlib';
-import { dedent } from 'jlib/lib/text';
-import { BASE_STYLES } from 'jlib/styles/shared';
+import { JlButton, JlCodeBlock, JlElement } from '@syware/jlib';
+import { dedent } from '@syware/jlib/lib/text';
+import { BASE_STYLES } from '@syware/jlib/styles/shared';
 
 import styles from './site-example.css?raw';
 

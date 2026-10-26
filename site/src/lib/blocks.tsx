@@ -1,7 +1,7 @@
-import { JlCodeBlock, JlIcon } from 'jlib';
-import { dedent } from 'jlib/lib/text';
+import { JlCodeBlock, JlIcon } from '@syware/jlib';
+import { dedent } from '@syware/jlib/lib/text';
 
-import type { CodeLanguage } from 'jlib';
+import type { CodeLanguage } from '@syware/jlib';
 
 /** A code sample of a guide page, written indented in the page's source. */
 export const codeSample = (language: CodeLanguage, code: string, heading = ''): Node => (
@@ -25,7 +25,7 @@ const REGISTRATION_CASES: readonly { you: string; example: string; todo: string;
   {
     code: true,
     example: 'a prototype, a demo page',
-    todo: "import 'jlib/all'",
+    todo: "import '@syware/jlib/all'",
     you: 'want every component, without tree-shaking',
   },
 ];

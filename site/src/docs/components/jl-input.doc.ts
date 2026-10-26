@@ -1,4 +1,4 @@
-import type { JlInput } from 'jlib';
+import type { JlInput } from '@syware/jlib';
 import type { ComponentDoc } from '../../types/docs.types';
 
 const TYPE_OPTIONS = ['text', 'email', 'password', 'number', 'search', 'tel', 'url', 'date', 'time'];

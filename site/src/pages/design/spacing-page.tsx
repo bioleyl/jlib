@@ -1,13 +1,13 @@
 import { css } from '@jadis/core';
-import { JlButton, JlElement, JlInput, JlSelect } from 'jlib';
-import { BASE_STYLES } from 'jlib/styles/shared';
+import { JlButton, JlElement, JlInput, JlSelect } from '@syware/jlib';
+import { BASE_STYLES } from '@syware/jlib/styles/shared';
 
 import { SPACE_SCALE } from '../../docs/design';
 import { codeSample } from '../../lib/blocks';
 import { designIntro } from '../../lib/design-blocks';
 import { DESIGN_STYLES, PROSE_STYLES } from '../../styles/site-styles';
 
-import type { ControlSize } from 'jlib';
+import type { ControlSize } from '@syware/jlib';
 
 const CONTROL_HEIGHTS: readonly { size: ControlSize; px: number; token: string }[] = [
   { px: 30, size: 'sm', token: '--jl-control-sm' },

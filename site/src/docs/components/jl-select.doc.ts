@@ -1,4 +1,4 @@
-import type { JlSelect } from 'jlib';
+import type { JlSelect } from '@syware/jlib';
 import type { ComponentDoc } from '../../types/docs.types';
 
 const REGIONS = JSON.stringify([

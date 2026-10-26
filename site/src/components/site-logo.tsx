@@ -1,6 +1,6 @@
 import { css } from '@jadis/core';
-import { JlElement, oneOf } from 'jlib';
-import { BASE_STYLES } from 'jlib/styles/shared';
+import { JlElement, oneOf } from '@syware/jlib';
+import { BASE_STYLES } from '@syware/jlib/styles/shared';
 
 import { LOGO_MIN_HEIGHT } from '../lib/syware-logo';
 import { assetHref } from '../services/navigation';

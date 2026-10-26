@@ -1,6 +1,6 @@
 import { css } from '@jadis/core';
-import { JlElement } from 'jlib';
-import { BASE_STYLES } from 'jlib/styles/shared';
+import { JlElement } from '@syware/jlib';
+import { BASE_STYLES } from '@syware/jlib/styles/shared';
 
 import { PROSE_STYLES } from '../styles/site-styles';
 import styles from './site-api.css?raw';

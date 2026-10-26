@@ -1,6 +1,6 @@
 import { css } from '@jadis/core';
-import { JlButton, JlElement } from 'jlib';
-import { BASE_STYLES } from 'jlib/styles/shared';
+import { JlButton, JlElement } from '@syware/jlib';
+import { BASE_STYLES } from '@syware/jlib/styles/shared';
 
 import { MOTION_USES } from '../../docs/design';
 import { designIntro } from '../../lib/design-blocks';

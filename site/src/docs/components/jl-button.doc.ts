@@ -1,4 +1,4 @@
-import type { JlButton } from 'jlib';
+import type { JlButton } from '@syware/jlib';
 import type { ComponentDoc } from '../../types/docs.types';
 
 export const doc: ComponentDoc = {

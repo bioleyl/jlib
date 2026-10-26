@@ -1,6 +1,15 @@
 import { css } from '@jadis/core';
-import { JlButton, JlCodeBlock, JlElement, JlInput, JlSegmented, JlSelect, JlSwitch, JlTextarea } from 'jlib';
-import { BASE_STYLES } from 'jlib/styles/shared';
+import {
+  JlButton,
+  JlCodeBlock,
+  JlElement,
+  JlInput,
+  JlSegmented,
+  JlSelect,
+  JlSwitch,
+  JlTextarea,
+} from '@syware/jlib';
+import { BASE_STYLES } from '@syware/jlib/styles/shared';
 
 import { applyAttribute, defaultValue, formatDetail, isValidJson, prettyJson } from '../lib/playground';
 import { htmlSnippet, jsxSnippet } from '../lib/snippets';

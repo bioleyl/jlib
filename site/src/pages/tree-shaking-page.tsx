@@ -1,6 +1,6 @@
 import { css } from '@jadis/core';
-import { JlElement } from 'jlib';
-import { BASE_STYLES } from 'jlib/styles/shared';
+import { JlElement } from '@syware/jlib';
+import { BASE_STYLES } from '@syware/jlib/styles/shared';
 
 import report from '../generated/sizes.json';
 import { codeSample, registrationTable } from '../lib/blocks';
@@ -42,7 +42,7 @@ export class TreeShakingPage extends JlElement {
           {codeSample(
             'ts',
             `
-            import { JlButton } from 'jlib';
+            import { JlButton } from '@syware/jlib';
 
             const save = new JlButton(); // jl-button, jl-icon and jl-spinner end up in the bundle; nothing else
             save.label.set('Save');
@@ -61,9 +61,9 @@ export class TreeShakingPage extends JlElement {
           </p>
           {registrationTable()}
           <div class="note">
-            A bare <code>import 'jlib/atoms/jl-button'</code> is dropped too: the package declares its modules free
-            of side effects so that unused ones go. <code>jlib/all</code> is the one module declared with side
-            effects.
+            A bare <code>import '@syware/jlib/atoms/jl-button'</code> is dropped too: the package declares its
+            modules free of side effects so that unused ones go. <code>@syware/jlib/all</code> is the one module
+            declared with side effects.
           </div>
         </section>
 

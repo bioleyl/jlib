@@ -1,4 +1,4 @@
-import type { JlRadioGroup } from 'jlib';
+import type { JlRadioGroup } from '@syware/jlib';
 import type { ComponentDoc } from '../../types/docs.types';
 
 const PLANS = JSON.stringify([

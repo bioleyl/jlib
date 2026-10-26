@@ -49,7 +49,7 @@ documentation site that shows and tests every component. Load the project skills
   `followAnchor(anchor, floating, placement, signal)` from `lib/floating.ts` with an `AbortController` per opening.
 - Icons are tree-shaken: the registry (`src/lib/icons.ts`) starts empty. A component registers the lucide icons it
   draws itself at module level (`registerIcons({ x: X })`, below its imports); names a page writes (`icon="plus"`)
-  are the page's to register, one by one or with `COMMON_ICONS` (`src/lib/icon-set.ts`, registered by `jlib/all`).
+  are the page's to register, one by one or with `COMMON_ICONS` (`src/lib/icon-set.ts`, registered by `@syware/jlib/all`).
   An unregistered name draws a neutral mark and warns once; the e2e suite fails on that warning.
 - Shared enums: `TONES`, `CONTROL_SIZES`.
 
@@ -101,3 +101,7 @@ every page in Chromium: no console error, no undefined `jl-*` tag, no unregister
 - The SyWare logo SVGs in `site/public/` are the designer's paths, cropped. Shown small (under 64px), the site uses
   the PNGs that `node scripts/logo-png.mjs` renders from them (`site-logo`): the browser's smoothing filter blends
   about a quarter more edge pixels than the vector drawn at size, which on a standard screen shows steps.
+- The package is `@syware/jlib` on npm (the bare name `jlib` belongs to someone else): docs and the site import it by
+  that name (an alias to `src/` in development). `npm publish` runs the checks (`prepublishOnly`) and builds the
+  library (`prepack`); a pushed version tag publishes from GitHub (`.github/workflows/publish.yml`) and creates the
+  GitHub release.

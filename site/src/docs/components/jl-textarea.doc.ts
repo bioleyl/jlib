@@ -1,4 +1,4 @@
-import type { JlTextarea } from 'jlib';
+import type { JlTextarea } from '@syware/jlib';
 import type { ComponentDoc } from '../../types/docs.types';
 
 export const doc: ComponentDoc = {

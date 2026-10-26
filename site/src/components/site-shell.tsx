@@ -1,6 +1,6 @@
 import { css } from '@jadis/core';
-import { JlBadge, JlButton, JlCommandPalette, JlElement, JlIcon, JlKbd } from 'jlib';
-import { BASE_STYLES } from 'jlib/styles/shared';
+import { JlBadge, JlButton, JlCommandPalette, JlElement, JlIcon, JlKbd } from '@syware/jlib';
+import { BASE_STYLES } from '@syware/jlib/styles/shared';
 
 import { githubMark, REPOSITORY_URL } from '../lib/project';
 import { actionOf, searchCommands } from '../lib/search-commands';

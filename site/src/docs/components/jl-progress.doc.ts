@@ -1,4 +1,4 @@
-import type { JlButton, JlProgress } from 'jlib';
+import type { JlButton, JlProgress } from '@syware/jlib';
 import type { ComponentDoc } from '../../types/docs.types';
 
 const TONE_OPTIONS = ['accent', 'ok', 'warn', 'danger'];

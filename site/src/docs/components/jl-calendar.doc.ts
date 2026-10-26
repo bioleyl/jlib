@@ -1,6 +1,6 @@
-import { addDays, calendarDateOf, formatDate, parseIsoDate, toIsoDate } from 'jlib/lib/calendar';
+import { addDays, calendarDateOf, formatDate, parseIsoDate, toIsoDate } from '@syware/jlib/lib/calendar';
 
-import type { JlCalendar } from 'jlib';
+import type { JlCalendar } from '@syware/jlib';
 import type { ComponentDoc } from '../../types/docs.types';
 
 // The examples are about the weeks around today, so they stay meaningful whenever the page is read.

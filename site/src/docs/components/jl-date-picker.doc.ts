@@ -1,6 +1,6 @@
-import { addDays, calendarDateOf, parseIsoDate, toIsoDate } from 'jlib/lib/calendar';
+import { addDays, calendarDateOf, parseIsoDate, toIsoDate } from '@syware/jlib/lib/calendar';
 
-import type { JlDatePicker } from 'jlib';
+import type { JlDatePicker } from '@syware/jlib';
 import type { ComponentDoc } from '../../types/docs.types';
 
 const TODAY = calendarDateOf(new Date());

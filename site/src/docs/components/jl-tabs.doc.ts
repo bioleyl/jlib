@@ -1,4 +1,4 @@
-import type { JlButton, JlTabs } from 'jlib';
+import type { JlButton, JlTabs } from '@syware/jlib';
 import type { ComponentDoc } from '../../types/docs.types';
 
 const PANELS = `

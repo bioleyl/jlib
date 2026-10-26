@@ -1,4 +1,4 @@
-import type { JlSlider } from 'jlib';
+import type { JlSlider } from '@syware/jlib';
 import type { ComponentDoc } from '../../types/docs.types';
 
 export const doc: ComponentDoc = {

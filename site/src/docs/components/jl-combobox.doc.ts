@@ -1,4 +1,4 @@
-import type { ComboboxOption, JlCombobox } from 'jlib';
+import type { ComboboxOption, JlCombobox } from '@syware/jlib';
 import type { ComponentDoc } from '../../types/docs.types';
 
 const CITIES = JSON.stringify([

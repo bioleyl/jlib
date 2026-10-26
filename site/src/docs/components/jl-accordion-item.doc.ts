@@ -1,4 +1,4 @@
-import type { JlAccordionItem, JlButton } from 'jlib';
+import type { JlAccordionItem, JlButton } from '@syware/jlib';
 import type { ComponentDoc } from '../../types/docs.types';
 
 export const doc: ComponentDoc = {

@@ -1,6 +1,6 @@
 import { css } from '@jadis/core';
-import { JlElement, JlIcon } from 'jlib';
-import { BASE_STYLES } from 'jlib/styles/shared';
+import { JlElement, JlIcon } from '@syware/jlib';
+import { BASE_STYLES } from '@syware/jlib/styles/shared';
 
 import { SiteLogo } from '../../components/site-logo';
 import { DESIGN_PAGES, PRINCIPLES } from '../../docs/design';

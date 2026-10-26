@@ -1,4 +1,4 @@
-import type { JlButton, JlPopover } from 'jlib';
+import type { JlButton, JlPopover } from '@syware/jlib';
 import type { ComponentDoc } from '../../types/docs.types';
 
 /** Closes the example's popover when its Save button is pressed. */

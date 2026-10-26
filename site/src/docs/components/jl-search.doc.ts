@@ -1,4 +1,4 @@
-import type { JlSearch } from 'jlib';
+import type { JlSearch } from '@syware/jlib';
 import type { ComponentDoc } from '../../types/docs.types';
 
 const LANGUAGES = [

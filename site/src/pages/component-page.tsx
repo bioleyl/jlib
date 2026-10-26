@@ -1,6 +1,6 @@
 import { css } from '@jadis/core';
-import { JlBadge, JlCodeBlock, JlElement, JlIcon } from 'jlib';
-import { BASE_STYLES } from 'jlib/styles/shared';
+import { JlBadge, JlCodeBlock, JlElement, JlIcon } from '@syware/jlib';
+import { BASE_STYLES } from '@syware/jlib/styles/shared';
 
 import { SiteApi } from '../components/site-api';
 import { SiteExample } from '../components/site-example';

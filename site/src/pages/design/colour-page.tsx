@@ -1,13 +1,13 @@
 import { css } from '@jadis/core';
-import { JlBadge, JlElement } from 'jlib';
-import { BASE_STYLES, TOKEN_STYLES } from 'jlib/styles/shared';
+import { JlBadge, JlElement } from '@syware/jlib';
+import { BASE_STYLES, TOKEN_STYLES } from '@syware/jlib/styles/shared';
 
 import { COLOUR_FAMILIES } from '../../docs/design';
 import { contrastLevel, contrastRatio, hexOf, parseColour } from '../../lib/contrast';
 import { designIntro, guideline } from '../../lib/design-blocks';
 import { DESIGN_STYLES, PROSE_STYLES } from '../../styles/site-styles';
 
-import type { Tone } from 'jlib';
+import type { Tone } from '@syware/jlib';
 import type { ColourRole } from '../../types/design.types';
 
 const THEMES = ['light', 'dark'] as const;

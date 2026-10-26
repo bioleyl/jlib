@@ -1,6 +1,6 @@
 import { css } from '@jadis/core';
-import { JlBadge, JlButton, JlCodeBlock, JlElement, JlInput } from 'jlib';
-import { BASE_STYLES, TOKEN_STYLES } from 'jlib/styles/shared';
+import { JlBadge, JlButton, JlCodeBlock, JlElement, JlInput } from '@syware/jlib';
+import { BASE_STYLES, TOKEN_STYLES } from '@syware/jlib/styles/shared';
 
 import { ACCENT_PRESETS, TOKEN_GROUPS } from '../docs/tokens';
 import { accentCss, accentTokens } from '../lib/accent';
@@ -83,7 +83,7 @@ export class ThemingPage extends JlElement {
           )}
           <p>
             The same tokens exist as a plain stylesheet, for pages that want them before any script runs:{' '}
-            <code>import 'jlib/tokens.css'</code>.
+            <code>import '@syware/jlib/tokens.css'</code>.
           </p>
         </section>
 

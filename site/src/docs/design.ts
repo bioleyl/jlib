@@ -251,7 +251,7 @@ export const TYPE_SCALE: readonly TypeStep[] = [
     lineHeight: 1.7,
     mono: true,
     name: 'Code',
-    sample: 'npm install jlib',
+    sample: 'npm install @syware/jlib',
     size: 12.5,
     use: 'Code, ids, hashes, keys, data.',
     weight: 400,

@@ -1,4 +1,4 @@
-import type { JlButton, JlTable, TableColumn, TableRow, Tone } from 'jlib';
+import type { JlButton, JlTable, TableColumn, TableRow, Tone } from '@syware/jlib';
 import type { ComponentDoc } from '../../types/docs.types';
 
 /** A badge tone per value; the values are labels people read, written as they show. */

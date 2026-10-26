@@ -1,6 +1,6 @@
 import { css } from '@jadis/core';
-import { JlElement, JlIcon, JlInput } from 'jlib';
-import { BASE_STYLES } from 'jlib/styles/shared';
+import { JlElement, JlIcon, JlInput } from '@syware/jlib';
+import { BASE_STYLES } from '@syware/jlib/styles/shared';
 
 import { DESIGN_PAGES } from '../docs/design';
 import { docRoute, docsOfLevel, GUIDES, LEVEL_LABELS, LEVELS } from '../docs/registry';

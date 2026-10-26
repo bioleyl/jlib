@@ -1,6 +1,6 @@
-import { toast } from 'jlib';
+import { toast } from '@syware/jlib';
 
-import type { JlButton, JlDialog, JlToaster, ToastOptions } from 'jlib';
+import type { JlButton, JlDialog, JlToaster, ToastOptions } from '@syware/jlib';
 import type { ComponentDoc } from '../../types/docs.types';
 
 const TONE_TOASTS: Record<string, ToastOptions> = {
@@ -38,7 +38,7 @@ otherwise. Write a jl-toaster in the page yourself to choose the placement: toas
           <jl-button class="tone-danger" icon="circle-x" label="Error"></jl-button>
         </div>`,
       script: `
-        import { toast } from 'jlib';
+        import { toast } from '@syware/jlib';
 
         root.querySelector('.tone-ok').events.register('press', () =>
           toast({ heading: 'Changes saved', text: 'Your profile is up to date.', tone: 'ok' })

@@ -13,8 +13,8 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "paths": {
-      "jlib": ["./src/index.ts"],
-      "jlib/*": ["./src/*"]
+      "@syware/jlib": ["./src/index.ts"],
+      "@syware/jlib/*": ["./src/*"]
     },
     "resolveJsonModule": true,
     "skipLibCheck": true,

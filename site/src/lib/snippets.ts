@@ -99,4 +99,4 @@ export function jsxSnippet(source: SnippetSource): string {
 }
 
 /** The import a page needs for the component. */
-export const importSnippet = (className: string): string => `import { ${className} } from 'jlib';`;
+export const importSnippet = (className: string): string => `import { ${className} } from '@syware/jlib';`;

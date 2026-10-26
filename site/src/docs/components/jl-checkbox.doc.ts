@@ -1,4 +1,4 @@
-import type { JlCheckbox } from 'jlib';
+import type { JlCheckbox } from '@syware/jlib';
 import type { ComponentDoc } from '../../types/docs.types';
 
 export const doc: ComponentDoc = {

@@ -1,4 +1,4 @@
-import type { JlButton, JlDrawer } from 'jlib';
+import type { JlButton, JlDrawer } from '@syware/jlib';
 import type { ComponentDoc } from '../../types/docs.types';
 
 /** Opens the drawer of an example when its button is pressed. */

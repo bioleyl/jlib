@@ -1,4 +1,4 @@
-import type { JlCard } from 'jlib';
+import type { JlCard } from '@syware/jlib';
 import type { ComponentDoc } from '../../types/docs.types';
 
 const MEDIA = `<div slot="media" style="height: 120px; background: linear-gradient(135deg, var(--jl-accent-soft), var(--jl-surface-3))"></div>`;

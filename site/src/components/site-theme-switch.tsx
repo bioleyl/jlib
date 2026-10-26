@@ -1,11 +1,11 @@
 import { css } from '@jadis/core';
-import { JlElement, JlSegmented } from 'jlib';
-import { BASE_STYLES } from 'jlib/styles/shared';
+import { JlElement, JlSegmented } from '@syware/jlib';
+import { BASE_STYLES } from '@syware/jlib/styles/shared';
 
 import { setTheme, storedTheme, themeBus } from '../services/theme';
 import styles from './site-theme-switch.css?raw';
 
-import type { SegmentedOption } from 'jlib';
+import type { SegmentedOption } from '@syware/jlib';
 import type { ThemeMode } from '../types/site.types';
 
 const MODES: readonly ThemeMode[] = ['system', 'light', 'dark'];

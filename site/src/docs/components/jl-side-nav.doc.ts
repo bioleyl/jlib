@@ -1,4 +1,4 @@
-import type { JlButton, JlSideNav } from 'jlib';
+import type { JlButton, JlSideNav } from '@syware/jlib';
 import type { ComponentDoc } from '../../types/docs.types';
 
 const SECTIONS = JSON.stringify([

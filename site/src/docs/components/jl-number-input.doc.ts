@@ -1,4 +1,4 @@
-import type { JlNumberInput } from 'jlib';
+import type { JlNumberInput } from '@syware/jlib';
 import type { ComponentDoc } from '../../types/docs.types';
 
 export const doc: ComponentDoc = {

@@ -9,7 +9,7 @@ const kindsOf = (tokens: Token[], kind: TokenKind): string[] =>
 
 describe('tokenize', () => {
   it('keeps every character of the code, in order', () => {
-    const code = `import { JlButton } from 'jlib';\nconst a = <JlButton label="Save" />; // done`;
+    const code = `import { JlButton } from '@syware/jlib';\nconst a = <JlButton label="Save" />; // done`;
     expect(
       tokenize(code, 'ts')
         .map((token) => token.text)
@@ -48,7 +48,7 @@ describe('tokenize', () => {
   });
 
   it('finds the command and its flags in a shell line', () => {
-    const tokens = tokenize('npm install jlib --save', 'bash');
+    const tokens = tokenize('npm install @syware/jlib --save', 'bash');
     expect(kindsOf(tokens, 'function')).toEqual(['npm']);
     expect(kindsOf(tokens, 'attribute')).toEqual(['--save']);
   });

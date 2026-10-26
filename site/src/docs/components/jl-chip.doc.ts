@@ -1,4 +1,4 @@
-import type { JlChip } from 'jlib';
+import type { JlChip } from '@syware/jlib';
 import type { ComponentDoc } from '../../types/docs.types';
 
 export const doc: ComponentDoc = {

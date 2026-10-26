@@ -11,7 +11,7 @@ so wrap it in a template to keep it as text.`,
     {
       html: `
         <jl-code-block language="ts" heading="main.ts">
-          import { JlButton } from 'jlib';
+          import { JlButton } from '@syware/jlib';
 
           const save = new JlButton();
           save.label.set('Save');
@@ -42,7 +42,7 @@ so wrap it in a template to keep it as text.`,
       title: 'CSS, with line numbers',
     },
     {
-      html: `<jl-code-block language="bash" code="npm install jlib @jadis/core"></jl-code-block>`,
+      html: `<jl-code-block language="bash" code="npm install @syware/jlib @jadis/core"></jl-code-block>`,
       title: 'Shell',
     },
   ],

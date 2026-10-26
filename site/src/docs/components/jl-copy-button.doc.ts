@@ -9,8 +9,8 @@ use it; use it beside any value people copy: a token, a link, a command.`,
     {
       html: `
         <div class="row">
-          <code>npm install jlib</code>
-          <jl-copy-button value="npm install jlib"></jl-copy-button>
+          <code>npm install @syware/jlib</code>
+          <jl-copy-button value="npm install @syware/jlib"></jl-copy-button>
         </div>`,
       title: 'Beside a value',
     },

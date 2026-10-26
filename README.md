@@ -1,4 +1,4 @@
-<img src="site/public/syware-logo.svg" alt="SyWare" height="48">
+<img src="https://bioleyl.github.io/jlib/syware-logo.png" alt="SyWare" height="48">
 
 # jlib
 
@@ -12,7 +12,7 @@ component with a live playground, examples and its API.
 ## Install
 
 ```bash
-npm install jlib @jadis/core
+npm install @syware/jlib @jadis/core
 ```
 
 ## Use
@@ -20,7 +20,7 @@ npm install jlib @jadis/core
 As HTML tags: define what the page writes (naming the classes keeps them in the bundle).
 
 ```ts
-import { define, JlButton, JlInput } from 'jlib';
+import { define, JlButton, JlInput } from '@syware/jlib';
 
 define(JlButton, JlInput);
 ```
@@ -33,7 +33,7 @@ define(JlButton, JlInput);
 In JSX with Jadis (`"jsxImportSource": "@jadis/core"`), the classes are typed:
 
 ```tsx
-import { JlButton } from 'jlib';
+import { JlButton } from '@syware/jlib';
 
 <JlButton variant="primary" icon="plus" label="New project" />;
 ```
@@ -63,7 +63,7 @@ Components draw their own icons with no setup. The names a page writes (`<jl-ico
 
 ```ts
 import { Coffee } from 'lucide';
-import { COMMON_ICONS, registerIcons } from 'jlib';
+import { COMMON_ICONS, registerIcons } from '@syware/jlib';
 
 registerIcons({ coffee: Coffee }); // one by one, from lucide
 registerIcons(COMMON_ICONS); // or the ~90 usual ones (about 5 kB)
@@ -94,6 +94,23 @@ npm run size       # what each component adds to a bundle
 
 `src/index.ts` and `src/all.ts` are generated from the component folders: run `npm run generate` after adding a
 component. Conventions for contributors are in [CLAUDE.md](CLAUDE.md).
+
+## Releasing
+
+Pushing a version tag publishes the package: the `Publish to npm` workflow checks, builds and publishes it through
+npm's trusted publishing (no token; the package gets a provenance statement), then creates the GitHub release with
+the package attached.
+
+```bash
+npm version patch
+```
+
+```bash
+git push --follow-tags
+```
+
+`npm version` (or `minor`, `major`) bumps package.json and the lockfile, commits and tags `vX.Y.Z`. The workflow
+refuses a tag that is not the version in package.json.
 
 ## Made by SyWare
 

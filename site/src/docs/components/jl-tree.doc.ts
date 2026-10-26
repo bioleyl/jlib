@@ -1,4 +1,4 @@
-import type { JlButton, JlTree, TreeItem } from 'jlib';
+import type { JlButton, JlTree, TreeItem } from '@syware/jlib';
 import type { ComponentDoc } from '../../types/docs.types';
 
 const PROJECT: TreeItem[] = [

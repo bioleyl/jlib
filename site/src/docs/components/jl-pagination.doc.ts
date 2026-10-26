@@ -1,4 +1,4 @@
-import type { JlPagination } from 'jlib';
+import type { JlPagination } from '@syware/jlib';
 import type { ComponentDoc } from '../../types/docs.types';
 
 export const doc: ComponentDoc = {

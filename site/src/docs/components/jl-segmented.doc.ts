@@ -1,4 +1,4 @@
-import type { JlSegmented } from 'jlib';
+import type { JlSegmented } from '@syware/jlib';
 import type { ComponentDoc } from '../../types/docs.types';
 
 const PERIODS =

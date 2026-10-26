@@ -1,6 +1,6 @@
 import { css } from '@jadis/core';
-import { iconNames, JlElement, JlIcon, JlInput } from 'jlib';
-import { BASE_STYLES } from 'jlib/styles/shared';
+import { iconNames, JlElement, JlIcon, JlInput } from '@syware/jlib';
+import { BASE_STYLES } from '@syware/jlib/styles/shared';
 
 import { codeSample } from '../lib/blocks';
 import { PROSE_STYLES } from '../styles/site-styles';
@@ -114,19 +114,19 @@ export class IconsPage extends JlElement {
             'ts',
             `
             import { Bike, Coffee } from 'lucide';
-            import { registerIcons } from 'jlib';
+            import { registerIcons } from '@syware/jlib';
 
             registerIcons({ bike: Bike, coffee: Coffee });`
           )}
           {codeSample('html', `<jl-button icon="coffee" label="Take a break"></jl-button>`)}
           <p>
-            Or register every icon of this page in one line (about 5 kB compressed). <code>import 'jlib/all'</code>{' '}
-            does it too.
+            Or register every icon of this page in one line (about 5 kB compressed).{' '}
+            <code>import '@syware/jlib/all'</code> does it too.
           </p>
           {codeSample(
             'ts',
             `
-            import { COMMON_ICONS, registerIcons } from 'jlib';
+            import { COMMON_ICONS, registerIcons } from '@syware/jlib';
 
             registerIcons(COMMON_ICONS);`
           )}

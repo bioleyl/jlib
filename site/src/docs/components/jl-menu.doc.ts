@@ -1,4 +1,4 @@
-import type { JlMenu } from 'jlib';
+import type { JlMenu } from '@syware/jlib';
 import type { ComponentDoc } from '../../types/docs.types';
 
 const FILE_ACTIONS = JSON.stringify([

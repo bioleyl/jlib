@@ -1,4 +1,4 @@
-import type { JlField, JlInput } from 'jlib';
+import type { JlField, JlInput } from '@syware/jlib';
 import type { ComponentDoc } from '../../types/docs.types';
 
 const PLANS = JSON.stringify([

@@ -1,6 +1,6 @@
 import { css } from '@jadis/core';
-import { JlElement } from 'jlib';
-import { BASE_STYLES } from 'jlib/styles/shared';
+import { JlElement } from '@syware/jlib';
+import { BASE_STYLES } from '@syware/jlib/styles/shared';
 
 import { bundlerCase, codeSample, registrationTable } from '../lib/blocks';
 import { pageHref } from '../services/navigation';
@@ -29,7 +29,7 @@ export class GettingStartedPage extends JlElement {
             jlib ships ES modules and their type declarations. Jadis is a peer dependency: your app and jlib share
             one copy of it.
           </p>
-          {codeSample('bash', 'npm install jlib @jadis/core')}
+          {codeSample('bash', 'npm install @syware/jlib @jadis/core')}
           <p>
             The components use Manrope and JetBrains Mono when the page has them, and fall back to the system fonts
             otherwise. To get the intended look, add them:
@@ -64,7 +64,7 @@ export class GettingStartedPage extends JlElement {
             {bundlerCase(
               'Your code uses the class',
               `
-              import { JlButton } from 'jlib';
+              import { JlButton } from '@syware/jlib';
 
               const save = new JlButton();
               document.body.append(save);`,
@@ -74,7 +74,7 @@ export class GettingStartedPage extends JlElement {
             {bundlerCase(
               'Your page only writes the tag',
               `
-              import { JlButton } from 'jlib';
+              import { JlButton } from '@syware/jlib';
 
               // <jl-button> is only in index.html:
               // JlButton is never used here.`,
@@ -90,7 +90,7 @@ export class GettingStartedPage extends JlElement {
           {codeSample(
             'ts',
             `
-            import { define, JlButton, JlDialog } from 'jlib';
+            import { define, JlButton, JlDialog } from '@syware/jlib';
 
             define(JlButton, JlDialog);
             // the same as: JlButton.register(); JlDialog.register();`,
@@ -112,7 +112,7 @@ export class GettingStartedPage extends JlElement {
           {codeSample(
             'ts',
             `
-            import { define, JlButton, JlInput } from 'jlib';
+            import { define, JlButton, JlInput } from '@syware/jlib';
 
             define(JlButton, JlInput);`,
             'main.ts'
@@ -148,7 +148,7 @@ export class GettingStartedPage extends JlElement {
             'ts',
             `
             import { Jadis } from '@jadis/core';
-            import { define, JlButton, JlCard } from 'jlib';
+            import { define, JlButton, JlCard } from '@syware/jlib';
 
             // jl-card takes children, so it is written with its tag: define keeps it in the bundle.
             define(JlCard);
@@ -186,7 +186,7 @@ export class GettingStartedPage extends JlElement {
           {codeSample(
             'ts',
             `
-            import { JlInput } from 'jlib';
+            import { JlInput } from '@syware/jlib';
 
             const input = new JlInput();
             input.placeholder.set('Search');
@@ -215,7 +215,7 @@ export class GettingStartedPage extends JlElement {
           {codeSample(
             'ts',
             `
-            import { COMMON_ICONS, registerIcons } from 'jlib';
+            import { COMMON_ICONS, registerIcons } from '@syware/jlib';
 
             registerIcons(COMMON_ICONS); // or registerIcons({ plus: Plus }) with icons from lucide`
           )}

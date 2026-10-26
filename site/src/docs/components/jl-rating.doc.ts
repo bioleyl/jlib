@@ -1,4 +1,4 @@
-import type { JlRating } from 'jlib';
+import type { JlRating } from '@syware/jlib';
 import type { ComponentDoc } from '../../types/docs.types';
 
 const WORDS = ['No rating', 'Poor', 'Fair', 'Good', 'Very good', 'Excellent'];

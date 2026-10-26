@@ -87,6 +87,6 @@ describe('jsxSnippet', () => {
 
 describe('importSnippet', () => {
   it('imports the class from the package', () => {
-    expect(importSnippet('JlButton')).toBe("import { JlButton } from 'jlib';");
+    expect(importSnippet('JlButton')).toBe("import { JlButton } from '@syware/jlib';");
   });
 });
