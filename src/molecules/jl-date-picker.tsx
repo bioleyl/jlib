@@ -4,7 +4,17 @@ import { Calendar, X } from 'lucide';
 import { JlIcon } from '../atoms/jl-icon';
 import { JlFormControl } from '../base/jl-form-control';
 import { clampedNumber, oneOf } from '../lib/attributes';
-import { compareDates, formatDate, parseIsoDate, toIsoDate } from '../lib/calendar';
+import {
+  compareDates,
+  dateOrder,
+  datePattern,
+  formatDate,
+  isDateText,
+  NUMERIC_DATE,
+  parseIsoDate,
+  parseTypedDate,
+  toIsoDate,
+} from '../lib/calendar';
 import { setOrRemove, uniqueId } from '../lib/dom';
 import { followAnchor } from '../lib/floating';
 import { registerIcons } from '../lib/icons';
@@ -34,9 +44,10 @@ const parseWeekday = (value: string | null): Weekday =>
   Math.round(clampedNumber(MONDAY, SUNDAY, SATURDAY)(value)) as Weekday;
 
 /**
- * A field for a date: it shows the date written for people (in the `locale`) and opens a calendar from its
- * button, Alt + Down or Down. People may also type the date as ISO (`2026-10-25`). `value` and the form hold the
- * ISO date.
+ * A field for a date: it shows the date in digits, in the `locale`'s order (`25.10.2026`, `10/25/2026`), and opens a
+ * calendar from its button, Alt + Down or Down. People may also type the date: as it shows, with any separators or
+ * none (`25102026`), or year first. Phones show their number keys; letters are refused. `value` and the form hold
+ * the ISO date.
  */
 export class JlDatePicker extends JlFormControl {
   static readonly selector = 'jl-date-picker';
@@ -45,9 +56,8 @@ export class JlDatePicker extends JlFormControl {
 
   /** The date, as ISO (`2026-10-25`); empty for none. */
   readonly value = this.useChange('', () => this.renderValue(), { attribute: 'value' });
-  readonly placeholder = this.useChange('', (value) => setOrRemove(this._refs.native, 'placeholder', value), {
-    attribute: 'placeholder',
-  });
+  /** Without one, the field shows how a date is typed in its locale: `dd.mm.yyyy`. */
+  readonly placeholder = this.useChange('', () => this.renderPlaceholder(), { attribute: 'placeholder' });
   /** The field's name for screen readers, when no visible label names it. */
   readonly label = this.useChange('', (value) => setOrRemove(this._refs.native, 'aria-label', value), {
     attribute: 'label',
@@ -61,6 +71,7 @@ export class JlDatePicker extends JlFormControl {
     '',
     (value) => {
       this._refs.calendar.locale.set(value);
+      this.renderPlaceholder();
       this.renderValue();
     },
     { attribute: 'locale' }
@@ -136,6 +147,7 @@ export class JlDatePicker extends JlFormControl {
             role="combobox"
             autocomplete="off"
             spellcheck={false}
+            inputMode="decimal"
             aria-haspopup="dialog"
             aria-expanded="false"
             aria-controls={this._popupId}
@@ -177,6 +189,12 @@ export class JlDatePicker extends JlFormControl {
     this.on(native, 'input', (event) => {
       event.stopPropagation();
       this.renderClear();
+    });
+    // Digits and separators only: letters never reach the field (and phones show their number keys).
+    this.on(native, 'beforeinput', (event) => {
+      if (event.data !== null && !isDateText(event.data)) {
+        event.preventDefault();
+      }
     });
     this.on(native, 'change', () => this.commitText());
     this.on(native, 'keydown', (event) => this.onKey(event));
@@ -277,7 +295,10 @@ export class JlDatePicker extends JlFormControl {
     }
   }
 
-  /** The typed text: an ISO date sets the value, an empty field clears it, anything else goes back to the date. */
+  /**
+   * The typed text: a date in the locale's order (any separators, or none) or year first sets the value, an empty
+   * field clears it, anything else goes back to the date there was.
+   */
   private commitText(): void {
     const native = this._refs.native;
     const text = native.value.trim();
@@ -288,7 +309,7 @@ export class JlDatePicker extends JlFormControl {
       this.commit('');
       return;
     }
-    const date = parseIsoDate(text);
+    const date = parseTypedDate(text, dateOrder(pageLocale(this.locale.get())));
     if (date === null) {
       this.renderValue();
       return;
@@ -318,7 +339,11 @@ export class JlDatePicker extends JlFormControl {
 
   private display(value: string): string {
     const date = parseIsoDate(value);
-    return date === null ? '' : formatDate(date, pageLocale(this.locale.get()));
+    return date === null ? '' : formatDate(date, pageLocale(this.locale.get()), NUMERIC_DATE);
+  }
+
+  private renderPlaceholder(): void {
+    this._refs.native.placeholder = this.placeholder.get() || datePattern(pageLocale(this.locale.get()));
   }
 
   private renderValue(): void {

@@ -11,3 +11,6 @@ export type Weekday = 0 | 1 | 2 | 3 | 4 | 5 | 6;
 
 /** How long the name of a weekday is: `Monday`, `Mon` or `M`. */
 export type WeekdayWidth = 'long' | 'short' | 'narrow';
+
+/** A part of a date as it is written: the day, the month or the year. */
+export type DatePart = 'day' | 'month' | 'year';

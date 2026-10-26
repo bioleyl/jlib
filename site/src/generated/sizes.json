@@ -1,7 +1,7 @@
 {
   "all": {
-    "gzip": 90846,
-    "raw": 379325
+    "gzip": 91431,
+    "raw": 380627
   },
   "baseline": {
     "gzip": 3897,
@@ -390,12 +390,12 @@
       "level": "molecules",
       "tag": "jl-date-picker",
       "added": {
-        "gzip": 8571,
-        "raw": 29142
+        "gzip": 9074,
+        "raw": 30413
       },
       "total": {
-        "gzip": 12468,
-        "raw": 40396
+        "gzip": 12971,
+        "raw": 41667
       }
     },
     {

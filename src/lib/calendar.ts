@@ -1,4 +1,4 @@
-import type { CalendarDate, Weekday, WeekdayWidth } from '../types/calendar.types';
+import type { CalendarDate, DatePart, Weekday, WeekdayWidth } from '../types/calendar.types';
 
 // Dates are plain years, months and days. The arithmetic runs on UTC timestamps, where every day lasts exactly a
 // day: no time zone or daylight-saving change can move a date. ISO text is read with a pattern, never with Date().
@@ -190,3 +190,81 @@ export const formatMonthTitle = (year: number, month: number, locale: string | u
 /** The names of the weekdays, in the order a week shows them from its first day. */
 export const weekdayNames = (locale: string | undefined, firstDay: Weekday, width: WeekdayWidth): string[] =>
   weekdayOrder(firstDay).map((weekday) => formatDate(addDays(A_SUNDAY, weekday), locale, { weekday: width }));
+
+/** How a date field writes a date: in digits, in the locale's order, the year in full (`25.10.2026`, `10/25/2026`). */
+export const NUMERIC_DATE: Intl.DateTimeFormatOptions = {
+  day: '2-digit',
+  month: '2-digit',
+  numberingSystem: 'latn',
+  year: 'numeric',
+};
+
+const DATE_PARTS: readonly DatePart[] = ['day', 'month', 'year'];
+const ISO_ORDER: readonly DatePart[] = ['year', 'month', 'day'];
+const PATTERN_LETTERS: Record<DatePart, string> = { day: 'dd', month: 'mm', year: 'yyyy' };
+// Typed without separators, a date is its digits in the locale's order: two for the day and the month, four for the year.
+const PART_DIGITS: Record<DatePart, number> = { day: 2, month: 2, year: 4 };
+// What people may type in a date field: digits, with any of these between them.
+const DATE_TEXT = /^[\d\s./,-]*$/;
+const NOT_DIGITS = /\D+/;
+
+const isDatePart = (type: string): type is DatePart => DATE_PARTS.some((part) => part === type);
+
+/** A date written in digits in a locale, cut in its parts: `25`, `.`, `10`, `.`, `2026`. */
+const numericParts = (locale: string | undefined): Intl.DateTimeFormatPart[] =>
+  new Intl.DateTimeFormat(locale, { ...NUMERIC_DATE, timeZone: UTC }).formatToParts(new Date(utcTime(A_SUNDAY)));
+
+/** The order a locale writes the day, the month and the year in: `['day', 'month', 'year']` in French. */
+export const dateOrder = (locale: string | undefined): DatePart[] =>
+  numericParts(locale).flatMap((part) => (isDatePart(part.type) ? [part.type] : []));
+
+/** How a date is typed in a locale, for a placeholder: `dd.mm.yyyy`, `mm/dd/yyyy`. */
+export const datePattern = (locale: string | undefined): string =>
+  numericParts(locale)
+    .map((part) => (isDatePart(part.type) ? PATTERN_LETTERS[part.type] : part.value))
+    .join('');
+
+/** Whether text could be part of a typed date: digits and separators, no letters. */
+export const isDateText = (text: string): boolean => DATE_TEXT.test(text);
+
+/** Digits typed without separators, cut in the locale's parts; null when there are not as many as a date has. */
+function splitDigits(digits: string, order: readonly DatePart[]): string[] | null {
+  const lengths = order.map((part) => PART_DIGITS[part]);
+  if (digits.length !== lengths.reduce((sum, length) => sum + length, 0)) {
+    return null;
+  }
+  return lengths.map((length, index) => {
+    const start = lengths.slice(0, index).reduce((sum, before) => sum + before, 0);
+    return digits.slice(start, start + length);
+  });
+}
+
+/** The typed groups of digits, as many as the date has parts; null otherwise. */
+function typedGroups(text: string, order: readonly DatePart[]): string[] | null {
+  const groups = text.split(NOT_DIGITS).filter((group) => group !== '');
+  const parts = groups.length === 1 ? splitDigits(groups[0] ?? '', order) : groups;
+  return parts !== null && parts.length === order.length ? parts : null;
+}
+
+/**
+ * A date as people type it in a field: in the locale's order with any separators (`25.10.2026`, `25/10/2026`), its
+ * digits alone (`25102026`), or year first (`2026-10-25`, `2026/10/25`). Null for anything else, including days that
+ * do not exist.
+ */
+export function parseTypedDate(text: string, order: readonly DatePart[]): CalendarDate | null {
+  const trimmed = text.trim();
+  const groups = isDateText(trimmed) ? typedGroups(trimmed, order) : null;
+  if (groups === null) {
+    return null;
+  }
+  const used = groups[0]?.length === YEAR_DIGITS ? ISO_ORDER : order;
+  const part = (name: DatePart): string => groups[used.indexOf(name)] ?? '';
+  const fits = DATE_PARTS.every((name) =>
+    name === 'year' ? part(name).length === PART_DIGITS.year : part(name).length <= PART_DIGITS[name]
+  );
+  if (!fits) {
+    return null;
+  }
+  const digits = (name: DatePart): string => pad(Number(part(name)), PART_DIGITS[name]);
+  return parseIsoDate(`${digits('year')}-${digits('month')}-${digits('day')}`);
+}

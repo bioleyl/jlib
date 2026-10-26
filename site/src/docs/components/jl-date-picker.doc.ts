@@ -37,10 +37,12 @@ function describeForm(form: HTMLFormElement): string {
 
 export const doc: ComponentDoc = {
   className: 'JlDatePicker',
-  description: `A field for a date. It shows the date written for people in the locale ("Oct 25, 2026", "25 oct.
-2026"), and its button opens a jl-calendar in a popover; Down (or Alt + Down) in the field opens it too, Escape or
-a click outside closes it. People who know the date may type it as ISO (2026-10-25): leaving the field or Enter
-takes it, and unreadable text goes back to the date there was.
+  description: `A field for a date. It shows the date in digits, in the locale's order ("25.10.2026" in Swiss
+German, "10/25/2026" in American English), and its button opens a jl-calendar in a popover; Down (or Alt + Down) in
+the field opens it too, Escape or a click outside closes it. People who know the date may type it: as it shows, with
+any separators or none ("25102026"), or year first ("2026-10-25"). Leaving the field or Enter takes it, and
+unreadable text goes back to the date there was. Phones show their number keys, and letters are refused. Without a
+placeholder, the field shows the pattern the locale types dates in ("dd.mm.yyyy").
 
 value and the form hold the ISO date. min and max limit the calendar; a typed date outside them makes the field
 invalid, as a native date field would. Listen to change.`,
@@ -122,10 +124,10 @@ invalid, as a native date field would. Listen to change.`,
       title: 'Booking form',
     },
     {
-      description: 'The sentence listens to change; type 2030-01-01 in the field and press Enter.',
+      description: 'The sentence listens to change; type 01012030 in the field and press Enter.',
       html: `
         <div class="stack narrow">
-          <jl-date-picker class="demo-due" label="Due date" placeholder="yyyy-mm-dd" clearable></jl-date-picker>
+          <jl-date-picker class="demo-due" label="Due date" clearable></jl-date-picker>
           <p class="muted demo-due-out">No due date.</p>
         </div>`,
       script: `
@@ -169,7 +171,7 @@ invalid, as a native date field would. Listen to change.`,
   ],
   name: 'Date picker',
   playground: {
-    attributes: { clearable: true, label: 'Date', placeholder: 'Pick a date' },
+    attributes: { clearable: true, label: 'Date', placeholder: '' },
     height: 420,
   },
   props: [
@@ -185,7 +187,8 @@ invalid, as a native date field would. Listen to change.`,
       attribute: 'placeholder',
       control: { kind: 'text' },
       default: "''",
-      description: 'Shown while there is no date.',
+      description:
+        'Shown while there is no date; without one, the pattern dates are typed in: dd.mm.yyyy, mm/dd/yyyy.',
       name: 'placeholder',
       type: 'string',
     },

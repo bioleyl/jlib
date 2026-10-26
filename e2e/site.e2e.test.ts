@@ -7,6 +7,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 import type { Browser, Page } from 'playwright-core';
 import type { PreviewServer } from 'vite';
+import type { JlDatePicker } from '../src/molecules/jl-date-picker';
 import type { JlFlow } from '../src/organisms/jl-flow';
 
 const ROOT = join(import.meta.dirname, '..');
@@ -120,6 +121,23 @@ describe('the forms page', () => {
       plan: 'team',
       role: 'developer',
     });
+  });
+});
+
+describe('the date picker', () => {
+  it('refuses letters, and reads a date typed in digits, the number keys up on phones', async () => {
+    const page = await open('/components/date-picker');
+    const picker = page.locator('jl-date-picker.demo-due');
+    const field = picker.locator('input');
+    expect(await field.getAttribute('inputmode')).toBe('decimal');
+    await field.click();
+    await page.keyboard.type('Hllb');
+    expect(await field.inputValue()).toBe('');
+    await page.keyboard.type('01012030');
+    await page.keyboard.press('Enter');
+    expect(await picker.evaluate((element) => (element as JlDatePicker).value.get())).toBe('2030-01-01');
+    expect(await field.inputValue()).toBe('01/01/2030');
+    expect(state.errors).toEqual([]);
   });
 });
 

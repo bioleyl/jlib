@@ -7,15 +7,20 @@ import {
   clampDate,
   compareDates,
   dateAfterKey,
+  dateOrder,
+  datePattern,
   dayOfWeek,
   daysInMonth,
   endOfWeek,
   formatDate,
   formatMonthTitle,
+  isDateText,
   isWithin,
   monthGrid,
   monthHasDaysWithin,
+  NUMERIC_DATE,
   parseIsoDate,
+  parseTypedDate,
   startOfWeek,
   toIsoDate,
   weekdayNames,
@@ -167,5 +172,58 @@ describe('formatting', () => {
   it('writes a date for people, whatever the time zone', () => {
     expect(formatDate(date('2026-10-25'), 'en-US')).toBe('Oct 25, 2026');
     expect(formatDate(date('2026-01-01'), 'en-US', { dateStyle: 'full' })).toBe('Thursday, January 1, 2026');
+  });
+});
+
+describe('typed dates', () => {
+  const october25 = { day: 25, month: 10, year: 2026 };
+  const swiss = dateOrder('de-CH');
+  const american = dateOrder('en-US');
+
+  it('knows the order and the pattern each locale types dates in', () => {
+    expect(swiss).toEqual(['day', 'month', 'year']);
+    expect(american).toEqual(['month', 'day', 'year']);
+    expect(dateOrder('ja-JP')).toEqual(['year', 'month', 'day']);
+    expect(datePattern('de-CH')).toBe('dd.mm.yyyy');
+    expect(datePattern('en-US')).toBe('mm/dd/yyyy');
+    expect(datePattern('fr-FR')).toBe('dd/mm/yyyy');
+  });
+
+  it('writes a date in digits, in the locale order, with western digits everywhere', () => {
+    expect(formatDate(october25, 'de-CH', NUMERIC_DATE)).toBe('25.10.2026');
+    expect(formatDate(october25, 'en-US', NUMERIC_DATE)).toBe('10/25/2026');
+    expect(formatDate(october25, 'ar-EG', NUMERIC_DATE)).toMatch(/25.*10.*2026|2026.*10.*25/);
+  });
+
+  it('reads a date typed in the locale order, with any separators', () => {
+    expect(parseTypedDate('25.10.2026', swiss)).toEqual(october25);
+    expect(parseTypedDate('25/10/2026', swiss)).toEqual(october25);
+    expect(parseTypedDate(' 25 10 2026 ', swiss)).toEqual(october25);
+    expect(parseTypedDate('5.3.2026', swiss)).toEqual({ day: 5, month: 3, year: 2026 });
+    expect(parseTypedDate('10/25/2026', american)).toEqual(october25);
+  });
+
+  it('reads its digits alone, and the year first whatever the locale', () => {
+    expect(parseTypedDate('25102026', swiss)).toEqual(october25);
+    expect(parseTypedDate('10252026', american)).toEqual(october25);
+    expect(parseTypedDate('2026-10-25', swiss)).toEqual(october25);
+    expect(parseTypedDate('2026/10/25', american)).toEqual(october25);
+  });
+
+  it('refuses letters, short years, missing parts and days that do not exist', () => {
+    expect(parseTypedDate('Hllb', swiss)).toBeNull();
+    expect(parseTypedDate('25 oct 2026', swiss)).toBeNull();
+    expect(parseTypedDate('25.10.26', swiss)).toBeNull();
+    expect(parseTypedDate('25.10', swiss)).toBeNull();
+    expect(parseTypedDate('2510202', swiss)).toBeNull();
+    expect(parseTypedDate('31.02.2026', swiss)).toBeNull();
+    expect(parseTypedDate('', swiss)).toBeNull();
+  });
+
+  it('lets digits and separators be typed, not letters', () => {
+    expect(isDateText('25.10.2026')).toBe(true);
+    expect(isDateText('2026-10-25')).toBe(true);
+    expect(isDateText('a')).toBe(false);
+    expect(isDateText('25 oct')).toBe(false);
   });
 });
