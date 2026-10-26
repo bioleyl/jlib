@@ -64,9 +64,15 @@ jobs:
             npm pack
           fi
 
+      # On failure, npm's own message also becomes an annotation: shown on the run's page, and read through the API.
       - name: Publish to npm
         if: steps.npm.outputs.published == 'false'
-        run: npm publish ./*.tgz
+        run: |
+          if ! npm publish ./*.tgz 2> publish-errors.log; then
+            cat publish-errors.log
+            echo "::error title=npm publish failed::$(grep -E 'npm (error|ERR)' publish-errors.log | head -12 | tr '\n' ' ')"
+            exit 1
+          fi
 
       - name: Create the GitHub release
         env:
