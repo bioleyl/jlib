@@ -1,0 +1,52 @@
+:host {
+  display: block;
+}
+
+.lead {
+  width: 16px;
+  justify-content: center;
+}
+
+:host([loading]) .lead {
+  color: var(--jl-muted);
+}
+
+/* The browser's own clear button: the field draws its own. */
+.native::-webkit-search-cancel-button,
+.native::-webkit-search-decoration {
+  appearance: none;
+}
+
+.keys {
+  display: inline-flex;
+  flex: none;
+  gap: 3px;
+  margin-right: -4px;
+}
+
+.control:focus-within .keys {
+  display: none;
+}
+
+.key {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 5px;
+  border: 1px solid var(--jl-line);
+  border-bottom-width: 2px;
+  border-radius: var(--jl-radius-xs);
+  background: var(--jl-surface-2);
+  color: var(--jl-muted);
+  font-size: var(--jl-font-xs);
+  font-weight: 500;
+  line-height: 1;
+}
+
+:host([size="sm"]) .key {
+  min-width: 18px;
+  height: 18px;
+  padding: 0 4px;
+}

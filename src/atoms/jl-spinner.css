@@ -1,0 +1,30 @@
+:host {
+  display: inline-flex;
+  flex: none;
+  --size: 16px;
+}
+
+.ring {
+  width: var(--size);
+  height: var(--size);
+  border: 2px solid color-mix(in srgb, currentColor 22%, transparent);
+  border-top-color: currentColor;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(1turn);
+  }
+}
+
+/* The one animation reduced motion keeps, slower: a still ring would read as stuck. */
+@media (prefers-reduced-motion: reduce) {
+  .ring {
+    /* biome-ignore lint/complexity/noImportantStyles: wins over the reduced-motion rule of BASE_STYLES */
+    animation-duration: 1.6s !important;
+    /* biome-ignore lint/complexity/noImportantStyles: wins over the reduced-motion rule of BASE_STYLES */
+    animation-iteration-count: infinite !important;
+  }
+}

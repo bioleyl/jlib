@@ -1,0 +1,44 @@
+:host {
+  display: inline;
+  --color: var(--jl-accent);
+  --hover: var(--jl-accent-strong);
+  --underline: color-mix(in srgb, var(--jl-accent) 40%, transparent);
+}
+
+:host([variant="muted"]) {
+  --color: var(--jl-muted);
+  --hover: var(--jl-text);
+  --underline: transparent;
+}
+
+:host([variant="quiet"]) {
+  --underline: transparent;
+}
+
+a {
+  border-radius: 3px;
+  color: var(--color);
+  font-weight: 600;
+  text-decoration: underline;
+  text-decoration-color: var(--underline);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.2em;
+  cursor: pointer;
+  transition:
+    color var(--jl-fast) var(--jl-ease),
+    text-decoration-color var(--jl-fast) var(--jl-ease);
+}
+
+a:hover {
+  color: var(--hover);
+  text-decoration-color: currentColor;
+}
+
+a:not([href]) {
+  cursor: default;
+}
+
+jl-icon {
+  margin-left: 0.2em;
+  vertical-align: -0.1em;
+}

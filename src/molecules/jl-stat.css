@@ -1,0 +1,96 @@
+:host {
+  display: block;
+  --mood: var(--jl-muted);
+}
+
+:host([mood="good"]) {
+  --mood: var(--jl-ok);
+}
+
+:host([mood="bad"]) {
+  --mood: var(--jl-danger);
+}
+
+.stat {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.top {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.label {
+  flex: 1;
+  min-width: 0;
+  color: var(--jl-muted);
+  font-size: var(--jl-font-sm);
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.icon {
+  color: var(--jl-faint);
+}
+
+.figure {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  column-gap: 10px;
+}
+
+.value {
+  color: var(--jl-text);
+  font-size: var(--jl-font-2xl);
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+}
+
+.delta {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--mood);
+  font-size: var(--jl-font-sm);
+  font-variant-numeric: tabular-nums;
+  font-weight: 650;
+  white-space: nowrap;
+}
+
+.caption {
+  color: var(--jl-muted);
+  font-size: var(--jl-font-xs);
+  line-height: 1.4;
+}
+
+.spark {
+  height: 36px;
+  margin-top: 8px;
+}
+
+.spark svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+
+.line {
+  fill: none;
+  stroke: var(--jl-accent);
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 2;
+  vector-effect: non-scaling-stroke;
+}
+
+.area {
+  fill: color-mix(in srgb, var(--jl-accent) 10%, transparent);
+  stroke: none;
+}

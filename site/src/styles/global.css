@@ -1,0 +1,22 @@
+/* The page itself: the font, the background, and nothing a component should rely on beyond the tokens. */
+html {
+  scroll-padding-top: 72px;
+}
+
+body {
+  margin: 0;
+  min-height: 100dvh;
+  background: var(--jl-bg);
+  color: var(--jl-text);
+  font-family: var(--jl-font-sans);
+  font-size: var(--jl-font-md);
+  line-height: 1.55;
+  /* Code shows the characters as typed: JetBrains Mono's contextual forms would turn => into an arrow. */
+  font-variant-ligatures: no-contextual;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+::selection {
+  background: color-mix(in srgb, var(--jl-brand) 22%, transparent);
+}

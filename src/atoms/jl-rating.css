@@ -1,0 +1,61 @@
+:host {
+  display: inline-flex;
+  vertical-align: middle;
+  --color: var(--jl-accent);
+  --empty: var(--jl-faint);
+}
+
+.rating {
+  display: inline-flex;
+  padding: 2px;
+  border-radius: var(--jl-radius-xs);
+  cursor: pointer;
+}
+
+.icons {
+  display: inline-flex;
+  gap: 2px;
+}
+
+.icon {
+  display: inline-flex;
+  color: var(--empty);
+  transition:
+    color var(--jl-fast) var(--jl-ease),
+    transform var(--jl-fast) var(--jl-ease);
+}
+
+.icon svg {
+  fill: transparent;
+  transition: fill var(--jl-fast) var(--jl-ease);
+}
+
+.icon.on {
+  color: var(--color);
+}
+
+.icon.on svg {
+  fill: currentColor;
+}
+
+/* The score a click would give: the same colour, lighter, so it reads as a proposal. */
+:host([previewing]) .icon.on {
+  color: color-mix(in srgb, var(--color) 55%, transparent);
+}
+
+:host(:not([readonly]):not([disabled])) .icon:hover {
+  transform: scale(1.12);
+}
+
+:host([invalid]) .icon:not(.on) {
+  color: var(--jl-danger);
+}
+
+:host([readonly]) .rating {
+  cursor: default;
+}
+
+:host([disabled]) .rating {
+  cursor: not-allowed;
+  opacity: 0.5;
+}

@@ -1,0 +1,144 @@
+:host {
+  display: block;
+  --marker: 22px;
+  --gap: 20px;
+  --title-size: var(--jl-font-md);
+}
+
+:host([compact]) {
+  --marker: 18px;
+  --gap: 12px;
+  --title-size: var(--jl-font-sm);
+}
+
+.timeline {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.event {
+  position: relative;
+  display: grid;
+  grid-template-columns: var(--marker) minmax(0, 1fr);
+  gap: 12px;
+  padding-bottom: var(--gap);
+  --tone: var(--jl-muted);
+  --soft: var(--jl-surface-3);
+}
+
+.event:last-child {
+  padding-bottom: 0;
+}
+
+.event[data-tone="accent"] {
+  --tone: var(--jl-accent);
+  --soft: var(--jl-accent-soft);
+}
+
+.event[data-tone="ok"] {
+  --tone: var(--jl-ok);
+  --soft: var(--jl-ok-soft);
+}
+
+.event[data-tone="warn"] {
+  --tone: var(--jl-warn);
+  --soft: var(--jl-warn-soft);
+}
+
+.event[data-tone="danger"] {
+  --tone: var(--jl-danger);
+  --soft: var(--jl-danger-soft);
+}
+
+.event[data-tone="info"] {
+  --tone: var(--jl-info);
+  --soft: var(--jl-info-soft);
+}
+
+/* The line runs from this marker's centre to the next one's, behind the markers. */
+.event:not(:last-child)::before {
+  position: absolute;
+  top: 10px;
+  bottom: -10px;
+  left: calc(var(--marker) / 2 - 0.5px);
+  width: 1px;
+  background: var(--jl-line-strong);
+  content: "";
+}
+
+.rail {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 20px;
+}
+
+.marker {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+}
+
+.dot {
+  width: 10px;
+  height: 10px;
+  background: var(--tone);
+  box-shadow: 0 0 0 3px var(--jl-surface);
+}
+
+:host([compact]) .dot {
+  width: 8px;
+  height: 8px;
+}
+
+.circle {
+  width: var(--marker);
+  height: var(--marker);
+  border: 1px solid color-mix(in srgb, var(--tone) 30%, var(--soft));
+  background: var(--soft);
+  color: var(--tone);
+  box-shadow: 0 0 0 3px var(--jl-surface);
+}
+
+.content {
+  display: grid;
+  gap: 2px;
+}
+
+.line {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 2px 12px;
+}
+
+.title {
+  color: var(--jl-text);
+  font-size: var(--title-size);
+  font-weight: 600;
+  line-height: 20px;
+}
+
+.time {
+  flex: none;
+  margin-left: auto;
+  color: var(--jl-muted);
+  font-family: var(--jl-font-mono);
+  font-size: var(--jl-font-xs);
+}
+
+.description {
+  color: var(--jl-muted);
+  font-size: var(--jl-font-sm);
+  line-height: 1.5;
+}
+
+:host([compact]) .description {
+  font-size: var(--jl-font-xs);
+}

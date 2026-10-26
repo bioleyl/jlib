@@ -1,0 +1,66 @@
+:host {
+  display: block;
+}
+
+.page-header {
+  display: grid;
+  gap: 12px;
+}
+
+:host([divided]) .page-header {
+  padding-bottom: 20px;
+  border-bottom: 1px solid var(--jl-line);
+}
+
+.breadcrumb {
+  color: var(--jl-muted);
+  font-size: var(--jl-font-sm);
+  line-height: 1.4;
+}
+
+/* The actions sit beside the heading while there is room, and wrap under it when there is not. */
+.main {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px 24px;
+}
+
+.titles {
+  display: grid;
+  flex: 1 1 320px;
+  gap: 6px;
+  min-width: 0;
+}
+
+h1 {
+  color: var(--jl-text);
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+}
+
+.description {
+  max-width: 72ch;
+  color: var(--jl-muted);
+  font-size: var(--jl-font-md);
+  line-height: 1.55;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding-top: 2px;
+}
+
+.meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}

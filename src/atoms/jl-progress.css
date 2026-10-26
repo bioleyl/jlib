@@ -1,0 +1,85 @@
+:host {
+  display: block;
+  --height: 8px;
+  --color: var(--jl-accent);
+}
+
+:host([size="sm"]) {
+  --height: 4px;
+}
+
+:host([tone="ok"]) {
+  --color: var(--jl-ok);
+}
+
+:host([tone="warn"]) {
+  --color: var(--jl-warn);
+}
+
+:host([tone="danger"]) {
+  --color: var(--jl-danger);
+}
+
+.header {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  margin-bottom: 8px;
+  font-size: var(--jl-font-sm);
+  line-height: 1.4;
+}
+
+.label {
+  flex: 1;
+  min-width: 0;
+  color: var(--jl-text-2);
+  font-weight: 600;
+}
+
+.percent {
+  margin-left: auto;
+  color: var(--jl-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.track {
+  position: relative;
+  height: var(--height);
+  overflow: hidden;
+  border-radius: var(--jl-radius-pill);
+  background: var(--jl-surface-3);
+}
+
+.bar {
+  width: 0;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--color);
+  transition: width var(--jl-slow) var(--jl-ease);
+}
+
+:host([indeterminate]) .bar {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 40%;
+  animation: travel 1.3s var(--jl-ease) infinite;
+}
+
+@keyframes travel {
+  from {
+    transform: translateX(-100%);
+  }
+
+  to {
+    transform: translateX(250%);
+  }
+}
+
+/* Without motion, an endless bar is drawn still and faded: work goes on, its end is unknown. */
+@media (prefers-reduced-motion: reduce) {
+  :host([indeterminate]) .bar {
+    width: 100%;
+    opacity: 0.35;
+    animation: none;
+  }
+}

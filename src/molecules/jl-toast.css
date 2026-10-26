@@ -1,0 +1,110 @@
+:host {
+  display: block;
+  --tone: var(--jl-text-2);
+  --bar: var(--jl-brand);
+}
+
+:host([tone="ok"]) {
+  --tone: var(--jl-ok);
+  --bar: var(--jl-ok);
+}
+
+:host([tone="warn"]) {
+  --tone: var(--jl-warn);
+  --bar: var(--jl-warn);
+}
+
+:host([tone="danger"]) {
+  --tone: var(--jl-danger);
+  --bar: var(--jl-danger);
+}
+
+:host([tone="info"]) {
+  --tone: var(--jl-info);
+  --bar: var(--jl-info);
+}
+
+.toast {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px 12px 14px 16px;
+  overflow: hidden;
+  border: 1px solid var(--jl-line);
+  border-radius: var(--jl-radius-lg);
+  background: var(--jl-surface);
+  color: var(--jl-text);
+  font-size: var(--jl-font-md);
+  line-height: 20px;
+  box-shadow: var(--jl-shadow-lg);
+}
+
+.icon {
+  margin-top: 1px;
+  color: var(--tone);
+}
+
+.content {
+  display: grid;
+  flex: 1;
+  gap: 2px;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.heading {
+  font-weight: 650;
+}
+
+.text {
+  color: var(--jl-muted);
+  font-size: var(--jl-font-sm);
+}
+
+.heading[hidden] + .text {
+  color: var(--jl-text-2);
+  font-size: var(--jl-font-md);
+}
+
+.buttons {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 2px;
+  margin: -5px -4px -5px 0;
+}
+
+.buttons:not(:has(jl-button:not([hidden]))) {
+  display: none;
+}
+
+.close {
+  --jl-accent: var(--jl-muted);
+  --jl-accent-soft: var(--jl-surface-3);
+}
+
+.progress {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: 2px;
+}
+
+.bar {
+  height: 100%;
+  background: var(--bar);
+  transform-origin: left center;
+}
+
+:host([paused]) .bar {
+  opacity: 0.55;
+}
+
+/* The line still counts the time, but does not move for people who asked for less motion. */
+@media (prefers-reduced-motion: reduce) {
+  .progress {
+    visibility: hidden;
+  }
+}

@@ -1,0 +1,64 @@
+:host {
+  display: block;
+  --color: var(--jl-line);
+  --thickness: 1px;
+  --gap: 12px;
+}
+
+:host([vertical]) {
+  display: inline-flex;
+  align-self: stretch;
+  min-height: 1em;
+  vertical-align: middle;
+}
+
+.divider {
+  display: flex;
+  align-items: center;
+  gap: var(--gap);
+  width: 100%;
+}
+
+:host([vertical]) .divider {
+  flex-direction: column;
+  width: auto;
+  height: auto;
+}
+
+.line {
+  flex: 1;
+  height: var(--thickness);
+  background: var(--color);
+}
+
+:host([vertical]) .line {
+  width: var(--thickness);
+  height: auto;
+  min-height: 4px;
+}
+
+/* Without a label, one line runs through: two would leave the gap between them. */
+:host(:not([labelled])) .after {
+  display: none;
+}
+
+/* A label at the start or the end sits flush with that edge, as a section heading. */
+:host([labelled][align="start"]) .before,
+:host([labelled][align="end"]) .after {
+  display: none;
+}
+
+.label {
+  flex: none;
+  max-width: 80%;
+  color: var(--jl-muted);
+  font-size: var(--jl-font-xs);
+  font-weight: 600;
+  line-height: 1.4;
+  text-align: center;
+}
+
+:host([vertical]) .label {
+  max-width: none;
+  writing-mode: horizontal-tb;
+}

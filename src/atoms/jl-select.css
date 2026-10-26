@@ -1,0 +1,43 @@
+:host {
+  display: block;
+}
+
+/* The select covers the whole frame, chevron included, so a click anywhere opens it. */
+.control {
+  position: relative;
+  padding: 0;
+}
+
+.native {
+  padding: 0 36px 0 12px;
+  border-radius: inherit;
+  text-overflow: ellipsis;
+  cursor: pointer;
+  appearance: none;
+}
+
+.native:disabled {
+  cursor: not-allowed;
+}
+
+:host([placeholder-shown]) .native {
+  color: var(--jl-faint);
+}
+
+/* The list keeps the text colour even while the placeholder greys the closed field. */
+option,
+optgroup {
+  background: var(--jl-surface);
+  color: var(--jl-text);
+}
+
+.chevron {
+  position: absolute;
+  right: 12px;
+  color: var(--jl-muted);
+  pointer-events: none;
+}
+
+:host([disabled]) .chevron {
+  color: var(--jl-faint);
+}

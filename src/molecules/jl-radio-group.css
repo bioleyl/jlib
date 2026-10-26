@@ -1,0 +1,144 @@
+:host {
+  display: block;
+  --dot: 18px;
+}
+
+.group {
+  display: grid;
+  gap: 10px;
+}
+
+.legend:not(.sr-only) {
+  color: var(--jl-text);
+  font-size: var(--jl-font-sm);
+  font-weight: 600;
+  line-height: 20px;
+}
+
+.options {
+  display: grid;
+  gap: 10px;
+}
+
+:host([orientation="horizontal"]) .options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 24px;
+}
+
+.option {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  color: var(--jl-text);
+  font-size: var(--jl-font-md);
+  line-height: 20px;
+  cursor: pointer;
+  outline: none;
+}
+
+.option[aria-disabled="true"] {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+/* The focus ring goes on the dot, where the eye looks for the choice. */
+.option:focus-visible {
+  box-shadow: none;
+}
+
+.dot {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: var(--dot);
+  height: var(--dot);
+  margin-top: 1px;
+  border: 1px solid var(--jl-line-strong);
+  border-radius: 50%;
+  background: var(--jl-surface);
+  transition:
+    border-color var(--jl-fast) var(--jl-ease),
+    box-shadow var(--jl-fast) var(--jl-ease);
+}
+
+.dot::after {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--jl-accent);
+  content: "";
+  transform: scale(0);
+  transition: transform var(--jl-fast) var(--jl-ease);
+}
+
+.option[aria-checked="true"] .dot {
+  border-color: var(--jl-accent);
+}
+
+.option[aria-checked="true"] .dot::after {
+  transform: scale(1);
+}
+
+.option:focus-visible .dot {
+  box-shadow: var(--jl-focus-ring);
+}
+
+.option:not([aria-disabled="true"], [aria-checked="true"]):hover .dot {
+  border-color: color-mix(in srgb, var(--jl-line-strong) 60%, var(--jl-text) 18%);
+}
+
+.text {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.description {
+  color: var(--jl-muted);
+  font-size: var(--jl-font-sm);
+  line-height: 18px;
+}
+
+/* Cards: each option is a bordered box; the chosen one takes the accent. */
+:host([variant="cards"]) .options {
+  gap: 8px;
+}
+
+:host([variant="cards"][orientation="horizontal"]) .options {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+}
+
+:host([variant="cards"]) .option {
+  padding: 12px 14px;
+  border: 1px solid var(--jl-line);
+  border-radius: var(--jl-radius);
+  background: var(--jl-surface);
+  transition:
+    border-color var(--jl-fast) var(--jl-ease),
+    background var(--jl-fast) var(--jl-ease),
+    box-shadow var(--jl-fast) var(--jl-ease);
+}
+
+:host([variant="cards"]) .option:not([aria-disabled="true"]):hover {
+  border-color: var(--jl-line-strong);
+}
+
+:host([variant="cards"]) .option[aria-checked="true"] {
+  border-color: var(--jl-accent);
+  background: var(--jl-accent-soft);
+}
+
+:host([variant="cards"]) .option:focus-visible {
+  box-shadow: var(--jl-focus-ring);
+}
+
+:host([variant="cards"]) .option:focus-visible .dot {
+  box-shadow: none;
+}
+
+:host([variant="cards"]) .label {
+  font-weight: 600;
+}

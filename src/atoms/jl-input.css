@@ -1,0 +1,29 @@
+:host {
+  display: block;
+}
+
+:host([readonly]) .control {
+  background: var(--jl-surface-2);
+}
+
+::slotted([slot="start"]),
+::slotted([slot="end"]) {
+  flex: none;
+  color: var(--jl-muted);
+  font-size: var(--jl-font-sm);
+}
+
+/* The browser's own clear button and spinners: the field draws its own actions. */
+.native::-webkit-search-cancel-button,
+.native::-webkit-inner-spin-button {
+  appearance: none;
+}
+
+.native[type="date"],
+.native[type="time"],
+.native[type="datetime-local"],
+.native[type="month"],
+.native[type="week"] {
+  font-family: var(--jl-font-mono);
+  font-size: var(--jl-font-sm);
+}

@@ -1,0 +1,155 @@
+:host {
+  display: block;
+  --pad: 20px;
+  --edge: 20px;
+  --gap: 12px;
+  --radius: var(--jl-radius-lg);
+}
+
+:host([padding="none"]) {
+  --pad: 0px;
+  --edge: 16px;
+}
+
+:host([padding="sm"]) {
+  --pad: 12px;
+  --edge: 12px;
+  --gap: 8px;
+}
+
+:host([padding="lg"]) {
+  --pad: 28px;
+  --edge: 28px;
+  --gap: 16px;
+}
+
+.card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+  border: 1px solid var(--jl-line);
+  border-radius: var(--radius);
+  background: var(--jl-surface);
+  color: var(--jl-text);
+  font-size: var(--jl-font-md);
+  line-height: 1.55;
+  transition: border-color var(--jl-fast) var(--jl-ease);
+}
+
+:host([clickable]) .card {
+  cursor: pointer;
+}
+
+:host([clickable]) .card:hover {
+  border-color: var(--jl-accent-line);
+}
+
+/* The link covers the card, so a press anywhere follows it; the header actions and the footer sit above it. */
+.link {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  border-radius: inherit;
+}
+
+/* The card clips what overflows its corners, the link's own ring included: the card wears the ring instead. */
+.link:focus-visible {
+  box-shadow: none;
+}
+
+.card:has(.link:focus-visible) {
+  box-shadow: var(--jl-focus-ring);
+}
+
+.actions,
+footer {
+  position: relative;
+  z-index: 2;
+}
+
+.media ::slotted(*) {
+  display: block;
+  width: 100%;
+}
+
+.media ::slotted(img) {
+  object-fit: cover;
+}
+
+header {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: var(--edge) var(--edge) 0;
+}
+
+/* Actions without a heading sit in the top right corner, over the content, rather than on a row of their own. */
+:host([floating-actions]) header {
+  position: absolute;
+  top: 0;
+  right: 0;
+  z-index: 2;
+}
+
+:host([has-header]:not([has-body])) header {
+  padding-bottom: var(--edge);
+}
+
+.titles {
+  display: grid;
+  flex: 1;
+  gap: 2px;
+  min-width: 0;
+}
+
+h3 {
+  font-size: var(--jl-font-lg);
+  font-weight: 650;
+  letter-spacing: -0.01em;
+  line-height: 1.35;
+}
+
+.description {
+  color: var(--jl-muted);
+  font-size: var(--jl-font-sm);
+  line-height: 1.5;
+}
+
+.actions {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 6px;
+  margin: -4px -6px -4px 0;
+}
+
+.body {
+  flex: 1;
+  padding: var(--pad);
+}
+
+:host([has-header]) .body {
+  padding-top: var(--gap);
+}
+
+:host([has-header][padding="none"]) .body {
+  margin-top: var(--gap);
+  padding-top: 0;
+  border-top: 1px solid var(--jl-line);
+}
+
+footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 12px var(--edge);
+  border-top: 1px solid var(--jl-line);
+}
+
+:host(:not([has-body]):not([has-header])) footer {
+  border-top: 0;
+}

@@ -1,0 +1,23 @@
+:host {
+  display: inline-flex;
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  border-radius: var(--jl-radius-sm);
+  color: var(--jl-text);
+  text-decoration: none;
+}
+
+.word {
+  font-size: 22px;
+  font-weight: 750;
+  letter-spacing: -0.03em;
+  line-height: 1;
+}
+
+.lib {
+  color: var(--jl-brand);
+}

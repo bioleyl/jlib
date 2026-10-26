@@ -1,0 +1,182 @@
+:host {
+  display: block;
+}
+
+.playground {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 280px;
+  border: 1px solid var(--jl-line);
+  border-radius: var(--jl-radius-lg);
+  background: var(--jl-surface);
+  overflow: hidden;
+}
+
+.stage-area {
+  position: relative;
+  border-bottom: 1px solid var(--jl-line);
+  background-color: var(--jl-surface-2);
+  background-image: radial-gradient(var(--jl-line-strong) 1px, transparent 1px);
+  background-size: 18px 18px;
+}
+
+.stage {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  min-height: 220px;
+  padding: 48px 32px;
+}
+
+.holder {
+  max-width: 100%;
+  text-align: center;
+}
+
+.holder > * {
+  text-align: start;
+}
+
+.reset {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+}
+
+.controls {
+  grid-row: span 2;
+  display: grid;
+  align-content: start;
+  gap: 12px;
+  padding: 16px;
+  border-left: 1px solid var(--jl-line);
+  overflow-y: auto;
+  max-height: 640px;
+}
+
+.label {
+  color: var(--jl-muted);
+  font-size: 11px;
+  font-weight: 650;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.fields {
+  display: grid;
+  gap: 12px;
+}
+
+.field {
+  display: grid;
+  gap: 5px;
+}
+
+.name {
+  color: var(--jl-text-2);
+  font-family: var(--jl-font-mono);
+  font-size: 12px;
+}
+
+.json::part(base) {
+  font-family: var(--jl-font-mono);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.no-controls {
+  color: var(--jl-muted);
+  font-size: var(--jl-font-sm);
+}
+
+.code {
+  display: grid;
+  align-content: start;
+  gap: 10px;
+  min-width: 0;
+  padding: 14px 16px 16px;
+}
+
+.tabs {
+  justify-self: start;
+}
+
+.events {
+  grid-column: 1 / -1;
+  display: grid;
+  gap: 8px;
+  padding: 14px 16px 16px;
+  border-top: 1px solid var(--jl-line);
+}
+
+.log {
+  display: grid;
+  gap: 4px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.log li {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  min-width: 0;
+  font-size: var(--jl-font-sm);
+  animation: arrive var(--jl-slow) var(--jl-ease);
+}
+
+.event-name {
+  flex: none;
+  color: var(--jl-accent);
+  font-family: var(--jl-font-mono);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.detail {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  color: var(--jl-text-2);
+  font-size: 12px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+time {
+  flex: none;
+  color: var(--jl-faint);
+  font-family: var(--jl-font-mono);
+  font-size: 11px;
+}
+
+.empty {
+  color: var(--jl-muted);
+  font-size: var(--jl-font-sm);
+}
+
+@keyframes arrive {
+  from {
+    opacity: 0;
+    transform: translateY(-3px);
+  }
+}
+
+@media (max-width: 860px) {
+  .playground {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .controls {
+    grid-row: auto;
+    border-left: none;
+    border-bottom: 1px solid var(--jl-line);
+    max-height: none;
+  }
+
+  .stage {
+    padding: 40px 16px;
+  }
+}

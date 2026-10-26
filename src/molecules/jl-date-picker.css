@@ -1,0 +1,23 @@
+:host {
+  display: block;
+  /* As a grid or flex item, the field may be narrower than its text field would like. */
+  min-width: 0;
+}
+
+.open:disabled {
+  cursor: not-allowed;
+}
+
+:host([open]) .open {
+  background: var(--jl-surface-3);
+  color: var(--jl-text);
+}
+
+.popup {
+  padding: 0;
+}
+
+/* The panel draws the frame: the calendar inside drops its own. */
+.calendar::part(base) {
+  border: none;
+}

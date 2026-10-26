@@ -1,0 +1,106 @@
+:host {
+  display: inline-flex;
+  vertical-align: middle;
+  --track-width: 36px;
+  --track-height: 20px;
+  --thumb: 14px;
+}
+
+:host([size="sm"]) {
+  --track-width: 28px;
+  --track-height: 16px;
+  --thumb: 10px;
+}
+
+.wrap {
+  display: inline-flex;
+  align-items: flex-start;
+  gap: 10px;
+  color: var(--jl-text);
+  font-size: var(--jl-font-md);
+  line-height: 20px;
+  cursor: pointer;
+}
+
+:host([size="sm"]) .wrap {
+  font-size: var(--jl-font-sm);
+}
+
+.track {
+  position: relative;
+  display: inline-flex;
+  flex: none;
+  width: var(--track-width);
+  height: var(--track-height);
+  margin-top: calc((20px - var(--track-height)) / 2);
+}
+
+/* The native box keeps the semantics and the keyboard; it is drawn as the track, the thumb slides over it. */
+.native {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  border: 1px solid var(--jl-line-strong);
+  border-radius: var(--jl-radius-pill);
+  background: var(--jl-surface-3);
+  cursor: inherit;
+  appearance: none;
+  transition:
+    background var(--jl-fast) var(--jl-ease),
+    border-color var(--jl-fast) var(--jl-ease),
+    box-shadow var(--jl-fast) var(--jl-ease);
+}
+
+.wrap:hover .native:not(:disabled) {
+  border-color: color-mix(in srgb, var(--jl-line-strong) 60%, var(--jl-text) 18%);
+}
+
+.native:checked {
+  border-color: var(--jl-accent);
+  background: var(--jl-accent);
+}
+
+.wrap:hover .native:checked:not(:disabled) {
+  border-color: var(--jl-accent-strong);
+  background: var(--jl-accent-strong);
+}
+
+.thumb {
+  position: absolute;
+  top: calc((var(--track-height) - var(--thumb)) / 2);
+  left: calc((var(--track-height) - var(--thumb)) / 2);
+  width: var(--thumb);
+  height: var(--thumb);
+  border-radius: 50%;
+  background: var(--jl-muted);
+  pointer-events: none;
+  transition:
+    transform var(--jl-fast) var(--jl-ease),
+    background var(--jl-fast) var(--jl-ease);
+}
+
+.native:checked + .thumb {
+  background: var(--jl-on-accent);
+  transform: translateX(calc(var(--track-width) - var(--track-height)));
+}
+
+/* Its baseline is the element's, so a label beside it (a horizontal field) lines up with the text. */
+.text {
+  display: grid;
+  align-self: baseline;
+  gap: 2px;
+}
+
+.description {
+  color: var(--jl-muted);
+  font-size: var(--jl-font-sm);
+  line-height: 18px;
+}
+
+:host([disabled]) .wrap,
+:host(:disabled) .wrap {
+  cursor: not-allowed;
+  opacity: 0.5;
+}

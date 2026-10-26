@@ -1,0 +1,10 @@
+:host {
+  display: inline-flex;
+  flex: none;
+  line-height: 0;
+  vertical-align: middle;
+}
+
+.icon {
+  display: inline-flex;
+}

@@ -1,0 +1,108 @@
+:host {
+  display: inline-flex;
+  vertical-align: middle;
+}
+
+.menu {
+  min-width: 200px;
+  max-width: min(320px, calc(100vw - 16px));
+  max-height: min(420px, calc(100dvh - 16px));
+  padding: 4px;
+  overflow-y: auto;
+}
+
+.menu:focus-visible {
+  box-shadow: var(--jl-shadow-lg), var(--jl-focus-ring);
+}
+
+.item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  min-height: 32px;
+  padding: 6px 10px;
+  border-radius: var(--jl-radius-xs);
+  color: var(--jl-text);
+  font-size: var(--jl-font-md);
+  line-height: 20px;
+  cursor: pointer;
+  user-select: none;
+}
+
+/* The focused item is the highlighted one, for the pointer as for the keyboard. */
+.item:focus,
+.item:focus-visible {
+  outline: none;
+  box-shadow: none;
+  background: var(--jl-surface-3);
+}
+
+.icon {
+  flex: none;
+  margin-top: 2px;
+  color: var(--jl-muted);
+}
+
+.text {
+  display: grid;
+  flex: 1;
+  min-width: 0;
+}
+
+.label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.description {
+  color: var(--jl-muted);
+  font-size: var(--jl-font-xs);
+  line-height: 1.4;
+}
+
+.shortcut {
+  flex: none;
+  margin-left: 12px;
+  color: var(--jl-muted);
+  font-size: var(--jl-font-xs);
+  letter-spacing: 0.02em;
+}
+
+.item[data-danger] {
+  color: var(--jl-danger);
+}
+
+.item[data-danger] .icon {
+  color: inherit;
+}
+
+.item[data-danger]:focus {
+  background: var(--jl-danger-soft);
+}
+
+.item[aria-disabled] {
+  color: var(--jl-faint);
+  cursor: not-allowed;
+}
+
+.item[aria-disabled] .icon,
+.item[aria-disabled] .description {
+  color: inherit;
+}
+
+.heading {
+  padding: 8px 10px 4px;
+  color: var(--jl-muted);
+  font-size: 11px;
+  font-weight: 650;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.divider {
+  height: 1px;
+  margin: 4px -4px;
+  border: none;
+  background: var(--jl-line);
+}

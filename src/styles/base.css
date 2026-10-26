@@ -1,0 +1,75 @@
+/* Shared by every component, first in its shadow root. */
+:host {
+  box-sizing: border-box;
+  font-family: var(--jl-font-sans);
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* A component's own display would otherwise win over the browser's rule for hidden. */
+:host([hidden]) {
+  /* biome-ignore lint/complexity/noImportantStyles: hidden must win over the component's own display */
+  display: none !important;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: inherit;
+}
+
+[hidden] {
+  /* biome-ignore lint/complexity/noImportantStyles: hidden must win over every component's own display rule */
+  display: none !important;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+
+:focus-visible {
+  outline: none;
+  box-shadow: var(--jl-focus-ring);
+}
+
+h1,
+h2,
+h3,
+h4,
+p,
+ul,
+ol,
+figure {
+  margin: 0;
+}
+
+code,
+kbd,
+pre {
+  font-family: var(--jl-font-mono);
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    /* biome-ignore lint/complexity/noImportantStyles: reduced motion must win over every component's animation */
+    animation-duration: 1ms !important;
+    /* biome-ignore lint/complexity/noImportantStyles: an endless animation cut to 1ms would flicker */
+    animation-iteration-count: 1 !important;
+    /* biome-ignore lint/complexity/noImportantStyles: reduced motion must win over every component's transition */
+    transition-duration: 1ms !important;
+  }
+}

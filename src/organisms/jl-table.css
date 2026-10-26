@@ -1,0 +1,265 @@
+:host {
+  display: block;
+  /* The table scrolls sideways inside its frame: its width never pushes the page, or a grid around it, wider. */
+  contain: inline-size;
+  --max-height: none;
+  --cell-y: 10px;
+  --cell-x: 14px;
+}
+
+:host([dense]) {
+  --cell-y: 6px;
+  --cell-x: 12px;
+}
+
+.scroll {
+  max-height: var(--max-height);
+  overflow: auto;
+  border: 1px solid var(--jl-line);
+  border-radius: var(--jl-radius);
+  background: var(--jl-surface);
+  overscroll-behavior-x: contain;
+}
+
+table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  color: var(--jl-text);
+  font-size: var(--jl-font-md);
+  line-height: 20px;
+}
+
+th,
+td {
+  padding: var(--cell-y) var(--cell-x);
+  white-space: nowrap;
+  vertical-align: middle;
+}
+
+th {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  border-bottom: 1px solid var(--jl-line);
+  background: var(--jl-surface-2);
+  color: var(--jl-muted);
+  font-size: var(--jl-font-xs);
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  text-align: left;
+}
+
+td {
+  border-top: 1px solid var(--jl-line-soft);
+}
+
+tbody tr:first-child td {
+  border-top: none;
+}
+
+tbody tr.empty td {
+  padding: 40px var(--cell-x);
+  color: var(--jl-muted);
+  text-align: center;
+}
+
+.align-left {
+  text-align: left;
+}
+
+.align-center {
+  text-align: center;
+}
+
+.align-right {
+  text-align: right;
+}
+
+.sort {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin: -2px -4px;
+  padding: 2px 4px;
+  border: none;
+  border-radius: var(--jl-radius-xs);
+  background: none;
+  color: inherit;
+  font-weight: inherit;
+  letter-spacing: inherit;
+  cursor: pointer;
+}
+
+.sort:hover {
+  color: var(--jl-text);
+}
+
+.sort-icon {
+  color: var(--jl-faint);
+}
+
+th[data-sorted] {
+  color: var(--jl-text);
+}
+
+th[data-sorted] .sort-icon {
+  color: var(--jl-accent);
+}
+
+/* Selected rows keep their shade: the hover and the stripes leave them alone. */
+tbody tr[data-selected] td {
+  background: var(--jl-accent-soft);
+}
+
+tbody tr:not(.empty, .skeleton, [data-selected]):hover td {
+  background: var(--jl-surface-2);
+}
+
+:host([striped]) tbody tr:nth-child(even):not(.empty, [data-selected]) td {
+  background: var(--jl-surface-2);
+}
+
+:host([striped]) tbody tr:not(.empty, .skeleton, [data-selected]):hover td {
+  background: var(--jl-surface-3);
+}
+
+.format-number {
+  font-variant-numeric: tabular-nums;
+}
+
+.format-date {
+  color: var(--jl-text-2);
+  font-variant-numeric: tabular-nums;
+}
+
+code {
+  padding: 2px 6px;
+  border-radius: var(--jl-radius-xs);
+  background: var(--jl-code-bg);
+  font-size: var(--jl-font-xs);
+}
+
+.select-cell {
+  width: 44px;
+  padding-right: 0;
+  line-height: 0;
+}
+
+/* The checkbox: the native input keeps the keyboard and the states, the mark beside it draws the tick. */
+.check {
+  position: relative;
+  display: inline-flex;
+}
+
+.checkbox {
+  width: 16px;
+  height: 16px;
+  margin: 0;
+  border: 1.5px solid var(--jl-line-strong);
+  border-radius: 4px;
+  background: var(--jl-surface);
+  cursor: pointer;
+  appearance: none;
+  transition:
+    background var(--jl-fast) var(--jl-ease),
+    border-color var(--jl-fast) var(--jl-ease);
+}
+
+.checkbox:hover {
+  border-color: var(--jl-muted);
+}
+
+.checkbox:checked,
+.checkbox:indeterminate {
+  border-color: var(--jl-accent);
+  background: var(--jl-accent);
+}
+
+.checkbox:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.mark {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.checkbox:checked + .mark::after {
+  position: absolute;
+  top: 2.5px;
+  left: 5.5px;
+  width: 5px;
+  height: 9px;
+  border: solid var(--jl-on-accent);
+  border-width: 0 2px 2px 0;
+  rotate: 45deg;
+  content: "";
+}
+
+.checkbox:indeterminate + .mark::after {
+  position: absolute;
+  top: 7px;
+  right: 4px;
+  left: 4px;
+  height: 2px;
+  border-radius: 1px;
+  background: var(--jl-on-accent);
+  content: "";
+}
+
+.empty-content {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.empty jl-icon {
+  color: var(--jl-faint);
+}
+
+.bone {
+  display: inline-block;
+  width: 70%;
+  max-width: 160px;
+  height: 10px;
+  border-radius: var(--jl-radius-pill);
+  background:
+    linear-gradient(90deg, var(--jl-surface-3) 30%, var(--jl-surface-2) 50%, var(--jl-surface-3) 70%) 0 0 / 300%
+    100%;
+  vertical-align: middle;
+  animation: shimmer 1.4s linear infinite;
+}
+
+.bone.box {
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+}
+
+tbody tr.skeleton:nth-child(3n + 2) .bone:not(.box) {
+  width: 50%;
+}
+
+tbody tr.skeleton:nth-child(3n) .bone:not(.box) {
+  width: 85%;
+}
+
+/* Shortened to a millisecond by the base styles, an endless shimmer would flicker: it stands still instead. */
+@media (prefers-reduced-motion: reduce) {
+  .bone {
+    animation: none;
+  }
+}
+
+@keyframes shimmer {
+  from {
+    background-position: 100% 0;
+  }
+
+  to {
+    background-position: 0 0;
+  }
+}

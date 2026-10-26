@@ -1,0 +1,179 @@
+:host {
+  display: contents;
+  --size: 420px;
+  --from: translateX(100%);
+}
+
+:host([size="sm"]) {
+  --size: 320px;
+}
+
+:host([size="lg"]) {
+  --size: 640px;
+}
+
+:host([placement="left"]) {
+  --from: translateX(-100%);
+}
+
+:host([placement="bottom"]) {
+  --size: 60dvh;
+  --from: translateY(100%);
+}
+
+:host([placement="bottom"][size="sm"]) {
+  --size: 40dvh;
+}
+
+:host([placement="bottom"][size="lg"]) {
+  --size: 88dvh;
+}
+
+dialog {
+  position: fixed;
+  inset: 0 0 0 auto;
+  display: none;
+  flex-direction: column;
+  width: min(var(--size), calc(100vw - 24px));
+  max-width: none;
+  height: 100dvh;
+  max-height: none;
+  margin: 0;
+  padding: 0;
+  border: none;
+  border-left: 1px solid var(--jl-line);
+  background: var(--jl-surface);
+  color: var(--jl-text);
+  font-size: var(--jl-font-md);
+  box-shadow: var(--jl-shadow-lg);
+  transform: var(--from);
+  /* display and overlay stay until the slide out ends, so closing animates too. */
+  transition:
+    transform var(--jl-slow) var(--jl-ease),
+    display var(--jl-slow) allow-discrete,
+    overlay var(--jl-slow) allow-discrete;
+}
+
+dialog[open] {
+  display: flex;
+  transform: none;
+}
+
+@starting-style {
+  dialog[open] {
+    transform: var(--from);
+  }
+}
+
+:host([placement="left"]) dialog {
+  inset: 0 auto 0 0;
+  border-right: 1px solid var(--jl-line);
+  border-left: none;
+}
+
+:host([placement="bottom"]) dialog {
+  inset: auto 0 0;
+  width: 100%;
+  height: auto;
+  max-height: var(--size);
+  border: 1px solid var(--jl-line);
+  border-bottom: none;
+  border-radius: var(--jl-radius-xl) var(--jl-radius-xl) 0 0;
+}
+
+dialog::backdrop {
+  background: transparent;
+  transition:
+    background var(--jl-slow) var(--jl-ease),
+    display var(--jl-slow) allow-discrete,
+    overlay var(--jl-slow) allow-discrete;
+}
+
+dialog[open]::backdrop {
+  background: var(--jl-scrim);
+}
+
+@starting-style {
+  dialog[open]::backdrop {
+    background: transparent;
+  }
+}
+
+.handle {
+  display: none;
+}
+
+:host([placement="bottom"]) .handle {
+  display: block;
+  flex: none;
+  width: 40px;
+  height: 4px;
+  margin: 10px auto 0;
+  border-radius: var(--jl-radius-pill);
+  background: var(--jl-line-strong);
+}
+
+header {
+  display: flex;
+  flex: none;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 18px 16px 14px 24px;
+  border-bottom: 1px solid var(--jl-line);
+}
+
+:host([placement="bottom"]) header {
+  padding-top: 10px;
+}
+
+.titles {
+  display: grid;
+  flex: 1;
+  gap: 4px;
+  min-width: 0;
+  padding-top: 4px;
+}
+
+h2 {
+  font-size: 17px;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+  line-height: 1.3;
+}
+
+.description {
+  color: var(--jl-muted);
+  font-size: var(--jl-font-sm);
+  line-height: 1.5;
+}
+
+.actions {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 4px;
+}
+
+.body {
+  flex: 1;
+  min-height: 0;
+  padding: 20px 24px;
+  overflow: auto;
+  line-height: 1.55;
+  overscroll-behavior: contain;
+}
+
+footer {
+  display: flex;
+  flex: none;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 14px 24px;
+  border-top: 1px solid var(--jl-line);
+  background: var(--jl-surface);
+}
+
+:host([placement="bottom"]) footer {
+  padding-bottom: max(14px, env(safe-area-inset-bottom));
+}

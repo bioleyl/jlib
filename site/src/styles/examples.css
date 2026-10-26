@@ -1,0 +1,26 @@
+/* The layout helpers of the examples: their HTML reads these classes (see EXAMPLE_STYLES). */
+.example-root {
+  display: grid;
+  gap: 16px;
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+}
+
+.stack {
+  display: grid;
+  gap: 12px;
+}
+
+.narrow {
+  max-width: 420px;
+}
+
+.muted {
+  color: var(--jl-muted);
+  font-size: var(--jl-font-sm);
+}

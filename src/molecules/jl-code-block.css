@@ -1,0 +1,132 @@
+:host {
+  display: block;
+  min-width: 0;
+}
+
+figure {
+  position: relative;
+  border: 1px solid var(--jl-line);
+  border-radius: var(--jl-radius);
+  background: var(--jl-surface-2);
+  overflow: hidden;
+}
+
+header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  height: 38px;
+  padding: 0 52px 0 14px;
+  border-bottom: 1px solid var(--jl-line);
+  color: var(--jl-muted);
+  font-size: var(--jl-font-xs);
+}
+
+.heading {
+  overflow: hidden;
+  color: var(--jl-text-2);
+  font-family: var(--jl-font-mono);
+  font-weight: 500;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.language {
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.body {
+  display: flex;
+  min-width: 0;
+}
+
+.gutter,
+pre {
+  padding: 14px 16px;
+  font-family: var(--jl-font-mono);
+  font-size: 12.5px;
+  line-height: 1.7;
+  font-variant-ligatures: no-contextual;
+}
+
+.gutter {
+  flex: none;
+  padding-right: 4px;
+  color: var(--jl-faint);
+  text-align: right;
+  white-space: pre;
+  user-select: none;
+}
+
+pre {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  padding-right: 48px;
+  overflow-x: auto;
+  color: var(--jl-text);
+  tab-size: 2;
+}
+
+:host([wrap]) pre {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.copy {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  background: var(--jl-surface-2);
+  border-radius: var(--jl-radius-sm);
+}
+
+:host(:not([has-header])) .copy {
+  opacity: 0.6;
+  transition: opacity var(--jl-fast) var(--jl-ease);
+}
+
+:host(:not([has-header])) figure:hover .copy,
+.copy:focus-within {
+  opacity: 1;
+}
+
+.tok-comment {
+  color: var(--jl-code-comment);
+  font-style: italic;
+}
+
+.tok-string {
+  color: var(--jl-code-string);
+}
+
+.tok-number {
+  color: var(--jl-code-number);
+}
+
+.tok-keyword {
+  color: var(--jl-code-keyword);
+}
+
+.tok-tag {
+  color: var(--jl-code-tag);
+}
+
+.tok-attribute {
+  color: var(--jl-code-attribute);
+}
+
+.tok-property {
+  color: var(--jl-code-property);
+}
+
+.tok-function {
+  color: var(--jl-code-function);
+}
+
+.tok-punctuation {
+  color: var(--jl-muted);
+}

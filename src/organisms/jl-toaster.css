@@ -1,0 +1,69 @@
+:host {
+  display: contents;
+  --edge: 16px;
+  --width: 380px;
+}
+
+.region {
+  position: fixed;
+  inset: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: min(var(--width), calc(100vw - 2 * var(--edge)));
+  margin: 0;
+  padding: 0;
+  overflow: visible;
+  border: none;
+  background: none;
+  color: var(--jl-text);
+  /* The empty space between toasts lets clicks through to the page. */
+  pointer-events: none;
+}
+
+.region:not(:popover-open) {
+  display: none;
+}
+
+::slotted(*) {
+  pointer-events: auto;
+}
+
+::slotted([data-stacked]) {
+  display: none;
+}
+
+:host([placement="bottom-right"]) .region {
+  right: var(--edge);
+  bottom: var(--edge);
+}
+
+:host([placement="bottom-left"]) .region {
+  bottom: var(--edge);
+  left: var(--edge);
+}
+
+:host([placement="bottom-center"]) .region {
+  bottom: var(--edge);
+  left: 50%;
+  translate: -50% 0;
+}
+
+/* At the top, the newest toast is the highest one, and toasts come in from above. */
+:host([placement^="top"]) .region {
+  top: var(--edge);
+  flex-direction: column-reverse;
+}
+
+:host([placement^="top"]) ::slotted(*) {
+  --jl-toast-enter: -8px;
+}
+
+:host([placement="top-right"]) .region {
+  right: var(--edge);
+}
+
+:host([placement="top-center"]) .region {
+  left: 50%;
+  translate: -50% 0;
+}

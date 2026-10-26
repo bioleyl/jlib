@@ -1,0 +1,104 @@
+/* The look of the fields people type in: text fields, selects and areas share it. */
+.control {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  min-height: var(--height, var(--jl-control-md));
+  padding: 0 12px;
+  border: 1px solid var(--jl-line-strong);
+  border-radius: var(--jl-radius-sm);
+  background: var(--jl-surface);
+  color: var(--jl-text);
+  font-size: var(--jl-font-md);
+  line-height: 20px;
+  transition:
+    border-color var(--jl-fast) var(--jl-ease),
+    box-shadow var(--jl-fast) var(--jl-ease);
+}
+
+.control:hover {
+  border-color: color-mix(in srgb, var(--jl-line-strong) 60%, var(--jl-text) 18%);
+}
+
+.control:focus-within {
+  border-color: var(--jl-accent);
+  box-shadow: var(--jl-focus-ring);
+}
+
+:host([invalid]) .control {
+  border-color: var(--jl-danger);
+}
+
+:host([invalid]) .control:focus-within {
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--jl-danger) 25%, transparent);
+}
+
+:host([disabled]) .control,
+:host(:disabled) .control {
+  background: var(--jl-surface-2);
+  color: var(--jl-muted);
+  cursor: not-allowed;
+}
+
+:host([size="sm"]) {
+  --height: var(--jl-control-sm);
+}
+
+:host([size="lg"]) {
+  --height: var(--jl-control-lg);
+}
+
+/* The native element inside the frame: it takes the room and leaves the frame to draw the border. */
+.native {
+  flex: 1;
+  min-width: 0;
+  height: calc(var(--height, var(--jl-control-md)) - 2px);
+  padding: 0;
+  border: none;
+  outline: none;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+}
+
+.native::placeholder {
+  color: var(--jl-faint);
+}
+
+.native:focus-visible {
+  box-shadow: none;
+}
+
+.native:disabled {
+  cursor: not-allowed;
+}
+
+.adornment {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  color: var(--jl-faint);
+}
+
+/* A small button inside the frame: clear, reveal the password, step a number. */
+.action {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  margin-right: -4px;
+  padding: 0;
+  border: none;
+  border-radius: var(--jl-radius-xs);
+  background: none;
+  color: var(--jl-faint);
+  cursor: pointer;
+}
+
+.action:hover {
+  background: var(--jl-surface-3);
+  color: var(--jl-text);
+}

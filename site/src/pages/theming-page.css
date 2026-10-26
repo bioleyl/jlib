@@ -1,0 +1,127 @@
+.accent-tools {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px;
+}
+
+.presets {
+  display: flex;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  border: none;
+}
+
+.preset {
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 2px solid var(--jl-surface);
+  border-radius: 50%;
+  box-shadow: 0 0 0 1px var(--jl-line-strong);
+  cursor: pointer;
+}
+
+.preset[aria-pressed="true"] {
+  box-shadow: 0 0 0 2px var(--jl-text);
+}
+
+.picker-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--jl-text-2);
+  font-size: var(--jl-font-sm);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.picker {
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 1px solid var(--jl-line-strong);
+  border-radius: var(--jl-radius-sm);
+  background: none;
+  cursor: pointer;
+}
+
+.sample {
+  display: grid;
+  gap: 14px;
+}
+
+.sample-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.pair {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 12px;
+}
+
+.themed {
+  display: grid;
+  gap: 14px;
+  color: var(--jl-text);
+  background: var(--jl-surface);
+}
+
+.tokens {
+  display: grid;
+  gap: 18px;
+}
+
+.token-group {
+  display: grid;
+  gap: 8px;
+}
+
+.swatch-cell {
+  width: 56px;
+}
+
+.swatch {
+  display: block;
+}
+
+.swatch.colour {
+  width: 28px;
+  height: 28px;
+  border: 1px solid var(--jl-line);
+  border-radius: var(--jl-radius-xs);
+}
+
+.swatch.radius {
+  width: 28px;
+  height: 28px;
+  border: 2px solid var(--jl-accent);
+  border-right-color: transparent;
+  border-bottom-color: transparent;
+}
+
+.swatch.length {
+  height: 8px;
+  max-width: 44px;
+  border-radius: 2px;
+  background: var(--jl-accent);
+}
+
+.swatch.shadow {
+  width: 28px;
+  height: 28px;
+  border-radius: var(--jl-radius-xs);
+  background: var(--jl-surface);
+}
+
+.value {
+  color: var(--jl-muted);
+  font-family: var(--jl-font-mono);
+  font-size: 12px;
+  word-break: break-word;
+}

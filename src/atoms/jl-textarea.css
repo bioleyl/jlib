@@ -1,0 +1,45 @@
+:host {
+  display: block;
+}
+
+.field {
+  display: grid;
+  gap: 6px;
+}
+
+.control {
+  align-items: stretch;
+  padding: 0;
+}
+
+/* The area takes the frame's whole box, so its own scrollbar and resize handle sit inside the border. */
+.native {
+  display: block;
+  height: auto;
+  min-height: calc(var(--jl-control-md) - 2px);
+  padding: 8px 12px;
+  border-radius: inherit;
+  resize: vertical;
+}
+
+:host([autosize]) .native {
+  resize: none;
+  overflow-y: hidden;
+}
+
+:host([readonly]) .control {
+  background: var(--jl-surface-2);
+}
+
+.counter {
+  justify-self: end;
+  color: var(--jl-muted);
+  font-family: var(--jl-font-mono);
+  font-size: var(--jl-font-xs);
+  font-variant-numeric: tabular-nums;
+  line-height: 16px;
+}
+
+.counter[data-full] {
+  color: var(--jl-warn);
+}

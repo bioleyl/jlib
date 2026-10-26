@@ -1,0 +1,179 @@
+:host {
+  display: block;
+  --top: 60px;
+  --side: 272px;
+}
+
+.app {
+  display: grid;
+  grid-template-columns: var(--side) minmax(0, 1fr);
+  grid-template-rows: var(--top) 1fr;
+  min-height: 100dvh;
+}
+
+.top {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  display: flex;
+  grid-column: 1 / -1;
+  align-items: center;
+  gap: 12px;
+  padding: 0 20px;
+  border-bottom: 1px solid var(--jl-line);
+  background: color-mix(in srgb, var(--jl-bg) 86%, transparent);
+  backdrop-filter: blur(10px);
+}
+
+.menu {
+  display: none;
+  margin-left: -8px;
+}
+
+.spacer {
+  flex: 1;
+}
+
+.search {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  width: 220px;
+  height: 34px;
+  padding: 0 6px 0 10px;
+  border: 1px solid var(--jl-line);
+  border-radius: var(--jl-radius-sm);
+  background: var(--jl-surface-2);
+  color: var(--jl-muted);
+  font-size: var(--jl-font-sm);
+  cursor: pointer;
+  transition: border-color var(--jl-fast) var(--jl-ease);
+}
+
+.search:hover {
+  border-color: var(--jl-line-strong);
+}
+
+.search-text {
+  flex: 1;
+  text-align: left;
+}
+
+.top-link {
+  padding: 6px 8px;
+  border-radius: var(--jl-radius-sm);
+  color: var(--jl-text-2);
+  font-size: var(--jl-font-sm);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.top-link:hover {
+  color: var(--jl-text);
+  background: var(--jl-surface-2);
+}
+
+.side {
+  position: sticky;
+  top: var(--top);
+  height: calc(100dvh - var(--top));
+  border-right: 1px solid var(--jl-line);
+  background: var(--jl-bg);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.scrim {
+  display: none;
+}
+
+main {
+  min-width: 0;
+  padding: 40px clamp(20px, 5vw, 56px) 40px;
+}
+
+/* Who makes jlib, at the foot of every page. */
+.credit {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px 20px;
+  max-width: 1120px;
+  margin: 96px auto 0;
+  padding-top: 24px;
+  border-top: 1px solid var(--jl-line);
+  color: var(--jl-muted);
+  font-size: var(--jl-font-sm);
+  line-height: 1.55;
+}
+
+.credit-logo {
+  display: inline-flex;
+  flex: none;
+}
+
+.credit p {
+  flex: 1 1 280px;
+  margin: 0;
+}
+
+.credit strong {
+  color: var(--jl-text-2);
+}
+
+@media (max-width: 960px) {
+  .app {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .menu {
+    display: inline-flex;
+  }
+
+  .side {
+    position: fixed;
+    top: var(--top);
+    bottom: 0;
+    left: 0;
+    z-index: 25;
+    width: min(300px, 86vw);
+    height: auto;
+    transform: translateX(-100%);
+    transition: transform var(--jl-slow) var(--jl-ease);
+  }
+
+  :host([nav-open]) .side {
+    transform: none;
+    box-shadow: var(--jl-shadow-lg);
+  }
+
+  :host([nav-open]) .scrim {
+    position: fixed;
+    inset: var(--top) 0 0;
+    z-index: 20;
+    display: block;
+    background: var(--jl-scrim);
+  }
+
+  main {
+    padding-top: 28px;
+  }
+}
+
+@media (max-width: 760px) {
+  .search {
+    width: auto;
+  }
+
+  .search-text,
+  .search jl-kbd {
+    display: none;
+  }
+}
+
+@media (max-width: 560px) {
+  .top-link,
+  .version {
+    display: none;
+  }
+}

@@ -1,0 +1,91 @@
+:host {
+  display: inline-flex;
+  flex: none;
+  vertical-align: middle;
+  --size: 40px;
+  --done: 0;
+  --color: var(--jl-accent);
+  --track: var(--jl-surface-3);
+}
+
+:host([tone="ok"]) {
+  --color: var(--jl-ok);
+}
+
+:host([tone="warn"]) {
+  --color: var(--jl-warn);
+}
+
+:host([tone="danger"]) {
+  --color: var(--jl-danger);
+}
+
+.ring {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--size);
+  height: var(--size);
+}
+
+.svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  /* The arc starts at the top, as a clock's hand. */
+  transform: rotate(-90deg);
+}
+
+.track {
+  stroke: var(--track);
+}
+
+.arc {
+  stroke: var(--color);
+  stroke-dasharray: 100;
+  stroke-dashoffset: calc(100 - var(--done));
+  stroke-linecap: round;
+  transition: stroke-dashoffset var(--jl-slow) var(--jl-ease);
+}
+
+/* At zero, the round cap would still draw a dot at the top. */
+:host([empty]) .arc {
+  visibility: hidden;
+}
+
+:host([indeterminate]) .arc {
+  stroke-dashoffset: 72;
+  transition: none;
+}
+
+:host([indeterminate]) .svg {
+  animation: turn 0.9s linear infinite;
+}
+
+.percent {
+  position: relative;
+  color: var(--jl-text);
+  font-size: calc(var(--size) * 0.24);
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  line-height: 1;
+}
+
+@keyframes turn {
+  from {
+    transform: rotate(-90deg);
+  }
+
+  to {
+    transform: rotate(270deg);
+  }
+}
+
+/* Without motion, an endless ring stays still: a quarter of it shows that work goes on. */
+@media (prefers-reduced-motion: reduce) {
+  :host([indeterminate]) .svg {
+    animation: none;
+  }
+}

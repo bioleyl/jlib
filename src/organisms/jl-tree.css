@@ -1,0 +1,83 @@
+:host {
+  display: block;
+  --indent: 16px;
+  --row-height: 30px;
+}
+
+.tree {
+  color: var(--jl-text-2);
+  font-size: var(--jl-font-md);
+}
+
+.group {
+  position: relative;
+}
+
+/* A quiet line under each open folder, from its chevron down along its children. */
+.group::before {
+  position: absolute;
+  top: 0;
+  bottom: 4px;
+  left: calc(8px + var(--level) * var(--indent) + 6.5px);
+  width: 1px;
+  background: var(--jl-line);
+  content: "";
+}
+
+.item:focus-visible {
+  box-shadow: none;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  height: var(--row-height);
+  padding: 0 8px 0 calc(8px + var(--level) * var(--indent));
+  border-radius: var(--jl-radius-sm);
+  cursor: pointer;
+  user-select: none;
+}
+
+.row:hover {
+  background: var(--jl-surface-2);
+  color: var(--jl-text);
+}
+
+.item:focus-visible > .row {
+  box-shadow: var(--jl-focus-ring);
+}
+
+.item[aria-selected="true"] > .row {
+  background: var(--jl-accent-soft);
+  color: var(--jl-text);
+  font-weight: 600;
+}
+
+.chevron {
+  display: inline-flex;
+  flex: none;
+  justify-content: center;
+  width: 14px;
+  color: var(--jl-faint);
+  transition: rotate var(--jl-fast) var(--jl-ease);
+}
+
+.item[aria-expanded="true"] > .row > .chevron {
+  rotate: 90deg;
+}
+
+.icon {
+  color: var(--jl-muted);
+}
+
+.item[aria-selected="true"] > .row > .icon {
+  color: var(--jl-accent);
+}
+
+.label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

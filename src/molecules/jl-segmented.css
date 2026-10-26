@@ -1,0 +1,114 @@
+:host {
+  display: inline-flex;
+  vertical-align: middle;
+  /* Its own width, even as a grid or flex item that would stretch it: block asks for the whole width. */
+  justify-self: start;
+  max-width: 100%;
+  --height: var(--jl-control-md);
+  --pad: 12px;
+  --font-size: var(--jl-font-sm);
+}
+
+:host([size="sm"]) {
+  --height: var(--jl-control-sm);
+  --pad: 10px;
+  --font-size: var(--jl-font-xs);
+}
+
+:host([size="lg"]) {
+  --height: var(--jl-control-lg);
+  --pad: 16px;
+  --font-size: var(--jl-font-md);
+}
+
+:host([block]) {
+  display: flex;
+  justify-self: stretch;
+}
+
+.group {
+  position: relative;
+  display: flex;
+  flex: 1;
+  overflow-x: auto;
+  scrollbar-width: none;
+  min-width: 0;
+  height: var(--height);
+  padding: 2px;
+  border: 1px solid var(--jl-line);
+  border-radius: var(--jl-radius-sm);
+  background: var(--jl-surface-2);
+}
+
+.segment {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-width: calc(var(--height) - 6px);
+  padding: 0 var(--pad);
+  border: none;
+  border-radius: calc(var(--jl-radius-sm) - 3px);
+  background: none;
+  color: var(--jl-muted);
+  font-size: var(--font-size);
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: color var(--jl-fast) var(--jl-ease);
+}
+
+.segment:hover:not(:disabled) {
+  color: var(--jl-text);
+}
+
+.segment[aria-checked="true"] {
+  color: var(--jl-text);
+}
+
+.segment:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+:host([block]) .segment {
+  flex: 1 1 0;
+}
+
+/* The chosen option's raised surface, slid under it. */
+.thumb {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: var(--w);
+  height: var(--h);
+  border: 1px solid var(--jl-line-strong);
+  border-radius: calc(var(--jl-radius-sm) - 3px);
+  /* Raised over the track: white on light grey, a lighter grey on a dark ground. */
+  background: light-dark(var(--jl-surface), var(--jl-surface-3));
+  box-shadow: var(--jl-shadow-sm);
+  transform: translate(var(--x), var(--y));
+  pointer-events: none;
+}
+
+.thumb[data-placed] {
+  transition:
+    transform var(--jl-slow) var(--jl-ease),
+    width var(--jl-slow) var(--jl-ease);
+}
+
+.group[aria-disabled] {
+  opacity: 0.55;
+}
+
+.group[aria-disabled] .segment {
+  opacity: 1;
+}
+
+/* The track scrolls when the options do not fit: a ring drawn outside the segment would be cut. */
+.segment:focus-visible {
+  box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--jl-brand) 60%, transparent);
+}

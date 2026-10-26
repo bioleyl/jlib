@@ -1,0 +1,149 @@
+.foundations {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 12px;
+}
+
+.foundation {
+  display: grid;
+  align-content: start;
+  gap: 6px;
+  border: 1px solid var(--jl-line);
+  border-radius: var(--jl-radius-lg);
+  overflow: hidden;
+  font-weight: 450;
+  text-decoration: none;
+  transition: border-color var(--jl-fast) var(--jl-ease);
+}
+
+.foundation:hover {
+  border-color: var(--jl-accent-line);
+  text-decoration: none;
+}
+
+.foundation-preview {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 96px;
+  margin-bottom: 8px;
+  border-bottom: 1px solid var(--jl-line);
+  background: var(--jl-surface-2);
+  color: var(--jl-text);
+}
+
+.foundation-name {
+  padding: 0 16px;
+  color: var(--jl-text);
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.foundation-summary {
+  padding: 0 16px 16px;
+  color: var(--jl-muted);
+  font-size: var(--jl-font-sm);
+  line-height: 1.5;
+}
+
+.preview-swatches {
+  display: flex;
+  gap: 6px;
+}
+
+.preview-swatches span {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 1px rgb(0 0 0 / 0.08);
+}
+
+.preview-type {
+  font-size: 34px;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+}
+
+.preview-type code {
+  padding: 0;
+  background: none;
+  color: var(--jl-accent);
+  font-size: 30px;
+  font-weight: 500;
+}
+
+.preview-bars {
+  display: grid;
+  gap: 6px;
+}
+
+.preview-bars span {
+  height: 8px;
+  border-radius: 2px;
+  background: var(--jl-accent);
+}
+
+.preview-radii {
+  display: flex;
+  gap: 10px;
+}
+
+.preview-radii span {
+  width: 30px;
+  height: 30px;
+  border: 1px solid var(--jl-accent-line);
+  background: var(--jl-accent-soft);
+}
+
+.preview-radii span:nth-child(1) {
+  border-radius: var(--jl-radius-xs);
+}
+
+.preview-radii span:nth-child(2) {
+  border-radius: var(--jl-radius-lg);
+}
+
+.preview-radii span:nth-child(3) {
+  border-radius: 50%;
+}
+
+.preview-motion {
+  position: relative;
+  width: 120px;
+  height: 20px;
+  border-radius: var(--jl-radius-pill);
+  background: var(--jl-surface-3);
+}
+
+.preview-motion span {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  background: var(--jl-accent);
+  animation: glide 2.4s var(--jl-ease) infinite alternate;
+}
+
+.preview-icons {
+  display: flex;
+  gap: 12px;
+}
+
+.preview-text {
+  color: var(--jl-text);
+  font-size: 22px;
+  font-weight: 700;
+}
+
+@keyframes glide {
+  to {
+    transform: translateX(100px);
+  }
+}
+
+.preview-logo,
+.preview-logo svg {
+  display: block;
+}

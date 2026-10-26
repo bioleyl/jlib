@@ -1,0 +1,206 @@
+:host {
+  display: block;
+  /* As a grid or flex item, the field may be narrower than its text field would like. */
+  min-width: 0;
+  --pad: 24px;
+  --badge: 44px;
+}
+
+:host([size="sm"]) {
+  --pad: 14px;
+  --badge: 34px;
+}
+
+:host([size="lg"]) {
+  --pad: 36px;
+  --badge: 52px;
+}
+
+.zone {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: var(--pad);
+  border: 1.5px dashed var(--jl-line-strong);
+  border-radius: var(--jl-radius);
+  background: var(--jl-surface);
+  color: var(--jl-text);
+  text-align: center;
+  cursor: pointer;
+  transition:
+    border-color var(--jl-fast) var(--jl-ease),
+    background var(--jl-fast) var(--jl-ease);
+}
+
+.zone:hover {
+  border-color: color-mix(in srgb, var(--jl-line-strong) 60%, var(--jl-text) 18%);
+  background: var(--jl-surface-2);
+}
+
+:host([dragging]) .zone {
+  border-color: var(--jl-accent);
+  background: var(--jl-accent-soft);
+}
+
+:host([invalid]) .zone {
+  border-color: var(--jl-danger);
+}
+
+:host([disabled]) .zone {
+  border-color: var(--jl-line-strong);
+  background: var(--jl-surface-2);
+  color: var(--jl-muted);
+  cursor: not-allowed;
+}
+
+.zone-icon {
+  align-items: center;
+  justify-content: center;
+  width: var(--badge);
+  height: var(--badge);
+  margin-bottom: 6px;
+  border-radius: var(--jl-radius-pill);
+  background: var(--jl-surface-3);
+  color: var(--jl-muted);
+  transition:
+    background var(--jl-fast) var(--jl-ease),
+    color var(--jl-fast) var(--jl-ease);
+}
+
+:host([dragging]) .zone-icon {
+  background: var(--jl-surface);
+  color: var(--jl-accent);
+}
+
+.text {
+  font-size: var(--jl-font-md);
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+:host([size="sm"]) .text {
+  font-size: var(--jl-font-sm);
+}
+
+.hint {
+  color: var(--jl-muted);
+  font-size: var(--jl-font-xs);
+  line-height: 1.4;
+}
+
+.browse {
+  display: inline-flex;
+  align-items: center;
+  height: var(--jl-control-sm);
+  margin-top: 8px;
+  padding: 0 12px;
+  border: 1px solid var(--jl-line-strong);
+  border-radius: var(--jl-radius-sm);
+  background: var(--jl-surface);
+  font-size: var(--jl-font-xs);
+  font-weight: 600;
+  cursor: pointer;
+  transition: background var(--jl-fast) var(--jl-ease);
+}
+
+.browse:hover {
+  background: var(--jl-surface-3);
+}
+
+.browse:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.refused,
+.files {
+  margin: 8px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.refused {
+  display: grid;
+  gap: 4px;
+  color: var(--jl-danger);
+  font-size: var(--jl-font-sm);
+  line-height: 1.45;
+}
+
+.refusal {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+}
+
+.refusal jl-icon {
+  margin-top: 3px;
+}
+
+.refused-name {
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.files {
+  border: 1px solid var(--jl-line);
+  border-radius: var(--jl-radius);
+}
+
+.file {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 40px;
+  padding: 6px 8px 6px 12px;
+}
+
+.file + .file {
+  border-top: 1px solid var(--jl-line);
+}
+
+.file-icon {
+  color: var(--jl-faint);
+}
+
+.file-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  font-size: var(--jl-font-sm);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.file-size {
+  color: var(--jl-muted);
+  font-family: var(--jl-font-mono);
+  font-size: var(--jl-font-xs);
+  white-space: nowrap;
+}
+
+.file-remove {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  padding: 0;
+  border: none;
+  border-radius: var(--jl-radius-xs);
+  background: none;
+  color: var(--jl-faint);
+  cursor: pointer;
+}
+
+.file-remove:hover {
+  background: var(--jl-surface-3);
+  color: var(--jl-text);
+}
+
+/* "images, PDF · up to 5 MB": the hint starts with a capital. */
+.hint::first-letter {
+  text-transform: uppercase;
+}

@@ -1,0 +1,805 @@
+{
+  "all": {
+    "gzip": 84507,
+    "raw": 356906
+  },
+  "baseline": {
+    "gzip": 3897,
+    "raw": 11254
+  },
+  "components": [
+    {
+      "className": "JlAvatar",
+      "level": "atoms",
+      "tag": "jl-avatar",
+      "added": {
+        "gzip": 3515,
+        "raw": 10893
+      },
+      "total": {
+        "gzip": 7412,
+        "raw": 22147
+      }
+    },
+    {
+      "className": "JlBadge",
+      "level": "atoms",
+      "tag": "jl-badge",
+      "added": {
+        "gzip": 2503,
+        "raw": 7753
+      },
+      "total": {
+        "gzip": 6400,
+        "raw": 19007
+      }
+    },
+    {
+      "className": "JlButton",
+      "level": "atoms",
+      "tag": "jl-button",
+      "added": {
+        "gzip": 3496,
+        "raw": 11484
+      },
+      "total": {
+        "gzip": 7393,
+        "raw": 22738
+      }
+    },
+    {
+      "className": "JlCheckbox",
+      "level": "atoms",
+      "tag": "jl-checkbox",
+      "added": {
+        "gzip": 3505,
+        "raw": 11491
+      },
+      "total": {
+        "gzip": 7402,
+        "raw": 22745
+      }
+    },
+    {
+      "className": "JlChip",
+      "level": "atoms",
+      "tag": "jl-chip",
+      "added": {
+        "gzip": 3387,
+        "raw": 11295
+      },
+      "total": {
+        "gzip": 7284,
+        "raw": 22549
+      }
+    },
+    {
+      "className": "JlDivider",
+      "level": "atoms",
+      "tag": "jl-divider",
+      "added": {
+        "gzip": 1851,
+        "raw": 5461
+      },
+      "total": {
+        "gzip": 5748,
+        "raw": 16715
+      }
+    },
+    {
+      "className": "JlIcon",
+      "level": "atoms",
+      "tag": "jl-icon",
+      "added": {
+        "gzip": 1904,
+        "raw": 5520
+      },
+      "total": {
+        "gzip": 5801,
+        "raw": 16774
+      }
+    },
+    {
+      "className": "JlInput",
+      "level": "atoms",
+      "tag": "jl-input",
+      "added": {
+        "gzip": 4230,
+        "raw": 14382
+      },
+      "total": {
+        "gzip": 8127,
+        "raw": 25636
+      }
+    },
+    {
+      "className": "JlKbd",
+      "level": "atoms",
+      "tag": "jl-kbd",
+      "added": {
+        "gzip": 2250,
+        "raw": 6411
+      },
+      "total": {
+        "gzip": 6147,
+        "raw": 17665
+      }
+    },
+    {
+      "className": "JlLink",
+      "level": "atoms",
+      "tag": "jl-link",
+      "added": {
+        "gzip": 2688,
+        "raw": 8132
+      },
+      "total": {
+        "gzip": 6585,
+        "raw": 19386
+      }
+    },
+    {
+      "className": "JlProgressRing",
+      "level": "atoms",
+      "tag": "jl-progress-ring",
+      "added": {
+        "gzip": 3249,
+        "raw": 11053
+      },
+      "total": {
+        "gzip": 7146,
+        "raw": 22307
+      }
+    },
+    {
+      "className": "JlProgress",
+      "level": "atoms",
+      "tag": "jl-progress",
+      "added": {
+        "gzip": 2274,
+        "raw": 6961
+      },
+      "total": {
+        "gzip": 6171,
+        "raw": 18215
+      }
+    },
+    {
+      "className": "JlRating",
+      "level": "atoms",
+      "tag": "jl-rating",
+      "added": {
+        "gzip": 3716,
+        "raw": 11123
+      },
+      "total": {
+        "gzip": 7613,
+        "raw": 22377
+      }
+    },
+    {
+      "className": "JlSelect",
+      "level": "atoms",
+      "tag": "jl-select",
+      "added": {
+        "gzip": 3875,
+        "raw": 12456
+      },
+      "total": {
+        "gzip": 7772,
+        "raw": 23710
+      }
+    },
+    {
+      "className": "JlSkeleton",
+      "level": "atoms",
+      "tag": "jl-skeleton",
+      "added": {
+        "gzip": 1905,
+        "raw": 5571
+      },
+      "total": {
+        "gzip": 5802,
+        "raw": 16825
+      }
+    },
+    {
+      "className": "JlSlider",
+      "level": "atoms",
+      "tag": "jl-slider",
+      "added": {
+        "gzip": 3104,
+        "raw": 10276
+      },
+      "total": {
+        "gzip": 7001,
+        "raw": 21530
+      }
+    },
+    {
+      "className": "JlSpinner",
+      "level": "atoms",
+      "tag": "jl-spinner",
+      "added": {
+        "gzip": 1485,
+        "raw": 4530
+      },
+      "total": {
+        "gzip": 5382,
+        "raw": 15784
+      }
+    },
+    {
+      "className": "JlSwitch",
+      "level": "atoms",
+      "tag": "jl-switch",
+      "added": {
+        "gzip": 2686,
+        "raw": 8791
+      },
+      "total": {
+        "gzip": 6583,
+        "raw": 20045
+      }
+    },
+    {
+      "className": "JlTextarea",
+      "level": "atoms",
+      "tag": "jl-textarea",
+      "added": {
+        "gzip": 3042,
+        "raw": 10091
+      },
+      "total": {
+        "gzip": 6939,
+        "raw": 21345
+      }
+    },
+    {
+      "className": "JlAccordionItem",
+      "level": "molecules",
+      "tag": "jl-accordion-item",
+      "added": {
+        "gzip": 2967,
+        "raw": 8884
+      },
+      "total": {
+        "gzip": 6864,
+        "raw": 20138
+      }
+    },
+    {
+      "className": "JlAccordion",
+      "level": "molecules",
+      "tag": "jl-accordion",
+      "added": {
+        "gzip": 3335,
+        "raw": 10213
+      },
+      "total": {
+        "gzip": 7232,
+        "raw": 21467
+      }
+    },
+    {
+      "className": "JlAlert",
+      "level": "molecules",
+      "tag": "jl-alert",
+      "added": {
+        "gzip": 4756,
+        "raw": 16949
+      },
+      "total": {
+        "gzip": 8653,
+        "raw": 28203
+      }
+    },
+    {
+      "className": "JlAvatarGroup",
+      "level": "molecules",
+      "tag": "jl-avatar-group",
+      "added": {
+        "gzip": 4009,
+        "raw": 12620
+      },
+      "total": {
+        "gzip": 7906,
+        "raw": 23874
+      }
+    },
+    {
+      "className": "JlBreadcrumb",
+      "level": "molecules",
+      "tag": "jl-breadcrumb",
+      "added": {
+        "gzip": 3060,
+        "raw": 9336
+      },
+      "total": {
+        "gzip": 6957,
+        "raw": 20590
+      }
+    },
+    {
+      "className": "JlCalendar",
+      "level": "molecules",
+      "tag": "jl-calendar",
+      "added": {
+        "gzip": 5759,
+        "raw": 17795
+      },
+      "total": {
+        "gzip": 9656,
+        "raw": 29049
+      }
+    },
+    {
+      "className": "JlCard",
+      "level": "molecules",
+      "tag": "jl-card",
+      "added": {
+        "gzip": 3097,
+        "raw": 9760
+      },
+      "total": {
+        "gzip": 6994,
+        "raw": 21014
+      }
+    },
+    {
+      "className": "JlCodeBlock",
+      "level": "molecules",
+      "tag": "jl-code-block",
+      "added": {
+        "gzip": 6272,
+        "raw": 20637
+      },
+      "total": {
+        "gzip": 10169,
+        "raw": 31891
+      }
+    },
+    {
+      "className": "JlCombobox",
+      "level": "molecules",
+      "tag": "jl-combobox",
+      "added": {
+        "gzip": 7153,
+        "raw": 23316
+      },
+      "total": {
+        "gzip": 11050,
+        "raw": 34570
+      }
+    },
+    {
+      "className": "JlCopyButton",
+      "level": "molecules",
+      "tag": "jl-copy-button",
+      "added": {
+        "gzip": 3964,
+        "raw": 13216
+      },
+      "total": {
+        "gzip": 7861,
+        "raw": 24470
+      }
+    },
+    {
+      "className": "JlDatePicker",
+      "level": "molecules",
+      "tag": "jl-date-picker",
+      "added": {
+        "gzip": 8571,
+        "raw": 29142
+      },
+      "total": {
+        "gzip": 12468,
+        "raw": 40396
+      }
+    },
+    {
+      "className": "JlEmpty",
+      "level": "molecules",
+      "tag": "jl-empty",
+      "added": {
+        "gzip": 2860,
+        "raw": 8650
+      },
+      "total": {
+        "gzip": 6757,
+        "raw": 19904
+      }
+    },
+    {
+      "className": "JlField",
+      "level": "molecules",
+      "tag": "jl-field",
+      "added": {
+        "gzip": 3041,
+        "raw": 9328
+      },
+      "total": {
+        "gzip": 6938,
+        "raw": 20582
+      }
+    },
+    {
+      "className": "JlFileDrop",
+      "level": "molecules",
+      "tag": "jl-file-drop",
+      "added": {
+        "gzip": 5929,
+        "raw": 19209
+      },
+      "total": {
+        "gzip": 9826,
+        "raw": 30463
+      }
+    },
+    {
+      "className": "JlListItem",
+      "level": "molecules",
+      "tag": "jl-list-item",
+      "added": {
+        "gzip": 3683,
+        "raw": 11779
+      },
+      "total": {
+        "gzip": 7580,
+        "raw": 23033
+      }
+    },
+    {
+      "className": "JlMenu",
+      "level": "molecules",
+      "tag": "jl-menu",
+      "added": {
+        "gzip": 5249,
+        "raw": 15700
+      },
+      "total": {
+        "gzip": 9146,
+        "raw": 26954
+      }
+    },
+    {
+      "className": "JlNumberInput",
+      "level": "molecules",
+      "tag": "jl-number-input",
+      "added": {
+        "gzip": 4277,
+        "raw": 14010
+      },
+      "total": {
+        "gzip": 8174,
+        "raw": 25264
+      }
+    },
+    {
+      "className": "JlPagination",
+      "level": "molecules",
+      "tag": "jl-pagination",
+      "added": {
+        "gzip": 3849,
+        "raw": 12029
+      },
+      "total": {
+        "gzip": 7746,
+        "raw": 23283
+      }
+    },
+    {
+      "className": "JlPopover",
+      "level": "molecules",
+      "tag": "jl-popover",
+      "added": {
+        "gzip": 3414,
+        "raw": 9650
+      },
+      "total": {
+        "gzip": 7311,
+        "raw": 20904
+      }
+    },
+    {
+      "className": "JlRadioGroup",
+      "level": "molecules",
+      "tag": "jl-radio-group",
+      "added": {
+        "gzip": 3430,
+        "raw": 11249
+      },
+      "total": {
+        "gzip": 7327,
+        "raw": 22503
+      }
+    },
+    {
+      "className": "JlSearch",
+      "level": "molecules",
+      "tag": "jl-search",
+      "added": {
+        "gzip": 5066,
+        "raw": 16299
+      },
+      "total": {
+        "gzip": 8963,
+        "raw": 27553
+      }
+    },
+    {
+      "className": "JlSegmented",
+      "level": "molecules",
+      "tag": "jl-segmented",
+      "added": {
+        "gzip": 4191,
+        "raw": 12867
+      },
+      "total": {
+        "gzip": 8088,
+        "raw": 24121
+      }
+    },
+    {
+      "className": "JlStat",
+      "level": "molecules",
+      "tag": "jl-stat",
+      "added": {
+        "gzip": 3620,
+        "raw": 11282
+      },
+      "total": {
+        "gzip": 7517,
+        "raw": 22536
+      }
+    },
+    {
+      "className": "JlSteps",
+      "level": "molecules",
+      "tag": "jl-steps",
+      "added": {
+        "gzip": 3530,
+        "raw": 11146
+      },
+      "total": {
+        "gzip": 7427,
+        "raw": 22400
+      }
+    },
+    {
+      "className": "JlTabPanel",
+      "level": "molecules",
+      "tag": "jl-tab-panel",
+      "added": {
+        "gzip": 1349,
+        "raw": 4201
+      },
+      "total": {
+        "gzip": 5246,
+        "raw": 15455
+      }
+    },
+    {
+      "className": "JlTabs",
+      "level": "molecules",
+      "tag": "jl-tabs",
+      "added": {
+        "gzip": 4377,
+        "raw": 13556
+      },
+      "total": {
+        "gzip": 8274,
+        "raw": 24810
+      }
+    },
+    {
+      "className": "JlTagInput",
+      "level": "molecules",
+      "tag": "jl-tag-input",
+      "added": {
+        "gzip": 7520,
+        "raw": 24133
+      },
+      "total": {
+        "gzip": 11417,
+        "raw": 35387
+      }
+    },
+    {
+      "className": "JlTimeline",
+      "level": "molecules",
+      "tag": "jl-timeline",
+      "added": {
+        "gzip": 2978,
+        "raw": 9454
+      },
+      "total": {
+        "gzip": 6875,
+        "raw": 20708
+      }
+    },
+    {
+      "className": "JlToast",
+      "level": "molecules",
+      "tag": "jl-toast",
+      "added": {
+        "gzip": 5532,
+        "raw": 19601
+      },
+      "total": {
+        "gzip": 9429,
+        "raw": 30855
+      }
+    },
+    {
+      "className": "JlTooltip",
+      "level": "molecules",
+      "tag": "jl-tooltip",
+      "added": {
+        "gzip": 3461,
+        "raw": 10393
+      },
+      "total": {
+        "gzip": 7358,
+        "raw": 21647
+      }
+    },
+    {
+      "className": "JlCommandPalette",
+      "level": "organisms",
+      "tag": "jl-command-palette",
+      "added": {
+        "gzip": 6015,
+        "raw": 18171
+      },
+      "total": {
+        "gzip": 9912,
+        "raw": 29425
+      }
+    },
+    {
+      "className": "JlConfirm",
+      "level": "organisms",
+      "tag": "jl-confirm",
+      "added": {
+        "gzip": 4980,
+        "raw": 17342
+      },
+      "total": {
+        "gzip": 8877,
+        "raw": 28596
+      }
+    },
+    {
+      "className": "JlDialog",
+      "level": "organisms",
+      "tag": "jl-dialog",
+      "added": {
+        "gzip": 4486,
+        "raw": 15294
+      },
+      "total": {
+        "gzip": 8383,
+        "raw": 26548
+      }
+    },
+    {
+      "className": "JlDrawer",
+      "level": "organisms",
+      "tag": "jl-drawer",
+      "added": {
+        "gzip": 4910,
+        "raw": 17363
+      },
+      "total": {
+        "gzip": 8807,
+        "raw": 28617
+      }
+    },
+    {
+      "className": "JlNavbar",
+      "level": "organisms",
+      "tag": "jl-navbar",
+      "added": {
+        "gzip": 3424,
+        "raw": 10952
+      },
+      "total": {
+        "gzip": 7321,
+        "raw": 22206
+      }
+    },
+    {
+      "className": "JlPageHeader",
+      "level": "organisms",
+      "tag": "jl-page-header",
+      "added": {
+        "gzip": 1902,
+        "raw": 6036
+      },
+      "total": {
+        "gzip": 5799,
+        "raw": 17290
+      }
+    },
+    {
+      "className": "JlSideNav",
+      "level": "organisms",
+      "tag": "jl-side-nav",
+      "added": {
+        "gzip": 4838,
+        "raw": 15969
+      },
+      "total": {
+        "gzip": 8735,
+        "raw": 27223
+      }
+    },
+    {
+      "className": "JlTable",
+      "level": "organisms",
+      "tag": "jl-table",
+      "added": {
+        "gzip": 6522,
+        "raw": 21936
+      },
+      "total": {
+        "gzip": 10419,
+        "raw": 33190
+      }
+    },
+    {
+      "className": "JlToaster",
+      "level": "organisms",
+      "tag": "jl-toaster",
+      "added": {
+        "gzip": 6518,
+        "raw": 22887
+      },
+      "total": {
+        "gzip": 10415,
+        "raw": 34141
+      }
+    },
+    {
+      "className": "JlTree",
+      "level": "organisms",
+      "tag": "jl-tree",
+      "added": {
+        "gzip": 4329,
+        "raw": 13398
+      },
+      "total": {
+        "gzip": 8226,
+        "raw": 24652
+      }
+    },
+    {
+      "className": "JlAppShell",
+      "level": "templates",
+      "tag": "jl-app-shell",
+      "added": {
+        "gzip": 3635,
+        "raw": 11632
+      },
+      "total": {
+        "gzip": 7532,
+        "raw": 22886
+      }
+    },
+    {
+      "className": "JlSplitView",
+      "level": "templates",
+      "tag": "jl-split-view",
+      "added": {
+        "gzip": 2783,
+        "raw": 8608
+      },
+      "total": {
+        "gzip": 6680,
+        "raw": 19862
+      }
+    }
+  ]
+}

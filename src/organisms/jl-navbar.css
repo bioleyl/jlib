@@ -1,0 +1,166 @@
+:host {
+  display: block;
+  container-type: inline-size;
+  --max-width: none;
+}
+
+:host([sticky]) {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+header {
+  border-bottom: 1px solid var(--jl-line);
+  background: var(--jl-surface);
+}
+
+.bar {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  max-width: var(--max-width);
+  height: 60px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+.brand {
+  display: flex;
+  flex: none;
+  align-items: center;
+  color: var(--jl-text);
+  font-size: var(--jl-font-lg);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+/* A logo and a name side by side, whatever element holds them. */
+::slotted([slot="brand"]) {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: inherit;
+  text-decoration: none;
+}
+
+ul {
+  display: flex;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.links {
+  flex: 1;
+  min-width: 0;
+}
+
+.links ul {
+  align-items: center;
+  gap: 2px;
+}
+
+.link {
+  display: inline-flex;
+  align-items: center;
+  height: 34px;
+  padding: 0 12px;
+  border-radius: var(--jl-radius-sm);
+  color: var(--jl-text-2);
+  font-size: var(--jl-font-md);
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+  transition:
+    background var(--jl-fast) var(--jl-ease),
+    color var(--jl-fast) var(--jl-ease);
+}
+
+.link:hover {
+  background: var(--jl-surface-2);
+  color: var(--jl-text);
+}
+
+.link[aria-current="page"] {
+  color: var(--jl-accent);
+}
+
+.actions {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 8px;
+}
+
+.toggle {
+  display: none;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: var(--jl-control-md);
+  height: var(--jl-control-md);
+  margin-right: -6px;
+  padding: 0;
+  border: none;
+  border-radius: var(--jl-radius-sm);
+  background: none;
+  color: var(--jl-text);
+  cursor: pointer;
+}
+
+.toggle:hover {
+  background: var(--jl-surface-2);
+}
+
+.drawer {
+  display: none;
+}
+
+/* A narrow bar folds its links into the menu button; the button opens them as a list under the bar. */
+@container (width < 720px) {
+  .bar {
+    gap: 12px;
+    padding: 0 16px;
+  }
+
+  .links {
+    display: none;
+  }
+
+  .actions {
+    margin-left: auto;
+  }
+
+  .toggle {
+    display: inline-flex;
+  }
+
+  .drawer:not([hidden]) {
+    display: block;
+    padding: 8px 12px 12px;
+    border-top: 1px solid var(--jl-line);
+    animation: drop var(--jl-fast) var(--jl-ease);
+  }
+
+  .drawer ul {
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .drawer .link {
+    display: flex;
+    height: 40px;
+  }
+
+  .drawer .link[aria-current="page"] {
+    background: var(--jl-accent-soft);
+  }
+}
+
+@keyframes drop {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+}

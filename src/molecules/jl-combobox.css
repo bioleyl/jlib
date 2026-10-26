@@ -1,0 +1,96 @@
+:host {
+  display: block;
+  /* As a grid or flex item, the field may be narrower than its text field would like. */
+  min-width: 0;
+}
+
+.toggle jl-icon {
+  transition: transform var(--jl-fast) var(--jl-ease);
+}
+
+:host([open]) .toggle jl-icon {
+  transform: rotate(180deg);
+}
+
+.toggle:disabled {
+  cursor: not-allowed;
+}
+
+.popup {
+  padding: 4px;
+}
+
+.listbox {
+  position: relative;
+  max-height: 264px;
+  margin: 0;
+  padding: 0;
+  overflow-y: auto;
+  list-style: none;
+}
+
+.option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 34px;
+  padding: 6px 10px;
+  border-radius: var(--jl-radius-xs);
+  color: var(--jl-text);
+  font-size: var(--jl-font-md);
+  line-height: 1.35;
+  cursor: pointer;
+  user-select: none;
+}
+
+.option.active {
+  background: var(--jl-surface-3);
+}
+
+.option-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.option.chosen .option-label {
+  font-weight: 600;
+}
+
+.option[aria-disabled="true"] {
+  color: var(--jl-faint);
+  cursor: not-allowed;
+}
+
+.text {
+  display: grid;
+  flex: 1;
+  gap: 1px;
+  min-width: 0;
+}
+
+.description {
+  color: var(--jl-muted);
+  font-size: var(--jl-font-xs);
+}
+
+.check {
+  color: var(--jl-accent);
+  visibility: hidden;
+}
+
+.option.chosen .check {
+  visibility: visible;
+}
+
+mark {
+  background: none;
+  color: var(--jl-accent);
+  font-weight: 700;
+}
+
+.empty {
+  padding: 8px 10px;
+  color: var(--jl-muted);
+  font-size: var(--jl-font-sm);
+}

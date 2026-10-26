@@ -1,0 +1,6 @@
+{
+  "name": "jlib-site",
+  "private": true,
+  "type": "module",
+  "sideEffects": true
+}

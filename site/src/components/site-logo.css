@@ -1,0 +1,13 @@
+:host {
+  display: inline-flex;
+  flex: none;
+}
+
+img {
+  display: block;
+}
+
+:host([dark]) .light,
+:host(:not([dark])) .dark {
+  display: none;
+}

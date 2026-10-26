@@ -1,0 +1,128 @@
+:host {
+  display: block;
+  /* As a grid or flex item, the field may be narrower than its text field would like. */
+  min-width: 0;
+  --chip-height: calc(var(--height, var(--jl-control-md)) - 12px);
+}
+
+.control {
+  flex-wrap: wrap;
+  gap: 4px;
+  padding: 4px 6px;
+  cursor: text;
+}
+
+/* The chips are items of the frame's own flow, so the field follows the last one on its line. */
+.tags {
+  display: contents;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  max-width: 100%;
+  height: var(--chip-height);
+  padding: 0 3px 0 8px;
+  border: 1px solid var(--jl-line);
+  border-radius: var(--jl-radius-xs);
+  background: var(--jl-surface-2);
+  color: var(--jl-text);
+  font-size: var(--jl-font-sm);
+  line-height: 1;
+  cursor: default;
+}
+
+:host([size="sm"]) .tag {
+  padding-left: 6px;
+  font-size: var(--jl-font-xs);
+}
+
+.tag.flash {
+  animation: flash 600ms var(--jl-ease);
+}
+
+.tag-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.tag-remove {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  padding: 0;
+  border: none;
+  border-radius: 4px;
+  background: none;
+  color: var(--jl-faint);
+  cursor: pointer;
+}
+
+.tag-remove:hover,
+.tag-remove:focus-visible {
+  background: var(--jl-surface-3);
+  color: var(--jl-text);
+}
+
+.native {
+  flex: 1 0 80px;
+  height: calc(var(--height, var(--jl-control-md)) - 10px);
+  padding-left: 6px;
+}
+
+:host([disabled]) .tag {
+  padding-right: 8px;
+  color: var(--jl-muted);
+}
+
+.popup {
+  min-width: 180px;
+  padding: 4px;
+}
+
+.listbox {
+  position: relative;
+  max-height: 240px;
+  margin: 0;
+  padding: 0;
+  overflow-y: auto;
+  list-style: none;
+}
+
+.option {
+  padding: 6px 10px;
+  border-radius: var(--jl-radius-xs);
+  color: var(--jl-text);
+  font-size: var(--jl-font-md);
+  line-height: 1.4;
+  white-space: nowrap;
+  cursor: pointer;
+  user-select: none;
+}
+
+.option.active,
+.option:hover {
+  background: var(--jl-surface-3);
+}
+
+mark {
+  background: none;
+  color: var(--jl-accent);
+  font-weight: 700;
+}
+
+@keyframes flash {
+  30% {
+    border-color: var(--jl-accent-line);
+    background: var(--jl-accent-soft);
+    color: var(--jl-accent-strong);
+  }
+}

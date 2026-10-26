@@ -1,0 +1,257 @@
+:host {
+  display: block;
+  width: var(--width, 248px);
+  height: 100%;
+  min-height: 0;
+  transition: width var(--jl-slow) var(--jl-ease);
+}
+
+:host([collapsed]) {
+  width: var(--rail-width, 60px);
+}
+
+nav {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  height: 100%;
+  padding: 12px 8px;
+  overflow-x: hidden;
+  overflow-y: auto;
+  color: var(--jl-text-2);
+  font-size: var(--jl-font-md);
+}
+
+::slotted([slot="footer"]) {
+  margin-top: auto;
+}
+
+.sections {
+  display: grid;
+  gap: 14px;
+}
+
+.section {
+  display: grid;
+  gap: 2px;
+}
+
+.section-label {
+  padding: 4px 10px 6px;
+  color: var(--jl-muted);
+  font-size: 11px;
+  font-weight: 650;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.items,
+.children {
+  display: grid;
+  gap: 2px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.children {
+  margin-top: 2px;
+}
+
+.entry {
+  position: relative;
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 34px;
+  padding: 0 10px;
+  border: none;
+  border-radius: var(--jl-radius-sm);
+  background: none;
+  color: inherit;
+  font: inherit;
+  font-weight: 550;
+  text-align: start;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    background var(--jl-fast) var(--jl-ease),
+    color var(--jl-fast) var(--jl-ease);
+}
+
+.item[data-depth="1"] {
+  padding-left: 36px;
+}
+
+.item[data-depth="2"] {
+  padding-left: 50px;
+}
+
+.item[data-depth="3"] {
+  padding-left: 64px;
+}
+
+.item:hover {
+  background: var(--jl-surface-3);
+  color: var(--jl-text);
+}
+
+.item[aria-current="page"] {
+  background: var(--jl-accent-soft);
+  color: var(--jl-accent);
+}
+
+.item.holds-active {
+  color: var(--jl-text);
+}
+
+.item-icon {
+  color: var(--jl-faint);
+}
+
+.item:hover .item-icon,
+.item.holds-active .item-icon {
+  color: var(--jl-text-2);
+}
+
+.item[aria-current="page"] .item-icon {
+  color: var(--jl-accent);
+}
+
+.item-initial {
+  display: none;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: var(--jl-radius-xs);
+  background: var(--jl-surface-3);
+  color: var(--jl-text-2);
+  font-size: 11px;
+  font-weight: 700;
+}
+
+/* Nested items without an icon line their labels up under their parent's label. */
+.item:not([data-depth="0"]) .item-initial {
+  display: none;
+}
+.item-label {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.item-badge {
+  flex: none;
+  min-width: 20px;
+  padding: 2px 6px;
+  border-radius: var(--jl-radius-pill);
+  background: var(--jl-surface-3);
+  color: var(--jl-text-2);
+  font-size: 11px;
+  font-weight: 650;
+  line-height: 14px;
+  text-align: center;
+}
+
+.item[aria-current="page"] .item-badge {
+  background: var(--jl-accent);
+  color: var(--jl-on-accent);
+}
+
+.expander jl-icon {
+  transition: transform var(--jl-fast) var(--jl-ease);
+}
+
+.chevron {
+  color: var(--jl-faint);
+  transition: transform var(--jl-fast) var(--jl-ease);
+}
+
+.entry.open > .item .chevron,
+.entry.open > .expander jl-icon {
+  transform: rotate(90deg);
+}
+
+/* The chevron of a parent that is also a link: its own button, over the end of the row. */
+.expander {
+  position: absolute;
+  top: 5px;
+  right: 6px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: none;
+  border-radius: var(--jl-radius-xs);
+  background: none;
+  color: var(--jl-faint);
+  cursor: pointer;
+}
+
+.expander:hover {
+  background: var(--jl-surface-3);
+  color: var(--jl-text);
+}
+
+.entry:has(> .expander) > .item {
+  padding-right: 36px;
+}
+
+/* The rail: icons only, centred; labels stay for screen readers, and show as tooltips. */
+:host([collapsed]) .section-label {
+  height: 1px;
+  margin: 4px 10px;
+  padding: 0;
+  overflow: hidden;
+  background: var(--jl-line);
+  color: transparent;
+}
+
+:host([collapsed]) .section:first-child .section-label {
+  display: none;
+}
+
+:host([collapsed]) .item {
+  justify-content: center;
+  padding: 0;
+}
+
+:host([collapsed]) .item-label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+}
+
+:host([collapsed]) .item-initial {
+  display: inline-flex;
+}
+
+:host([collapsed]) .item-badge {
+  position: absolute;
+  top: 5px;
+  right: 9px;
+  min-width: 0;
+  width: 8px;
+  height: 8px;
+  padding: 0;
+  overflow: hidden;
+  background: var(--jl-accent);
+  color: transparent;
+}
+
+:host([collapsed]) .children {
+  display: none;
+}

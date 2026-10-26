@@ -1,0 +1,80 @@
+:host {
+  display: block;
+}
+
+nav {
+  display: grid;
+  gap: 4px;
+  padding: 16px 12px 32px;
+}
+
+.search {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  padding: 0 4px 12px;
+  background: var(--jl-bg);
+}
+
+.groups {
+  display: grid;
+  gap: 18px;
+}
+
+.label {
+  padding: 0 10px 6px;
+  color: var(--jl-muted);
+  font-size: 11px;
+  font-weight: 650;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+ul {
+  display: grid;
+  gap: 1px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+a {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-height: 32px;
+  padding: 0 10px;
+  border-radius: var(--jl-radius-sm);
+  color: var(--jl-text-2);
+  font-size: var(--jl-font-sm);
+  font-weight: 550;
+  text-decoration: none;
+  transition:
+    background var(--jl-fast) var(--jl-ease),
+    color var(--jl-fast) var(--jl-ease);
+}
+
+a jl-icon {
+  color: var(--jl-faint);
+}
+
+a:hover {
+  background: var(--jl-surface-2);
+  color: var(--jl-text);
+}
+
+a[aria-current] {
+  background: var(--jl-accent-soft);
+  color: var(--jl-accent);
+  font-weight: 650;
+}
+
+a[aria-current] jl-icon {
+  color: var(--jl-accent);
+}
+
+.empty {
+  padding: 8px 10px;
+  color: var(--jl-muted);
+  font-size: var(--jl-font-sm);
+}

@@ -1,0 +1,8 @@
+:host {
+  display: inline-flex;
+}
+
+:host([copied]) jl-button {
+  --jl-accent: var(--jl-ok);
+  --jl-accent-soft: var(--jl-ok-soft);
+}

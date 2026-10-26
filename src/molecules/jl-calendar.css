@@ -1,0 +1,159 @@
+:host {
+  display: inline-block;
+  vertical-align: top;
+  --cell: 36px;
+}
+
+:host([size="sm"]) {
+  --cell: 32px;
+}
+
+:host([size="lg"]) {
+  --cell: 42px;
+}
+
+.calendar {
+  display: inline-grid;
+  gap: 6px;
+  padding: 12px;
+  border: 1px solid var(--jl-line);
+  border-radius: var(--jl-radius-lg);
+  background: var(--jl-surface);
+  color: var(--jl-text);
+}
+
+:host([invalid]) .calendar {
+  border-color: var(--jl-danger);
+}
+
+header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.title {
+  flex: 1;
+  font-size: var(--jl-font-md);
+  font-weight: 650;
+  text-align: center;
+}
+
+/* "octobre 2026": a title starts with a capital, whatever the locale writes. */
+.title::first-letter {
+  text-transform: uppercase;
+}
+
+.nav {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border: none;
+  border-radius: var(--jl-radius-sm);
+  background: none;
+  color: var(--jl-text-2);
+  cursor: pointer;
+}
+
+.nav:hover {
+  background: var(--jl-surface-3);
+  color: var(--jl-text);
+}
+
+.nav:disabled {
+  background: none;
+  color: var(--jl-faint);
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+table {
+  border-collapse: collapse;
+  border-spacing: 0;
+}
+
+th {
+  width: var(--cell);
+  height: 28px;
+  padding: 0;
+  color: var(--jl-muted);
+  font-size: 11px;
+  font-weight: 600;
+  text-align: center;
+}
+
+td {
+  width: var(--cell);
+  height: var(--cell);
+  padding: 2px;
+  text-align: center;
+  cursor: pointer;
+}
+
+.number {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  border-radius: var(--jl-radius-sm);
+  font-size: var(--jl-font-sm);
+  font-variant-numeric: tabular-nums;
+  transition:
+    background var(--jl-fast) var(--jl-ease),
+    color var(--jl-fast) var(--jl-ease);
+}
+
+td:hover .number {
+  background: var(--jl-surface-3);
+}
+
+td:focus-visible {
+  box-shadow: none;
+}
+
+td:focus-visible .number {
+  box-shadow: var(--jl-focus-ring);
+}
+
+td.outside .number {
+  color: var(--jl-muted);
+}
+
+td[aria-current="date"] .number {
+  color: var(--jl-accent);
+  font-weight: 700;
+  box-shadow: inset 0 0 0 1px var(--jl-accent-line);
+}
+
+td[aria-disabled="true"] {
+  cursor: not-allowed;
+}
+
+td[aria-disabled="true"] .number {
+  background: none;
+  color: var(--jl-faint);
+  text-decoration: line-through;
+  text-decoration-color: color-mix(in srgb, var(--jl-faint) 60%, transparent);
+}
+
+td[aria-selected="true"] .number {
+  background: var(--jl-accent);
+  color: var(--jl-on-accent);
+  font-weight: 650;
+}
+
+:host([disabled]) .calendar {
+  opacity: 0.55;
+}
+
+:host([disabled]) td {
+  cursor: not-allowed;
+}
+
+:host([disabled]) td:hover .number {
+  background: none;
+}

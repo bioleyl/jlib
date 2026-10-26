@@ -1,0 +1,67 @@
+:host {
+  display: block;
+  container-type: inline-size;
+  --label-width: 160px;
+}
+
+.field {
+  display: grid;
+  gap: 6px;
+}
+
+.label-row {
+  display: flex;
+  gap: 3px;
+  color: var(--jl-text);
+  font-size: var(--jl-font-sm);
+  font-weight: 600;
+  line-height: 20px;
+}
+
+.asterisk {
+  color: var(--jl-danger);
+}
+
+.body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 6px;
+  min-width: 0;
+}
+
+.hint {
+  color: var(--jl-muted);
+  font-size: var(--jl-font-sm);
+  line-height: 18px;
+}
+
+.error-region:empty {
+  display: contents;
+}
+
+.error {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  color: var(--jl-danger);
+  font-size: var(--jl-font-sm);
+  line-height: 18px;
+}
+
+.error jl-icon {
+  flex: none;
+  margin-top: 2px;
+}
+
+/* Beside: the label takes a column and sits on the baseline of the control's first line of text. */
+:host([orientation="horizontal"]) .field {
+  grid-template-columns: var(--label-width) minmax(0, 1fr);
+  align-items: baseline;
+  gap: 6px 16px;
+}
+
+@container (max-width: 420px) {
+  :host([orientation="horizontal"]) .field {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

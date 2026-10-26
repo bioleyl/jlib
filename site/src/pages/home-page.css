@@ -1,0 +1,266 @@
+.page {
+  display: grid;
+  gap: 72px;
+  max-width: 1120px;
+  margin: 0 auto;
+}
+
+.hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+  align-items: center;
+  gap: 48px;
+  padding-top: 16px;
+}
+
+.hero-text {
+  display: grid;
+  gap: 18px;
+}
+
+.hero h1 {
+  max-width: 14ch;
+  font-size: clamp(38px, 5vw, 58px);
+  letter-spacing: -0.04em;
+  line-height: 1.02;
+}
+
+.cta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.hero jl-code-block {
+  max-width: 400px;
+}
+
+.showcase {
+  display: grid;
+  gap: 18px;
+  padding: 24px;
+  border: 1px solid var(--jl-line);
+  border-radius: var(--jl-radius-xl);
+  background: var(--jl-surface);
+  box-shadow:
+    0 0 0 8px var(--jl-surface-2),
+    0 0 0 9px var(--jl-line);
+}
+
+.showcase-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.showcase-title {
+  color: var(--jl-text);
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.showcase-sub {
+  color: var(--jl-muted);
+  font-family: var(--jl-font-mono);
+  font-size: 12px;
+}
+
+.showcase-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding-top: 16px;
+  border-top: 1px solid var(--jl-line);
+}
+
+.principles {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  border: 1px solid var(--jl-line);
+  border-radius: var(--jl-radius-lg);
+  overflow: hidden;
+}
+
+.principle {
+  display: grid;
+  align-content: start;
+  gap: 8px;
+  padding: 24px;
+  border-right: 1px solid var(--jl-line);
+  border-bottom: 1px solid var(--jl-line);
+}
+
+.principle:nth-child(3n) {
+  border-right: none;
+}
+
+.principle:nth-last-child(-n + 3) {
+  border-bottom: none;
+}
+
+.principle-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  justify-self: start;
+  width: 34px;
+  height: 34px;
+  border-radius: var(--jl-radius-sm);
+  background: var(--jl-accent-soft);
+  color: var(--jl-accent);
+}
+
+.principle h3 {
+  margin: 4px 0 0;
+}
+
+.principle p {
+  color: var(--jl-muted);
+  font-size: var(--jl-font-sm);
+  line-height: 1.6;
+}
+
+.usage {
+  display: grid;
+  grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+  align-items: center;
+  gap: 40px;
+}
+
+.usage-text {
+  display: grid;
+  gap: 12px;
+}
+
+.usage-text h2 {
+  margin: 0;
+  padding: 0;
+}
+
+.usage-code {
+  display: grid;
+  gap: 12px;
+}
+
+.levels {
+  display: grid;
+  gap: 16px;
+}
+
+.levels h2 {
+  margin: 0;
+  padding: 0;
+}
+
+.level-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.level {
+  display: grid;
+  align-content: start;
+  gap: 6px;
+  padding: 20px;
+  border: 1px solid var(--jl-line);
+  border-radius: var(--jl-radius-lg);
+  font-weight: 450;
+  text-decoration: none;
+  transition: border-color var(--jl-fast) var(--jl-ease);
+}
+
+.level:hover {
+  border-color: var(--jl-accent-line);
+  text-decoration: none;
+}
+
+.level-count {
+  color: var(--jl-accent);
+  font-family: var(--jl-font-mono);
+  font-size: 28px;
+  font-weight: 600;
+  line-height: 1.1;
+}
+
+.level-name {
+  color: var(--jl-text);
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.level-text {
+  color: var(--jl-muted);
+  font-size: var(--jl-font-sm);
+  line-height: 1.55;
+}
+
+.maker {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 24px 40px;
+  padding: 32px;
+  border: 1px solid var(--jl-line);
+  border-radius: var(--jl-radius-lg);
+  background: var(--jl-surface-2);
+}
+
+.maker-logo {
+  display: inline-flex;
+  flex: none;
+}
+
+.maker-text {
+  display: grid;
+  flex: 1 1 360px;
+  gap: 10px;
+}
+
+.maker-text h2 {
+  margin: 0;
+  padding: 0;
+}
+
+.maker-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 20px;
+  font-size: var(--jl-font-sm);
+}
+
+@media (max-width: 1100px) {
+  .hero,
+  .usage {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .level-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 760px) {
+  .page {
+    gap: 48px;
+  }
+
+  .principles {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .principle,
+  .principle:nth-child(3n) {
+    border-right: none;
+    border-bottom: 1px solid var(--jl-line);
+  }
+
+  .principle:last-child {
+    border-bottom: none;
+  }
+
+  .level-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

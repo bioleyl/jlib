@@ -1,0 +1,118 @@
+:host {
+  display: block;
+  --height: var(--jl-control-md);
+  --font-size: var(--jl-font-sm);
+  --entry: var(--height);
+  --gap: 4px;
+  /* The width of an entry on a phone. */
+  --min-button: 26px;
+}
+
+:host([size="sm"]) {
+  --height: var(--jl-control-sm);
+  --font-size: var(--jl-font-xs);
+  --min-button: 24px;
+}
+
+:host([size="lg"]) {
+  --height: var(--jl-control-lg);
+  --font-size: var(--jl-font-md);
+  --min-button: 32px;
+}
+
+/* Each entry is a square the height of the row; on a phone the entries tighten so a row of seven or nine fits. */
+@media (width < 480px) {
+  :host {
+    --entry: var(--min-button);
+    --gap: 2px;
+  }
+}
+
+nav {
+  display: flex;
+  align-items: center;
+  gap: var(--gap);
+}
+
+.pages {
+  display: flex;
+  align-items: center;
+  gap: var(--gap);
+  padding: 0;
+  list-style: none;
+}
+
+.pages li {
+  display: flex;
+  width: var(--entry);
+}
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: var(--height);
+  padding: 0 2px;
+  border: 1px solid transparent;
+  border-radius: var(--jl-radius-sm);
+  background: none;
+  color: var(--jl-text-2);
+  font-size: var(--font-size);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+  transition:
+    background var(--jl-fast) var(--jl-ease),
+    color var(--jl-fast) var(--jl-ease);
+}
+
+.button:hover:not(:disabled, [aria-current]) {
+  background: var(--jl-surface-2);
+  color: var(--jl-text);
+}
+
+.button:active:not(:disabled, [aria-current]) {
+  background: var(--jl-surface-3);
+}
+
+.previous,
+.next {
+  flex: none;
+  width: calc(var(--entry) + 2px);
+  border-color: var(--jl-line-strong);
+  color: var(--jl-text);
+}
+
+.button:disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
+}
+
+.page[aria-current] {
+  background: var(--jl-accent);
+  color: var(--jl-on-accent);
+  cursor: default;
+}
+
+.pages .gap {
+  display: inline-flex;
+  width: calc(var(--entry) - 10px);
+  align-items: flex-end;
+  justify-content: center;
+  color: var(--jl-faint);
+  font-size: var(--font-size);
+  user-select: none;
+}
+
+.status {
+  flex: none;
+  min-width: 72px;
+  padding: 0 8px;
+  color: var(--jl-text-2);
+  font-size: var(--font-size);
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+  white-space: nowrap;
+}

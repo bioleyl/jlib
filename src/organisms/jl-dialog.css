@@ -1,0 +1,97 @@
+:host {
+  display: contents;
+  --width: 520px;
+}
+
+:host([size="sm"]) {
+  --width: 400px;
+}
+
+:host([size="lg"]) {
+  --width: 820px;
+}
+
+:host([size="full"]) {
+  --width: 100vw;
+}
+
+dialog {
+  display: flex;
+  flex-direction: column;
+  width: min(var(--width), calc(100vw - 32px));
+  max-height: min(760px, calc(100dvh - 48px));
+  padding: 0;
+  border: 1px solid var(--jl-line);
+  border-radius: var(--jl-radius-lg);
+  background: var(--jl-surface);
+  color: var(--jl-text);
+  font-size: var(--jl-font-md);
+  box-shadow: var(--jl-shadow-lg);
+}
+
+dialog:not([open]) {
+  display: none;
+}
+
+:host([size="full"]) dialog {
+  max-height: calc(100dvh - 32px);
+  height: calc(100dvh - 32px);
+}
+
+dialog[open] {
+  animation: rise var(--jl-slow) var(--jl-ease);
+}
+
+dialog::backdrop {
+  background: var(--jl-scrim);
+  backdrop-filter: blur(2px);
+}
+
+header {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 20px 16px 4px 24px;
+}
+
+.titles {
+  display: grid;
+  flex: 1;
+  gap: 4px;
+  padding-top: 4px;
+}
+
+h2 {
+  font-size: 17px;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+  line-height: 1.3;
+}
+
+.description {
+  color: var(--jl-muted);
+  font-size: var(--jl-font-sm);
+  line-height: 1.5;
+}
+
+.body {
+  flex: 1;
+  padding: 16px 24px;
+  overflow: auto;
+  line-height: 1.55;
+}
+
+footer {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 0 24px 20px;
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
+  }
+}

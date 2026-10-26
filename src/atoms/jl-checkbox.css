@@ -1,0 +1,97 @@
+:host {
+  display: inline-flex;
+  vertical-align: middle;
+  --box: 18px;
+}
+
+.wrap {
+  display: inline-flex;
+  align-items: flex-start;
+  gap: 10px;
+  color: var(--jl-text);
+  font-size: var(--jl-font-md);
+  line-height: 20px;
+  cursor: pointer;
+}
+
+/* The native box keeps the semantics and the keyboard; its look is drawn here, the marks on top of it. */
+.box {
+  position: relative;
+  display: inline-flex;
+  flex: none;
+  width: var(--box);
+  height: var(--box);
+  margin-top: 1px;
+}
+
+.native {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  border: 1px solid var(--jl-line-strong);
+  border-radius: var(--jl-radius-xs);
+  background: var(--jl-surface);
+  cursor: inherit;
+  appearance: none;
+  transition:
+    background var(--jl-fast) var(--jl-ease),
+    border-color var(--jl-fast) var(--jl-ease),
+    box-shadow var(--jl-fast) var(--jl-ease);
+}
+
+.wrap:hover .native:not(:disabled) {
+  border-color: color-mix(in srgb, var(--jl-line-strong) 60%, var(--jl-text) 18%);
+}
+
+.native:checked,
+.native:indeterminate {
+  border-color: var(--jl-accent);
+  background: var(--jl-accent);
+}
+
+.wrap:hover .native:checked:not(:disabled),
+.wrap:hover .native:indeterminate:not(:disabled) {
+  border-color: var(--jl-accent-strong);
+  background: var(--jl-accent-strong);
+}
+
+.mark {
+  position: absolute;
+  inset: 0;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  color: var(--jl-on-accent);
+  pointer-events: none;
+}
+
+.native:checked:not(:indeterminate) ~ .check,
+.native:indeterminate ~ .dash {
+  display: flex;
+}
+
+/* Its baseline is the element's, so a label beside it (a horizontal field) lines up with the text. */
+.text {
+  display: grid;
+  align-self: baseline;
+  gap: 2px;
+}
+
+.description {
+  color: var(--jl-muted);
+  font-size: var(--jl-font-sm);
+  line-height: 18px;
+}
+
+:host([disabled]) .wrap,
+:host(:disabled) .wrap {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+:host([disabled]) .native:not(:checked, :indeterminate),
+:host(:disabled) .native:not(:checked, :indeterminate) {
+  background: var(--jl-surface-2);
+}

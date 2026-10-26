@@ -1,0 +1,29 @@
+.tables {
+  display: grid;
+  gap: 22px;
+}
+
+section {
+  display: grid;
+  gap: 10px;
+}
+
+h3 {
+  margin: 0;
+}
+
+.names {
+  display: grid;
+  justify-items: start;
+  gap: 4px;
+}
+
+.hint {
+  color: var(--jl-faint);
+  font-size: 12px;
+  font-style: italic;
+}
+
+td:last-child {
+  min-width: 220px;
+}

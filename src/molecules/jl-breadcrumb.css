@@ -1,0 +1,78 @@
+:host {
+  display: block;
+}
+
+ol {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 0;
+  padding: 0;
+  list-style: none;
+  font-size: var(--jl-font-sm);
+  line-height: 20px;
+}
+
+li {
+  display: inline-flex;
+  align-items: center;
+  min-width: 0;
+}
+
+.separator {
+  margin: 0 6px;
+  color: var(--jl-faint);
+}
+
+.crumb {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  padding: 2px 4px;
+  border-radius: var(--jl-radius-xs);
+  color: var(--jl-muted);
+  text-decoration: none;
+}
+
+a.crumb:hover {
+  color: var(--jl-text);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.crumb[aria-current="page"] {
+  color: var(--jl-text);
+  font-weight: 600;
+}
+
+.label {
+  max-width: 24ch;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.more {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 22px;
+  padding: 0;
+  border: none;
+  border-radius: var(--jl-radius-xs);
+  background: none;
+  color: var(--jl-muted);
+  cursor: pointer;
+}
+
+.more:hover {
+  background: var(--jl-surface-3);
+  color: var(--jl-text);
+}
+
+/* The first crumb's text lines up with what is under the trail, its padding hanging out to the left. */
+li:first-child .crumb {
+  margin-left: -4px;
+}

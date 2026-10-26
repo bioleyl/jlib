@@ -1,0 +1,65 @@
+.page {
+  max-width: 1080px;
+  margin: 0 auto;
+}
+
+.intro {
+  display: grid;
+  gap: 10px;
+}
+
+.level {
+  display: grid;
+  gap: 10px;
+}
+
+.level-head {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+
+.count {
+  color: var(--jl-faint);
+  font-family: var(--jl-font-mono);
+  font-size: var(--jl-font-sm);
+}
+
+.tile {
+  display: grid;
+  align-content: start;
+  gap: 6px;
+  padding: 16px 18px;
+  border: 1px solid var(--jl-line);
+  border-radius: var(--jl-radius-lg);
+  background: var(--jl-surface);
+  text-decoration: none;
+  transition:
+    border-color var(--jl-fast) var(--jl-ease),
+    background var(--jl-fast) var(--jl-ease);
+}
+
+.tile:hover {
+  border-color: var(--jl-accent-line);
+  background: var(--jl-accent-soft);
+  text-decoration: none;
+}
+
+.tile-name {
+  color: var(--jl-text);
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.tile-summary {
+  color: var(--jl-muted);
+  font-size: var(--jl-font-sm);
+  font-weight: 450;
+  line-height: 1.5;
+}
+
+.tile-tag {
+  justify-self: start;
+  margin-top: 4px;
+  font-size: 11.5px;
+}

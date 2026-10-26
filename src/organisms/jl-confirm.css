@@ -1,0 +1,7 @@
+:host {
+  display: contents;
+}
+
+.text {
+  color: var(--jl-text-2);
+}

@@ -1,0 +1,61 @@
+:host {
+  display: block;
+  --base: var(--jl-surface-3);
+  --shine: var(--jl-surface-2);
+}
+
+:host([shape="circle"]) {
+  display: inline-block;
+  vertical-align: middle;
+}
+
+.bones {
+  display: grid;
+  gap: 0.55em;
+  width: var(--width, 100%);
+}
+
+.bone {
+  display: block;
+  height: var(--height, 0.8em);
+  border-radius: var(--jl-radius-xs);
+  background: linear-gradient(90deg, var(--base) 30%, var(--shine) 50%, var(--base) 70%) 0 0 / 300% 100%;
+  animation: shimmer 1.8s ease-in-out infinite;
+}
+
+.bone:last-child:not(:first-child) {
+  width: 60%;
+}
+
+:host([shape="rect"]) .bone {
+  height: var(--height, 96px);
+  border-radius: var(--jl-radius);
+}
+
+:host([shape="circle"]) .bones {
+  width: var(--width, 40px);
+}
+
+:host([shape="circle"]) .bone {
+  width: 100%;
+  height: var(--height, auto);
+  aspect-ratio: 1;
+  border-radius: 50%;
+}
+
+@keyframes shimmer {
+  from {
+    background-position: 100% 0;
+  }
+
+  to {
+    background-position: 0 0;
+  }
+}
+
+/* A shortened endless animation would flicker: without motion, the placeholder stays still. */
+@media (prefers-reduced-motion: reduce) {
+  .bone {
+    animation: none;
+  }
+}

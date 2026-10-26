@@ -1,0 +1,213 @@
+/* The reading style of the site's pages: headings, paragraphs, lists, inline code, tables and cards. */
+:host {
+  display: block;
+  color: var(--jl-text);
+  font-size: var(--jl-font-md);
+  line-height: 1.65;
+}
+
+article {
+  display: grid;
+  gap: 18px;
+  min-width: 0;
+}
+
+/* An implicit grid column grows to its widest content (a code line, a table): keep them within the page. */
+article,
+article section,
+article header {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+.kicker {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  color: var(--jl-muted);
+  font-size: var(--jl-font-sm);
+}
+
+h1 {
+  font-size: 34px;
+  font-weight: 750;
+  letter-spacing: -0.025em;
+  line-height: 1.15;
+}
+
+h2 {
+  margin-top: 28px;
+  padding-top: 8px;
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  line-height: 1.3;
+}
+
+h3 {
+  margin-top: 8px;
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+p,
+li {
+  color: var(--jl-text-2);
+}
+
+.lead {
+  max-width: 64ch;
+  color: var(--jl-muted);
+  font-size: 17px;
+  line-height: 1.6;
+}
+
+ul,
+ol {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding-left: 22px;
+}
+
+a {
+  color: var(--jl-accent);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+code {
+  padding: 1px 6px;
+  border-radius: var(--jl-radius-xs);
+  background: var(--jl-code-bg);
+  color: var(--jl-text);
+  font-size: 0.88em;
+  white-space: nowrap;
+}
+
+strong {
+  color: var(--jl-text);
+  font-weight: 700;
+}
+
+.table-wrap {
+  border: 1px solid var(--jl-line);
+  border-radius: var(--jl-radius);
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--jl-font-sm);
+}
+
+th {
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--jl-line);
+  background: var(--jl-surface-2);
+  color: var(--jl-muted);
+  font-size: 11px;
+  font-weight: 650;
+  letter-spacing: 0.06em;
+  text-align: left;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+td {
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--jl-line-soft);
+  color: var(--jl-text-2);
+  vertical-align: top;
+}
+
+tr:last-child td {
+  border-bottom: none;
+}
+
+td code {
+  white-space: normal;
+}
+
+.card {
+  padding: 20px;
+  border: 1px solid var(--jl-line);
+  border-radius: var(--jl-radius-lg);
+  background: var(--jl-surface);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: 12px;
+}
+
+.note {
+  padding: 12px 16px;
+  border: 1px solid var(--jl-accent-line);
+  border-radius: var(--jl-radius);
+  background: var(--jl-accent-soft);
+  color: var(--jl-text-2);
+  font-size: var(--jl-font-sm);
+}
+
+.label {
+  color: var(--jl-muted);
+  font-size: 11px;
+  font-weight: 650;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+@media (max-width: 720px) {
+  h1 {
+    font-size: 28px;
+  }
+}
+
+/* Two cases side by side: what works, what does not. */
+.cases {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 12px;
+}
+
+.case {
+  display: grid;
+  align-content: start;
+  gap: 10px;
+  padding: 16px;
+  border: 1px solid var(--jl-line);
+  border-top: 3px solid var(--tone);
+  border-radius: var(--jl-radius-lg);
+  --tone: var(--jl-ok);
+}
+
+.case.dropped {
+  --tone: var(--jl-danger);
+}
+
+.case-title {
+  color: var(--jl-text);
+  font-weight: 700;
+}
+
+.case-outcome {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  color: var(--jl-text-2);
+  font-size: var(--jl-font-sm);
+}
+
+.case-outcome jl-icon {
+  margin-top: 2px;
+  color: var(--tone);
+}

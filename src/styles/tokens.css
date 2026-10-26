@@ -1,0 +1,188 @@
+/*
+ * The design tokens, as swai and swcode have them: ink and white, flat surfaces separated by lines, and one blue
+ * that marks what is live, selected or waiting for a person. Custom properties cross shadow roots, so every
+ * component reads them. They sit in the `jlib` layer: any unlayered rule of the page overrides them.
+ */
+@layer jlib {
+  :root,
+  [data-theme="light"] {
+    color-scheme: light;
+    --jl-font-sans: "Manrope Variable", "Manrope", system-ui, -apple-system, "Segoe UI", sans-serif;
+    --jl-font-mono: "JetBrains Mono Variable", "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+
+    --jl-font-xs: 12px;
+    --jl-font-sm: 13px;
+    --jl-font-md: 14px;
+    --jl-font-lg: 16px;
+    --jl-font-xl: 20px;
+    --jl-font-2xl: 28px;
+
+    --jl-text: #0b0b0c;
+    --jl-text-2: #3a3f47;
+    /* Secondary text: 6.2:1 on white. */
+    --jl-muted: #5b616b;
+    /* Icons and decorations only: 3.2:1 on white is enough for them, not for text. */
+    --jl-faint: #8a9099;
+
+    --jl-bg: #ffffff;
+    --jl-surface: #ffffff;
+    --jl-surface-2: #f7f8f9;
+    --jl-surface-3: #eef0f2;
+    --jl-code-bg: #f0f2f4;
+    --jl-line: #e6e8eb;
+    --jl-line-soft: #eef0f2;
+    --jl-line-strong: #d5d9de;
+
+    /* The SyWare logo's blue: marks, focus rings, progress. 3.8:1 on white: enough for shapes, never for text. */
+    --jl-brand: #0e88d3;
+    /* The same hue, deep enough to carry text: buttons, links, the selection. 5.2:1 on white. */
+    --jl-accent: #0c72b0;
+    --jl-accent-strong: #095a8b;
+    --jl-accent-soft: #e9f4fb;
+    --jl-accent-line: #b7dbf2;
+    --jl-on-accent: #ffffff;
+
+    --jl-ok: #17784a;
+    --jl-ok-soft: #ecf6f0;
+    --jl-warn: #9a5b00;
+    --jl-warn-soft: #fcf4e6;
+    --jl-danger: #b42318;
+    --jl-danger-soft: #fdf0ef;
+    --jl-on-danger: #ffffff;
+    --jl-info: #0c72b0;
+    --jl-info-soft: #e9f4fb;
+
+    /* Code: the accent for keywords, quiet colours from the same family for the rest. */
+    --jl-code-keyword: #0c72b0;
+    --jl-code-tag: #095a8b;
+    --jl-code-attribute: #5b48c8;
+    --jl-code-string: #17784a;
+    --jl-code-number: #9a5b00;
+    --jl-code-function: #3d5a80;
+    --jl-code-property: #127a72;
+    --jl-code-comment: #8a9099;
+
+    --jl-radius-xs: 6px;
+    --jl-radius-sm: 8px;
+    --jl-radius: 10px;
+    --jl-radius-lg: 12px;
+    --jl-radius-xl: 20px;
+    --jl-radius-pill: 999px;
+
+    /* Spacing: a 4px grid, for the layouts pages build around the components. */
+    --jl-space-1: 4px;
+    --jl-space-2: 8px;
+    --jl-space-3: 12px;
+    --jl-space-4: 16px;
+    --jl-space-5: 20px;
+    --jl-space-6: 24px;
+    --jl-space-8: 32px;
+    --jl-space-10: 40px;
+    --jl-space-12: 48px;
+    --jl-space-16: 64px;
+
+    --jl-control-sm: 30px;
+    --jl-control-md: 36px;
+    --jl-control-lg: 44px;
+
+    /* Flat: lines separate; only what floats (menus, dialogs, toasts) casts a shadow. */
+    --jl-shadow-sm: 0 1px 2px rgb(11 11 12 / 0.05);
+    --jl-shadow: 0 6px 16px -6px rgb(11 11 12 / 0.12);
+    --jl-shadow-lg: 0 18px 44px -14px rgb(11 11 12 / 0.22);
+    --jl-focus-ring: 0 0 0 3px color-mix(in srgb, var(--jl-brand) 35%, transparent);
+    --jl-scrim: rgb(11 11 12 / 0.38);
+
+    --jl-ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+    --jl-fast: 120ms;
+    --jl-slow: 240ms;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      color-scheme: dark;
+      --jl-text: #eceef1;
+      --jl-text-2: #c3c8cf;
+      --jl-muted: #959ca6;
+      --jl-faint: #6b727c;
+      --jl-bg: #0f1113;
+      --jl-surface: #0f1113;
+      --jl-surface-2: #16191c;
+      --jl-surface-3: #1d2125;
+      --jl-code-bg: #1d2125;
+      --jl-line: #262a2f;
+      --jl-line-soft: #1f2327;
+      --jl-line-strong: #343a41;
+      --jl-brand: #1a9be0;
+      --jl-accent: #3ea6e8;
+      --jl-accent-strong: #6cc0f2;
+      --jl-accent-soft: #0f2a3b;
+      --jl-accent-line: #1e4a66;
+      --jl-on-accent: #04131c;
+      --jl-ok: #4cc38a;
+      --jl-ok-soft: #10261c;
+      --jl-warn: #e5a54b;
+      --jl-warn-soft: #2a2012;
+      --jl-danger: #f0786c;
+      --jl-danger-soft: #3a1a17;
+      --jl-on-danger: #1c0604;
+      --jl-info: #3ea6e8;
+      --jl-info-soft: #0f2a3b;
+      --jl-code-keyword: #3ea6e8;
+      --jl-code-tag: #6cc0f2;
+      --jl-code-attribute: #a99bf0;
+      --jl-code-string: #4cc38a;
+      --jl-code-number: #e5a54b;
+      --jl-code-function: #8fb0d6;
+      --jl-code-property: #4fc1b5;
+      --jl-code-comment: #6b727c;
+      --jl-shadow-sm: 0 1px 2px rgb(0 0 0 / 0.4);
+      --jl-shadow: 0 6px 18px -6px rgb(0 0 0 / 0.6);
+      --jl-shadow-lg: 0 18px 44px -12px rgb(0 0 0 / 0.7);
+      --jl-scrim: rgb(0 0 0 / 0.55);
+    }
+  }
+
+  /* Dark: the same blue, lifted to read on a dark ground, with dark text on the buttons. */
+  [data-theme="dark"] {
+    color-scheme: dark;
+    --jl-text: #eceef1;
+    --jl-text-2: #c3c8cf;
+    --jl-muted: #959ca6;
+    --jl-faint: #6b727c;
+    --jl-bg: #0f1113;
+    --jl-surface: #0f1113;
+    --jl-surface-2: #16191c;
+    --jl-surface-3: #1d2125;
+    --jl-code-bg: #1d2125;
+    --jl-line: #262a2f;
+    --jl-line-soft: #1f2327;
+    --jl-line-strong: #343a41;
+    --jl-brand: #1a9be0;
+    --jl-accent: #3ea6e8;
+    --jl-accent-strong: #6cc0f2;
+    --jl-accent-soft: #0f2a3b;
+    --jl-accent-line: #1e4a66;
+    --jl-on-accent: #04131c;
+    --jl-ok: #4cc38a;
+    --jl-ok-soft: #10261c;
+    --jl-warn: #e5a54b;
+    --jl-warn-soft: #2a2012;
+    --jl-danger: #f0786c;
+    --jl-danger-soft: #3a1a17;
+    --jl-on-danger: #1c0604;
+    --jl-info: #3ea6e8;
+    --jl-info-soft: #0f2a3b;
+    --jl-code-keyword: #3ea6e8;
+    --jl-code-tag: #6cc0f2;
+    --jl-code-attribute: #a99bf0;
+    --jl-code-string: #4cc38a;
+    --jl-code-number: #e5a54b;
+    --jl-code-function: #8fb0d6;
+    --jl-code-property: #4fc1b5;
+    --jl-code-comment: #6b727c;
+    --jl-shadow-sm: 0 1px 2px rgb(0 0 0 / 0.4);
+    --jl-shadow: 0 6px 18px -6px rgb(0 0 0 / 0.6);
+    --jl-shadow-lg: 0 18px 44px -12px rgb(0 0 0 / 0.7);
+    --jl-scrim: rgb(0 0 0 / 0.55);
+  }
+}

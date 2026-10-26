@@ -1,0 +1,14 @@
+:host {
+  display: block;
+  border-radius: var(--jl-radius-xs);
+}
+
+/* jl-tabs marks the open panel; the others stay out of the page. */
+:host(:not([selected])) {
+  display: none;
+}
+
+:host(:focus-visible) {
+  outline: none;
+  box-shadow: var(--jl-focus-ring);
+}

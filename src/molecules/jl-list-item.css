@@ -1,0 +1,117 @@
+:host {
+  display: block;
+  --pad-x: 16px;
+  --pad-y: 12px;
+}
+
+.item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 52px;
+  padding: var(--pad-y) var(--pad-x);
+  background: var(--jl-surface);
+  color: var(--jl-text);
+  transition: background var(--jl-fast) var(--jl-ease);
+}
+
+/* Rows that follow each other are separated by a line; the last one leaves the edge to its container. */
+:host(:not(:last-child)) .item {
+  border-bottom: 1px solid var(--jl-line);
+}
+
+:host([clickable]) .item {
+  cursor: pointer;
+}
+
+:host([clickable]) .item:hover {
+  background: var(--jl-surface-2);
+}
+
+:host([selected]) .item,
+:host([selected][clickable]) .item:hover {
+  background: var(--jl-accent-soft);
+}
+
+/* The link covers the row, so a press anywhere follows it; the trailing controls sit above it. */
+.link {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+}
+
+.link:focus-visible,
+.item:focus-visible {
+  box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--jl-brand) 55%, transparent);
+}
+
+.end {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 8px;
+}
+
+.start {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+}
+
+.icon-box {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--jl-radius-sm);
+  background: var(--jl-surface-3);
+  color: var(--jl-text-2);
+}
+
+:host([selected]) .icon-box {
+  background: color-mix(in srgb, var(--jl-accent) 14%, transparent);
+  color: var(--jl-accent);
+}
+
+.text {
+  display: grid;
+  flex: 1;
+  gap: 1px;
+  min-width: 0;
+}
+
+.heading {
+  overflow: hidden;
+  font-size: var(--jl-font-md);
+  font-weight: 600;
+  line-height: 1.4;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+:host([selected]) .heading {
+  color: var(--jl-accent);
+}
+
+.description {
+  color: var(--jl-muted);
+  font-size: var(--jl-font-sm);
+  line-height: 1.45;
+}
+
+.meta {
+  flex: none;
+  color: var(--jl-muted);
+  font-size: var(--jl-font-xs);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.chevron {
+  margin-right: -4px;
+  color: var(--jl-faint);
+}

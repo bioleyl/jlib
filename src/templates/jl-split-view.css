@@ -1,0 +1,94 @@
+:host {
+  display: block;
+  height: 100%;
+  min-height: 0;
+}
+
+.split {
+  display: grid;
+  grid-template-columns: minmax(0, var(--position, 50%)) 1px minmax(0, 1fr);
+  height: 100%;
+}
+
+:host([orientation="vertical"]) .split {
+  grid-template-columns: none;
+  grid-template-rows: minmax(0, var(--position, 50%)) 1px minmax(0, 1fr);
+}
+
+.pane {
+  min-width: 0;
+  min-height: 0;
+  overflow: auto;
+}
+
+.divider {
+  position: relative;
+  z-index: 1;
+  background: var(--jl-line);
+  cursor: col-resize;
+  touch-action: none;
+  transition: background var(--jl-fast) var(--jl-ease);
+}
+
+:host([orientation="vertical"]) .divider {
+  cursor: row-resize;
+}
+
+/* The line is one pixel; the pointer gets a wider band to catch. */
+.divider::before {
+  content: "";
+  position: absolute;
+  inset: 0 -5px;
+}
+
+:host([orientation="vertical"]) .divider::before {
+  inset: -5px 0;
+}
+
+.divider:hover,
+.divider:focus-visible,
+:host([dragging]) .divider {
+  background: var(--jl-accent);
+}
+
+.divider:focus-visible {
+  box-shadow: var(--jl-focus-ring);
+}
+
+.grip {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 6px;
+  height: 28px;
+  border: 1px solid var(--jl-line-strong);
+  border-radius: var(--jl-radius-pill);
+  background: var(--jl-surface);
+  transform: translate(-50%, -50%);
+  transition: border-color var(--jl-fast) var(--jl-ease);
+}
+
+:host([orientation="vertical"]) .grip {
+  width: 28px;
+  height: 6px;
+}
+
+.divider:hover .grip,
+.divider:focus-visible .grip,
+:host([dragging]) .grip {
+  border-color: var(--jl-accent);
+}
+
+:host([dragging]) {
+  cursor: col-resize;
+  user-select: none;
+}
+
+:host([dragging][orientation="vertical"]) {
+  cursor: row-resize;
+}
+
+/* While dragging, the panes ignore the pointer: a frame inside one would otherwise swallow it. */
+:host([dragging]) .pane {
+  pointer-events: none;
+}

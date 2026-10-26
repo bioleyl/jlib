@@ -1,0 +1,33 @@
+/*
+ * What floats over the page in the top layer (the popover API): tooltips, menus, popovers, lists of options.
+ * The browser's own popover box is centred in the window; this one is placed by script next to its anchor.
+ */
+.floating {
+  position: fixed;
+  inset: auto;
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--jl-text);
+  overflow: visible;
+}
+
+.floating:popover-open {
+  animation: jl-float-in var(--jl-fast) var(--jl-ease);
+}
+
+/* The look of a floating panel: menus, popovers and lists of options share it. */
+.panel {
+  border: 1px solid var(--jl-line);
+  border-radius: var(--jl-radius);
+  background: var(--jl-surface);
+  box-shadow: var(--jl-shadow-lg);
+}
+
+@keyframes jl-float-in {
+  from {
+    opacity: 0;
+    transform: translateY(-2px) scale(0.98);
+  }
+}

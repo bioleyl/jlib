@@ -1,0 +1,51 @@
+import { fuzzyMatch } from './fuzzy';
+
+import type { PaletteCommand, PaletteGroup, PaletteMatch } from '../types/jl-command-palette.types';
+
+/** A match on a keyword counts less than one on the label people read. */
+const KEYWORD_WEIGHT = 0.5;
+const NO_GROUP = '';
+
+function keywordScore(query: string, keywords: readonly string[]): number | null {
+  const scores = keywords
+    .map((keyword) => fuzzyMatch(query, keyword)?.score)
+    .filter((score): score is number => score !== undefined);
+  return scores.length === 0 ? null : Math.max(...scores) * KEYWORD_WEIGHT;
+}
+
+function matchCommand(query: string, command: PaletteCommand): PaletteMatch | null {
+  const label = fuzzyMatch(query, command.label);
+  const keyword = keywordScore(query, command.keywords ?? []);
+  if (label === null && keyword === null) {
+    return null;
+  }
+  if (label === null) {
+    return { command, positions: [], score: keyword ?? 0 };
+  }
+  return { command, positions: label.positions, score: Math.max(label.score, keyword ?? label.score) };
+}
+
+/**
+ * The commands that match the search, best first; an empty search keeps them all in their order. The label's
+ * matched letters come with each, for highlighting; a command found by a keyword only has none.
+ */
+export function matchCommands(commands: readonly PaletteCommand[], query: string): PaletteMatch[] {
+  const matches = commands
+    .map((command) => matchCommand(query, command))
+    .filter((match): match is PaletteMatch => match !== null);
+  if (query.trim() === '') {
+    return matches;
+  }
+  // Array sort is stable: equal scores keep the order the page gave.
+  return matches.sort((a, b) => b.score - a.score);
+}
+
+/** The matches under their group headings, groups in the order their first command comes. */
+export function groupMatches(matches: readonly PaletteMatch[]): PaletteGroup[] {
+  const groups = new Map<string, PaletteMatch[]>();
+  for (const match of matches) {
+    const label = match.command.group ?? NO_GROUP;
+    groups.set(label, [...(groups.get(label) ?? []), match]);
+  }
+  return [...groups].map(([label, grouped]) => ({ label, matches: grouped }));
+}

@@ -1,0 +1,34 @@
+:host {
+  display: inline-flex;
+  vertical-align: middle;
+  --overlap: 6px;
+  --ring-color: var(--jl-surface);
+}
+
+:host([size="sm"]) {
+  --overlap: 4px;
+}
+
+:host([size="lg"]) {
+  --overlap: 8px;
+}
+
+:host([size="xl"]) {
+  --overlap: 10px;
+}
+
+.group {
+  display: inline-flex;
+  align-items: center;
+  padding-left: var(--overlap);
+}
+
+jl-avatar {
+  margin-left: calc(var(--overlap) * -1);
+  --ring: 2px;
+  --ring-color: inherit;
+}
+
+.more {
+  font-variant-numeric: tabular-nums;
+}

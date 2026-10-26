@@ -1,0 +1,33 @@
+:host {
+  display: block;
+}
+
+.control {
+  padding: 0 8px;
+}
+
+.native {
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.action {
+  margin-right: 0;
+}
+
+.action:disabled {
+  background: none;
+  color: var(--jl-faint);
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+:host([size="sm"]) .action {
+  width: 22px;
+  height: 22px;
+}
+
+:host([size="lg"]) .action {
+  width: 30px;
+  height: 30px;
+}

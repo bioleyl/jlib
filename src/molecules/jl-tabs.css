@@ -1,0 +1,142 @@
+:host {
+  display: block;
+}
+
+.scroller {
+  position: relative;
+  overflow-x: auto;
+  scrollbar-width: none;
+  /* The row scrolls rather than widening what holds the tabs: its labels do not count in the page's layout. */
+  contain: inline-size;
+}
+
+.list {
+  display: flex;
+  gap: 4px;
+  width: max-content;
+  min-width: 100%;
+}
+
+.tab {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 40px;
+  padding: 0 12px;
+  border: none;
+  border-radius: var(--jl-radius-xs);
+  background: none;
+  color: var(--jl-muted);
+  font-size: var(--jl-font-md);
+  font-weight: 600;
+  white-space: nowrap;
+  cursor: pointer;
+  transition: color var(--jl-fast) var(--jl-ease);
+}
+
+.tab:hover {
+  color: var(--jl-text);
+}
+
+.tab[aria-selected="true"] {
+  color: var(--jl-text);
+}
+
+.tab[aria-disabled] {
+  color: var(--jl-faint);
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.badge {
+  min-width: 20px;
+  padding: 1px 6px;
+  border-radius: var(--jl-radius-pill);
+  background: var(--jl-surface-3);
+  color: var(--jl-text-2);
+  font-size: 11px;
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+  line-height: 16px;
+}
+
+.tab[aria-selected="true"] .badge {
+  background: var(--jl-accent-soft);
+  color: var(--jl-accent);
+}
+
+.indicator {
+  position: absolute;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+}
+
+.indicator[data-placed] {
+  transition:
+    transform var(--jl-slow) var(--jl-ease),
+    width var(--jl-slow) var(--jl-ease);
+}
+
+/* Line: a row of labels over a rule; the open tab is underlined in the accent colour. */
+:host(:not([variant="pill"])) .scroller {
+  box-shadow: inset 0 -1px 0 var(--jl-line);
+}
+
+:host(:not([variant="pill"])) .indicator {
+  top: auto;
+  bottom: 0;
+  width: var(--w);
+  height: 2px;
+  border-radius: 2px 2px 0 0;
+  background: var(--jl-accent);
+  transform: translateX(var(--x));
+}
+
+/* Pill: the open tab sits on a soft accent pill. */
+:host([variant="pill"]) .tab {
+  height: 32px;
+  padding: 0 14px;
+  border-radius: var(--jl-radius-pill);
+}
+
+:host([variant="pill"]) .tab:hover:not([aria-selected="true"]) {
+  background: var(--jl-surface-2);
+}
+
+:host([variant="pill"]) .tab[aria-selected="true"] {
+  color: var(--jl-accent);
+}
+
+:host([variant="pill"]) .indicator {
+  width: var(--w);
+  height: var(--h);
+  border-radius: var(--jl-radius-pill);
+  background: var(--jl-accent-soft);
+  transform: translate(var(--x), var(--y));
+}
+
+:host([variant="pill"]) .tab[aria-selected="true"] .badge {
+  background: var(--jl-surface);
+}
+
+:host([block]) .list {
+  width: 100%;
+}
+
+:host([block]) .tab {
+  flex: 1;
+}
+
+.panels {
+  padding-top: 16px;
+}
+
+/* Inside the scrolling row, a ring drawn outside the tab would be cut: draw it inside. */
+.tab:focus-visible {
+  box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--jl-brand) 60%, transparent);
+}

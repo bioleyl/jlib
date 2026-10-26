@@ -1,0 +1,125 @@
+:host {
+  display: inline-flex;
+  max-width: 100%;
+  vertical-align: middle;
+  --height: 28px;
+  --pad: 10px;
+  --font-size: var(--jl-font-sm);
+  --dismiss: 20px;
+}
+
+:host([size="sm"]) {
+  --height: 24px;
+  --pad: 8px;
+  --font-size: var(--jl-font-xs);
+  --dismiss: 18px;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  min-width: 0;
+  height: var(--height);
+  border: 1px solid var(--jl-line-strong);
+  border-radius: var(--jl-radius-pill);
+  background: var(--jl-surface);
+  color: var(--jl-text-2);
+  font-size: var(--font-size);
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+  transition:
+    background var(--jl-fast) var(--jl-ease),
+    border-color var(--jl-fast) var(--jl-ease),
+    color var(--jl-fast) var(--jl-ease);
+}
+
+.main {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  height: 100%;
+  padding: 0 var(--pad);
+  border-radius: inherit;
+}
+
+.label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.label:empty {
+  display: none;
+}
+
+:host([removable]) .main {
+  padding-right: 4px;
+}
+
+:host([selectable]) .main {
+  cursor: pointer;
+}
+
+:host([selectable]:not([disabled])) .chip:hover {
+  background: var(--jl-surface-2);
+}
+
+:host([selected]) .chip,
+:host([selected][selectable]:not([disabled])) .chip:hover {
+  border-color: var(--jl-accent-line);
+  background: var(--jl-accent-soft);
+  color: var(--jl-accent);
+}
+
+/* The ring goes around the whole chip, which the main part fills. */
+.main:focus-visible {
+  box-shadow: none;
+}
+
+.chip:has(.main:focus-visible) {
+  box-shadow: var(--jl-focus-ring);
+}
+
+.dismiss {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: var(--dismiss);
+  height: var(--dismiss);
+  margin-right: 3px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--jl-muted);
+  cursor: pointer;
+}
+
+.dismiss:hover {
+  background: var(--jl-surface-3);
+  color: var(--jl-text);
+}
+
+:host([selected]) .dismiss {
+  color: var(--jl-accent);
+}
+
+:host([selected]) .dismiss:hover {
+  background: color-mix(in srgb, var(--jl-accent) 14%, transparent);
+  color: var(--jl-accent-strong);
+}
+
+:host([disabled]) .chip {
+  opacity: 0.5;
+}
+
+:host([disabled]) .main,
+:host([disabled]) .dismiss {
+  cursor: not-allowed;
+}
+
+:host([disabled]) .dismiss:hover {
+  background: transparent;
+}

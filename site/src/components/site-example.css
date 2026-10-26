@@ -1,0 +1,46 @@
+:host {
+  display: block;
+}
+
+.example {
+  border: 1px solid var(--jl-line);
+  border-radius: var(--jl-radius-lg);
+  background: var(--jl-surface);
+  overflow: hidden;
+}
+
+header {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px 12px 0 18px;
+}
+
+.titles {
+  display: grid;
+  flex: 1;
+  gap: 2px;
+  padding-top: 4px;
+}
+
+h3 {
+  font-size: 15px;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.description {
+  color: var(--jl-muted);
+  font-size: var(--jl-font-sm);
+  line-height: 1.5;
+}
+
+.preview {
+  padding: 20px 18px 22px;
+}
+
+.code {
+  display: grid;
+  gap: 10px;
+  padding: 0 14px 14px;
+}

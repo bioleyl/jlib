@@ -1,0 +1,160 @@
+:host {
+  display: block;
+  height: 100%;
+  min-height: 0;
+  container: jl-app-shell / inline-size;
+  --header-height: 56px;
+  --drawer-width: min(300px, 86%);
+}
+
+.shell {
+  position: relative;
+  display: grid;
+  grid-template:
+    "top top top" auto
+    "nav main aside" minmax(0, 1fr)
+    / auto minmax(0, 1fr) auto;
+  height: 100%;
+  overflow: hidden;
+  background: var(--jl-bg);
+  color: var(--jl-text);
+}
+
+.top {
+  grid-area: top;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: var(--header-height);
+  padding: 0 16px;
+  border-bottom: 1px solid var(--jl-line);
+  background: var(--jl-surface);
+}
+
+:host(:not([has-header])) .top {
+  display: none;
+}
+
+::slotted([slot="header"]) {
+  flex: 1;
+  min-width: 0;
+}
+
+.menu {
+  display: none;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: var(--jl-control-md);
+  height: var(--jl-control-md);
+  margin-left: -8px;
+  padding: 0;
+  border: none;
+  border-radius: var(--jl-radius-sm);
+  background: none;
+  color: var(--jl-text-2);
+  cursor: pointer;
+}
+
+.menu:hover {
+  background: var(--jl-surface-3);
+  color: var(--jl-text);
+}
+
+.nav {
+  grid-area: nav;
+  min-height: 0;
+  overflow-y: auto;
+  border-right: 1px solid var(--jl-line);
+  background: var(--jl-surface);
+}
+
+.nav:focus-visible {
+  box-shadow: none;
+}
+
+:host(:not([has-nav])) .nav {
+  display: none;
+}
+
+.main {
+  grid-area: main;
+  min-width: 0;
+  min-height: 0;
+  overflow: auto;
+}
+
+.aside {
+  grid-area: aside;
+  min-height: 0;
+  overflow-y: auto;
+  border-left: 1px solid var(--jl-line);
+  background: var(--jl-surface);
+}
+
+:host(:not([has-aside])) .aside {
+  display: none;
+}
+
+.scrim {
+  display: none;
+}
+
+/* Narrow: the sidebar slides over the content as a drawer, the menu button opens it, the panel steps aside. */
+@container jl-app-shell (width < 960px) {
+  .shell {
+    grid-template:
+      "top" auto
+      "main" minmax(0, 1fr)
+      / minmax(0, 1fr);
+  }
+
+  :host([has-nav]) .top {
+    display: flex;
+  }
+
+  :host([has-nav]) .menu {
+    display: inline-flex;
+  }
+
+  .nav {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 2;
+    max-width: var(--drawer-width);
+    box-shadow: var(--jl-shadow-lg);
+    transform: translateX(-100%);
+    visibility: hidden;
+    transition:
+      transform var(--jl-slow) var(--jl-ease),
+      visibility 0s linear var(--jl-slow);
+  }
+
+  :host([nav-open]) .nav {
+    transform: none;
+    visibility: visible;
+    transition: transform var(--jl-slow) var(--jl-ease);
+  }
+
+  .scrim {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+    display: block;
+    background: var(--jl-scrim);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity var(--jl-slow) var(--jl-ease);
+  }
+
+  :host([nav-open]) .scrim {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .aside {
+    display: none;
+  }
+}

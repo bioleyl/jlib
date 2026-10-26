@@ -1,0 +1,149 @@
+{
+  "$schema": "https://biomejs.dev/schemas/2.6.3/schema.json",
+  "assist": {
+    "actions": {
+      "source": {
+        "organizeImports": {
+          "level": "on",
+          "options": {
+            "groups": [
+              {
+                "source": [":URL:", ":NODE:"],
+                "type": false
+              },
+              ":BLANK_LINE:",
+              {
+                "source": [":PACKAGE:"],
+                "type": false
+              },
+              ":BLANK_LINE:",
+              {
+                "source": [":ALIAS:", ":PATH:"],
+                "type": false
+              },
+              ":BLANK_LINE:",
+              {
+                "source": [":URL:", ":NODE:", ":PACKAGE:", ":ALIAS:", ":PATH:"],
+                "type": true
+              }
+            ]
+          }
+        },
+        "useSortedKeys": "on"
+      }
+    },
+    "enabled": true
+  },
+  "css": {
+    "formatter": {
+      "indentStyle": "space",
+      "indentWidth": 2
+    }
+  },
+  "files": {
+    "ignoreUnknown": true,
+    "includes": [
+      "*.json",
+      "*.ts",
+      "scripts/**/*.mjs",
+      "src/**/*.{ts,tsx,css}",
+      "site/**/*.{ts,tsx,css}",
+      "tests/**/*.ts",
+      "e2e/**/*.ts",
+      "!**/node_modules",
+      "!src/index.ts",
+      "!src/all.ts",
+      "!site/src/generated",
+      "!dist",
+      "!site/dist",
+      "!!.claude"
+    ]
+  },
+  "formatter": {
+    "attributePosition": "auto",
+    "enabled": true,
+    "indentStyle": "space",
+    "indentWidth": 2,
+    "lineEnding": "lf",
+    "lineWidth": 115,
+    "useEditorconfig": true
+  },
+  "javascript": {
+    "formatter": {
+      "arrowParentheses": "always",
+      "attributePosition": "auto",
+      "bracketSameLine": true,
+      "bracketSpacing": true,
+      "expand": "auto",
+      "indentStyle": "space",
+      "operatorLinebreak": "before",
+      "quoteStyle": "single",
+      "semicolons": "always",
+      "trailingCommas": "es5"
+    }
+  },
+  "json": {
+    "formatter": {
+      "bracketSpacing": true,
+      "expand": "auto",
+      "indentStyle": "space",
+      "indentWidth": 2,
+      "trailingCommas": "none"
+    }
+  },
+  "linter": {
+    "enabled": true,
+    "rules": {
+      "correctness": {
+        "noUnusedImports": {
+          "fix": "safe",
+          "level": "error",
+          "options": {}
+        }
+      },
+      "preset": "recommended",
+      "style": {
+        "useBlockStatements": {
+          "fix": "safe",
+          "level": "error",
+          "options": {}
+        },
+        "useImportType": {
+          "level": "error",
+          "options": {
+            "style": "separatedType"
+          }
+        },
+        "useNamingConvention": {
+          "level": "error",
+          "options": {
+            "conventions": [
+              {
+                "formats": ["camelCase"],
+                "match": "_(.+)",
+                "selector": {
+                  "kind": "classProperty",
+                  "modifiers": ["private"]
+                }
+              }
+            ],
+            "requireAscii": true,
+            "strictCase": false
+          }
+        }
+      }
+    }
+  },
+  "overrides": [
+    {
+      "assist": {
+        "actions": {
+          "source": {
+            "useSortedKeys": "off"
+          }
+        }
+      },
+      "includes": ["package.json"]
+    }
+  ]
+}

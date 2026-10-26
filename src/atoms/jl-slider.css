@@ -1,0 +1,148 @@
+:host {
+  display: block;
+  --thumb: 16px;
+  --track: 4px;
+  --fill: var(--jl-accent);
+  --rest: var(--jl-line-strong);
+}
+
+.slider {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.track-area {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+}
+
+/* The track fills up to the thumb's centre, which travels the width minus the thumb itself. */
+.native {
+  --stop: calc(var(--thumb) / 2 + (100% - var(--thumb)) * var(--fraction, 0));
+  display: block;
+  width: 100%;
+  height: 20px;
+  margin: 0;
+  background: transparent;
+  cursor: pointer;
+  appearance: none;
+}
+
+.native:focus-visible {
+  box-shadow: none;
+}
+
+.native::-webkit-slider-runnable-track {
+  height: var(--track);
+  border-radius: var(--jl-radius-pill);
+  background: linear-gradient(to right, var(--fill) var(--stop), var(--rest) var(--stop));
+}
+
+.native::-moz-range-track {
+  height: var(--track);
+  border-radius: var(--jl-radius-pill);
+  background: linear-gradient(to right, var(--fill) var(--stop), var(--rest) var(--stop));
+}
+
+.native::-webkit-slider-thumb {
+  width: var(--thumb);
+  height: var(--thumb);
+  margin-top: calc((var(--track) - var(--thumb)) / 2);
+  border: 2px solid var(--fill);
+  border-radius: 50%;
+  background: var(--jl-surface);
+  appearance: none;
+  transition:
+    box-shadow var(--jl-fast) var(--jl-ease),
+    transform var(--jl-fast) var(--jl-ease);
+}
+
+.native::-moz-range-thumb {
+  box-sizing: border-box;
+  width: var(--thumb);
+  height: var(--thumb);
+  border: 2px solid var(--fill);
+  border-radius: 50%;
+  background: var(--jl-surface);
+}
+
+.native:hover::-webkit-slider-thumb {
+  transform: scale(1.1);
+}
+
+.native:focus-visible::-webkit-slider-thumb {
+  box-shadow: var(--jl-focus-ring);
+}
+
+.native:focus-visible::-moz-range-thumb {
+  box-shadow: var(--jl-focus-ring);
+}
+
+:host([disabled]),
+:host(:disabled) {
+  --fill: var(--jl-faint);
+}
+
+:host([disabled]) .native,
+:host(:disabled) .native {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+:host([disabled]) .native:hover::-webkit-slider-thumb,
+:host(:disabled) .native:hover::-webkit-slider-thumb {
+  transform: none;
+}
+
+.output {
+  min-width: 3ch;
+  color: var(--jl-text);
+  font-family: var(--jl-font-mono);
+  font-size: var(--jl-font-sm);
+  font-variant-numeric: tabular-nums;
+  line-height: 20px;
+  text-align: right;
+}
+
+.marks {
+  position: relative;
+  height: 8px;
+  margin-top: 2px;
+}
+
+:host([has-labels]) .marks {
+  height: 26px;
+}
+
+.mark {
+  position: absolute;
+  top: 0;
+  left: calc(var(--thumb) / 2 + (100% - var(--thumb)) * var(--at));
+  display: grid;
+  justify-items: center;
+  gap: 2px;
+  transform: translateX(-50%);
+}
+
+.tick {
+  width: 1px;
+  height: 6px;
+  background: var(--jl-line-strong);
+}
+
+.mark-label {
+  color: var(--jl-muted);
+  font-size: var(--jl-font-xs);
+  line-height: 16px;
+  white-space: nowrap;
+}
+
+.mark[data-edge="start"] .mark-label {
+  transform: translateX(calc(50% - var(--thumb) / 2));
+}
+
+.mark[data-edge="end"] .mark-label {
+  transform: translateX(calc(var(--thumb) / 2 - 50%));
+}
