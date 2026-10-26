@@ -13,3 +13,16 @@ export const TONE_ICONS: Record<Tone, string> = {
   ok: 'circle-check',
   warn: 'triangle-alert',
 };
+
+/**
+ * Whether a tone's icon reads well filled (`jl-icon filled`): a sign in a circle or a triangle does, the accent's
+ * sparkles do not.
+ */
+export const TONE_ICON_FILLED: Record<Tone, boolean> = {
+  accent: false,
+  danger: true,
+  info: true,
+  neutral: true,
+  ok: true,
+  warn: true,
+};

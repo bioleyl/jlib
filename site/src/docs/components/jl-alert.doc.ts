@@ -9,7 +9,8 @@ export const doc: ComponentDoc = {
 warn for something to check, danger for a failure. For a message that comes and goes on its own, use a toast.
 
 Warnings and failures are role="alert", which interrupts a screen reader; the other tones are role="status", which
-waits for a pause. Each tone has its icon; icon names another one, and icon="none" shows none.`,
+waits for a pause. Each tone has its icon: a sign filled in the tone's colour (the accent's sparkles stay drawn as
+lines); icon names another one, drawn as lucide draws it, and icon="none" shows none.`,
   events: [
     {
       description: 'The × of a dismissible alert was pressed; the alert is now hidden.',

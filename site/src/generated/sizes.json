@@ -1,7 +1,7 @@
 {
   "all": {
-    "gzip": 92176,
-    "raw": 382801
+    "gzip": 92213,
+    "raw": 382936
   },
   "baseline": {
     "gzip": 3897,
@@ -286,12 +286,12 @@
       "level": "molecules",
       "tag": "jl-alert",
       "added": {
-        "gzip": 4922,
-        "raw": 17389
+        "gzip": 4960,
+        "raw": 17503
       },
       "total": {
-        "gzip": 8819,
-        "raw": 28643
+        "gzip": 8857,
+        "raw": 28757
       }
     },
     {
@@ -624,12 +624,12 @@
       "level": "molecules",
       "tag": "jl-toast",
       "added": {
-        "gzip": 5830,
-        "raw": 20430
+        "gzip": 5860,
+        "raw": 20509
       },
       "total": {
-        "gzip": 9727,
-        "raw": 31684
+        "gzip": 9757,
+        "raw": 31763
       }
     },
     {
@@ -767,12 +767,12 @@
       "level": "organisms",
       "tag": "jl-toaster",
       "added": {
-        "gzip": 6813,
-        "raw": 23716
+        "gzip": 6842,
+        "raw": 23795
       },
       "total": {
-        "gzip": 10710,
-        "raw": 34970
+        "gzip": 10739,
+        "raw": 35049
       }
     },
     {

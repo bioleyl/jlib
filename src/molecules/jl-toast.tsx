@@ -6,7 +6,7 @@ import { JlIcon } from '../atoms/jl-icon';
 import { JlElement } from '../base/jl-element';
 import { oneOf } from '../lib/attributes';
 import { registerIcons } from '../lib/icons';
-import { TONE_ICONS } from '../lib/options';
+import { TONE_ICON_FILLED, TONE_ICONS } from '../lib/options';
 import { BASE_STYLES } from '../styles/shared';
 import styles from './jl-toast.css?raw';
 
@@ -274,7 +274,7 @@ export class JlToast extends JlElement {
   private renderIcon(): void {
     const icon = this.icon.get();
     this._refs.icon.name.set(icon === '' ? TONE_ICONS[this.tone.get()] : icon);
-    this._refs.icon.filled.set(icon === '');
+    this._refs.icon.filled.set(icon === '' && TONE_ICON_FILLED[this.tone.get()]);
   }
 
   /** Inside a toaster, its live region announces the toast; alone, the toast is its own. */

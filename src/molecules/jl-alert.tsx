@@ -6,7 +6,7 @@ import { JlIcon } from '../atoms/jl-icon';
 import { JlElement } from '../base/jl-element';
 import { oneOf } from '../lib/attributes';
 import { registerIcons } from '../lib/icons';
-import { TONE_ICONS, TONES } from '../lib/options';
+import { TONE_ICON_FILLED, TONE_ICONS, TONES } from '../lib/options';
 import { hasSlotted } from '../lib/slots';
 import { BASE_STYLES } from '../styles/shared';
 import styles from './jl-alert.css?raw';
@@ -123,10 +123,12 @@ export class JlAlert extends JlElement {
     this._refs.actions.hidden = !hasSlotted(this._refs.actionsSlot);
   }
 
+  /** The tone's own icon is filled, as a toast's is; an icon of the page's stays as it is drawn. */
   private renderIcon(): void {
     const own = this.icon.get();
     const name = own === '' ? TONE_ICONS[this.tone.get()] : own;
     this._refs.icon.name.set(name === NO_ICON ? '' : name);
+    this._refs.icon.filled.set(own === '' && TONE_ICON_FILLED[this.tone.get()]);
     this._refs.icon.hidden = name === NO_ICON;
     this.reflect('has-icon', name !== NO_ICON);
   }

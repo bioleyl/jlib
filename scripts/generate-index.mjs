@@ -42,7 +42,7 @@ const index = [
   "export { computePosition, followAnchor, PLACEMENTS, placeFloating } from './lib/floating';",
   "export { COMMON_ICONS } from './lib/icon-set';",
   "export { hasIcon, iconElement, iconNames, registerIcons } from './lib/icons';",
-  "export { CONTROL_SIZES, TONE_ICONS, TONES } from './lib/options';",
+  "export { CONTROL_SIZES, TONE_ICON_FILLED, TONE_ICONS, TONES } from './lib/options';",
   "export { adoptTokens } from './lib/tokens';",
   "export { TOKEN_STYLES } from './styles/shared';",
   ...typeModules.map((path) => `export type * from './${path}';`),
