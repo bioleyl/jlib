@@ -14,7 +14,8 @@ const COMPACT_ICON_SIZE = 12;
 
 /**
  * What happened, in order, along a vertical line: each event a dot (or an icon in a circle) in its tone's colour,
- * a title, an optional description, and its time on the right. `compact` tightens it for side panels.
+ * its time beside the marker (the times in one column), a title and an optional description. `compact` tightens it
+ * for side panels.
  */
 export class JlTimeline extends JlElement {
   static readonly selector = 'jl-timeline';
@@ -64,11 +65,9 @@ export class JlTimeline extends JlElement {
     return (
       <li class="event" data-tone={item.tone ?? 'neutral'}>
         <span class="rail">{marker}</span>
+        {item.time === undefined ? null : <time class="time">{item.time}</time>}
         <div class="content">
-          <div class="line">
-            <p class="title">{item.title}</p>
-            {item.time === undefined ? null : <time class="time">{item.time}</time>}
-          </div>
+          <p class="title">{item.title}</p>
           {item.description === undefined ? null : <p class="description">{item.description}</p>}
         </div>
       </li>

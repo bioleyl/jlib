@@ -3,8 +3,9 @@ import type { ComponentDoc } from '../../types/docs.types';
 export const doc: ComponentDoc = {
   className: 'JlTimeline',
   description: `A timeline tells what happened, in order: the activity of a project, the steps of a deployment, the
-history of an order. Each event has a title, and optionally a time (shown on the right, in muted monospace), a
-description and a tone that colours its marker. An icon draws the marker as a circle; without one it is a dot.
+history of an order. Each event has a title, and optionally a time, a description and a tone that colours its
+marker. An icon draws the marker as a circle; without one it is a dot. The times stand in a column between the
+markers and the titles, each on its title's line, so however wide the timeline, a time stays with its event.
 
 Give the events newest first or oldest first, as the page reads best: the timeline keeps the order it is given.
 compact tightens it for a side panel.`,

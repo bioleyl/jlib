@@ -12,6 +12,10 @@
 }
 
 .timeline {
+  /* The markers, the times and the texts in three columns shared by every event: the times line up beside their
+     markers, each next to its title, however wide the timeline. Without any time, the middle column takes no room. */
+  display: grid;
+  grid-template-columns: var(--marker) auto minmax(0, 1fr);
   margin: 0;
   padding: 0;
   list-style: none;
@@ -20,11 +24,18 @@
 .event {
   position: relative;
   display: grid;
-  grid-template-columns: var(--marker) minmax(0, 1fr);
-  gap: 12px;
+  grid-column: 1 / -1;
+  /* Browsers without subgrid keep the columns per event. */
+  grid-template-columns: var(--marker) auto minmax(0, 1fr);
   padding-bottom: var(--gap);
   --tone: var(--jl-muted);
   --soft: var(--jl-surface-3);
+}
+
+@supports (grid-template-columns: subgrid) {
+  .event {
+    grid-template-columns: subgrid;
+  }
 }
 
 .event:last-child {
@@ -69,6 +80,8 @@
 
 .rail {
   position: relative;
+  grid-column: 1;
+  margin-right: 12px;
   z-index: 1;
   display: flex;
   align-items: center;
@@ -107,15 +120,8 @@
 
 .content {
   display: grid;
+  grid-column: 3;
   gap: 2px;
-}
-
-.line {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 2px 12px;
 }
 
 .title {
@@ -126,11 +132,14 @@
 }
 
 .time {
-  flex: none;
-  margin-left: auto;
+  grid-column: 2;
+  padding-right: 12px;
   color: var(--jl-muted);
   font-family: var(--jl-font-mono);
   font-size: var(--jl-font-xs);
+  /* On the title's line. */
+  line-height: 20px;
+  white-space: nowrap;
 }
 
 .description {
