@@ -1,6 +1,6 @@
 {
   "name": "@syware/jlib",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "A tree-shakeable component library on Jadis and native Web Components, organised in atomic design",
   "keywords": [
     "web-components",
@@ -23,7 +23,9 @@
   "bugs": {
     "url": "https://github.com/bioleyl/jlib/issues"
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "main": "./dist/index.js",
   "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
@@ -55,7 +57,11 @@
     "./tokens.css": "./dist/tokens.css",
     "./package.json": "./package.json"
   },
-  "sideEffects": ["./dist/all.js", "./dist/*.css", "./src/all.ts"],
+  "sideEffects": [
+    "./dist/all.js",
+    "./dist/*.css",
+    "./src/all.ts"
+  ],
   "publishConfig": {
     "access": "public"
   },
