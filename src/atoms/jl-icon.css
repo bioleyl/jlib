@@ -1,4 +1,5 @@
 :host {
+  --cutout: var(--jl-surface);
   display: inline-flex;
   flex: none;
   line-height: 0;
@@ -7,4 +8,14 @@
 
 .icon {
   display: inline-flex;
+}
+
+/* Filled: lucide draws the shape around a sign first (the circle of circle-check, the triangle of triangle-alert).
+   It takes the colour, and the sign takes the background's, as if cut out of it. */
+:host([filled]) svg > :first-child {
+  fill: currentColor;
+}
+
+:host([filled]) svg > :not(:first-child) {
+  stroke: var(--cutout);
 }

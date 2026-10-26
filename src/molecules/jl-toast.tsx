@@ -270,9 +270,11 @@ export class JlToast extends JlElement {
     return next instanceof Node && (next === this || this.contains(next) || this._refs.toast.contains(next));
   }
 
+  /** The tone's own icon is filled, so its colour shows at a glance; an icon of the page's stays as it is drawn. */
   private renderIcon(): void {
     const icon = this.icon.get();
     this._refs.icon.name.set(icon === '' ? TONE_ICONS[this.tone.get()] : icon);
+    this._refs.icon.filled.set(icon === '');
   }
 
   /** Inside a toaster, its live region announces the toast; alone, the toast is its own. */

@@ -9,7 +9,8 @@ const DEFAULT_SIZE = 16;
 
 /**
  * A lucide icon by name: `<jl-icon name="search">`. Decorative unless it has a `label`, which screen readers
- * read instead. More icons: `registerIcons({ rocket: Rocket })`.
+ * read instead. More icons: `registerIcons({ rocket: Rocket })`. `filled` draws a sign in a shape (`circle-check`,
+ * `triangle-alert`) as a solid badge.
  */
 export class JlIcon extends JlElement {
   static readonly selector = 'jl-icon';
@@ -17,6 +18,8 @@ export class JlIcon extends JlElement {
   readonly name = this.useChange('', () => this.draw(), { attribute: 'name' });
   readonly size = this.useChange(DEFAULT_SIZE, () => this.draw(), { attribute: 'size' });
   readonly label = this.useChange('', (value) => this.setAccessibleName(value), { attribute: 'label' });
+  /** The icon's first shape (the circle or triangle around a sign) in solid colour, the sign cut out of it. */
+  readonly filled = this.useChange(false, (value) => this.reflect('filled', value), { attribute: 'filled' });
 
   private readonly _refs = this.useRefs((ref) => ({ icon: ref('.icon') }));
 

@@ -21,7 +21,7 @@ emits action and closes the toast. Every way it closes ends with dismiss.`,
   examples: [
     {
       description:
-        'The tone tints the toast and colours its icon and time line, as it does for jl-alert; each tone has its own icon unless one is given.',
+        "The tone tints the toast, as it does jl-alert, and colours its time line; each tone has its own icon, filled in the tone's colour, unless one is given.",
       html: `
         <div class="stack narrow">
           <jl-toast heading="Link copied" text="Anyone with the link can view the board."></jl-toast>

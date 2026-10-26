@@ -84,7 +84,17 @@ its own, with no text beside it.`,
       name: 'label',
       type: 'string',
     },
+    {
+      attribute: 'filled',
+      control: { kind: 'boolean' },
+      default: 'false',
+      description:
+        'A sign in a shape (circle-check, circle-x, info, triangle-alert) drawn as a solid badge: the shape in the colour, the sign cut out of it.',
+      name: 'filled',
+      type: 'boolean',
+    },
   ],
+  styling: [{ description: 'The colour of the sign of a filled icon: the surface colour.', name: '--cutout' }],
   summary: 'A lucide icon by name, sized in pixels and coloured by its text.',
   tag: 'jl-icon',
 };
