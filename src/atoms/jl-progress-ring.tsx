@@ -2,6 +2,7 @@ import { css } from '@jadis/core';
 
 import { JlElement } from '../base/jl-element';
 import { oneOf } from '../lib/attributes';
+import { svgElement } from '../lib/dom';
 import { optionalNumber, percentLabel, percentOf, progressRatio, ringGeometry } from '../lib/progress';
 import { BASE_STYLES } from '../styles/shared';
 import { PROGRESS_TONES } from './jl-progress';
@@ -9,24 +10,12 @@ import styles from './jl-progress-ring.css?raw';
 
 import type { ProgressTone } from '../types/jl-progress.types';
 
-const SVG_NS = 'http://www.w3.org/2000/svg';
 const DEFAULT_MAX = 100;
 const DEFAULT_SIZE = 40;
 const DEFAULT_THICKNESS = 4;
 // The arc is drawn on a path of length 100, so its dash offset is the part left to do, in percent.
 const PATH_LENGTH = 100;
 const DEFAULT_NAME = 'Progress';
-
-function svgElement<Tag extends keyof SVGElementTagNameMap>(
-  tag: Tag,
-  attributes: Record<string, string>
-): SVGElementTagNameMap[Tag] {
-  const element = document.createElementNS(SVG_NS, tag);
-  for (const [name, value] of Object.entries(attributes)) {
-    element.setAttribute(name, value);
-  }
-  return element;
-}
 
 /**
  * How far a task has gone, as a ring: `value` out of `max`, the percentage in its centre with `show-value`.

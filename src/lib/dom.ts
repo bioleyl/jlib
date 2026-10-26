@@ -14,3 +14,17 @@ export function uniqueId(prefix: string): string {
   sequence.next += 1;
   return `${prefix}-${sequence.next}`;
 }
+
+const SVG_NS = 'http://www.w3.org/2000/svg';
+
+/** An SVG element with its attributes: JSX makes HTML elements only. */
+export function svgElement<Tag extends keyof SVGElementTagNameMap>(
+  tag: Tag,
+  attributes: Record<string, string>
+): SVGElementTagNameMap[Tag] {
+  const element = document.createElementNS(SVG_NS, tag);
+  for (const [name, value] of Object.entries(attributes)) {
+    element.setAttribute(name, value);
+  }
+  return element;
+}

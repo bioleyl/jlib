@@ -7,6 +7,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 import type { Browser, Page } from 'playwright-core';
 import type { PreviewServer } from 'vite';
+import type { JlFlow } from '../src/organisms/jl-flow';
 
 const ROOT = join(import.meta.dirname, '..');
 const DOCS = join(ROOT, 'site', 'src', 'docs', 'components');
@@ -26,6 +27,8 @@ const DESIGN = [
 // Long enough for a page's components to connect and draw (onConnect runs a task after connection).
 const SETTLE_MS = 300;
 const ICON_WARNING = 'jl-icon:';
+// A node's height and the gap below it: the flow's layout puts nodes on rows this far apart.
+const FLOW_ROW = 136;
 
 const componentPaths = readdirSync(DOCS)
   .filter((file) => file.endsWith('.doc.ts'))
@@ -117,6 +120,45 @@ describe('the forms page', () => {
       plan: 'team',
       role: 'developer',
     });
+  });
+});
+
+describe('the flow editor', () => {
+  it('joins an exit to a node by dragging, and removes the edge with Delete', async () => {
+    const page = await open('/components/flow');
+    // Playwright's locators see through shadow roots.
+    const flow = page.locator('jl-flow.expenses');
+    await flow.scrollIntoViewIfNeeded();
+    const edges = (): Promise<number> => flow.evaluate((element) => (element as JlFlow).graph.get().edges.length);
+    const before = await edges();
+    const from = await flow.locator('[data-node="pay"] .dot').boundingBox();
+    const to = await flow.locator('[data-node="tell"] .label').boundingBox();
+    if (from === null || to === null) {
+      throw new Error('The example has no "pay" exit or "tell" node');
+    }
+    await page.mouse.move(from.x + from.width / 2, from.y + from.height / 2);
+    await page.mouse.down();
+    await page.mouse.move(to.x + to.width / 2, to.y + to.height / 2, { steps: 8 });
+    await page.mouse.up();
+    expect(await edges()).toBe(before + 1);
+
+    const line = await flow.locator('[data-edge="e1"] .edge-hit').boundingBox();
+    if (line === null) {
+      throw new Error('The example has no edge e1');
+    }
+    await page.mouse.click(line.x + line.width / 2, line.y + line.height / 2);
+    await page.keyboard.press('Delete');
+    expect(await edges()).toBe(before);
+
+    // The wand puts every node on a row of the layout.
+    await flow.locator('.tidy').click();
+    // The callback runs in the page: the row height goes in as an argument.
+    const rows = await flow.evaluate(
+      (element, row) => (element as JlFlow).graph.get().nodes.map((node) => node.position.y % row),
+      FLOW_ROW
+    );
+    expect(new Set(rows)).toEqual(new Set([0]));
+    expect(state.errors).toEqual([]);
   });
 });
 

@@ -1,7 +1,7 @@
 {
   "all": {
-    "gzip": 84507,
-    "raw": 356906
+    "gzip": 90846,
+    "raw": 379325
   },
   "baseline": {
     "gzip": 3897,
@@ -143,11 +143,11 @@
       "level": "atoms",
       "tag": "jl-progress-ring",
       "added": {
-        "gzip": 3249,
+        "gzip": 3246,
         "raw": 11053
       },
       "total": {
-        "gzip": 7146,
+        "gzip": 7143,
         "raw": 22307
       }
     },
@@ -695,6 +695,19 @@
       "total": {
         "gzip": 8807,
         "raw": 28617
+      }
+    },
+    {
+      "className": "JlFlow",
+      "level": "organisms",
+      "tag": "jl-flow",
+      "added": {
+        "gzip": 8789,
+        "raw": 28910
+      },
+      "total": {
+        "gzip": 12686,
+        "raw": 40164
       }
     },
     {

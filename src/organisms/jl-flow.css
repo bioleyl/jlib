@@ -1,0 +1,336 @@
+:host {
+  display: block;
+  height: 420px;
+  min-height: 0;
+}
+
+.viewport {
+  position: relative;
+  height: 100%;
+  overflow: clip;
+  border: 1px solid var(--jl-line);
+  border-radius: var(--jl-radius-lg);
+  background-color: var(--jl-surface-2);
+  background-image: radial-gradient(circle, var(--jl-line-strong) 1px, transparent 1.2px);
+  outline: none;
+  touch-action: none;
+  user-select: none;
+}
+
+.viewport:focus-visible {
+  box-shadow: var(--jl-focus-ring);
+}
+
+.world,
+.nodes,
+.edges {
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+.world {
+  transform-origin: 0 0;
+}
+
+.edges {
+  overflow: visible;
+  pointer-events: none;
+}
+
+.edge {
+  fill: none;
+  stroke: color-mix(in srgb, var(--tone, var(--jl-muted)) 60%, var(--jl-line-strong));
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+
+.edge[data-tone="danger"] {
+  stroke-dasharray: 6 5;
+}
+
+.edge-hit {
+  fill: none;
+  stroke: transparent;
+  stroke-width: 14;
+  pointer-events: stroke;
+  cursor: pointer;
+}
+
+.edge-group:hover .edge {
+  stroke: var(--tone, var(--jl-muted));
+}
+
+.edge-group.selected .edge {
+  stroke: var(--jl-accent);
+  stroke-width: 3;
+}
+
+.draft {
+  stroke: var(--jl-accent);
+  stroke-dasharray: 5 5;
+}
+
+.node {
+  --tone: var(--jl-accent);
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--jl-space-3);
+  width: 240px;
+  height: 64px;
+  padding: 0 var(--jl-space-3) var(--jl-space-1);
+  border: 1px solid var(--jl-line);
+  border-radius: var(--jl-radius-lg);
+  background: var(--jl-surface);
+  box-shadow: var(--jl-shadow-sm);
+  cursor: grab;
+  transition:
+    border-color var(--jl-fast) var(--jl-ease),
+    box-shadow var(--jl-fast) var(--jl-ease);
+}
+
+.node:hover {
+  border-color: var(--jl-line-strong);
+}
+
+.node:focus-visible {
+  outline: none;
+  box-shadow: var(--jl-focus-ring);
+}
+
+.node.selected {
+  border-color: var(--jl-accent);
+  box-shadow: 0 0 0 3px var(--jl-accent-soft);
+}
+
+.input {
+  position: absolute;
+  top: -5px;
+  left: 50%;
+  width: 10px;
+  height: 10px;
+  border: 2px solid var(--jl-surface);
+  border-radius: 50%;
+  background: var(--jl-line-strong);
+  transform: translateX(-50%);
+}
+
+.icon {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--jl-radius);
+  background: color-mix(in srgb, var(--tone) 14%, var(--jl-surface));
+  color: var(--tone);
+}
+
+.text {
+  display: grid;
+  min-width: 0;
+}
+
+.label,
+.description {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.label {
+  color: var(--jl-text);
+  font-size: var(--jl-font-sm);
+  font-weight: 600;
+}
+
+.description {
+  color: var(--jl-muted);
+  font-size: var(--jl-font-xs);
+}
+
+.ports {
+  position: absolute;
+  right: 0;
+  bottom: -11px;
+  left: 0;
+  height: 22px;
+}
+
+.port {
+  --tone: var(--jl-muted);
+  position: absolute;
+  top: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--jl-space-1);
+  height: 22px;
+  padding: 0 7px;
+  border: 1px solid color-mix(in srgb, var(--tone) 35%, var(--jl-line));
+  border-radius: var(--jl-radius-pill);
+  background: var(--jl-surface);
+  color: color-mix(in srgb, var(--tone) 80%, var(--jl-text));
+  font-size: var(--jl-font-xs);
+  font-weight: 600;
+  white-space: nowrap;
+  transform: translateX(-50%);
+  cursor: crosshair;
+}
+
+.port:has(.add) {
+  padding-right: 3px;
+}
+
+.dot {
+  flex: none;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--tone);
+}
+
+.port-label {
+  overflow: hidden;
+  min-width: 0;
+  text-overflow: ellipsis;
+}
+
+.add,
+.remove-edge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.add {
+  width: 16px;
+  height: 16px;
+  border: none;
+  background: color-mix(in srgb, var(--tone) 16%, var(--jl-surface));
+  color: var(--tone);
+}
+
+.add:hover {
+  background: var(--tone);
+  color: var(--jl-surface);
+}
+
+.remove-edge {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 24px;
+  height: 24px;
+  border: 1px solid var(--jl-line);
+  background: var(--jl-surface);
+  color: var(--jl-danger);
+}
+
+.remove-edge:hover {
+  border-color: var(--jl-danger);
+  background: var(--jl-danger);
+  color: var(--jl-on-danger);
+}
+
+.empty {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: var(--jl-space-6);
+  color: var(--jl-muted);
+  text-align: center;
+  pointer-events: none;
+}
+
+.empty[hidden] {
+  display: none;
+}
+
+.empty ::slotted(*) {
+  pointer-events: auto;
+}
+
+.controls {
+  position: absolute;
+  bottom: var(--jl-space-3);
+  left: var(--jl-space-3);
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 2px;
+  border: 1px solid var(--jl-line);
+  border-radius: var(--jl-radius);
+  background: var(--jl-surface);
+}
+
+/* The zoom buttons: small and quiet, as ghost buttons. */
+.control {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--jl-control-sm);
+  height: var(--jl-control-sm);
+  padding: 0;
+  border: none;
+  border-radius: var(--jl-radius-sm);
+  background: transparent;
+  color: var(--jl-accent);
+  cursor: pointer;
+  transition: background var(--jl-fast) var(--jl-ease);
+}
+
+.control:hover {
+  background: var(--jl-accent-soft);
+}
+
+.zoom-label {
+  min-width: 40px;
+  color: var(--jl-muted);
+  font-size: var(--jl-font-xs);
+  font-variant-numeric: tabular-nums;
+  text-align: center;
+}
+
+/* The tones of icons, exits and edges: after .node and .port, whose default tones they replace. */
+[data-tone="neutral"] {
+  --tone: var(--jl-muted);
+}
+
+[data-tone="accent"] {
+  --tone: var(--jl-accent);
+}
+
+[data-tone="ok"] {
+  --tone: var(--jl-ok);
+}
+
+[data-tone="warn"] {
+  --tone: var(--jl-warn);
+}
+
+[data-tone="danger"] {
+  --tone: var(--jl-danger);
+}
+
+[data-tone="info"] {
+  --tone: var(--jl-info);
+}
+
+/* View only: nodes are pressed to be selected, not dragged, and their exits do not connect. */
+:host([readonly]) .node,
+:host([readonly]) .port {
+  cursor: pointer;
+}
+
+/* View only: the layout stays as it was given. */
+:host([readonly]) .tidy {
+  display: none;
+}

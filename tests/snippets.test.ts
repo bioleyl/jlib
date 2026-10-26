@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { htmlSnippet, importSnippet, jsxSnippet } from '../site/src/lib/snippets';
+import { constSnippet, htmlSnippet, importSnippet, jsxSnippet } from '../site/src/lib/snippets';
 
 import type { PropDoc } from '../site/src/types/docs.types';
 
@@ -88,5 +88,38 @@ describe('jsxSnippet', () => {
 describe('importSnippet', () => {
   it('imports the class from the package', () => {
     expect(importSnippet('JlButton')).toBe("import { JlButton } from '@syware/jlib';");
+  });
+});
+
+describe('constSnippet', () => {
+  it('writes short data on one line, with plain keys and single quotes', () => {
+    expect(constSnippet('edge', { from: 'a', id: 'e1', note: "it's", to: 'b', 'x-y': 1 })).toBe(
+      "const edge = { from: 'a', id: 'e1', note: 'it\\'s', to: 'b', 'x-y': 1 };"
+    );
+  });
+
+  it('puts the entries of long data on their own lines, at every depth, and leaves undefined out', () => {
+    const nodes = [
+      { id: 'sent', label: 'Expense sent', position: { x: 0, y: 0 }, start: true },
+      {
+        id: 'check',
+        label: 'Over 500?',
+        note: undefined,
+        ports: [{ id: 'yes', label: 'Yes' }],
+        position: { x: 0, y: 136 },
+      },
+    ];
+    expect(constSnippet('nodes', { edges: [], nodes })).toBe(`const nodes = {
+  edges: [],
+  nodes: [
+    { id: 'sent', label: 'Expense sent', position: { x: 0, y: 0 }, start: true },
+    {
+      id: 'check',
+      label: 'Over 500?',
+      ports: [{ id: 'yes', label: 'Yes' }],
+      position: { x: 0, y: 136 },
+    },
+  ],
+};`);
   });
 });

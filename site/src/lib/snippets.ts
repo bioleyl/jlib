@@ -100,3 +100,52 @@ export function jsxSnippet(source: SnippetSource): string {
 
 /** The import a page needs for the component. */
 export const importSnippet = (className: string): string => `import { ${className} } from '@syware/jlib';`;
+
+// Longer than this, a literal in an example's code puts each entry on its own line.
+const MAX_LITERAL_LINE = 100;
+const PLAIN_KEY = /^[A-Za-z_$][\w$]*$/;
+
+const keyOf = (key: string): string => (PLAIN_KEY.test(key) ? key : `'${key}'`);
+
+const stringOf = (text: string): string => `'${text.replaceAll('\\', '\\\\').replaceAll("'", "\\'")}'`;
+
+/** The entries worth writing: `undefined` ones are left out, as JSON leaves them out. */
+const entriesOf = (value: object): [string, unknown][] =>
+  Object.entries(value).filter((entry) => entry[1] !== undefined);
+
+function inlineLiteral(value: unknown): string {
+  if (Array.isArray(value)) {
+    return `[${value.map(inlineLiteral).join(', ')}]`;
+  }
+  if (typeof value === 'object' && value !== null) {
+    const entries = entriesOf(value).map(([key, item]) => `${keyOf(key)}: ${inlineLiteral(item)}`);
+    return entries.length === 0 ? '{}' : `{ ${entries.join(', ')} }`;
+  }
+  return typeof value === 'string' ? stringOf(value) : String(value);
+}
+
+function literal(value: unknown, indent: string, used: number): string {
+  const inline = inlineLiteral(value);
+  if (used + inline.length <= MAX_LITERAL_LINE || typeof value !== 'object' || value === null) {
+    return inline;
+  }
+  const inner = `${indent}${INDENT}`;
+  if (Array.isArray(value)) {
+    const items = value.map((item) => `${inner}${literal(item, inner, inner.length)},`);
+    return `[\n${items.join('\n')}\n${indent}]`;
+  }
+  const entries = entriesOf(value).map(([key, item]) => {
+    const head = `${inner}${keyOf(key)}: `;
+    return `${head}${literal(item, inner, head.length)},`;
+  });
+  return `{\n${entries.join('\n')}\n${indent}}`;
+}
+
+/**
+ * Data as a constant in an example's code, written as people write it: plain keys, single quotes, an object or a
+ * list on one line when it fits, else one entry per line.
+ */
+export function constSnippet(name: string, value: unknown): string {
+  const head = `const ${name} = `;
+  return `${head}${literal(value, '', head.length)};`;
+}
