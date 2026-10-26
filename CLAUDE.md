@@ -105,3 +105,5 @@ every page in Chromium: no console error, no undefined `jl-*` tag, no unregister
   that name (an alias to `src/` in development). `npm publish` runs the checks (`prepublishOnly`) and builds the
   library (`prepack`); a pushed version tag publishes from GitHub (`.github/workflows/publish.yml`) and creates the
   GitHub release.
+- Biome leaves JSON files alone (not in its includes, JSON formatter and linter off): npm writes package.json and the
+  lockfile in its own layout (`npm version`, `npm install x`), which Biome's formatter used to refuse.
