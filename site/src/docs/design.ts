@@ -17,7 +17,7 @@ export const DESIGN_PAGES: readonly GuideLink[] = [
     icon: 'image',
     label: 'Logo',
     path: '/design/logo',
-    summary: 'The SyWare logo: versions, colours, clear space and its smallest size.',
+    summary: "The SyWare logo, its versions and sizes, and the apps' own icons.",
   },
   {
     icon: 'palette',

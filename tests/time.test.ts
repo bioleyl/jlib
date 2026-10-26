@@ -38,6 +38,17 @@ describe('formatDuration', () => {
   it('reads a negative duration as none', () => {
     expect(formatDuration(-5 * SECOND, EN)).toBe('< 1 sec');
   });
+
+  it('chooses the unit once rounded: never "60 secs" or "60 mins"', () => {
+    expect(formatDuration(59.6 * SECOND, EN)).toBe('1 min');
+    expect(formatDuration(59.5 * MINUTE, EN)).toBe('1 hr');
+    expect(formatDuration(DAY - 20 * SECOND, EN)).toBe('1 day');
+  });
+
+  it('gives nothing for what is not a number', () => {
+    expect(formatDuration(Number.NaN, EN)).toBe('');
+    expect(formatDuration(Number.POSITIVE_INFINITY, EN)).toBe('');
+  });
 });
 
 describe('formatRelativeTime', () => {
@@ -65,5 +76,15 @@ describe('formatRelativeTime', () => {
 
   it("writes the reader's language", () => {
     expect(formatRelativeTime(ago(DAY), NOW, FR)).toBe('hier');
+  });
+
+  it('counts days by the calendar: this morning seen tonight is today, not yesterday', () => {
+    expect(formatRelativeTime(new Date(2026, 9, 26, 1, 0), new Date(2026, 9, 26, 23, 0), EN)).toBe('22 hours ago');
+    expect(formatRelativeTime(new Date(2026, 9, 25, 23, 0), new Date(2026, 9, 27, 8, 0), EN)).toBe('2 days ago');
+  });
+
+  it('gives nothing for a date that is not one', () => {
+    expect(formatRelativeTime('not a date', NOW, EN)).toBe('');
+    expect(formatRelativeTime(new Date(Number.NaN), NOW, EN)).toBe('');
   });
 });

@@ -98,7 +98,13 @@ export class JlLoadState extends JlElement {
   });
 
   // The last load, which Try again runs again, and the timer that shows the skeleton.
-  private readonly _work: { retry?: () => Promise<boolean>; timer?: ReturnType<typeof setTimeout> } = {};
+  // The last load, which Try again runs again; the number of the latest load, which alone may draw; and the timer
+  // that shows the skeleton.
+  private readonly _work: {
+    latest: number;
+    retry?: () => Promise<boolean>;
+    timer?: ReturnType<typeof setTimeout>;
+  } = { latest: 0 };
 
   private readonly _refs = this.useRefs((ref) => ({
     bones: ref('.bones'),
@@ -112,25 +118,39 @@ export class JlLoadState extends JlElement {
   /**
    * Fetches the data and draws it. The first time, and after a failure, the skeleton shows while it comes; later
    * (a refresh), what is shown stays until the new data is there, and stays too if it fails. Resolves to whether it
-   * worked: a refresh that fails says so only here, for the page to tell people.
+   * worked: a refresh that fails says so only here, for the page to tell people. A load overtaken by a later one
+   * (a search typed on, a poll during a reload) draws nothing and resolves true: the later one decides.
    */
   async load<Value>(task: LoadTask<Value>): Promise<boolean> {
+    this._work.latest += 1;
+    const ticket = this._work.latest;
     this._work.retry = () => this.load(task);
-    const showing = this.state.get() === 'ready' || this.state.get() === 'empty';
-    if (!showing) {
+    if (!this.isShowing()) {
       this.state.set('loading');
     }
     try {
       const value = await task.fetch();
+      if (ticket !== this._work.latest) {
+        return true;
+      }
       task.draw(value);
       this.state.set(task.isEmpty?.(value) === true ? 'empty' : 'ready');
       return true;
     } catch {
-      if (!showing) {
+      if (ticket !== this._work.latest) {
+        return true;
+      }
+      if (!this.isShowing()) {
         this.state.set('error');
       }
       return false;
     }
+  }
+
+  /** Whether data is shown (the content or the empty state), which a refresh keeps. */
+  private isShowing(): boolean {
+    const state = this.state.get();
+    return state === 'ready' || state === 'empty';
   }
 
   templateHtml(): Node {

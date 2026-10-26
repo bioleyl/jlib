@@ -41,6 +41,8 @@
     --jl-accent-soft: #e9f4fb;
     --jl-accent-line: #b7dbf2;
     --jl-on-accent: #ffffff;
+    /* What is drawn on the brand's blue, such as an app's icon: white in both themes, as a favicon is. */
+    --jl-on-brand: #ffffff;
 
     --jl-ok: #17784a;
     --jl-ok-soft: #ecf6f0;

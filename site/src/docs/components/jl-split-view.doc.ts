@@ -1,4 +1,4 @@
-import type { JlSplitView } from '@syware/jlib';
+import type { JlButton, JlSplitView } from '@syware/jlib';
 import type { ComponentDoc } from '../../types/docs.types';
 
 const CODE_PANE = `
@@ -33,8 +33,19 @@ least min percent.
 
 The divider is a focusable separator: the arrows move it by 2% (10% with Shift), Home and End send it to the ends,
 a double click puts it back where the page placed it. change fires once a drag ends or a key moved it. The view
-takes the height of its container, and each pane scrolls on its own.`,
-  events: [{ description: 'The divider moved: the new position, in percent.', detail: 'number', name: 'change' }],
+takes the height of its container, and each pane scrolls on its own.
+
+On a phone, a list and the item opened from it read better as two pages. Narrower than stack-below pixels, the view
+shows one pane at a time, the one pane names (start for the list, end for the item), with the attribute stacked:
+set pane to end when an item opens, and give the item a way back. stack fires when it stacks or unstacks.`,
+  events: [
+    { description: 'The divider moved: the new position, in percent.', detail: 'number', name: 'change' },
+    {
+      description: 'It started (true) or stopped (false) showing one pane at a time.',
+      detail: 'boolean',
+      name: 'stack',
+    },
+  ],
   examples: [
     {
       description: 'The code on one side, what it draws on the other.',
@@ -90,6 +101,38 @@ takes the height of its container, and each pane scrolls on its own.`,
       },
       title: 'Listening',
     },
+    {
+      description:
+        'stack-below="480" in a 360px frame: one pane at a time, as on a phone. Opening an item shows the end pane; its back link the start pane.',
+      html: `
+        <div style="height: 240px; width: 360px; max-width: 100%; ${FRAME}">
+          <jl-split-view class="demo-stack" stack-below="480" position="40">
+            <div slot="start" style="display: grid">
+              <jl-list-item class="demo-open" heading="Refund request from Léa Dubois" description="Answer support emails" interactive></jl-list-item>
+              <jl-list-item class="demo-open" heading="Reply to Maria Rossi" description="Answer support emails" interactive></jl-list-item>
+            </div>
+            <div slot="end" style="display: grid; gap: 12px; align-content: start; padding: 16px">
+              <div><jl-button class="demo-back" variant="ghost" size="sm" icon="arrow-left" label="Review inbox"></jl-button></div>
+              <strong>Refund request from Léa Dubois</strong>
+              <span class="muted">Approve the refund and tell the customer.</span>
+            </div>
+          </jl-split-view>
+        </div>`,
+      script: `
+        const split = root.querySelector('.demo-stack');
+        for (const item of root.querySelectorAll('.demo-open')) {
+          item.addEventListener('click', () => split.pane.set('end'));
+        }
+        root.querySelector('.demo-back').events.register('press', () => split.pane.set('start'));`,
+      setup: (root) => {
+        const split = root.querySelector<JlSplitView>('.demo-stack');
+        for (const item of root.querySelectorAll('.demo-open')) {
+          item.addEventListener('click', () => split?.pane.set('end'));
+        }
+        root.querySelector<JlButton>('.demo-back')?.events.register('press', () => split?.pane.set('start'));
+      },
+      title: 'Stacked on a phone',
+    },
   ],
   level: 'template',
   methods: [
@@ -97,6 +140,11 @@ takes the height of its container, and each pane scrolls on its own.`,
       description: 'Puts the divider back where the position attribute placed it (50% without one).',
       name: 'reset',
       signature: 'reset(): void',
+    },
+    {
+      description: 'Whether it shows one pane at a time now.',
+      name: 'isStacked',
+      signature: 'isStacked(): boolean',
     },
   ],
   name: 'Split view',
@@ -137,6 +185,22 @@ takes the height of its container, and each pane scrolls on its own.`,
       description: "The divider's name for screen readers.",
       name: 'label',
       type: 'string',
+    },
+    {
+      attribute: 'stack-below',
+      control: { kind: 'number', max: 2000, min: 0, step: 40 },
+      default: '0',
+      description: 'Under this width, in pixels, one pane at a time; 0 never stacks.',
+      name: 'stackBelow',
+      type: 'number',
+    },
+    {
+      attribute: 'pane',
+      control: { kind: 'select', options: ['start', 'end'] },
+      default: "'start'",
+      description: 'The pane shown while stacked.',
+      name: 'pane',
+      type: "'start' | 'end'",
     },
   ],
   slots: [

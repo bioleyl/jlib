@@ -1,0 +1,17 @@
+:host {
+  display: inline-flex;
+  flex: none;
+  vertical-align: middle;
+}
+
+/* The same in both themes, as the favicon is: the brand's blue, the glyph in white. */
+.tile {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--size, 28px);
+  height: var(--size, 28px);
+  border-radius: var(--corner, 7px);
+  background: var(--jl-brand);
+  color: var(--jl-on-brand);
+}

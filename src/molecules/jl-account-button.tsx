@@ -9,7 +9,8 @@ import styles from './jl-account-button.css?raw';
 /**
  * The person signed in, where the frame of an app shows them (the foot of the side nav, a phone's top bar): their
  * avatar, their name, and a line under it such as their role. With an `href` it is a link to their account, else a
- * button that fires `press` (to open a menu). `compact` keeps the avatar alone, the name as its tooltip.
+ * button that fires `press` (to open a menu). `compact` keeps the avatar alone, the name as its tooltip; `current`
+ * marks it while their account page is the one shown.
  */
 export class JlAccountButton extends JlElement {
   static readonly selector = 'jl-account-button';
@@ -41,6 +42,8 @@ export class JlAccountButton extends JlElement {
   readonly href = this.useChange('', () => this.renderLink(), { attribute: 'href' });
   /** The avatar alone. */
   readonly compact = this.useChange(false, (value) => this.reflect('compact', value), { attribute: 'compact' });
+  /** Their account page is the one shown: marked as the side nav marks its current place. */
+  readonly current = this.useChange(false, (value) => this.renderCurrent(value), { attribute: 'current' });
 
   private readonly _refs = this.useRefs((ref) => ({
     avatar: ref<JlAvatar>('jl-avatar'),
@@ -97,6 +100,13 @@ export class JlAccountButton extends JlElement {
     button.hidden = href !== '';
     link.hidden = href === '';
     setOrRemove(link, 'href', href);
+  }
+
+  private renderCurrent(current: boolean): void {
+    this.reflect('current', current);
+    for (const control of [this._refs.button, this._refs.link]) {
+      setOrRemove(control, 'aria-current', current ? 'page' : '');
+    }
   }
 
   /** Its name for screen readers and its tooltip: the name, then the line under it. */

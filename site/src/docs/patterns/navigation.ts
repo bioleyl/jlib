@@ -24,7 +24,7 @@ const SIDE_NAV = `
     <jl-side-nav value="orders" sections='${NAV_SECTIONS}'>
       <div slot="header" style="display: grid; gap: 12px; padding: 4px 4px 10px">
         <div style="display: grid; padding: 0 6px; line-height: 1.3">
-          <strong style="font-size: 16px">sw<span style="color: var(--jl-brand)">stock</span></strong>
+          <span class="row" style="gap: 8px"><jl-app-icon icon="package" size="24"></jl-app-icon><strong style="font-size: 16px">sw<span style="color: var(--jl-brand)">stock</span></strong></span>
           <span class="muted" style="font-size: 12px">Alpine Électricité SA</span>
         </div>
         <jl-search-button></jl-search-button>
@@ -37,6 +37,7 @@ const SIDE_NAV = `
 
 export const navigation: PatternDoc = {
   components: [
+    'jl-app-icon',
     'jl-app-shell',
     'jl-side-nav',
     'jl-search-button',
@@ -64,7 +65,7 @@ export const navigation: PatternDoc = {
         ['Place', 'What goes there'],
         [
           'Top',
-          "The product's wordmark, a link to its home page. In an app that several companies share, the company's name under it.",
+          "The app's icon (`jl-app-icon`) and wordmark, a link to its home page; never the SyWare logo, which is the company's (see [Logo](/design/logo)). In an app that several companies share, the company's name under it.",
         ],
         [
           'Search',
@@ -94,7 +95,7 @@ export const navigation: PatternDoc = {
       'The frame on a phone',
       text('Under 960px the side nav becomes a drawer, and two bars take its place:'),
       list(
-        "**A top bar** (the shell's `header` slot): the menu button, the wordmark, then on the right the search and the person, `jl-search-button` and `jl-account-button` with `compact`. Never a bar with the menu button alone: people must see which app they are in.",
+        "**A top bar** (the shell's `header` slot): the menu button, the app's icon and wordmark, then on the right the search and the person, `jl-search-button` and `jl-account-button` with `compact`. Never a bar with the menu button alone: people must see which app they are in.",
         "**A tab bar** (`jl-tab-bar`, in the shell's `tabs` slot) along the bottom: the destinations of the daily work, four at most, in the order of the side nav and with their counts. **More** opens the drawer for the rest.",
         'The drawer holds the same side nav as on a computer: nothing is only on a phone, nothing only on a computer.'
       ),

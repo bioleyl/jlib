@@ -4,6 +4,11 @@
   --width: 380px;
 }
 
+/* The bottom placements keep above the tab bar of an app shell (--jl-shell-bottom), or --edge-bottom when given. */
+.region {
+  --bottom: var(--edge-bottom, calc(var(--edge) + var(--jl-shell-bottom, 0px)));
+}
+
 .region {
   position: fixed;
   inset: auto;
@@ -35,16 +40,16 @@
 
 :host([placement="bottom-right"]) .region {
   right: var(--edge);
-  bottom: var(--edge);
+  bottom: var(--bottom);
 }
 
 :host([placement="bottom-left"]) .region {
-  bottom: var(--edge);
+  bottom: var(--bottom);
   left: var(--edge);
 }
 
 :host([placement="bottom-center"]) .region {
-  bottom: var(--edge);
+  bottom: var(--bottom);
   left: 50%;
   translate: -50% 0;
 }

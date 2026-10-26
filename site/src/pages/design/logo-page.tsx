@@ -13,7 +13,7 @@ import {
   MIN_CUT_PX,
   sywareMark,
 } from '../../lib/syware-logo';
-import { assetHref } from '../../services/navigation';
+import { assetHref, pageHref } from '../../services/navigation';
 import { DESIGN_STYLES, PROSE_STYLES } from '../../styles/site-styles';
 import styles from './logo-page.css?raw';
 
@@ -69,6 +69,21 @@ function realSize(source: Source, height: number): Node {
 }
 
 /** The SyWare logo: its versions, colours, clear space, small sizes, and how to treat it. */
+const WORD_STYLE = 'font-weight:800;font-size:18px;letter-spacing:-0.02em';
+const APP_ICON = (glyph: string): string => `<jl-app-icon icon="${glyph}"></jl-app-icon>`;
+const SYWARE_MARK = (): string => `<img src="${MARK_FILE}${SVG}" alt="" style="height:26px">`;
+const APPS: readonly { glyph: string; name: string }[] = [
+  { glyph: 'workflow', name: 'ai' },
+  { glyph: 'package', name: 'stock' },
+];
+
+/** Two apps' headers, each its icon (or the mark) and its wordmark, for the do and don't of the apps' icons. */
+const appHeaders = (icon: (glyph: string) => string): string =>
+  `<div style="display:grid;gap:10px">${APPS.map(
+    (app) =>
+      `<span style="display:inline-flex;align-items:center;gap:10px">${icon(app.glyph)}<span style="${WORD_STYLE}">sw<span style="color:var(--jl-brand)">${app.name}</span></span></span>`
+  ).join('')}</div>`;
+
 export class LogoPage extends JlElement {
   static readonly selector = 'site-logo-page';
 
@@ -244,6 +259,57 @@ export class LogoPage extends JlElement {
               'Rotate it, or add shadows, outlines or other effects.'
             )}
           </div>
+        </section>
+
+        <section>
+          <h2>The logo and the apps</h2>
+          <p>
+            The SyWare logo is the company's. An app shows its own icon and its wordmark, so that two apps open
+            side by side never look alike. The logo stays where the company speaks: large and faint on the sign-in
+            panel (see <a href={pageHref('/components/auth-layout')}>Auth layout</a>), and in the documentation.
+          </p>
+          <div class="rules">
+            {guideline(
+              'do',
+              appHeaders(APP_ICON),
+              "Each app its own icon, in one family: its glyph in white on the brand's blue."
+            )}
+            {guideline(
+              'dont',
+              appHeaders(SYWARE_MARK),
+              "The company's mark on every app: at a glance, the apps look the same."
+            )}
+          </div>
+          <h3>The app icon</h3>
+          <ul>
+            <li>
+              A rounded square, its corners a quarter of its side, in <code>--jl-brand</code>; the app's glyph in
+              white, about 60% of its side, a stroke icon of the icon set.{' '}
+              <a href={pageHref('/components/app-icon')}>jl-app-icon</a> draws it.
+            </li>
+            <li>
+              The glyph says what the app works on: a workflow for swai, a package for swstock. No two apps share
+              one.
+            </li>
+            <li>
+              Beside it, the wordmark: "sw" in ink, the app's name in the brand's blue, in Manrope at weight 800.
+            </li>
+            <li>
+              The favicon is the same tile, as an SVG file. A phone's home screen icon fills its square with the
+              blue and keeps the glyph in the middle 60%, where every phone's mask leaves it whole.
+            </li>
+          </ul>
+          {codeSample(
+            'html',
+            `
+            <span class="brand">
+              <jl-app-icon icon="package"></jl-app-icon>
+              <span class="word">sw<span class="name">stock</span></span>
+            </span>
+
+            <!-- Alone, it names the app -->
+            <jl-app-icon icon="package" size="24" label="swstock"></jl-app-icon>`
+          )}
         </section>
 
         <section>

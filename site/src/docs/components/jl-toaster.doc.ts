@@ -221,6 +221,11 @@ close button, unless the options say otherwise. Write a jl-toaster in the page y
     { description: 'The region in the top layer that holds the toasts.', name: 'base' },
     { description: 'The width of the toasts: 380px.', name: '--width' },
     { description: 'The distance from the edges of the window: 16px.', name: '--edge' },
+    {
+      description:
+        'The distance from the bottom for the bottom placements: --edge, above the tab bar of an app shell (--jl-shell-bottom).',
+      name: '--edge-bottom',
+    },
   ],
   summary: 'The corner of the window where toasts stack, and toast() to show one from anywhere.',
   tag: 'jl-toaster',

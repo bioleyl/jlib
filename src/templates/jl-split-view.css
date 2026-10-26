@@ -92,3 +92,15 @@
 :host([dragging]) .pane {
   pointer-events: none;
 }
+
+/* Stacked: one pane at a time, the whole room, no divider. */
+:host([stacked]) .split {
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr);
+}
+
+:host([stacked]) .divider,
+:host([stacked]:not([pane="end"])) .end,
+:host([stacked][pane="end"]) .start {
+  display: none;
+}

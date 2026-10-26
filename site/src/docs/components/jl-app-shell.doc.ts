@@ -83,7 +83,9 @@ the right panel steps aside. The drawer opens with that button, with nav-open, o
 scrim, following a link or a select from the nav (a jl-side-nav's) closes it.
 
 On phones, the main places go in a bar along the bottom (slot tabs, a jl-tab-bar): it shows only when narrow, and
-its more button opens the drawer with the rest.`,
+its more button opens the drawer with the rest. A shell that fills the window then writes the bar's height on the
+document as --jl-shell-bottom: toasts keep above it by themselves, and a page's floating bar or button can too, with
+bottom: calc(var(--jl-shell-bottom, 0px) + 16px).`,
   events: [
     {
       description: 'People opened or closed the drawer: whether it is open.',

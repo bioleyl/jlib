@@ -69,3 +69,17 @@ jl-avatar {
 :host([compact]) .text {
   display: none;
 }
+
+/* Their account page is the one shown: marked as the side nav marks its current place. */
+
+:host([current]) .base {
+  background: var(--jl-accent-soft);
+}
+
+:host([current]) .name {
+  color: var(--jl-accent);
+}
+
+:host([current][compact]) .base {
+  box-shadow: 0 0 0 2px var(--jl-accent);
+}

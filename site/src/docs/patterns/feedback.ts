@@ -40,7 +40,7 @@ export const feedback: PatternDoc = {
         'A second line only when it helps with what comes next: "Give them their temporary password."',
         'One action at most: **Undo**, **Open**, **See activity**.',
         "They last 5 seconds, 8 with an action or for an error (jlib's defaults); hovering or focusing one pauses it.",
-        "Bottom right on a computer (the toaster's default), bottom centre above the tab bar on a phone.",
+        "Bottom right (the toaster's default); on a phone they take the width, above the tab bar of the app shell.",
         "Never the only report of a form's error, and never for what asks a decision: that belongs in the page or a dialog."
       ),
       rules(

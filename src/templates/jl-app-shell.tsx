@@ -12,6 +12,8 @@ registerIcons({ menu: Menu });
 
 const MENU_ICON_SIZE = 18;
 const HIDDEN = 'none';
+// What the shell covers along the bottom of the window (its tab bar), for the toasts and floating bars of a page.
+const SHELL_BOTTOM = '--jl-shell-bottom';
 
 /** Whether a click inside the drawer followed a link: the page changes, so the drawer gets out of the way. */
 const followsLink = (event: Event): boolean =>
@@ -22,7 +24,9 @@ const followsLink = (event: Event): boolean =>
  * on its own, and an optional panel on the right (`aside`). Narrower than 960 pixels, the sidebar becomes a drawer
  * over the content, opened by a menu button in the top bar (or `nav-open`, or `toggleNav()`), the panel hides, and
  * a bar along the bottom shows (`tabs`, such as a `jl-tab-bar`, whose `more` opens the drawer).
- * It takes the height of its container: give that one a height (`100dvh` for a whole page).
+ * It takes the height of its container: give that one a height (`100dvh` for a whole page). A shell that fills the
+ * window writes the height of its tab bar, while it shows, as `--jl-shell-bottom` on the document: toasts keep
+ * above it, and a page's floating bars can (`bottom: calc(var(--jl-shell-bottom, 0px) + 16px)`).
  */
 export class JlAppShell extends JlElement {
   static readonly selector = 'jl-app-shell';
@@ -32,10 +36,18 @@ export class JlAppShell extends JlElement {
   /** Whether the drawer is open, on narrow screens; wide ones always show the sidebar. */
   readonly navOpen = this.useChange(false, (value) => this.renderNavOpen(value), { attribute: 'nav-open' });
 
-  private readonly _state = { navListeners: new AbortController(), tabsListeners: new AbortController() };
+  private readonly _state = {
+    navListeners: new AbortController(),
+    // Whether this shell wrote --jl-shell-bottom, so it takes it back, and only it.
+    publishedBottom: false,
+    tabsListeners: new AbortController(),
+  };
 
   // The main area is inert behind an open drawer; whether the drawer covers it depends on the shell's width.
-  private readonly _resize = new ResizeObserver(() => this.renderInert());
+  private readonly _resize = new ResizeObserver(() => {
+    this.renderInert();
+    this.renderShellBottom();
+  });
 
   private readonly _refs = this.useRefs((ref) => ({
     aside: ref('.aside'),
@@ -87,6 +99,7 @@ export class JlAppShell extends JlElement {
 
   onConnect(): void {
     this._resize.observe(this);
+    this._resize.observe(this._refs.tabs);
     this.on(this._refs.menu, 'click', () => this.onMenu());
     this.on(this._refs.scrim, 'click', () => this.setNavOpen(false));
     this.on(this._refs.nav, 'click', (event) => {
@@ -106,6 +119,27 @@ export class JlAppShell extends JlElement {
     this._resize.disconnect();
     this._state.navListeners.abort();
     this._state.tabsListeners.abort();
+    this.withdrawShellBottom();
+  }
+
+  /** Tells the page how much the tab bar covers at the bottom of the window, while it shows. */
+  private renderShellBottom(): void {
+    const height = Math.round(this._refs.tabs.getBoundingClientRect().height);
+    const fillsWindow = this.getBoundingClientRect().bottom >= window.innerHeight - 1;
+    if (height === 0 || !fillsWindow) {
+      this.withdrawShellBottom();
+      return;
+    }
+    document.documentElement.style.setProperty(SHELL_BOTTOM, `${height}px`);
+    this._state.publishedBottom = true;
+  }
+
+  private withdrawShellBottom(): void {
+    if (!this._state.publishedBottom) {
+      return;
+    }
+    document.documentElement.style.removeProperty(SHELL_BOTTOM);
+    this._state.publishedBottom = false;
   }
 
   /** Whether the shell is narrow: the menu button shows only then. */

@@ -50,7 +50,8 @@ input {
   border: none;
   outline: none;
   background: none;
-  font-size: 15px;
+  /* At least the text of fields: 16px on touch screens, where phones zoom into smaller text. */
+  font-size: max(15px, var(--jl-control-font));
 }
 
 input::placeholder {

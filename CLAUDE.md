@@ -99,6 +99,10 @@ every page in Chromium: no console error, no undefined `jl-*` tag, no unregister
 - Implicit grid columns grow to their widest content: page grids use `grid-template-columns: minmax(0, 1fr)`, and
   a sideways scroller inside a component gets `contain: inline-size`, or phones scroll sideways.
 - Re-showing a popover restarts the CSS animations inside it: use WAAPI for timers and enter animations there.
+- A size container (`container-type: inline-size`) is the containing block of what is `position: fixed` inside
+  it, slotted content included: a component that holds a page's content adapts with media queries (see `jl-page`).
+- A `jl-button` with an `href` has two `part="base"` elements and hides the unused one: look for the visible one
+  (`accessibleTarget` in `lib/trigger.ts`).
 - Light dismiss closes a `popover="auto"` on pointerdown, before the trigger's click: read the open state on
   pointerdown or the click reopens it.
 - `setFormValue(FormData)` uses the entries' own names: write them again when `name` changes.

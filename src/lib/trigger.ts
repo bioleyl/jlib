@@ -7,7 +7,8 @@
 const NATIVE_FOCUSABLE =
   'a[href], button, input, select, textarea, summary, [tabindex]:not([tabindex="-1"]), [contenteditable="true"]';
 // jlib exposes the main inner element of a component as `part="base"`: a jl-button's native button, for instance.
-const BASE_PART = '[part~="base"]';
+// A jl-button with an href has two (a button and a link), and hides the one it does not use.
+const BASE_PART = '[part~="base"]:not([hidden])';
 
 /**
  * The element that carries a trigger's accessible state: the inner `base` part of a component (where its focus

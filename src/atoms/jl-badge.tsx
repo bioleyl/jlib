@@ -49,6 +49,16 @@ export class JlBadge extends JlElement {
 
   /** Shows a state as an app's map of states describes it: its label, tone, icon and hint. */
   showStatus(look: StatusLook): void {
+    // As attributes too: a badge that moves in the page reads its attributes again, and must find this state.
+    const attributes: Record<string, string> = {
+      hint: look.hint ?? '',
+      icon: look.icon ?? '',
+      label: look.label,
+      tone: look.tone,
+    };
+    for (const [name, value] of Object.entries(attributes)) {
+      setOrRemove(this, name, value);
+    }
     this.label.set(look.label);
     this.tone.set(look.tone);
     this.icon.set(look.icon ?? '');

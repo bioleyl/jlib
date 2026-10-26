@@ -7,7 +7,9 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 import type { Browser, Page } from 'playwright-core';
 import type { PreviewServer } from 'vite';
+import type { JlBadge } from '../src/atoms/jl-badge';
 import type { JlDatePicker } from '../src/molecules/jl-date-picker';
+import type { JlLoadState } from '../src/molecules/jl-load-state';
 import type { JlFlow } from '../src/organisms/jl-flow';
 
 const ROOT = join(import.meta.dirname, '..');
@@ -31,6 +33,8 @@ const PATTERN_PATH = /path: '(\/patterns\/[^']+)'/;
 const PHONE = { height: 844, width: 390 };
 const LONG_PRESS_WAIT_MS = 700;
 const TOUCH_LINGER_WAIT_MS = 1800;
+// How far a finger moves to scroll.
+const SCROLL_PX = 80;
 // Long enough for a page's components to connect and draw (onConnect runs a task after connection).
 const SETTLE_MS = 300;
 const ICON_WARNING = 'jl-icon:';
@@ -231,6 +235,67 @@ describe('the flow editor', () => {
   });
 });
 
+describe('the page', () => {
+  it('leaves what is fixed inside it fixed to the window', async () => {
+    const page = await open('/components/page');
+    const bottom = await page.evaluate(() => {
+      const shell = document.createElement('jl-page');
+      const bar = document.createElement('div');
+      bar.style.cssText = 'position: fixed; bottom: 0; left: 0; height: 40px; width: 100px';
+      shell.append(bar);
+      document.body.append(shell);
+      const rect = bar.getBoundingClientRect();
+      shell.remove();
+      return Math.round(rect.bottom);
+    });
+    expect(bottom).toBe(await page.evaluate(() => window.innerHeight));
+  });
+});
+
+describe('the load state', () => {
+  it('draws only the latest of overlapping loads, and does not stick on an error that came late', async () => {
+    const page = await open('/components/load-state');
+    const result = await page.evaluate(async () => {
+      const state = document.createElement('jl-load-state') as JlLoadState;
+      document.body.append(state);
+      const drawn: string[] = [];
+      const answerIn = (milliseconds: number, value: string, fails: boolean) => () =>
+        new Promise<string>((resolve, reject) =>
+          setTimeout(() => (fails ? reject(new Error('No answer')) : resolve(value)), milliseconds)
+        );
+      const draw = (value: string) => drawn.push(value);
+      const slow = state.load({ draw, fetch: answerIn(300, 'old', true) });
+      const fast = state.load({ draw, fetch: answerIn(50, 'new', false) });
+      await Promise.all([slow, fast]);
+      const outcome = { drawn, state: state.getAttribute('state') };
+      state.remove();
+      return outcome;
+    });
+    expect(result).toEqual({ drawn: ['new'], state: 'ready' });
+  });
+});
+
+describe('the badge', () => {
+  it('keeps the state showStatus gave it when it moves in the page', async () => {
+    const page = await open('/components/badge');
+    const label = await page.evaluate(async () => {
+      const badge = document.createElement('jl-badge') as JlBadge;
+      badge.setAttribute('label', 'Pending');
+      document.body.append(badge);
+      await new Promise((resolve) => setTimeout(resolve, 50));
+      badge.showStatus({ label: 'Shipped', tone: 'ok' });
+      const holder = document.createElement('div');
+      document.body.append(holder);
+      holder.append(badge);
+      await new Promise((resolve) => setTimeout(resolve, 100));
+      const shown = badge.shadowRoot?.querySelector('.label')?.textContent;
+      holder.remove();
+      return shown;
+    });
+    expect(label).toBe('Shipped');
+  });
+});
+
 describe('the tooltip', () => {
   it("shows its bubble alone: the button's own title steps aside while pointed at, and comes back", async () => {
     const page = await open('/components/tooltip');
@@ -288,7 +353,75 @@ describe('the tooltip', () => {
     await page.waitForTimeout(SETTLE_MS);
     expect(await isOpen()).toBe(false);
     expect(await page.evaluate('window.presses')).toBe(1);
+
+    // A finger that scrolls from a word opens nothing; a tap on it does.
+    const word = page
+      .locator('jl-tooltip')
+      .filter({ has: page.locator('[tabindex]') })
+      .first();
+    await word.scrollIntoViewIfNeeded();
+    const wordBox = await word.boundingBox();
+    const [wx, wy] = [
+      (wordBox?.x ?? 0) + (wordBox?.width ?? 0) / 2,
+      (wordBox?.y ?? 0) + (wordBox?.height ?? 0) / 2,
+    ];
+    const wordOpen = () =>
+      word.evaluate((element) => element.shadowRoot?.querySelector('.bubble')?.matches(':popover-open'));
+    await touch('touchStart', wx, wy);
+    await cdp.send('Input.dispatchTouchEvent', { touchPoints: [{ x: wx, y: wy - SCROLL_PX }], type: 'touchMove' });
+    await touch('touchEnd');
+    await page.waitForTimeout(SETTLE_MS);
+    expect(await wordOpen()).toBe(false);
+
+    // A long press on a button whose tooltip has no text stays a press.
+    await page.evaluate(() => {
+      const tip = document.createElement('jl-tooltip');
+      tip.className = 'demo-silent';
+      tip.style.cssText = 'position: fixed; top: 120px; left: 40px; z-index: 1000';
+      tip.innerHTML = '<jl-button label="Save"></jl-button>';
+      document.body.append(tip);
+      const counter = window as unknown as { silentPresses: number };
+      counter.silentPresses = 0;
+      const button = tip.querySelector('jl-button') as unknown as {
+        events: { register(name: string, callback: () => void): void };
+      };
+      button.events.register('press', () => {
+        counter.silentPresses += 1;
+      });
+    });
+    await page.waitForTimeout(SETTLE_MS);
+    const silentBox = await page.locator('.demo-silent').boundingBox();
+    const [sx, sy] = [
+      (silentBox?.x ?? 0) + (silentBox?.width ?? 0) / 2,
+      (silentBox?.y ?? 0) + (silentBox?.height ?? 0) / 2,
+    ];
+    await touch('touchStart', sx, sy);
+    await page.waitForTimeout(LONG_PRESS_WAIT_MS);
+    await touch('touchEnd');
+    await page.waitForTimeout(SETTLE_MS);
+    expect(await page.evaluate('window.silentPresses')).toBe(1);
     await context.close();
+  });
+
+  it('names a link-button from its visible link, whose own title steps aside too', async () => {
+    const page = await open('/components/tooltip');
+    await page.evaluate(() => {
+      const tip = document.createElement('jl-tooltip');
+      tip.className = 'demo-link-tip';
+      tip.setAttribute('text', 'Open the settings');
+      tip.style.cssText = 'position: fixed; top: 120px; left: 400px; z-index: 1000';
+      tip.innerHTML = '<jl-button href="#settings" icon="settings" hint="Settings"></jl-button>';
+      document.body.append(tip);
+    });
+    await page.waitForTimeout(SETTLE_MS);
+    const tip = page.locator('.demo-link-tip');
+    // What the visible link carries; the page runs this function alone, so it holds its own lookup.
+    const linkAttribute = (element: Element, name: string) =>
+      element.querySelector('jl-button')?.shadowRoot?.querySelector('a')?.getAttribute(name);
+    expect(await tip.evaluate(linkAttribute, 'aria-description')).toBe('Open the settings');
+    await tip.hover();
+    await page.waitForTimeout(SETTLE_MS);
+    expect(await tip.evaluate(linkAttribute, 'title')).toBeNull();
   });
 });
 

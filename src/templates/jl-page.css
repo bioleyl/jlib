@@ -1,6 +1,5 @@
 :host {
   display: block;
-  container-type: inline-size;
   --page-width: var(--jl-page-standard);
 }
 
@@ -34,7 +33,11 @@
   margin-left: -8px;
 }
 
-@container (max-width: 720px) {
+/*
+ * Narrow screens. A media query, not a container query: a size container is the containing block of what is
+ * fixed inside it, and a page's floating bars and buttons must stay fixed to the screen.
+ */
+@media (max-width: 720px) {
   .page {
     padding: var(--jl-space-6) var(--jl-space-4) var(--jl-space-12);
   }

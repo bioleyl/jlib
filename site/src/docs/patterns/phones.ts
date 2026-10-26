@@ -19,7 +19,8 @@ export const phones: PatternDoc = {
       'The frame',
       list(
         'A top bar with the menu, the wordmark, the search and the avatar; a tab bar with four destinations at most, and **More**. See [Navigation](/patterns/navigation).',
-        'Toasts above the tab bar; dialogs as wide as the screen; drawers over the page.'
+        'Toasts above the tab bar (they keep above it by themselves); dialogs as wide as the screen; drawers over the page.',
+        'A floating bar or button of the page keeps above the tab bar too: `bottom: calc(var(--jl-shell-bottom, 0px) + 16px)`. The app shell writes that height while the tab bar shows.'
       )
     ),
     section(
@@ -35,7 +36,7 @@ export const phones: PatternDoc = {
     section(
       'Layouts that fold',
       list(
-        'A split view becomes two pages: the list, then the item with a back link to it.',
+        'A split view becomes two pages: the list, then the item with a back link to it (`stack-below` and `pane` on `jl-split-view`).',
         'A table becomes rows, each with its main values.',
         'Filters that do not fit scroll sideways in one row of chips, or go into a **Filters** dialog; the search stays in view.',
         'Fields side by side stack.',

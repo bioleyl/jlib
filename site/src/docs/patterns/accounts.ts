@@ -3,7 +3,7 @@ import { list, section, table, text } from '../pattern-kit';
 import type { PatternDoc } from '../../types/patterns.types';
 
 export const accounts: PatternDoc = {
-  components: ['jl-input', 'jl-alert', 'jl-avatar', 'jl-select', 'jl-chip-group'],
+  components: ['jl-auth-layout', 'jl-account-button', 'jl-input', 'jl-alert', 'jl-select', 'jl-chip-group'],
   icon: 'user',
   label: 'Accounts and settings',
   lead: 'Signing in, choosing a password, changing the theme or the language: people do these in every app, so they look and read the same in all of them.',
@@ -12,7 +12,7 @@ export const accounts: PatternDoc = {
     section(
       'Signing in',
       list(
-        'The shared layout: on the left, a dark panel with the wordmark, one sentence on what the app does and three points; on the right, the form. On a phone, the form alone, under the wordmark.',
+        "The shared layout, `jl-auth-layout`: on the left, a dark panel with the app's icon and wordmark, a headline, one sentence on what the app does, three points, and the SyWare mark large and faint; on the right, the form. On a phone, the form under a band with the brand.",
         'The heading is "Sign in", with one line on which account to use: "Use the account your administrator gave you."',
         'The fields the app signs in with (an email address or a username), and the password with its show button. No asterisks.',
         'A wrong answer shows in a `jl-alert` above the fields, without saying which of the two was wrong.',

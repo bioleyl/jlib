@@ -157,7 +157,8 @@ const STAY_LABEL = 'Keep editing';
 /**
  * Guards a form or an editor against leaving with changes not saved. Closing or reloading the tab asks the
  * browser's own question; the function it returns asks in the page, for the app's router to call before it moves
- * on: `if (!(await canLeave())) return;`. It resolves `true` at once when nothing would be lost.
+ * on: `if (!(await canLeave())) return;`. It resolves `true` at once when nothing would be lost, or once `signal`
+ * ended the guard.
  */
 export function guardLeave(options: LeaveGuardOptions): () => Promise<boolean> {
   window.addEventListener(
@@ -169,13 +170,21 @@ export function guardLeave(options: LeaveGuardOptions): () => Promise<boolean> {
     },
     { signal: options.signal }
   );
-  return async () =>
-    !options.isDirty()
-    || confirmDialog({
+  // The question being asked: asked again (Back pressed twice), it is the same question, not a second dialog.
+  const asking: { pending: Promise<boolean> | null } = { pending: null };
+  return () => {
+    if (options.signal.aborted || !options.isDirty()) {
+      return Promise.resolve(true);
+    }
+    asking.pending ??= confirmDialog({
       cancelLabel: options.stayLabel ?? STAY_LABEL,
       confirmLabel: options.leaveLabel ?? LEAVE_LABEL,
       heading: options.heading ?? LEAVE_HEADING,
       text: options.text ?? LEAVE_TEXT,
       tone: 'danger',
+    }).finally(() => {
+      asking.pending = null;
     });
+    return asking.pending;
+  };
 }

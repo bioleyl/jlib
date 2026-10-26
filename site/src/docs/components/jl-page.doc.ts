@@ -15,8 +15,8 @@ named after the page it leads to ("← Orders", never "← Back"), the heading, 
 for one thing, the facts that identify it), its status in the meta slot, and its actions.
 
 The content is centred at one of four widths, from the tokens: form (720px) for a column of fields, standard
-(1120px) for most pages, wide (1400px) for tables and grids, and full for work surfaces. The padding shrinks when
-the page is narrow.
+(1120px) for most pages, wide (1400px) for tables and grids, and full for work surfaces. The padding shrinks on a
+narrow screen.
 
 With app-name, the page names the browser tab after its heading, the most specific first: "Order #3 · swstock". Set
 the heading once the subject has loaded, and the tab follows. See the Page layout and Navigation patterns.`,

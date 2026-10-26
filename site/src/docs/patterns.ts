@@ -10,6 +10,7 @@ import {
   Smartphone,
   TextCursorInput,
   Undo2,
+  Workflow,
 } from 'lucide';
 
 import { accounts } from './patterns/accounts';
@@ -42,6 +43,7 @@ registerIcons({
   smartphone: Smartphone,
   'text-cursor-input': TextCursorInput,
   'undo-2': Undo2,
+  workflow: Workflow,
 });
 
 // The site's build finds the routes by their `path: '…'` (vite.config.ts): the overview's is written out here.

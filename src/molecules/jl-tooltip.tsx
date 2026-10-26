@@ -63,9 +63,9 @@ export class JlTooltip extends JlElement {
     // The native titles set aside while the trigger is pointed at or focused, to give back after.
     heldTitles: [] as { element: Element; title: string }[],
     hideTimer: 0,
-    // A finger on the trigger: whether it is down, where it went down, the timer of the long press, and whether
-    // that showed the bubble.
-    press: { down: false, opened: false, timer: 0, x: 0, y: 0 },
+    // A finger on the trigger: whether it is down and moved (a scroll), where it went down, the timer of the long
+    // press, and whether that showed the bubble.
+    press: { down: false, moved: false, opened: false, timer: 0, x: 0, y: 0 },
     showTimer: 0,
   };
 
@@ -116,7 +116,8 @@ export class JlTooltip extends JlElement {
       this.hideBubble();
     });
     this.on(this, 'pointermove', (event) => this.pressMove(event));
-    this.on(this, 'pointerup', () => this.pressEnd());
+    this.on(this, 'pointerup', () => this.pressUp());
+    // The page took the finger to scroll: no tap, no long press.
     this.on(this, 'pointercancel', () => this.pressEnd());
     // Some phones open a menu on a long press: the bubble shows instead, except over a link, whose menu matters.
     this.on(this, 'contextmenu', (event) => this.pressHeld(event));
@@ -161,31 +162,41 @@ export class JlTooltip extends JlElement {
   private pressStart(event: PointerEvent): void {
     const press = this._state.press;
     window.clearTimeout(press.timer);
-    press.opened = false;
-    if (!this.isInteractive()) {
-      // A tap does nothing else there: it shows the bubble, or hides it.
-      if (this.isOpen()) {
-        this.close();
-        return;
-      }
-      this.open();
-      return;
-    }
     press.down = true;
+    press.moved = false;
+    press.opened = false;
     press.x = event.clientX;
     press.y = event.clientY;
-    press.timer = window.setTimeout(() => this.openFromPress(), LONG_PRESS_MS);
+    if (this.isInteractive()) {
+      press.timer = window.setTimeout(() => this.openFromPress(), LONG_PRESS_MS);
+    }
   }
 
   private pressMove(event: PointerEvent): void {
     const press = this._state.press;
     const moved = Math.hypot(event.clientX - press.x, event.clientY - press.y);
     if (press.down && moved > MOVE_TOLERANCE_PX) {
+      press.moved = true;
       window.clearTimeout(press.timer);
     }
   }
 
-  /** The finger lifted, or the page took it to scroll: a bubble the press showed stays a moment, then goes. */
+  /** The finger lifted. On a trigger that does nothing else on a tap, a tap (not a scroll) shows or hides the bubble. */
+  private pressUp(): void {
+    const press = this._state.press;
+    const tapped = press.down && !press.moved;
+    this.pressEnd();
+    if (!tapped || this.isInteractive()) {
+      return;
+    }
+    if (this.isOpen()) {
+      this.close();
+      return;
+    }
+    this.open();
+  }
+
+  /** The finger is gone: a bubble the long press showed stays a moment, then goes. */
   private pressEnd(): void {
     const press = this._state.press;
     window.clearTimeout(press.timer);
@@ -202,16 +213,20 @@ export class JlTooltip extends JlElement {
     if (!this._state.press.down || !this.isInteractive()) {
       return;
     }
-    this.openFromPress();
-    if (!accessibleTarget(this.trigger()).matches('a[href]')) {
+    if (this.openFromPress() && !accessibleTarget(this.trigger()).matches('a[href]')) {
       event.preventDefault();
     }
   }
 
-  private openFromPress(): void {
+  /** The long press shows the bubble, and says whether there is one: without a text, the press stays a press. */
+  private openFromPress(): boolean {
     window.clearTimeout(this._state.press.timer);
+    if (this.text.get() === '') {
+      return false;
+    }
     this._state.press.opened = true;
     this.open();
+    return true;
   }
 
   private swallowLongPress(event: MouseEvent): void {
@@ -225,6 +240,7 @@ export class JlTooltip extends JlElement {
   }
 
   private hideBubble(): void {
+    window.clearTimeout(this._state.press.timer);
     window.clearTimeout(this._state.showTimer);
     window.clearTimeout(this._state.hideTimer);
     this._state.following.abort();

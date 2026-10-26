@@ -3,6 +3,55 @@
 What changed in each version of [@syware/jlib](https://www.npmjs.com/package/@syware/jlib). Every component is shown
 and documented on [the documentation site](https://bioleyl.github.io/jlib/).
 
+## 0.6.0 (2026-10-26)
+
+What swai and swstock still worked around, now jlib's, and one icon per app.
+
+### Added
+
+- **App icon** (`jl-app-icon`): an app's own icon, its glyph in white on a rounded tile of the brand's blue: one
+  family for every SyWare app, each telling itself apart where a word does not fit (a folded side nav, a phone's top
+  bar, a browser tab). The Logo page says how the apps use it, and keeps the SyWare logo for the company.
+- **Auth layout** (`jl-auth-layout`): the sign-in screen every SyWare app shares. The app's brand, a headline whose
+  `*words*` take the brand's blue, a sentence, three points and "Made in Switzerland by SyWare" on a dark panel,
+  with the SyWare mark large and faint; the form beside it. On a phone, a band with the brand above the form.
+- **Split view**: `stack-below` and `pane`. Narrower than `stack-below` pixels, it shows one pane at a time, the
+  one `pane` names: a list and the item opened from it become two pages on a phone. The attribute `stacked`, the
+  event `stack` and `isStacked()` say when.
+- **App shell**: a shell that fills the window writes the height of its tab bar, while it shows, as
+  `--jl-shell-bottom` on the document. Toasts keep above it by themselves; a page's floating bars can too.
+- **Toaster**: `--edge-bottom`, the distance from the bottom for the bottom placements.
+- **Account button**: `current`, while the person's account page is the one shown.
+- Token `--jl-on-brand`: what is drawn on the brand's blue, white in both themes.
+
+### Fixed
+
+- **Page**: what a page held with `position: fixed` (a bar along the bottom, a floating button) was fixed to the
+  page instead of the window: its padding followed the page's width with a container query, and a size container
+  holds what is fixed inside it. The padding now follows the screen's width.
+- **Toaster**: on a phone, bottom toasts no longer hide behind an app shell's tab bar.
+- **Load state**: a load overtaken by a later one (a search typed on, a poll during a reload) drew its data over
+  the later one's, or left the error showing; it now draws nothing, and the latest load decides.
+- **Tooltip**: a scroll that started on a word or an icon opened its bubble; a tap does now, a scroll does not. A
+  long press on a trigger whose tooltip has no text was swallowed; it stays a press. A pending long press could
+  throw once the tooltip left the page.
+- **Tooltip**, **menu**: over a button with an `href`, they named and described its hidden inner button instead of
+  the link people see, so the link's own title still showed and its long-press menu was blocked.
+- **Badge**: a state given with `showStatus()` went back to the attributes' when the badge moved in the page.
+- `guardLeave()`: asked twice at once (Back pressed twice), it opened two dialogs; it asks once. Its function no
+  longer asks once `signal` ended the guard.
+- `formatRelativeTime()` counts days by the calendar ("22 hours ago" for this morning seen tonight, not
+  "yesterday"), and gives "" for a date that is not one instead of throwing. `formatDuration()` chooses the unit
+  once rounded ("1 min", never "60 secs") and gives "" for what is not a number.
+- **Command palette**: on touch screens, its field's text is 16 pixels like every field's, so phones do not zoom in.
+
+### Worth a look when you update
+
+- Pages whose floating bars sat inside a `jl-page` with a workaround can put them back.
+- An app shell with a tab bar now lifts bottom toasts on phones; remove any rule of your own that did it.
+
+No property, event or method was removed or renamed.
+
 ## 0.5.1 (2026-10-26)
 
 ### Fixed

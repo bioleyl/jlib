@@ -102,7 +102,7 @@ export const pageLayout: PatternDoc = {
     section(
       'Queues and work surfaces',
       list(
-        'A queue worked through one by one (reviews to decide, orders to prepare) is a split view (`jl-split-view`): the list on the left, the opened item on the right, and the next item opening after each decision.',
+        'A queue worked through one by one (reviews to decide, orders to prepare) is a split view (`jl-split-view`): the list on the left, the opened item on the right, and the next item opening after each decision. With `stack-below="960"`, it becomes two pages on a phone: set `pane="end"` when an item opens.',
         'On a phone it becomes two pages: the list, then the item with a back link to it.',
         'An editor takes the whole main area, folds the side nav into a rail, and has a toolbar of its own: the back link, the name, the save state, then its actions.'
       )

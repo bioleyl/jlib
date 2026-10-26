@@ -41,6 +41,7 @@ export const TOKEN_GROUPS: readonly TokenGroup[] = [
       { description: 'Selected rows, active navigation, ghost hovers.', kind: 'colour', name: '--jl-accent-soft' },
       { description: 'Borders of accented areas.', kind: 'colour', name: '--jl-accent-line' },
       { description: 'Text on the accent.', kind: 'colour', name: '--jl-on-accent' },
+      { description: "Glyphs on the brand's blue, such as an app's icon.", kind: 'colour', name: '--jl-on-brand' },
     ],
   },
   {
