@@ -33,7 +33,10 @@ tarball.
    npm run test:e2e
    ```
 
-2. Bump the version. `npm version` updates `package.json` and the lockfile, commits, and tags `vX.Y.Z`:
+2. Write the version's notes at the top of [CHANGELOG.md](CHANGELOG.md): what is new, what changed, and what pages
+   should look at when they update. Commit them.
+
+3. Bump the version. `npm version` updates `package.json` and the lockfile, commits, and tags `vX.Y.Z`:
 
    ```bash
    npm version patch
@@ -42,16 +45,16 @@ tarball.
    Use `patch` for fixes, `minor` for new components or options, `major` for changes that break existing pages.
    Before 1.0, a breaking change may go in a `minor`, but say so in the release notes.
 
-3. Push the commit and its tag:
+4. Push the commit and its tag:
 
    ```bash
    git push --follow-tags
    ```
 
-4. Follow the run in the repository's **Actions** tab (**Publish to npm**). When it is done, its summary page shows
+5. Follow the run in the repository's **Actions** tab (**Publish to npm**). When it is done, its summary page shows
    what npm staged.
 
-5. Approve the staged version (or do it on npmjs.com, on the package's page):
+6. Approve the staged version (or do it on npmjs.com, on the package's page):
 
    ```bash
    npm stage list @syware/jlib
@@ -63,8 +66,9 @@ tarball.
 
    npm asks for your two-factor code, then the version is public.
 
-6. Check the result: the version on [npmjs.com](https://www.npmjs.com/package/@syware/jlib) with its provenance
-   badge, and the release on the repository's **Releases** page.
+7. Check the result: the version on [npmjs.com](https://www.npmjs.com/package/@syware/jlib) with its provenance
+   badge, and the release on the repository's **Releases** page. The release holds the install line and the change
+   list: edit it (**Edit release**) and paste the version's section of CHANGELOG.md above them.
 
 ### Pre-releases
 

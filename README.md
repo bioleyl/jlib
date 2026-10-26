@@ -107,6 +107,7 @@ git push --follow-tags
 
 The tag stages the version on npm and creates the GitHub release; a maintainer then approves it with
 `npm stage approve`. Every step, pre-releases and what to do when something fails: [RELEASING.md](RELEASING.md).
+What changed in each version: [CHANGELOG.md](CHANGELOG.md).
 
 ## Made by SyWare
 
