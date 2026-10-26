@@ -24,7 +24,12 @@
   display: flex;
 }
 
-button {
+/* Moves between the button and the link: its children are laid out by whichever holds it. */
+.content {
+  display: contents;
+}
+
+.base {
   display: inline-flex;
   flex: 1;
   align-items: center;
@@ -39,6 +44,7 @@ button {
   font-size: var(--font-size);
   font-weight: 600;
   line-height: 1;
+  text-decoration: none;
   white-space: nowrap;
   cursor: pointer;
   transition:
@@ -47,54 +53,55 @@ button {
     color var(--jl-fast) var(--jl-ease);
 }
 
-:host([icon-only]) button {
+:host([icon-only]) .base {
   width: var(--height);
   padding: 0;
 }
 
-button:hover {
+.base:hover {
   background: var(--jl-surface-2);
 }
 
-button:active {
+.base:active {
   background: var(--jl-surface-3);
 }
 
-:host([variant="primary"]) button {
+:host([variant="primary"]) .base {
   border-color: transparent;
   background: var(--jl-accent);
   color: var(--jl-on-accent);
 }
 
-:host([variant="primary"]) button:hover {
+:host([variant="primary"]) .base:hover {
   background: var(--jl-accent-strong);
 }
 
-:host([variant="ghost"]) button {
+:host([variant="ghost"]) .base {
   border-color: transparent;
   background: transparent;
   color: var(--jl-accent);
 }
 
-:host([variant="ghost"]) button:hover {
+:host([variant="ghost"]) .base:hover {
   background: var(--jl-accent-soft);
 }
 
-:host([variant="danger"]) button {
+:host([variant="danger"]) .base {
   border-color: transparent;
   background: var(--jl-danger);
   color: var(--jl-on-danger);
 }
 
-:host([variant="danger"]) button:hover {
+:host([variant="danger"]) .base:hover {
   background: color-mix(in srgb, var(--jl-danger) 86%, var(--jl-text));
 }
 
-:host([loading]) button {
+:host([loading]) .base {
   cursor: progress;
 }
 
-button:disabled {
+.base:disabled,
+.base[aria-disabled="true"] {
   cursor: not-allowed;
   opacity: 0.5;
 }

@@ -20,7 +20,8 @@ const followsLink = (event: Event): boolean =>
 /**
  * The frame of an app: a top bar (`header`), a sidebar (`nav`), the main area (the default slot), which scrolls
  * on its own, and an optional panel on the right (`aside`). Narrower than 960 pixels, the sidebar becomes a drawer
- * over the content, opened by a menu button in the top bar (or `nav-open`, or `toggleNav()`), and the panel hides.
+ * over the content, opened by a menu button in the top bar (or `nav-open`, or `toggleNav()`), the panel hides, and
+ * a bar along the bottom shows (`tabs`, such as a `jl-tab-bar`, whose `more` opens the drawer).
  * It takes the height of its container: give that one a height (`100dvh` for a whole page).
  */
 export class JlAppShell extends JlElement {
@@ -31,7 +32,7 @@ export class JlAppShell extends JlElement {
   /** Whether the drawer is open, on narrow screens; wide ones always show the sidebar. */
   readonly navOpen = this.useChange(false, (value) => this.renderNavOpen(value), { attribute: 'nav-open' });
 
-  private readonly _state = { navListeners: new AbortController() };
+  private readonly _state = { navListeners: new AbortController(), tabsListeners: new AbortController() };
 
   // The main area is inert behind an open drawer; whether the drawer covers it depends on the shell's width.
   private readonly _resize = new ResizeObserver(() => this.renderInert());
@@ -45,6 +46,8 @@ export class JlAppShell extends JlElement {
     nav: ref('.nav'),
     navSlot: ref<HTMLSlotElement>('slot[name="nav"]'),
     scrim: ref('.scrim'),
+    tabs: ref('.tabs'),
+    tabsSlot: ref<HTMLSlotElement>('slot[name="tabs"]'),
   }));
 
   /** Opens or closes the drawer; `force` sets the state instead of flipping it. */
@@ -70,6 +73,9 @@ export class JlAppShell extends JlElement {
         <aside class="aside" attrs={{ part: 'aside' }}>
           <slot name="aside" />
         </aside>
+        <div class="tabs" attrs={{ part: 'tabs' }}>
+          <slot name="tabs" />
+        </div>
         <div class="scrim" />
       </div>
     );
@@ -91,7 +97,7 @@ export class JlAppShell extends JlElement {
     this.on(this, 'keydown', (event) => this.onKey(event));
     // The first slotchange can come before onConnect: read the slots now, then follow them.
     this.renderSlots();
-    for (const slot of [this._refs.headerSlot, this._refs.navSlot, this._refs.asideSlot]) {
+    for (const slot of [this._refs.headerSlot, this._refs.navSlot, this._refs.asideSlot, this._refs.tabsSlot]) {
       this.on(slot, 'slotchange', () => this.renderSlots());
     }
   }
@@ -99,6 +105,7 @@ export class JlAppShell extends JlElement {
   onDisconnect(): void {
     this._resize.disconnect();
     this._state.navListeners.abort();
+    this._state.tabsListeners.abort();
   }
 
   /** Whether the shell is narrow: the menu button shows only then. */
@@ -112,6 +119,12 @@ export class JlAppShell extends JlElement {
     if (opening) {
       this._refs.nav.focus();
     }
+  }
+
+  /** The tab bar's "more": the other places are in the drawer. */
+  private onMore(): void {
+    this.setNavOpen(true);
+    this._refs.nav.focus();
   }
 
   private onKey(event: KeyboardEvent): void {
@@ -142,12 +155,23 @@ export class JlAppShell extends JlElement {
     const covered = this.navOpen.get() && this.isNarrow();
     this._refs.main.inert = covered;
     this._refs.aside.inert = covered;
+    this._refs.tabs.inert = covered;
   }
 
-  /** What was slotted: empty areas take no room, and a `select` from the nav (a side nav's) closes the drawer. */
+  /**
+   * What was slotted: empty areas take no room, a `select` from the nav (a side nav's) closes the drawer, and a
+   * `more` from the tabs (a tab bar's) opens it.
+   */
   private renderSlots(): void {
     this.reflect('has-header', this._refs.headerSlot.assignedElements().length > 0);
     this.reflect('has-aside', this._refs.asideSlot.assignedElements().length > 0);
+    const tabElements = this._refs.tabsSlot.assignedElements();
+    this.reflect('has-tabs', tabElements.length > 0);
+    this._state.tabsListeners.abort();
+    this._state.tabsListeners = new AbortController();
+    for (const element of tabElements) {
+      element.addEventListener('more', () => this.onMore(), { signal: this._state.tabsListeners.signal });
+    }
     const navElements = this._refs.navSlot.assignedElements();
     this.reflect('has-nav', navElements.length > 0);
     this._state.navListeners.abort();

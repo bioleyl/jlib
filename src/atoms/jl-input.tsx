@@ -59,6 +59,10 @@ export class JlInput extends JlFormControl {
   readonly autocomplete = this.useChange('', (value) => this.setNative('autocomplete', value), {
     attribute: 'autocomplete',
   });
+  /** The keyboard a phone shows for the field (`numeric`, `decimal`, `tel`…), as a native input's `inputmode`. */
+  readonly inputmode = this.useChange('', (value) => this.setNative('inputmode', value), {
+    attribute: 'inputmode',
+  });
   readonly min = this.useChange('', (value) => this.setNative('min', value), { attribute: 'min' });
   readonly max = this.useChange('', (value) => this.setNative('max', value), { attribute: 'max' });
   readonly step = this.useChange('', (value) => this.setNative('step', value), { attribute: 'step' });

@@ -45,8 +45,10 @@
   animation: flash 600ms var(--jl-ease);
 }
 
+/* A line box taller than the tag's own line-height of 1: the accents of É, Â, Ö stay inside what overflow clips. */
 .tag-text {
   overflow: hidden;
+  line-height: 1.4;
   text-overflow: ellipsis;
   white-space: nowrap;
 }

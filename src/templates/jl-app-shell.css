@@ -77,11 +77,13 @@
   display: none;
 }
 
+/* Its own stacking context: what the page lifts with z-index (a sticky bar) stays under the drawer and its scrim. */
 .main {
   grid-area: main;
   min-width: 0;
   min-height: 0;
   overflow: auto;
+  isolation: isolate;
 }
 
 .aside {
@@ -96,6 +98,11 @@
   display: none;
 }
 
+/* The bottom bar is for narrow screens: wide ones have the sidebar. */
+.tabs {
+  display: none;
+}
+
 .scrim {
   display: none;
 }
@@ -106,7 +113,13 @@
     grid-template:
       "top" auto
       "main" minmax(0, 1fr)
+      "tabs" auto
       / minmax(0, 1fr);
+  }
+
+  :host([has-tabs]) .tabs {
+    display: block;
+    grid-area: tabs;
   }
 
   :host([has-nav]) .top {

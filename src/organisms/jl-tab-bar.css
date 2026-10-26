@@ -1,0 +1,96 @@
+:host {
+  display: block;
+  --height: 60px;
+}
+
+nav {
+  display: grid;
+  grid-auto-columns: minmax(0, 1fr);
+  grid-auto-flow: column;
+  min-height: var(--height);
+  /* Clear of the home indicator on phones without a button. */
+  padding-bottom: env(safe-area-inset-bottom);
+  border-top: 1px solid var(--jl-line);
+  background: var(--jl-surface);
+}
+
+/* The items and the "more" button share the bar's columns. */
+.items {
+  display: contents;
+}
+
+.item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  min-width: 0;
+  padding: 6px 2px;
+  border: none;
+  background: none;
+  color: var(--jl-muted);
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 1.4;
+  text-decoration: none;
+  cursor: pointer;
+  transition: color var(--jl-fast) var(--jl-ease);
+}
+
+.item:hover {
+  color: var(--jl-text);
+}
+
+.item[aria-current="page"] {
+  color: var(--jl-accent);
+}
+
+/* The ring goes round the icon's pill: round the whole column, it would touch the bar's edges. */
+.item:focus-visible {
+  box-shadow: none;
+}
+
+.icon {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  width: 52px;
+  height: 28px;
+  border-radius: var(--jl-radius-pill);
+  transition: background var(--jl-fast) var(--jl-ease);
+}
+
+.item:focus-visible .icon {
+  box-shadow: var(--jl-focus-ring);
+}
+
+/* The current item is told by a shape too, not by its colour alone. */
+.item[aria-current="page"] .icon {
+  background: var(--jl-accent-soft);
+}
+
+.label {
+  max-width: 100%;
+  padding: 0 2px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.badge {
+  position: absolute;
+  top: -4px;
+  left: calc(50% + 4px);
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border: 2px solid var(--jl-surface);
+  border-radius: var(--jl-radius-pill);
+  background: var(--jl-accent);
+  color: var(--jl-on-accent);
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 14px;
+  text-align: center;
+}

@@ -3,6 +3,33 @@
 What changed in each version of [@syware/jlib](https://www.npmjs.com/package/@syware/jlib). Every component is shown
 and documented on [the documentation site](https://bioleyl.github.io/jlib/).
 
+## 0.4.0 (2026-10-26)
+
+### Added
+
+- **Tab bar** (`jl-tab-bar`): the bar along the bottom of a phone, with the three to five main places of an app, an
+  icon over a label, a count over the icon, and the current place in the accent on a pill. Items with an `href` are
+  links, the others buttons; both fire `select`. `more` adds a last button that fires `more`.
+- **App shell**: slot `tabs`, a bar along the bottom (a `jl-tab-bar`) shown only when narrow, under the drawer; a tab
+  bar's `more` opens the drawer.
+- **Chip group** (`jl-chip-group`): a row of chips to choose from, one as radios or several (`multiple`), with icons
+  and counts, the arrow keys, a row that scrolls sideways when narrow (or `wrap`), three sizes and form support
+  (`name`, `required`). `value` and `change` are lists.
+- **Button**: `href` (and `target`) make it a real link with the same look: a middle click opens a new tab, the address
+  shows on hover, and `press` still fires. A disabled link loses its address.
+- **Alert**: `description`, the message as plain text for pages that set it from code; the default slot keeps the
+  links and markup. Empty parts no longer leave a blank line.
+- **Input**: `inputmode`, the keyboard a phone shows for the field (`numeric` for a barcode, `decimal` for a price),
+  as a native input's.
+
+### Fixed
+
+- **Chip** and **tag input**: the accents on capitals (É, Â, Ö, Î) were cut off at the top of the label.
+- **App shell**: on a narrow screen, what the page lifted with `z-index` (a sticky bar, a floating button) showed
+  above the open drawer and its scrim. The main area is now its own stacking context.
+- Components can be created in jsdom, which runs many apps' unit tests: the design tokens go in a style element
+  where the document takes no constructed stylesheet, instead of failing with "adoptedStyleSheets is not iterable".
+
 ## 0.3.0 (2026-10-26)
 
 What SyWare's swai needed to drop its own components for jlib's.

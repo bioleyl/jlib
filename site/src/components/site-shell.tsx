@@ -2,6 +2,7 @@ import { css } from '@jadis/core';
 import { JlBadge, JlButton, JlCommandPalette, JlElement, JlIcon, JlKbd } from '@syware/jlib';
 import { BASE_STYLES } from '@syware/jlib/styles/shared';
 
+import { version } from '../../../package.json';
 import { githubMark, REPOSITORY_URL } from '../lib/project';
 import { actionOf, searchCommands } from '../lib/search-commands';
 import { LOGO_MIN_HEIGHT } from '../lib/syware-logo';
@@ -13,7 +14,8 @@ import { SiteNav } from './site-nav';
 import styles from './site-shell.css?raw';
 import { SiteThemeSwitch } from './site-theme-switch';
 
-const VERSION = 'v0.1';
+// The published version, read from package.json when the site is built: it follows every release.
+const VERSION = `v${version}`;
 const GITHUB_MARK_SIZE = 17;
 
 /**

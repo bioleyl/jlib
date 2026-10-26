@@ -61,6 +61,13 @@ const ASIDE = `
     <jl-badge tone="ok" dot label="Healthy" style="justify-self: start"></jl-badge>
   </div>`;
 
+const TABS = `
+  <jl-tab-bar slot="tabs" value="home" more="More" items='${JSON.stringify([
+    { href: '#home', icon: 'house', id: 'home', label: 'Home' },
+    { badge: 4, href: '#inbox', icon: 'inbox', id: 'inbox', label: 'Inbox' },
+    { href: '#reports', icon: 'chart', id: 'reports', label: 'Reports' },
+  ])}'></jl-tab-bar>`;
+
 const FRAME =
   'height: 420px; border: 1px solid var(--jl-line); border-radius: var(--jl-radius-lg); overflow: hidden';
 
@@ -73,7 +80,10 @@ the height of its container, so give that one a height: 100dvh for a whole page,
 The shell measures its own width, not the window's (a container query): narrower than 960 pixels, the sidebar
 becomes a drawer that slides over the content with a scrim, a menu button appears at the start of the top bar, and
 the right panel steps aside. The drawer opens with that button, with nav-open, or with toggleNav(); Escape, the
-scrim, following a link or a select from the nav (a jl-side-nav's) closes it.`,
+scrim, following a link or a select from the nav (a jl-side-nav's) closes it.
+
+On phones, the main places go in a bar along the bottom (slot tabs, a jl-tab-bar): it shows only when narrow, and
+its more button opens the drawer with the rest.`,
   events: [
     {
       description: 'People opened or closed the drawer: whether it is open.',
@@ -102,6 +112,15 @@ scrim, following a link or a select from the nav (a jl-side-nav's) closes it.`,
           </jl-app-shell>
         </div>`,
       title: 'Narrow: a drawer',
+    },
+    {
+      description: 'On a phone, the main places along the bottom; More opens the drawer with the others.',
+      html: `
+        <div style="${FRAME}; max-width: 390px; height: 520px">
+          <jl-app-shell>${HEADER}${NAV}${MAIN}${TABS}
+          </jl-app-shell>
+        </div>`,
+      title: 'Narrow: a tab bar',
     },
     {
       description: 'Without a nav, the content takes the whole width; without a header, the top bar goes too.',
@@ -145,6 +164,7 @@ scrim, following a link or a select from the nav (a jl-side-nav's) closes it.`,
     { description: 'The sidebar, such as a jl-side-nav; a drawer when narrow.', name: 'nav' },
     { description: 'The main area, which scrolls.', name: '' },
     { description: 'A panel on the right, for details; hidden when narrow.', name: 'aside' },
+    { description: 'A bar along the bottom, such as a jl-tab-bar; shown only when narrow.', name: 'tabs' },
   ],
   styling: [
     { description: 'The least height of the top bar (56px).', name: '--header-height' },
@@ -154,7 +174,9 @@ scrim, following a link or a select from the nav (a jl-side-nav's) closes it.`,
     { description: 'The sidebar, or the drawer.', name: 'nav' },
     { description: 'The main area.', name: 'main' },
     { description: 'The right panel.', name: 'aside' },
+    { description: 'The bottom bar.', name: 'tabs' },
   ],
-  summary: 'The frame of an app: top bar, sidebar, scrolling main area and side panel, with a drawer when narrow.',
+  summary:
+    'The frame of an app: top bar, sidebar, scrolling main area and side panel, with a drawer and a tab bar when narrow.',
   tag: 'jl-app-shell',
 };

@@ -32,14 +32,14 @@ lines); icon names another one, drawn as lucide draws it, and icon="none" shows 
       title: 'Tones',
     },
     {
+      description: 'The text in the slot, or in description when it is plain and set from code.',
       html: `
         <div class="stack">
           <jl-alert tone="danger" heading="The payment did not go through">
             The bank declined the card ending in 4242. Check its details or use another card.
           </jl-alert>
-          <jl-alert tone="ok" heading="Domain verified" icon="shield-check">
-            example.com now sends email signed with your key.
-          </jl-alert>
+          <jl-alert tone="ok" heading="Domain verified" icon="shield-check"
+            description="example.com now sends email signed with your key."></jl-alert>
         </div>`,
       title: 'With a heading',
     },
@@ -109,6 +109,14 @@ lines); icon names another one, drawn as lucide draws it, and icon="none" shows 
       type: 'string',
     },
     {
+      attribute: 'description',
+      control: { kind: 'text' },
+      default: "''",
+      description: 'The message as plain text, set from code; links and markup go in the default slot.',
+      name: 'description',
+      type: 'string',
+    },
+    {
       attribute: 'icon',
       control: { kind: 'text' },
       default: "''",
@@ -126,7 +134,7 @@ lines); icon names another one, drawn as lucide draws it, and icon="none" shows 
     },
   ],
   slots: [
-    { description: 'The message.', name: '' },
+    { description: 'The message, when it needs links or markup.', name: '' },
     { description: 'Buttons under the message.', name: 'actions' },
   ],
   styling: [{ description: 'The alert.', name: 'base' }],

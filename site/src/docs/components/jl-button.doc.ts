@@ -8,7 +8,10 @@ quiet actions in toolbars and lists, and danger for what destroys data.
 
 Listen to press rather than click: it only fires while the button can be pressed, so a disabled or loading
 button never runs its action. In a form, type="submit" and type="reset" act on the form around the button, even
-across shadow roots.`,
+across shadow roots.
+
+Give it an href when it goes somewhere rather than does something: it becomes a real link with the same look, so a
+middle click or Ctrl+click opens a new tab and the address shows on hover. press still fires.`,
   events: [
     { description: 'The button was pressed while enabled and not loading.', detail: 'undefined', name: 'press' },
   ],
@@ -66,6 +69,16 @@ across shadow roots.`,
         });
       },
       title: 'Loading and disabled',
+    },
+    {
+      description: 'With an href, a link that looks like a button. Disabled, it loses its address.',
+      html: `
+        <div class="row">
+          <jl-button variant="primary" icon="plus" label="New order" href="#new-order"></jl-button>
+          <jl-button icon-end="external-link" label="Documentation" href="https://bioleyl.github.io/jlib/" target="_blank"></jl-button>
+          <jl-button label="Archived" href="#archived" disabled></jl-button>
+        </div>`,
+      title: 'As a link',
     },
     {
       html: `<jl-button variant="primary" label="Create account" block></jl-button>`,
@@ -151,16 +164,32 @@ across shadow roots.`,
       type: 'boolean',
     },
     {
+      attribute: 'href',
+      control: { kind: 'text' },
+      default: "''",
+      description: 'An address to open: the button becomes a link with the same look.',
+      name: 'href',
+      type: 'string',
+    },
+    {
+      attribute: 'target',
+      control: { kind: 'text' },
+      default: "''",
+      description: 'Where the link opens, with an href: _blank for a new tab.',
+      name: 'target',
+      type: 'string',
+    },
+    {
       attribute: 'type',
       control: { kind: 'select', options: ['button', 'submit', 'reset'] },
       default: "'button'",
-      description: 'What it does in a form.',
+      description: 'What it does in a form (not with an href).',
       name: 'type',
       type: "'button' | 'submit' | 'reset'",
     },
   ],
   slots: [{ description: 'Rich content for the label, when text is not enough.', name: '' }],
-  styling: [{ description: 'The native button inside.', name: 'base' }],
+  styling: [{ description: 'The native button inside, or the link with an href.', name: 'base' }],
   summary: 'A button for actions, from the main one of a page to quiet ones in a toolbar.',
   tag: 'jl-button',
 };

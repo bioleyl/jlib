@@ -31,3 +31,21 @@ export const clampedNumber =
     }
     return Math.min(max, Math.max(min, parsed));
   };
+
+const LIST_START = '[';
+
+/**
+ * An attribute holding a list of strings, as HTML writes it: a JSON list (`'["a","b"]'`), or one plain value
+ * (`open`) for the common case of a single one. Empty or unreadable gives an empty list.
+ */
+export const stringList = (value: string | null): string[] => {
+  const text = value?.trim() ?? '';
+  if (text === '') {
+    return [];
+  }
+  if (!text.startsWith(LIST_START)) {
+    return [text];
+  }
+  const parsed = jsonOf<unknown>([])(text);
+  return Array.isArray(parsed) ? parsed.map(String) : [];
+};
