@@ -2,16 +2,21 @@ import { css } from '@jadis/core';
 
 import { JlElement } from '../base/jl-element';
 import { oneOf } from '../lib/attributes';
+import { setOrRemove } from '../lib/dom';
 import { TONES } from '../lib/options';
 import { BASE_STYLES } from '../styles/shared';
 import styles from './jl-badge.css?raw';
 import { JlIcon } from './jl-icon';
 
+import type { StatusLook } from '../types/jl-badge.types';
 import type { Tone } from '../types/options.types';
 
 const ICON_SIZE = 13;
 
-/** A short status, coloured by its tone: "Active", "3 new", "Failed". A `dot` marks a live state. */
+/**
+ * A short status, coloured by its tone: "Active", "3 new", "Failed". A `dot` marks a live state; a `hint` says what
+ * the state means, as a tooltip. `showStatus()` takes the look of a state from an app's map of them.
+ */
 export class JlBadge extends JlElement {
   static readonly selector = 'jl-badge';
 
@@ -30,12 +35,25 @@ export class JlBadge extends JlElement {
   readonly dot = this.useChange(false, () => this.renderMarker(), { attribute: 'dot' });
   /** Filled with the tone's colour, for what must stand out. */
   readonly solid = this.useChange(false, (value) => this.reflect('solid', value), { attribute: 'solid' });
+  /** What the state means, as a tooltip: "Waiting for logistics to prepare it." */
+  readonly hint = this.useChange('', (value) => setOrRemove(this._refs.badge, 'title', value), {
+    attribute: 'hint',
+  });
 
   private readonly _refs = this.useRefs((ref) => ({
+    badge: ref('.badge'),
     dot: ref('.dot'),
     icon: ref<JlIcon>('jl-icon'),
     label: ref('.label'),
   }));
+
+  /** Shows a state as an app's map of states describes it: its label, tone, icon and hint. */
+  showStatus(look: StatusLook): void {
+    this.label.set(look.label);
+    this.tone.set(look.tone);
+    this.icon.set(look.icon ?? '');
+    this.hint.set(look.hint ?? '');
+  }
 
   templateHtml(): Node {
     return (

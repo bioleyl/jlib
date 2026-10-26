@@ -84,6 +84,13 @@
     --jl-control-sm: 30px;
     --jl-control-md: 36px;
     --jl-control-lg: 44px;
+    /* The text people type in fields. */
+    --jl-control-font: var(--jl-font-md);
+
+    /* The widest a page gets: a form, most pages, and the tables and grids that need the room. */
+    --jl-page-form: 720px;
+    --jl-page-standard: 1120px;
+    --jl-page-wide: 1400px;
 
     /* Flat: lines separate; only what floats (menus, dialogs, toasts) casts a shadow. */
     --jl-shadow-sm: 0 1px 2px rgb(11 11 12 / 0.05);
@@ -184,5 +191,20 @@
     --jl-shadow: 0 6px 18px -6px rgb(0 0 0 / 0.6);
     --jl-shadow-lg: 0 18px 44px -12px rgb(0 0 0 / 0.7);
     --jl-scrim: rgb(0 0 0 / 0.55);
+  }
+
+  /*
+   * Touch screens: controls a finger can hit (44px for most), and field text phones do not zoom into when it takes
+   * the focus (16px). Themed parts of a page re-declare the sizes, so they take these too.
+   */
+  @media (pointer: coarse) {
+    :root,
+    [data-theme="light"],
+    [data-theme="dark"] {
+      --jl-control-sm: 36px;
+      --jl-control-md: 44px;
+      --jl-control-lg: 48px;
+      --jl-control-font: 16px;
+    }
   }
 }

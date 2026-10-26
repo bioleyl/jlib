@@ -1,0 +1,56 @@
+:host {
+  display: block;
+}
+
+.search {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  height: var(--jl-control-sm);
+  padding: 0 6px 0 10px;
+  border: 1px solid var(--jl-line);
+  border-radius: var(--jl-radius-sm);
+  background: var(--jl-surface);
+  color: var(--jl-muted);
+  font-size: var(--jl-font-sm);
+  cursor: pointer;
+  transition: border-color var(--jl-fast) var(--jl-ease);
+}
+
+.search:hover {
+  border-color: var(--jl-line-strong);
+  color: var(--jl-text-2);
+}
+
+.text {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-align: left;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Folded: the icon alone, as square as a control. */
+:host([compact]) {
+  display: inline-block;
+}
+
+:host([compact]) .search {
+  justify-content: center;
+  width: var(--jl-control-sm);
+  padding: 0;
+}
+
+:host([compact]) .text,
+:host([compact]) jl-kbd {
+  display: none;
+}
+
+/* Touch screens have no keys to press. */
+@media (pointer: coarse) {
+  jl-kbd {
+    display: none;
+  }
+}

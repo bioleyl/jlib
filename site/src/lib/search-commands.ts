@@ -1,4 +1,5 @@
 import { DESIGN_PAGES } from '../docs/design';
+import { PATTERN_PAGES, PATTERNS_SECTION } from '../docs/patterns';
 import { COMPONENT_DOCS, GUIDES, LEVEL_LABELS, slugOf } from '../docs/registry';
 import { REPOSITORY_URL } from './project';
 
@@ -15,7 +16,7 @@ const THEMES: readonly { mode: ThemeMode; label: string; icon: string }[] = [
   { icon: 'monitor', label: 'System theme', mode: 'system' },
 ];
 
-/** What the site's command palette lists: the guide, every component, and the themes. */
+/** What the site's command palette lists: the guide, the design system, the UX patterns, every component, and the themes. */
 export function searchCommands(): PaletteCommand[] {
   const guides = GUIDES.map((guide) => ({
     group: 'Guide',
@@ -27,6 +28,13 @@ export function searchCommands(): PaletteCommand[] {
     group: 'Design system',
     icon: page.icon,
     id: `${GO_PREFIX}${page.path}`,
+    label: page.label,
+  }));
+  const patterns = PATTERN_PAGES.map((page) => ({
+    group: PATTERNS_SECTION,
+    icon: page.icon,
+    id: `${GO_PREFIX}${page.path}`,
+    keywords: ['ux', 'pattern'],
     label: page.label,
   }));
   const components = COMPONENT_DOCS.map((doc) => ({
@@ -50,7 +58,7 @@ export function searchCommands(): PaletteCommand[] {
       label: 'GitHub repository',
     },
   ];
-  return [...guides, ...design, ...components, ...themes, ...links];
+  return [...guides, ...design, ...patterns, ...components, ...themes, ...links];
 }
 
 export type SearchAction =

@@ -43,6 +43,7 @@ const index = [
   "export { COMMON_ICONS } from './lib/icon-set';",
   "export { hasIcon, iconElement, iconNames, registerIcons } from './lib/icons';",
   "export { CONTROL_SIZES, TONE_ICON_FILLED, TONE_ICONS, TONES } from './lib/options';",
+  "export { formatDuration, formatRelativeTime } from './lib/time';",
   "export { adoptTokens } from './lib/tokens';",
   "export { BASE_STYLES, CONTROL_STYLES, FLOATING_STYLES, TOKEN_STYLES } from './styles/shared';",
   ...typeModules.map((path) => `export type * from './${path}';`),

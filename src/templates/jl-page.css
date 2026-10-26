@@ -1,0 +1,41 @@
+:host {
+  display: block;
+  container-type: inline-size;
+  --page-width: var(--jl-page-standard);
+}
+
+:host([width="form"]) {
+  --page-width: var(--jl-page-form);
+}
+
+:host([width="wide"]) {
+  --page-width: var(--jl-page-wide);
+}
+
+:host([width="full"]) {
+  --page-width: none;
+}
+
+.page {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--jl-space-6);
+  max-width: var(--page-width);
+  margin: 0 auto;
+  padding: var(--jl-space-8) var(--jl-space-10) var(--jl-space-12);
+}
+
+/* A grid's items grow to their content otherwise: a row of chips would widen the page. */
+::slotted(*) {
+  min-width: 0;
+}
+
+.back {
+  margin-left: -8px;
+}
+
+@container (max-width: 720px) {
+  .page {
+    padding: var(--jl-space-6) var(--jl-space-4) var(--jl-space-12);
+  }
+}

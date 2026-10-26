@@ -1,0 +1,39 @@
+:host {
+  display: block;
+}
+
+.bones {
+  display: grid;
+  gap: 16px;
+  padding: 16px;
+}
+
+.bones.lines {
+  gap: 10px;
+}
+
+.bones.cards {
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 12px;
+  padding: 0;
+}
+
+.bone-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.bone-lines {
+  display: grid;
+  flex: 1;
+  gap: 6px;
+}
+
+.bone-card {
+  display: grid;
+  gap: 8px;
+  padding: 12px;
+  border: 1px solid var(--jl-line);
+  border-radius: var(--jl-radius-lg);
+}

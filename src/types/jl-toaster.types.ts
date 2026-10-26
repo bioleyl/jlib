@@ -10,7 +10,7 @@ export type ToastOptions = {
   tone?: ToastTone;
   /** An icon name; the tone's icon when absent. */
   icon?: string;
-  /** How long it stays, in milliseconds; 0 keeps it until closed. */
+  /** How long it stays, in milliseconds: 5000, or 8000 for an error or with an action; 0 keeps it until closed. */
   duration?: number;
   /** Shows a close button; on by default. */
   closable?: boolean;

@@ -5,6 +5,7 @@ import { BASE_STYLES } from '@syware/jlib/styles/shared';
 import { SPACE_SCALE } from '../../docs/design';
 import { codeSample } from '../../lib/blocks';
 import { designIntro } from '../../lib/design-blocks';
+import { pageHref } from '../../services/navigation';
 import { DESIGN_STYLES, PROSE_STYLES } from '../../styles/site-styles';
 
 import type { ControlSize } from '@syware/jlib';
@@ -92,7 +93,8 @@ export class SpacingPage extends JlElement {
             Buttons, fields, selects and segmented controls share three heights, so a row of mixed controls lines
             up.
             <code>md</code> is the default; <code>sm</code> for dense panels and toolbars, <code>lg</code> where a
-            thumb presses it.
+            thumb presses it. On touch screens (<code>pointer: coarse</code>) the three grow to 36, 44 and 48
+            pixels, and the text of fields to 16, so a finger hits them and phones do not zoom in.
           </p>
           <div class="heights">
             {CONTROL_HEIGHTS.map((height) => (
@@ -121,6 +123,12 @@ export class SpacingPage extends JlElement {
         <section>
           <h2>Widths</h2>
           {pairTable('Page or column', WIDTHS)}
+          <p>
+            The pages of an app take one of four widths, which <a href={pageHref('/components/page')}>jl-page</a>{' '}
+            applies: <code>--jl-page-form</code> (720px) for a column of fields, <code>--jl-page-standard</code>{' '}
+            (1120px) for most pages, <code>--jl-page-wide</code> (1400px) for tables and grids, and the whole main
+            area for work surfaces. See <a href={pageHref('/patterns/page-layout')}>Page layout</a>.
+          </p>
         </section>
 
         <section>

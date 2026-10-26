@@ -1,0 +1,47 @@
+.patterns {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 12px;
+}
+
+.pattern {
+  display: grid;
+  align-content: start;
+  gap: 6px;
+  padding: 16px;
+  border: 1px solid var(--jl-line);
+  border-radius: var(--jl-radius-lg);
+  font-weight: 450;
+  text-decoration: none;
+  transition: border-color var(--jl-fast) var(--jl-ease);
+}
+
+.pattern:hover {
+  border-color: var(--jl-accent-line);
+  text-decoration: none;
+}
+
+.pattern-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  margin-bottom: 6px;
+  border: 1px solid var(--jl-line);
+  border-radius: var(--jl-radius);
+  background: var(--jl-surface-2);
+  color: var(--jl-text);
+}
+
+.pattern-name {
+  color: var(--jl-text);
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.pattern-summary {
+  color: var(--jl-muted);
+  font-size: var(--jl-font-sm);
+  line-height: 1.5;
+}

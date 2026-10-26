@@ -1,0 +1,71 @@
+:host {
+  display: block;
+}
+
+.base {
+  display: flex;
+  width: 100%;
+  padding: 6px 8px;
+  border: 0;
+  border-radius: var(--jl-radius-sm);
+  background: transparent;
+  color: var(--jl-text);
+  text-align: left;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background var(--jl-fast) var(--jl-ease);
+}
+
+.base:hover {
+  background: var(--jl-surface-2);
+}
+
+.content {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+jl-avatar {
+  flex: none;
+}
+
+.text {
+  display: grid;
+  min-width: 0;
+  line-height: 1.3;
+}
+
+.name,
+.description {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.name {
+  font-size: var(--jl-font-sm);
+  font-weight: 650;
+}
+
+.description {
+  color: var(--jl-muted);
+  font-size: var(--jl-font-xs);
+}
+
+/* The avatar alone, round. */
+:host([compact]) {
+  display: inline-block;
+}
+
+:host([compact]) .base {
+  width: auto;
+  padding: 2px;
+  border-radius: var(--jl-radius-pill);
+}
+
+:host([compact]) .text {
+  display: none;
+}

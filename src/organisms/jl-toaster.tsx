@@ -19,8 +19,15 @@ export const TOASTER_PLACEMENTS: readonly ToasterPlacement[] = [
 const DEFAULT_MAX = 3;
 const MAX_LIMIT = 20;
 const DEFAULT_DURATION = 5000;
+// Long enough to read an error, or to reach the button of an action such as Undo.
+const LONG_DURATION = 8000;
+const LONG_TONE = 'danger';
 const DEFAULT_LABEL = 'Notifications';
 const STACKED = 'data-stacked';
+
+/** How long a toast stays when its options do not say: longer for an error, or to give time to press its action. */
+const defaultDuration = (options: ToastOptions): number =>
+  options.tone === LONG_TONE || (options.actionLabel ?? '') !== '' ? LONG_DURATION : DEFAULT_DURATION;
 const OPEN = ':popover-open';
 
 /**
@@ -56,7 +63,10 @@ export class JlToaster extends JlElement {
     slot: ref('slot'),
   }));
 
-  /** Shows a notification; `duration` is 5 seconds unless given, and it has a close button unless told not to. */
+  /**
+   * Shows a notification. It stays 5 seconds unless `duration` says otherwise, 8 for an error or with an action;
+   * it has a close button unless told not to.
+   */
   notify(options: ToastOptions): ToastHandle {
     const toast = (
       <JlToast
@@ -64,7 +74,7 @@ export class JlToaster extends JlElement {
         text={options.text}
         tone={options.tone}
         icon={options.icon}
-        duration={options.duration ?? DEFAULT_DURATION}
+        duration={options.duration ?? defaultDuration(options)}
         closable={options.closable ?? true}
         actionLabel={options.actionLabel}
       />

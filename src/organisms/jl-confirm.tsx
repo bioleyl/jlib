@@ -9,7 +9,7 @@ import styles from './jl-confirm.css?raw';
 import { JlDialog } from './jl-dialog';
 
 import type { ButtonVariant } from '../types/jl-button.types';
-import type { ConfirmOptions, ConfirmTone } from '../types/jl-confirm.types';
+import type { ConfirmOptions, ConfirmTone, LeaveGuardOptions } from '../types/jl-confirm.types';
 
 // The template writes <jl-dialog> as a tag, for its children: naming the class keeps it in the bundle.
 define(JlDialog);
@@ -147,4 +147,35 @@ export function confirmDialog(options: ConfirmOptions): Promise<boolean> {
   ) as JlConfirm;
   document.body.append(element);
   return element.ask().finally(() => element.remove());
+}
+
+const LEAVE_HEADING = 'Leave without saving?';
+const LEAVE_TEXT = 'Your changes are lost.';
+const LEAVE_LABEL = 'Leave';
+const STAY_LABEL = 'Keep editing';
+
+/**
+ * Guards a form or an editor against leaving with changes not saved. Closing or reloading the tab asks the
+ * browser's own question; the function it returns asks in the page, for the app's router to call before it moves
+ * on: `if (!(await canLeave())) return;`. It resolves `true` at once when nothing would be lost.
+ */
+export function guardLeave(options: LeaveGuardOptions): () => Promise<boolean> {
+  window.addEventListener(
+    'beforeunload',
+    (event) => {
+      if (options.isDirty()) {
+        event.preventDefault();
+      }
+    },
+    { signal: options.signal }
+  );
+  return async () =>
+    !options.isDirty()
+    || confirmDialog({
+      cancelLabel: options.stayLabel ?? STAY_LABEL,
+      confirmLabel: options.leaveLabel ?? LEAVE_LABEL,
+      heading: options.heading ?? LEAVE_HEADING,
+      text: options.text ?? LEAVE_TEXT,
+      tone: 'danger',
+    });
 }

@@ -14,11 +14,14 @@ const DEV_BASE = '/';
 const ROUTE_PATH = /path: '(\/[^']*)'/g;
 const DOC_FILE = /^jl-(.+)\.doc\.ts$/;
 
-/** Every route of the site: the guide and design pages, and a page per documented component. */
+/** The routes a file of the site's sources writes as `path: '/…'`. */
+const routesIn = (file: string): string[] =>
+  [...readFileSync(join(SITE, 'src', file), 'utf8').matchAll(ROUTE_PATH)].map((match) => match[1] ?? '/');
+
+/** Every route of the site: the guide, design and pattern pages, and a page per documented component. */
 function routes(): string[] {
-  const listed = ['docs/registry.ts', 'docs/design.ts'].flatMap((file) =>
-    [...readFileSync(join(SITE, 'src', file), 'utf8').matchAll(ROUTE_PATH)].map((match) => match[1] ?? '/')
-  );
+  const patterns = readdirSync(join(SITE, 'src', 'docs', 'patterns')).map((file) => `docs/patterns/${file}`);
+  const listed = ['docs/registry.ts', 'docs/design.ts', 'docs/patterns.ts', ...patterns].flatMap(routesIn);
   const components = readdirSync(join(SITE, 'src', 'docs', 'components'))
     .map((file) => DOC_FILE.exec(file)?.[1])
     .filter((slug): slug is string => slug !== undefined)

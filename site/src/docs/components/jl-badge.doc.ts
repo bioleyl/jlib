@@ -1,4 +1,13 @@
+import { JlBadge } from '@syware/jlib';
+
+import type { StatusLook } from '@syware/jlib';
 import type { ComponentDoc } from '../../types/docs.types';
+
+const ORDER_STATUS: Record<string, StatusLook> = {
+  cancelled: { hint: 'Cancelled before it was handed over.', icon: 'x', label: 'Cancelled', tone: 'neutral' },
+  ready: { hint: 'Ready to be handed over.', icon: 'check', label: 'Ready', tone: 'ok' },
+  submitted: { hint: 'Waiting for logistics to prepare it.', icon: 'inbox', label: 'Sent', tone: 'info' },
+};
 
 const TONE_OPTIONS = ['neutral', 'accent', 'ok', 'warn', 'danger', 'info'];
 
@@ -39,8 +48,40 @@ semantic tones for what they mean: ok for done, warn for a real warning, danger 
         </div>`,
       title: 'Solid',
     },
+    {
+      description:
+        'One map per kind of thing gives each state its word, tone, icon and hint; showStatus() takes one. Hover a badge for its hint.',
+      html: `
+        <div class="row demo-statuses"></div>`,
+      script: `
+        const ORDER_STATUS = {
+          submitted: { label: 'Sent', tone: 'info', icon: 'inbox', hint: 'Waiting for logistics to prepare it.' },
+          ready: { label: 'Ready', tone: 'ok', icon: 'check', hint: 'Ready to be handed over.' },
+          cancelled: { label: 'Cancelled', tone: 'neutral', icon: 'x', hint: 'Cancelled before it was handed over.' },
+        };
+        for (const look of Object.values(ORDER_STATUS)) {
+          const badge = new JlBadge();
+          badge.showStatus(look);
+          root.querySelector('.demo-statuses').append(badge);
+        }`,
+      setup: (root) => {
+        for (const look of Object.values(ORDER_STATUS)) {
+          const badge = new JlBadge();
+          badge.showStatus(look);
+          root.querySelector('.demo-statuses')?.append(badge);
+        }
+      },
+      title: 'States from a map',
+    },
   ],
   level: 'atom',
+  methods: [
+    {
+      description: "Shows a state as an app's map of states describes it: its label, tone, icon and hint.",
+      name: 'showStatus',
+      signature: 'showStatus(look: StatusLook): void',
+    },
+  ],
   name: 'Badge',
   playground: { attributes: { dot: true, label: 'Running', tone: 'accent' } },
   props: [
@@ -83,6 +124,14 @@ semantic tones for what they mean: ok for done, warn for a real warning, danger 
       description: 'Filled with the tone, for what must stand out.',
       name: 'solid',
       type: 'boolean',
+    },
+    {
+      attribute: 'hint',
+      control: { kind: 'text' },
+      default: "''",
+      description: 'What the state means, as a tooltip: "Waiting for logistics to prepare it."',
+      name: 'hint',
+      type: 'string',
     },
   ],
   slots: [{ description: 'Extra content after the label.', name: '' }],

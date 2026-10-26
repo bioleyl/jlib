@@ -3,6 +3,51 @@
 What changed in each version of [@syware/jlib](https://www.npmjs.com/package/@syware/jlib). Every component is shown
 and documented on [the documentation site](https://bioleyl.github.io/jlib/).
 
+## 0.5.0 (2026-10-26)
+
+What swai and swstock each wrote for themselves, made one for every app, and the UX patterns that say how SyWare
+apps behave.
+
+### Added
+
+- **Page** (`jl-page`): a page of an app. Its header holds a back link named after the page it leads to (`back`,
+  `back-label`), the heading, a sentence or the facts that identify its subject, the status (slot `meta`) and the
+  actions; the content is centred at one of four widths (`width`: `form`, `standard`, `wide`, `full`). With
+  `app-name` it names the browser tab after its heading: "Order #3 · swstock".
+- **Search button** (`jl-search-button`): what opens the command palette, a search field to press with the palette's
+  keys (Ctrl K, ⌘K); `compact` for a folded side nav or a phone's top bar. Touch screens show no keys.
+- **Account button** (`jl-account-button`): the person signed in, avatar, name and role, at the foot of the side nav
+  or (`compact`) in a phone's top bar; a link to their account with `href`, a button otherwise.
+- **Load state** (`jl-load-state`): what a list shows while its data comes (nothing for 300 ms, then a skeleton of
+  rows, cards or lines), when there is none (slot `empty`), and when it failed (what failed, and Try again).
+  `load({ fetch, draw, isEmpty })` moves between the states; a later load keeps the content while it refreshes.
+- **Badge**: `hint`, what the state means as a tooltip, and `showStatus(look)`, which shows a state from an app's
+  map of them. The type `StatusLook` (`label`, `tone`, `icon`, `hint`) is for those maps.
+- `guardLeave({ isDirty, signal })`: closing the tab with changes not saved asks the browser's question, and the
+  function it returns asks "Leave without saving?" in the page, for the router to call before it moves on.
+- `formatDuration(milliseconds, locale)` and `formatRelativeTime(date, now, locale)`: "< 1 sec", "3 mins",
+  "2 hrs 10 mins"; "now", "5 minutes ago", "yesterday", then "12 Mar", in the reader's language.
+- Tokens: `--jl-page-form`, `--jl-page-standard` and `--jl-page-wide` (720, 1120 and 1400 pixels), the widest a
+  page gets; `--jl-control-font`, the text people type in fields.
+- Documentation: **UX patterns**, beside the design system: navigation, page layout, lists and tables, actions,
+  forms, loading and errors, feedback, confirm and undo, dialogs and panels, status, search and shortcuts, phones,
+  accounts, and a checklist, each with live do's and don'ts.
+
+### Changed
+
+- On touch screens (`pointer: coarse`), controls are 36, 44 and 48 pixels high instead of 30, 36 and 44, and the
+  text of fields is 16 pixels, so a finger hits them and phones do not zoom in when a field takes the focus.
+- **Toaster**: a toast with an action, or an error, stays 8 seconds instead of 5 when its options give no
+  `duration`.
+
+### Worth a look when you update
+
+- Pages on phones and tablets: controls are taller there, and fields' text larger. Check rows of controls in narrow
+  places.
+- Error toasts and toasts with an action stay longer, unless they set their `duration`.
+
+No property, event or method was removed or renamed.
+
 ## 0.4.0 (2026-10-26)
 
 ### Added

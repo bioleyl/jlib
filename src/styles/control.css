@@ -10,7 +10,7 @@
   border-radius: var(--jl-radius-sm);
   background: var(--jl-surface);
   color: var(--jl-text);
-  font-size: var(--jl-font-md);
+  font-size: var(--jl-control-font);
   line-height: 20px;
   transition:
     border-color var(--jl-fast) var(--jl-ease),

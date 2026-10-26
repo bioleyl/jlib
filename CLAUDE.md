@@ -61,6 +61,14 @@ prop (name, attribute, type, default as code, description), events, slots, metho
 example is HTML rendered in the page (helper classes `row`, `stack`, `narrow`, `muted`), plus an optional typed
 `setup(root)` and the `script` shown for it.
 
+## UX patterns
+
+The site's **UX patterns** (`/patterns`) are how every SyWare app behaves: navigation, page layout, lists, actions,
+forms, states, feedback, confirmations, status, search, phones, accounts, and a checklist. One file per page in
+`site/src/docs/patterns/<slug>.ts` (its `path` is `/patterns/<slug>`), written with the helpers of
+`docs/pattern-kit.ts` and listed in order in `docs/patterns.ts`. Text takes `code`, **strong** and [links](/route);
+previews are HTML of `jl-*` tags. A component change that alters a pattern updates its page too.
+
 ## Checking a change
 
 `npm run check` (generate --check, lint, types, unit tests), then `npm run test:e2e` (builds the site and opens

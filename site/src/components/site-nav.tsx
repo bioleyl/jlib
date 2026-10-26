@@ -3,6 +3,7 @@ import { JlElement, JlIcon, JlInput } from '@syware/jlib';
 import { BASE_STYLES } from '@syware/jlib/styles/shared';
 
 import { DESIGN_PAGES } from '../docs/design';
+import { PATTERN_PAGES, PATTERNS_SECTION } from '../docs/patterns';
 import { docRoute, docsOfLevel, GUIDES, LEVEL_LABELS, LEVELS } from '../docs/registry';
 import { currentRoute, onRouteChange, pageHref } from '../services/navigation';
 import styles from './site-nav.css?raw';
@@ -18,7 +19,7 @@ const linkTo = (path: string, label: string, icon?: string): HTMLElement => (
   </li>
 );
 
-/** The side navigation: the guide, then every component by atomic level, with a filter on top. */
+/** The side navigation: the guide, the design system, the UX patterns, then every component by atomic level, with a filter on top. */
 export class SiteNav extends JlElement {
   static readonly selector = 'site-nav';
 
@@ -42,6 +43,10 @@ export class SiteNav extends JlElement {
           <section data-group="design">
             <p class="label">Design system</p>
             <ul>{DESIGN_PAGES.map((page) => linkTo(page.path, page.label, page.icon))}</ul>
+          </section>
+          <section data-group="patterns">
+            <p class="label">{PATTERNS_SECTION}</p>
+            <ul>{PATTERN_PAGES.map((page) => linkTo(page.path, page.label, page.icon))}</ul>
           </section>
           {LEVELS.map((level) => (
             <section data-group={level}>

@@ -24,8 +24,8 @@ over open dialogs too, and it is a polite live region: screen readers read each 
 
 Most pages never write one: import toast from jlib and call toast({ heading, text, tone }) from anywhere. It
 finds the page's toaster, or puts one at the end of the body the first time, and returns a handle whose dismiss()
-closes the toast early. Its toasts close after 5 seconds and have a close button, unless the options say
-otherwise. Write a jl-toaster in the page yourself to choose the placement: toast() then uses it.`,
+closes the toast early. Its toasts close after 5 seconds (8 for an error, or with an action to press) and have a
+close button, unless the options say otherwise. Write a jl-toaster in the page yourself to choose the placement: toast() then uses it.`,
   examples: [
     {
       description: 'toast() from anywhere: the first call puts a toaster at the bottom right of the page.',

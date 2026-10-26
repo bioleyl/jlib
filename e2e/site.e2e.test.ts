@@ -1,4 +1,4 @@
-import { readdirSync } from 'node:fs';
+import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
 import { chromium } from 'playwright-core';
@@ -25,6 +25,8 @@ const DESIGN = [
   '/accessibility',
   '/writing',
 ].map((page) => `/design${page}`);
+const PATTERN_DOCS = join(ROOT, 'site', 'src', 'docs', 'patterns');
+const PATTERN_PATH = /path: '(\/patterns\/[^']+)'/;
 // Long enough for a page's components to connect and draw (onConnect runs a task after connection).
 const SETTLE_MS = 300;
 const ICON_WARNING = 'jl-icon:';
@@ -34,6 +36,13 @@ const FLOW_ROW = 136;
 const componentPaths = readdirSync(DOCS)
   .filter((file) => file.endsWith('.doc.ts'))
   .map((file) => `/components/${file.replace(/^jl-/, '').replace(/\.doc\.ts$/, '')}`);
+
+const patternPaths = [
+  '/patterns',
+  ...readdirSync(PATTERN_DOCS).flatMap(
+    (file) => PATTERN_PATH.exec(readFileSync(join(PATTERN_DOCS, file), 'utf8'))?.[1] ?? []
+  ),
+];
 
 /** Every jl-* element of the page, through every shadow root, whose tag no component defines. */
 const UNDEFINED_TAGS = `(() => {
@@ -94,7 +103,7 @@ afterAll(async () => {
 });
 
 describe('every page of the site', () => {
-  it.each([...GUIDES, ...DESIGN, ...componentPaths])(
+  it.each([...GUIDES, ...DESIGN, ...patternPaths, ...componentPaths])(
     '%s renders without errors and with every tag defined',
     async (path) => {
       const page = await open(path);

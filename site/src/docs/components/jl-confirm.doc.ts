@@ -122,6 +122,12 @@ question several times, with ask().`,
       name: 'confirmDialog',
       signature: 'confirmDialog(options: ConfirmOptions): Promise<boolean>',
     },
+    {
+      description:
+        'A function: guards a form against leaving with changes not saved. Closing the tab asks the browser\'s question; the function it returns asks "Leave without saving?" in the page, for the router to call before it moves on. Options: isDirty, signal, heading, text, leaveLabel, stayLabel.',
+      name: 'guardLeave',
+      signature: 'guardLeave(options: LeaveGuardOptions): () => Promise<boolean>',
+    },
   ],
   name: 'Confirm',
   playground: {

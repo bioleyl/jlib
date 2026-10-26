@@ -73,10 +73,23 @@ export const TOKEN_GROUPS: readonly TokenGroup[] = [
       { description: 'Dense controls.', kind: 'length', name: '--jl-control-sm' },
       { description: 'Controls by default.', kind: 'length', name: '--jl-control-md' },
       { description: 'Controls a thumb presses.', kind: 'length', name: '--jl-control-lg' },
+      {
+        description: 'The text people type in fields: 16px on touch screens.',
+        kind: 'length',
+        name: '--jl-control-font',
+      },
       { description: 'Captions, badges.', kind: 'length', name: '--jl-font-xs' },
       { description: 'Secondary text.', kind: 'length', name: '--jl-font-sm' },
       { description: 'Body text.', kind: 'length', name: '--jl-font-md' },
       { description: 'Lead text.', kind: 'length', name: '--jl-font-lg' },
+    ],
+  },
+  {
+    label: 'Page widths',
+    tokens: [
+      { description: 'A page that is one column of fields.', kind: 'length', name: '--jl-page-form' },
+      { description: 'Most pages.', kind: 'length', name: '--jl-page-standard' },
+      { description: 'Tables and grids that need the room.', kind: 'length', name: '--jl-page-wide' },
     ],
   },
   {

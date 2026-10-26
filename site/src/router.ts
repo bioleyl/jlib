@@ -16,6 +16,8 @@ import { GettingStartedPage } from './pages/getting-started-page';
 import { HomePage } from './pages/home-page';
 import { IconsPage } from './pages/icons-page';
 import { NotFoundPage } from './pages/not-found-page';
+import { PatternPage } from './pages/patterns/pattern-page';
+import { PatternsOverviewPage } from './pages/patterns/patterns-overview-page';
 import { ThemingPage } from './pages/theming-page';
 import { TreeShakingPage } from './pages/tree-shaking-page';
 
@@ -38,6 +40,8 @@ const routes = defineRoutes({
   designIcons: { page: IconsPage, path: '/design/icons' },
   designAccessibility: { page: AccessibilityPage, path: '/design/accessibility' },
   designWriting: { page: WritingPage, path: '/design/writing' },
+  patterns: { page: PatternsOverviewPage, path: '/patterns' },
+  pattern: { page: PatternPage, path: '/patterns/:name' },
   component: { page: ComponentPage, path: '/components/:name' },
   components: { page: ComponentsPage, path: '/components' },
   notFound: { page: NotFoundPage, path: '/:rest' },
