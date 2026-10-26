@@ -1,8 +1,9 @@
 name: Publish to npm
 
-# Pushing a version tag (v0.1.1) publishes that version to npm and creates its GitHub release. No npm token: npm
-# trusts this workflow (trusted publishing, set in the package's npm settings) and adds a provenance statement.
-# A version already on npm (published by hand) is not published again: its release gets npm's own tarball.
+# Pushing a version tag (v0.1.3) stages that version on npm and creates its GitHub release; a maintainer then
+# approves the staged version (npm stage approve, with 2FA) to make it public. No npm token: npm trusts this
+# workflow (trusted publishing, set in the package's npm settings) and adds a provenance statement. A version
+# already on npm is not staged again: its release gets npm's own tarball.
 on:
   push:
     tags: ['v*']
@@ -64,15 +65,37 @@ jobs:
             npm pack
           fi
 
-      # On failure, npm's own message also becomes an annotation: shown on the run's page, and read through the API.
-      - name: Publish to npm
+      # The trusted publisher may only stage (npm's recommended setting): the version waits on npm, hidden, until a
+      # maintainer approves it with their two-factor authentication. npm's error, on failure, becomes an annotation.
+      - name: Stage on npm
         if: steps.npm.outputs.published == 'false'
+        env:
+          NAME: ${{ steps.package.outputs.name }}
+          VERSION: ${{ steps.package.outputs.version }}
         run: |
-          if ! npm publish ./*.tgz 2> publish-errors.log; then
-            cat publish-errors.log
-            echo "::error title=npm publish failed::$(grep -E 'npm (error|ERR)' publish-errors.log | head -12 | tr '\n' ' ')"
+          if ! npm stage publish ./*.tgz > stage.log 2> stage-errors.log; then
+            cat stage.log stage-errors.log
+            echo "::error title=npm stage publish failed::$(grep -E 'npm (error|ERR)' stage-errors.log | head -12 | tr '\n' ' ')"
             exit 1
           fi
+          cat stage.log stage-errors.log
+          {
+            echo "## $NAME@$VERSION is staged on npm"
+            echo
+            echo "It becomes public once a maintainer approves it, with their two-factor authentication:"
+            echo
+            echo '```'
+            echo "npm stage list $NAME"
+            echo "npm stage approve <stage-id>"
+            echo '```'
+            echo
+            echo "What npm answered:"
+            echo
+            echo '```'
+            cat stage.log
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+          echo "::notice title=Staged on npm::$NAME@$VERSION waits for approval: npm stage list $NAME, then npm stage approve <stage-id>."
 
       - name: Create the GitHub release
         env:

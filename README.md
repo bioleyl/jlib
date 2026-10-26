@@ -97,9 +97,10 @@ component. Conventions for contributors are in [CLAUDE.md](CLAUDE.md).
 
 ## Releasing
 
-Pushing a version tag publishes the package: the `Publish to npm` workflow checks, builds and publishes it through
-npm's trusted publishing (no token; the package gets a provenance statement), then creates the GitHub release with
-the package attached.
+Pushing a version tag releases the package: the `Publish to npm` workflow checks and builds it, stages it on npm
+through trusted publishing (no token; the package gets a provenance statement), then creates the GitHub release with
+the package attached. The staged version becomes public once a maintainer approves it with their two-factor
+authentication.
 
 ```bash
 npm version patch
@@ -111,6 +112,16 @@ git push --follow-tags
 
 `npm version` (or `minor`, `major`) bumps package.json and the lockfile, commits and tags `vX.Y.Z`. The workflow
 refuses a tag that is not the version in package.json.
+
+When the run is done (its summary page shows what was staged), approve the version:
+
+```bash
+npm stage list @syware/jlib
+```
+
+```bash
+npm stage approve <stage-id>
+```
 
 ## Made by SyWare
 
