@@ -69,6 +69,23 @@
   color: var(--jl-text);
 }
 
+.badge {
+  min-width: 18px;
+  padding: 0 6px;
+  border-radius: var(--jl-radius-pill);
+  background: var(--jl-surface-3);
+  color: var(--jl-muted);
+  font-size: var(--jl-font-xs);
+  font-weight: 650;
+  line-height: 18px;
+  text-align: center;
+}
+
+.segment[aria-checked="true"] .badge {
+  background: var(--jl-accent-soft);
+  color: var(--jl-accent);
+}
+
 .segment:disabled {
   cursor: not-allowed;
   opacity: 0.45;

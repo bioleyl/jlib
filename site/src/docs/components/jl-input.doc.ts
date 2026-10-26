@@ -13,6 +13,11 @@ value.get(), write it with value.set().`,
   events: [
     { description: 'Each change as people type.', detail: 'string', name: 'input' },
     {
+      description: 'Enter was pressed in the field: to submit, or to pick a first result.',
+      detail: 'string',
+      name: 'enter',
+    },
+    {
       description: 'The value was committed: Enter, leaving the field, or the clear button.',
       detail: 'string',
       name: 'change',

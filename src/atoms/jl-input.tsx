@@ -35,6 +35,7 @@ const PASSWORD: InputType = 'password';
 const REVEALED: InputType = 'text';
 const ICON_SIZE = 16;
 const ACTION_ICON_SIZE = 14;
+const ENTER = 'Enter';
 
 /**
  * A single-line text field that takes part in forms. `value` is the text; `input` fires as people type and
@@ -43,7 +44,7 @@ const ACTION_ICON_SIZE = 14;
 export class JlInput extends JlFormControl {
   static readonly selector = 'jl-input';
 
-  readonly events = this.useEvents<{ input: string; change: string }>();
+  readonly events = this.useEvents<{ input: string; change: string; enter: string }>();
 
   readonly value = this.useChange('', (value) => this.renderValue(value), { attribute: 'value' });
   readonly type = this.useChange<InputType>('text', (value) => this.renderType(value), {
@@ -145,6 +146,7 @@ export class JlInput extends JlFormControl {
       this.events.emit('input', native.value);
     });
     this.on(native, 'change', () => this.events.emit('change', native.value));
+    this.on(native, 'keydown', (event) => event.key === ENTER && this.events.emit('enter', native.value));
     this.on(this._refs.clear, 'click', () => this.clearValue());
     this.on(this._refs.reveal, 'click', () => this.toggleReveal());
   }

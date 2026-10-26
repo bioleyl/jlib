@@ -163,6 +163,7 @@ export class JlSegmented extends JlFormControl {
         data-disabled={option.disabled === true ? '' : undefined}>
         {option.icon === undefined ? '' : <JlIcon name={option.icon} size={iconSize} />}
         {label === '' ? '' : <span class="label">{label}</span>}
+        {option.badge === undefined ? '' : <span class="badge">{String(option.badge)}</span>}
       </button>
     );
   }

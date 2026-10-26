@@ -120,7 +120,8 @@ while nothing is chosen and cannot be picked back; with required, it stops the s
       attribute: 'value',
       control: { kind: 'text' },
       default: "''",
-      description: 'The chosen value. One no option has shows the placeholder, or else the first option.',
+      description:
+        'The chosen value. One that no option has (a choice since removed, options still loading) shows as an option of its own, first, and the form keeps it.',
       name: 'value',
       type: 'string',
     },

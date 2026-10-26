@@ -10,6 +10,8 @@ import type { SwitchSize } from '../types/jl-switch.types';
 export const SWITCH_SIZES: readonly SwitchSize[] = ['md', 'sm'];
 
 const DEFAULT_VALUE = 'on';
+// BASE_STYLES' class for what only screen readers get.
+const SCREEN_READER_ONLY = 'sr-only';
 
 /**
  * An on/off setting that applies at once, such as "Dark mode" or "Email me". `checked` is the state; the form gets
@@ -41,6 +43,11 @@ export class JlSwitch extends JlFormControl {
     },
     { attribute: 'description' }
   );
+  /**
+   * Keeps the label for screen readers only, for a switch whose meaning the page already shows beside it (an "On"
+   * or "Off" next to the track).
+   */
+  readonly hideLabel = this.useChange(false, () => this.renderText(), { attribute: 'hide-label' });
   readonly size = this.useChange<SwitchSize>('md', (value) => this.reflect('size', value), {
     attribute: 'size',
     parse: oneOf(SWITCH_SIZES, 'md'),
@@ -143,12 +150,16 @@ export class JlSwitch extends JlFormControl {
     this.internals.setFormValue(this.checked.get() ? this.value.get() : null);
   }
 
-  /** Hides the text column when there is nothing to show, so a lone switch has no gap beside it. */
+  /**
+   * Hides the text column when there is nothing to show, so a lone switch has no gap beside it; a hidden label stays
+   * for screen readers, out of the layout.
+   */
   private renderText(): void {
     const slotted = this._refs.slot
       .assignedNodes()
       .some((node) => node instanceof Element || node.textContent?.trim() !== '');
     this._refs.text.hidden = this.label.get() === '' && this.description.get() === '' && !slotted;
+    this._refs.text.classList.toggle(SCREEN_READER_ONLY, this.hideLabel.get());
   }
 }
 

@@ -3,6 +3,47 @@
 What changed in each version of [@syware/jlib](https://www.npmjs.com/package/@syware/jlib). Every component is shown
 and documented on [the documentation site](https://bioleyl.github.io/jlib/).
 
+## 0.3.0 (2026-10-26)
+
+What SyWare's swai needed to drop its own components for jlib's.
+
+### `jl-flow`: runs, problems, details and drops
+
+- A node can show how a run went: `status` (`running`, `done`, `waiting`, `failed`) as a round mark and a ring or
+  border, and `taken`, the exit it left by. That exit, and its edges to nodes that ran, stand out.
+- `problem` marks a node with something to fix, with the text as its explanation (also for screen readers).
+- `detail` adds a third line under a dashed rule: what the node is set to do. Such a node is 96 pixels tall instead
+  of 64; rows of the layout are as tall as their tallest node.
+- `color` gives a node's icon a colour of the page's own (`var(--my-ai)`), for kinds the tones do not cover.
+- `drop-type` names a drag-and-drop type the canvas takes: something dragged from the page and dropped on it emits
+  `drop`, with what it carried and where the node goes.
+- New methods: `reveal(id)` brings a node into view, `centerPosition()` says where a node added without a place goes,
+  and `positionAfter(from, port)` where + would put a node after an exit.
+- New parts: `detail`, `status`, `problem`, and `taken` on edges.
+
+### Added
+
+- **Switch**: `hide-label` keeps the label for screen readers only, for a switch whose meaning the page shows beside
+  it.
+- **Input** and **search**: an `enter` event when Enter is pressed in the field. The search's `clear()` is public.
+- **Accordion item**: `description`, a quieter line under the heading, and an `icon` slot for a richer icon.
+- **Stat**: `tone` colours its icon.
+- **Segmented control**: an option's `badge`, a count or a short word after its label.
+- `BASE_STYLES`, `CONTROL_STYLES` and `FLOATING_STYLES` are exported, for the components an app writes itself (see
+  Theming).
+
+### Changed
+
+- **Select**: a `value` that no option has (a choice since removed, options still loading) shows as an option of its
+  own, first, and the form keeps it. It used to show the placeholder or the first option, and the form sent that.
+
+### Worth a look when you update
+
+- Selects whose value is not among their options now show that value instead of the placeholder.
+- Flows with `detail` on some nodes lay out with taller rows.
+
+No property, event or method was removed or renamed.
+
 ## 0.2.0 (2026-10-26)
 
 ### New: a flow editor, `jl-flow`

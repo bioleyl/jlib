@@ -2,7 +2,16 @@ import { dedent } from '@syware/jlib/lib/text';
 
 import { constSnippet } from '../../lib/snippets';
 
-import type { FlowAddRequest, FlowEdge, FlowGraph, FlowNode, JlButton, JlCodeBlock, JlFlow } from '@syware/jlib';
+import type {
+  FlowAddRequest,
+  FlowDropRequest,
+  FlowEdge,
+  FlowGraph,
+  FlowNode,
+  JlButton,
+  JlCodeBlock,
+  JlFlow,
+} from '@syware/jlib';
 import type { ComponentDoc } from '../../types/docs.types';
 
 // The examples' data is shown in their code as it is here: these helpers keep id, label and position first.
@@ -115,6 +124,65 @@ const ORDER: FlowGraph = {
   ],
 };
 
+/** A test run of an invoice approval: what each step did, the exits taken, and a step with something to fix. */
+const RUN: FlowGraph = {
+  edges: [
+    edge('e1', 'mail', 'read'),
+    edge('e2', 'read', 'review', 'read'),
+    edge('e3', 'read', 'ask', 'unreadable'),
+    edge('e4', 'review', 'pay', 'approved'),
+  ],
+  nodes: [
+    node('mail', 'Invoice arrives', 0, 0, {
+      description: 'Email',
+      detail: 'From the invoices inbox',
+      icon: 'mail',
+      start: true,
+      status: 'done',
+      taken: 'out',
+    }),
+    node('read', 'Read the invoice', 0, 168, {
+      description: 'Document',
+      detail: 'PDF, scans read with OCR',
+      icon: 'file-text',
+      ports: [
+        { id: 'read', label: 'Read', tone: 'ok' },
+        { id: 'unreadable', label: 'Unreadable', tone: 'danger' },
+      ],
+      status: 'done',
+      taken: 'read',
+      tone: 'info',
+    }),
+    node('review', 'Approve the payment', -136, 336, {
+      color: 'var(--jl-code-attribute)',
+      description: 'Human review',
+      detail: 'Anyone in Finance',
+      icon: 'user',
+      ports: [{ id: 'approved', label: 'Approved', tone: 'ok' }],
+      status: 'waiting',
+    }),
+    node('ask', 'Ask for a better copy', 136, 336, {
+      description: 'Email',
+      icon: 'mail',
+      ports: [],
+      problem: 'Choose who to write to.',
+      tone: 'warn',
+    }),
+    node('pay', 'Pay it', -136, 504, { description: 'Payment', icon: 'credit-card', ports: [] }),
+  ],
+};
+
+/** The steps a palette offers, dragged onto the flow: each carries its name. */
+const PALETTE_DRAG_TYPE = 'application/x-demo-step';
+
+/** The node a page adds where a step from its palette was dropped. */
+function addDropped(flow: JlFlow, { data, position }: FlowDropRequest): void {
+  const { edges, nodes } = flow.graph.get();
+  const id = `step-${nodes.length + 1}`;
+  flow.graph.set({ edges, nodes: [...nodes, { icon: 'zap', id, label: data, position }] });
+  flow.selected.set(id);
+}
+
 const START: FlowGraph = {
   edges: [],
   nodes: [node('start', 'Start', 0, 0, { icon: 'zap', start: true })],
@@ -156,13 +224,18 @@ move it, Shift for further, and Delete removes it; Escape clears the selection. 
 each a row below the nodes leading to it, under the exit it hangs from (layout() does the same from code).
 
 The graph is plain data. A node has an id, a label and a position (its top left corner), and optionally a
-description, an icon, a tone (the icon's colour), start (nothing leads to it) and ports: its exits, left to right
-along its bottom edge, each with an id, a label and a tone (the colour of its edges). Without ports a node has one
-exit; with an empty list, none. An edge has an id, from, to, and the port it leaves by (the first one when absent).
+description, a detail (a third line, under a dashed rule; the node is then taller), an icon, a tone (the icon's
+colour) or a color of the page's own, start (nothing leads to it) and ports: its exits, left to right along its
+bottom edge, each with an id, a label and a tone (the colour of its edges). Without ports a node has one exit; with an
+empty list, none. An edge has an id, from, to, and the port it leaves by (the first one when absent).
+
+A node can also show how a run went: its status (running, done, waiting or failed) and taken, the exit it left by;
+that exit and its edges to nodes that ran stand out. problem marks what to fix before the flow can run.
 
 Every edit goes out as a whole new graph in change: keep it, save it. The flow does not invent nodes: + on a free
 exit, or an edge dropped on empty space, emits add with where the node should go, and the page adds the node and its
-edge to the graph (a menu of node kinds, a dialog, or a plain step, as in the examples).`,
+edge to the graph (a menu of node kinds, a dialog, or a plain step, as in the examples). With drop-type, things
+dragged from the page (a palette of node kinds) are taken too: drop says what was dropped, and where.`,
   events: [
     {
       description: 'The graph after an edit: a node moved, joined, removed.',
@@ -174,6 +247,12 @@ edge to the graph (a menu of node kinds, a dialog, or a plain step, as in the ex
       description: 'Asks for a node after an exit: the node and exit to join it to, and where to put it.',
       detail: '{ from: string; port: string; position: FlowPoint }',
       name: 'add',
+    },
+    {
+      description:
+        'Something carrying drop-type was dropped on the canvas: what it carried, and where a node centred on the drop goes.',
+      detail: '{ data: string; position: FlowPoint }',
+      name: 'drop',
     },
   ],
   examples: [
@@ -239,9 +318,66 @@ name, and a tone is one of neutral, accent (the default), ok, warn, danger and i
       title: 'What a node shows',
     },
     {
+      description: `A test run, drawn on the flow: status on each node that ran, taken on the exits they left by
+(those exits, and the edges to nodes that ran, stand out), and problem on a node with something to fix. detail adds a
+third line; color gives an icon a colour of the page's own.`,
+      html: '<jl-flow class="run" label="Invoice approval" readonly style="height: 560px"></jl-flow>',
+      script: code(
+        constSnippet('run', RUN),
+        `
+        root.querySelector('jl-flow.run').graph.set(run);`
+      ),
+      setup: (root) => {
+        root.querySelector<JlFlow>('jl-flow.run')?.graph.set(RUN);
+      },
+      title: 'A run, and what to fix',
+    },
+    {
+      description:
+        'drop-type names what the canvas takes from the page: drag a step from the row onto the flow, and the page adds it where it lands.',
+      html: `
+        <div class="stack">
+          <div class="row">
+            <jl-chip label="Send an email" icon="mail" draggable="true" data-step="Send an email"></jl-chip>
+            <jl-chip label="Wait a day" icon="clock" draggable="true" data-step="Wait a day"></jl-chip>
+          </div>
+          <jl-flow class="dropped" label="Steps" drop-type="${PALETTE_DRAG_TYPE}" style="height: 320px"></jl-flow>
+        </div>`,
+      script: code(
+        constSnippet('start', START),
+        `
+        const flow = root.querySelector('jl-flow.dropped');
+        flow.graph.set(start);
+        for (const chip of root.querySelectorAll('[data-step]')) {
+          chip.addEventListener('dragstart', (event) =>
+            event.dataTransfer.setData('${PALETTE_DRAG_TYPE}', chip.dataset.step)
+          );
+        }
+        // Dropped on the canvas: the page adds the step where it landed.
+        flow.events.register('drop', ({ data, position }) => {
+          const { edges, nodes } = flow.graph.get();
+          const id = \`step-\${nodes.length + 1}\`;
+          flow.graph.set({ edges, nodes: [...nodes, { id, label: data, icon: 'zap', position }] });
+          flow.selected.set(id);
+        });`
+      ),
+      setup: (root) => {
+        const flow = root.querySelector<JlFlow>('jl-flow.dropped');
+        flow?.graph.set(START);
+        for (const chip of root.querySelectorAll<HTMLElement>('[data-step]')) {
+          chip.addEventListener('dragstart', (event) =>
+            event.dataTransfer?.setData(PALETTE_DRAG_TYPE, chip.dataset.step ?? '')
+          );
+        }
+        flow?.events.register('drop', (request) => addDropped(flow, request));
+      },
+      title: 'Dropped from a palette',
+    },
+    {
       description: `The parts restyle the nodes from the page with ::part(): node (also start and selected), icon,
-label, description, port, edge (also selected), and base, the canvas. Every look keeps to the design tokens. The
-sizes stay: the flow computes every edge from the node's box, 240 by 64 pixels.`,
+label, description, detail, status, problem, port, edge (also selected and taken), and base, the canvas. Every look
+keeps to the design tokens. The sizes stay: the flow computes every edge from the node's box, 240 by 64 pixels (96
+with a detail line).`,
       html: `
         <style>
           jl-flow.styled::part(base) {
@@ -323,6 +459,22 @@ sizes stay: the flow computes every edge from the node's box, 240 by 64 pixels.`
   methods: [
     { description: 'Moves and zooms the view to show every node.', name: 'fit', signature: 'fit(): void' },
     {
+      description: 'Moves the view, when needed, so that the node is in sight: one just added, for instance.',
+      name: 'reveal',
+      signature: 'reveal(id: string): void',
+    },
+    {
+      description:
+        'Where a node added after an exit goes, as + puts it: a row below, under that exit. For a node the page adds from a menu of its own.',
+      name: 'positionAfter',
+      signature: 'positionAfter(from: string, port: string): FlowPoint',
+    },
+    {
+      description: 'Where a node added without a place goes: centred in the view (its top left corner).',
+      name: 'centerPosition',
+      signature: 'centerPosition(): FlowPoint',
+    },
+    {
       description:
         'Lays the nodes out again, as the wand does: in rows from the starts down, each under the exit it hangs from. Emits change, then shows every node.',
       name: 'layout',
@@ -350,7 +502,7 @@ sizes stay: the flow computes every edge from the node's box, 240 by 64 pixels.`
       control: { kind: 'json' },
       default: '{ nodes: [], edges: [] }',
       description:
-        'The nodes (id, label, position, and optionally description, icon, tone, ports, start) and the edges (id, from, port, to).',
+        'The nodes (id, label, position, and optionally description, detail, icon, tone, color, ports, start, status, taken, problem) and the edges (id, from, port, to).',
       name: 'graph',
       type: 'FlowGraph',
     },
@@ -371,6 +523,14 @@ sizes stay: the flow computes every edge from the node's box, 240 by 64 pixels.`
       type: 'boolean',
     },
     {
+      attribute: 'drop-type',
+      default: "''",
+      description:
+        'The drag-and-drop type the canvas takes (application/x-step): something dragged in carrying it is dropped with drop.',
+      name: 'dropType',
+      type: 'string',
+    },
+    {
       attribute: 'label',
       control: { kind: 'text' },
       default: "''",
@@ -386,8 +546,11 @@ sizes stay: the flow computes every edge from the node's box, 240 by 64 pixels.`
     { description: 'The square around a node’s icon.', name: 'icon' },
     { description: 'A node’s label.', name: 'label' },
     { description: 'A node’s description.', name: 'description' },
+    { description: 'A node’s detail line, under its dashed rule.', name: 'detail' },
+    { description: 'The round mark of a node’s status in a run.', name: 'status' },
+    { description: 'The mark of a node with something to fix.', name: 'problem' },
     { description: 'An exit: its dot, its label and its + button.', name: 'port' },
-    { description: 'An edge’s line; also named selected when it is.', name: 'edge' },
+    { description: 'An edge’s line; also named selected, or taken when a run went that way.', name: 'edge' },
   ],
   summary: 'Nodes joined by edges, to move, connect and extend: a workflow editor.',
   tag: 'jl-flow',

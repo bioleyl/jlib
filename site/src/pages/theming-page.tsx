@@ -167,6 +167,32 @@ export class ThemingPage extends JlElement {
         </section>
 
         <section>
+          <h2>Your own components</h2>
+          <p>
+            A component an app writes itself, on <code>JlElement</code>, starts its styles with jlib's own:{' '}
+            <code>BASE_STYLES</code> (box sizing, the focus ring, <code>hidden</code>, <code>.sr-only</code>), and{' '}
+            <code>CONTROL_STYLES</code> for a field's <code>.control</code> frame. It then behaves like the
+            library's components, and follows the tokens.
+          </p>
+          {codeSample(
+            'ts',
+            `
+            import { css } from '@jadis/core';
+            import { BASE_STYLES, JlElement } from '@syware/jlib';
+
+            import styles from './order-card.css?raw';
+
+            export class OrderCard extends JlElement {
+              static readonly selector = 'order-card';
+
+              templateCss(): string {
+                return css\`\${BASE_STYLES}\${styles}\`;
+              }
+            }`
+          )}
+        </section>
+
+        <section>
           <h2>Tokens</h2>
           <p>
             The values shown are the ones in effect on this page now; switch the theme in the top bar to see them

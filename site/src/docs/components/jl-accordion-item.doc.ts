@@ -33,6 +33,19 @@ whether people or code opened it.`,
       title: 'Icon and disabled',
     },
     {
+      description: 'A quieter line says what the item holds, open or closed.',
+      html: `
+        <div class="narrow">
+          <jl-accordion-item heading="Invoice" description="3 fields, 2 pages" icon="file-text" open>
+            <p class="muted">Number, date and total, read from the PDF.</p>
+          </jl-accordion-item>
+          <jl-accordion-item heading="Email" description="From billing@example.com" icon="mail">
+            <p class="muted">The message the invoice came with.</p>
+          </jl-accordion-item>
+        </div>`,
+      title: 'With a description',
+    },
+    {
       description: 'open is a property too: set it from code, and listen to toggle.',
       html: `
         <div class="stack narrow">
@@ -81,6 +94,14 @@ whether people or code opened it.`,
       type: 'string',
     },
     {
+      attribute: 'description',
+      control: { kind: 'text' },
+      default: "''",
+      description: 'A quieter line under the heading, shown open or closed: what the item holds.',
+      name: 'description',
+      type: 'string',
+    },
+    {
       attribute: 'open',
       control: { kind: 'boolean' },
       default: 'false',
@@ -92,7 +113,7 @@ whether people or code opened it.`,
       attribute: 'icon',
       control: { kind: 'text' },
       default: "''",
-      description: 'An icon name, drawn before the heading.',
+      description: 'An icon name, drawn before the heading. The icon slot takes a richer one instead.',
       name: 'icon',
       type: 'string',
     },
@@ -105,7 +126,13 @@ whether people or code opened it.`,
       type: 'boolean',
     },
   ],
-  slots: [{ description: 'The content under the heading.', name: '' }],
+  slots: [
+    { description: 'The content under the heading.', name: '' },
+    {
+      description: 'An element drawn before the heading instead of the icon: a coloured badge, an avatar.',
+      name: 'icon',
+    },
+  ],
   styling: [
     { description: 'The native details element.', name: 'base' },
     {

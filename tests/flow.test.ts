@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+  centeredAt,
   connect,
   edgeEnds,
   edgeMidpoint,
@@ -9,10 +10,12 @@ import {
   FLOW_NODE,
   FLOW_ZOOM,
   fitView,
+  isEdgeTaken,
   isPortFree,
   layoutFlow,
   moveNode,
   nodeAt,
+  nodeHeight,
   outputAnchor,
   positionAfter,
   removeEdge,
@@ -58,6 +61,35 @@ describe('anchors and edges', () => {
     expect(ends?.from.x).toBe(FLOW_NODE.width / 2);
     expect(ends?.to).toEqual({ x: FLOW_NODE.width / 2, y: 200 });
     expect(ends?.tone).toBe('neutral');
+  });
+
+  it('makes a node with a detail line taller, its exits and its box with it', () => {
+    const detailed: FlowNode = { ...check, detail: 'Over 500' };
+    expect(nodeHeight(check)).toBe(FLOW_NODE.height);
+    expect(nodeHeight(detailed)).toBe(FLOW_NODE.heightWithDetail);
+    const lower = (outputAnchor(detailed, 'yes')?.y ?? 0) - (outputAnchor(check, 'yes')?.y ?? 0);
+    expect(lower).toBe(FLOW_NODE.heightWithDetail - FLOW_NODE.height);
+    const withDetail: FlowGraph = { ...graph, nodes: [start, detailed, mail] };
+    expect(nodeAt(withDetail, { x: 10, y: 200 + FLOW_NODE.height + 10 })?.id).toBe('check');
+    expect(nodeAt(graph, { x: 10, y: 200 + FLOW_NODE.height + 10 })).toBeUndefined();
+  });
+
+  it('marks the edges a run took: from the exit its node left by, to a node that ran', () => {
+    const run: FlowGraph = {
+      edges: [
+        { from: 'start', id: 'e1', to: 'check' },
+        { from: 'check', id: 'e2', port: 'yes', to: 'mail' },
+        { from: 'check', id: 'e3', port: 'no', to: 'mail' },
+      ],
+      nodes: [
+        { ...start, status: 'done', taken: 'out' },
+        { ...check, status: 'done', taken: 'yes' },
+        { ...mail, status: 'running' },
+      ],
+    };
+    expect(run.edges.map((edge) => isEdgeTaken(run, edge))).toEqual([true, true, false]);
+    const notYet: FlowGraph = { ...run, nodes: [run.nodes[0] as FlowNode, check, mail] };
+    expect(isEdgeTaken(notYet, { from: 'start', id: 'e1', to: 'check' })).toBe(false);
   });
 
   it('takes the tone of the exit, and draws nothing for a missing end', () => {
@@ -138,6 +170,18 @@ describe('edits', () => {
     const no = positionAfter(graph, 'check', 'no');
     expect(no.x - yes.x).toBeGreaterThan(FLOW_NODE.width);
     expect(yes.x + no.x).toBe(0);
+  });
+
+  it('puts a node added after a taller one a taller row below', () => {
+    const tall: FlowGraph = { ...graph, nodes: [{ ...start, detail: 'A form' }, check, mail] };
+    const lower = positionAfter(tall, 'start', 'out').y - positionAfter(graph, 'start', 'out').y;
+    expect(lower).toBe(FLOW_NODE.heightWithDetail - FLOW_NODE.height);
+  });
+
+  it('centres a dropped node on the point, on the grid', () => {
+    expect(centeredAt({ x: 500, y: 300 })).toEqual(
+      snap({ x: 500 - FLOW_NODE.width / 2, y: 300 - FLOW_NODE.height / 2 })
+    );
   });
 
   it('snaps to the grid', () => {
@@ -238,6 +282,17 @@ describe('layoutFlow', () => {
     expect(laid.start?.y).toBe(0);
     expect(laid.other?.y).toBe(0);
     expect(Math.abs((laid.other?.x ?? 0) - (laid.start?.x ?? 0))).toBeGreaterThanOrEqual(FLOW_NODE.width);
+  });
+
+  it('spaces the rows for the tallest node', () => {
+    const chain: FlowGraph = {
+      edges: [{ from: 'a', id: 'e1', to: 'b' }],
+      nodes: [
+        { detail: 'Asks two questions', id: 'a', label: 'A', position: at(0, 0), start: true },
+        { id: 'b', label: 'B', position: at(0, 0) },
+      ],
+    };
+    expect(positions(layoutFlow(chain)).b).toEqual(at(0, rowStep + FLOW_NODE.heightWithDetail - FLOW_NODE.height));
   });
 
   it('changes nothing but the positions', () => {

@@ -28,8 +28,17 @@ export class JlAccordionItem extends JlElement {
     },
     { attribute: 'heading' }
   );
+  /** A quieter line under the heading, shown open or closed: what the section holds ("3 fields", "2 pages"). */
+  readonly description = this.useChange(
+    '',
+    (value) => {
+      this._refs.description.textContent = value;
+      this._refs.description.hidden = value === '';
+    },
+    { attribute: 'description' }
+  );
   readonly open = this.useChange(false, (value) => this.renderOpen(value), { attribute: 'open' });
-  /** An icon before the heading. */
+  /** An icon before the heading; the `icon` slot takes a richer one instead. */
   readonly icon = this.useChange(
     '',
     (name) => {
@@ -50,6 +59,7 @@ export class JlAccordionItem extends JlElement {
   );
 
   private readonly _refs = this.useRefs((ref) => ({
+    description: ref('.description'),
     details: ref('details'),
     heading: ref('.heading'),
     icon: ref<JlIcon>('.icon'),
@@ -60,8 +70,13 @@ export class JlAccordionItem extends JlElement {
     return (
       <details attrs={{ part: 'base' }}>
         <summary>
-          <JlIcon class="icon" size={ICON_SIZE} hidden />
-          <span class="heading" />
+          <slot name="icon">
+            <JlIcon class="icon" size={ICON_SIZE} hidden />
+          </slot>
+          <span class="titles">
+            <span class="heading" />
+            <span class="description" hidden />
+          </span>
           <JlIcon class="chevron" name="chevron-down" size={ICON_SIZE} />
         </summary>
         <div class="content">

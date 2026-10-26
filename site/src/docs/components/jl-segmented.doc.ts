@@ -46,6 +46,12 @@ people pick.`,
       title: 'Full width and disabled',
     },
     {
+      description: 'A badge says what waits behind a choice.',
+      html: `
+        <jl-segmented label="Reviews" value="pending" options='[{"value":"pending","label":"To review","badge":6},{"value":"done","label":"Decided"}]'></jl-segmented>`,
+      title: 'With counts',
+    },
+    {
       description: 'The value goes with the form; change fires as people choose.',
       html: `
         <form class="stack narrow demo-form">
@@ -80,7 +86,8 @@ people pick.`,
       attribute: 'options',
       control: { kind: 'json' },
       default: '[]',
-      description: 'The choices: { value, label?, icon?, disabled? }.',
+      description:
+        'The choices: { value, label?, icon?, badge?, disabled? }. badge is a count or a short word after the label.',
       name: 'options',
       type: 'SegmentedOption[]',
     },

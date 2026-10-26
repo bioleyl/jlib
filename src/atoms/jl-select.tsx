@@ -48,7 +48,8 @@ export class JlSelect extends JlFormControl {
     attribute: 'options',
     parse: jsonOf<SelectOption[]>([]),
   });
-  readonly value = this.useChange(NO_VALUE, () => this.renderValue(), { attribute: 'value' });
+  /** The chosen value. One that no option has is kept, as an option of its own, rather than replaced. */
+  readonly value = this.useChange(NO_VALUE, () => this.renderOptions(), { attribute: 'value' });
   /** Shown while nothing is chosen; it cannot be picked back from the list. */
   readonly placeholder = this.useChange('', () => this.renderOptions(), { attribute: 'placeholder' });
   readonly size = this.useChange<ControlSize>('md', (value) => this.reflect('size', value), {
@@ -156,7 +157,23 @@ export class JlSelect extends JlFormControl {
 
   private renderOptions(): void {
     this._refs.native.replaceChildren(...this.placeholderNodes(), ...this.optionNodes());
+    this.keepUnknownValue();
     this.renderValue();
+  }
+
+  /**
+   * A value no option has (a choice since removed, options still loading) shows as an option of its own, first, so
+   * the field shows what is saved and the form keeps it, rather than another choice.
+   */
+  private keepUnknownValue(): void {
+    const native = this._refs.native;
+    const value = this.value.get();
+    const known = [...native.options].some((option) => option.value === value);
+    if (value === NO_VALUE || known) {
+      return;
+    }
+    const afterPlaceholder = this.placeholder.get() === '' ? 0 : 1;
+    native.add(<option value={value}>{value}</option>, afterPlaceholder);
   }
 
   /** Shows the chosen option; the form gets what is shown. */

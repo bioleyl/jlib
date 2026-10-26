@@ -45,6 +45,16 @@ on, and nothing while it is off, as with a checkbox.`,
       title: 'With a description',
     },
     {
+      description:
+        'The page says the state beside the track; the label still names the switch for screen readers.',
+      html: `
+        <div class="row">
+          <span class="muted">On</span>
+          <jl-switch label="Workflow on" hide-label checked></jl-switch>
+        </div>`,
+      title: 'A label for screen readers only',
+    },
+    {
       description: 'The status follows the switch: it listens to change.',
       html: `
         <div class="row">
@@ -106,6 +116,15 @@ on, and nothing while it is off, as with a checkbox.`,
       description: 'A smaller line under the label.',
       name: 'description',
       type: 'string',
+    },
+    {
+      attribute: 'hide-label',
+      control: { kind: 'boolean' },
+      default: 'false',
+      description:
+        'Keeps the label for screen readers only, when the page already shows what the switch means beside it.',
+      name: 'hideLabel',
+      type: 'boolean',
     },
     {
       attribute: 'size',

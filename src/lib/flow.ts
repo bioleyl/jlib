@@ -8,8 +8,11 @@ import type {
   FlowViewport,
 } from '../types/jl-flow.types';
 
-/** A node's box: fixed, so that every anchor and edge is computed without measuring the page. */
-export const FLOW_NODE = { height: 64, width: 240 } as const;
+/**
+ * A node's box: fixed, so that every anchor and edge is computed without measuring the page. A node with a detail
+ * line is taller.
+ */
+export const FLOW_NODE = { height: 64, heightWithDetail: 96, width: 240 } as const;
 
 export const FLOW_ZOOM = { max: 2, min: 0.25, step: 1.2 } as const;
 
@@ -31,6 +34,9 @@ const ROW_GAP = 72;
 const COLUMN_GAP = 32;
 
 export const portsOf = (node: FlowNode): FlowPort[] => node.ports ?? [DEFAULT_PORT];
+
+export const nodeHeight = (node: FlowNode): number =>
+  node.detail ? FLOW_NODE.heightWithDetail : FLOW_NODE.height;
 
 /** The exit an edge leaves by: its own, or its node's first. */
 export const portOfEdge = (node: FlowNode, edge: FlowEdge): string => edge.port ?? portsOf(node)[0]?.id ?? '';
@@ -54,7 +60,7 @@ export function outputAnchor(node: FlowNode, portId: string): FlowPoint | undefi
   }
   return {
     x: node.position.x + portX(index, ports.length),
-    y: node.position.y + FLOW_NODE.height + PORT_DROP,
+    y: node.position.y + nodeHeight(node) + PORT_DROP,
   };
 }
 
@@ -148,7 +154,18 @@ const isInside = (point: FlowPoint, node: FlowNode): boolean =>
   point.x >= node.position.x
   && point.x <= node.position.x + FLOW_NODE.width
   && point.y >= node.position.y
-  && point.y <= node.position.y + FLOW_NODE.height;
+  && point.y <= node.position.y + nodeHeight(node);
+
+/** A run went this way: its node left by the edge's exit, and the node it leads to ran too. */
+export function isEdgeTaken(graph: FlowGraph, edge: FlowEdge): boolean {
+  const source = nodeById(graph, edge.from);
+  const target = nodeById(graph, edge.to);
+  return source?.taken !== undefined && source.taken === portOfEdge(source, edge) && target?.status !== undefined;
+}
+
+/** The position of a node centred on a point: where something dropped there lands. */
+export const centeredAt = (point: FlowPoint): FlowPoint =>
+  snap({ x: point.x - FLOW_NODE.width / 2, y: point.y - FLOW_NODE.height / 2 });
 
 /** The node under a point, other than `except`. */
 export const nodeAt = (graph: FlowGraph, point: FlowPoint, except = ''): FlowNode | undefined =>
@@ -192,9 +209,10 @@ export const removeEdge = (graph: FlowGraph, id: string): FlowGraph => ({
   edges: graph.edges.filter((edge) => edge.id !== id),
 });
 
-// A row and a column of the flow: a node and the room around it.
-const ROW = FLOW_NODE.height + ROW_GAP;
+// A column of the flow: a node and the room beside it. A row is as tall as its tallest node, and the room below.
 const COLUMN = FLOW_NODE.width + COLUMN_GAP;
+const rowOfFlow = (graph: FlowGraph): number =>
+  Math.max(FLOW_NODE.height, ...graph.nodes.map(nodeHeight)) + ROW_GAP;
 
 /** How far across a node hangs from its parent's exit: the exits share the row out, side by side, around it. */
 function portShift(node: FlowNode, portId: string): number {
@@ -212,7 +230,10 @@ export function positionAfter(graph: FlowGraph, from: string, portId: string): F
   if (!source) {
     return { x: 0, y: 0 };
   }
-  return snap({ x: source.position.x + portShift(source, portId), y: source.position.y + ROW });
+  return snap({
+    x: source.position.x + portShift(source, portId),
+    y: source.position.y + nodeHeight(source) + ROW_GAP,
+  });
 }
 
 /** The edges that close a loop, found walking from the starts: the layout leaves them out, or a loop has no top. */
@@ -298,6 +319,7 @@ export function layoutFlow(graph: FlowGraph): FlowGraph {
   const loops = loopEdges(graph);
   const edges = graph.edges.filter((edge) => !loops.has(edge.id) && ids.has(edge.from) && ids.has(edge.to));
   const rows = rowsOf(graph, edges);
+  const row = rowOfFlow(graph);
   const placed = new Map<string, number>();
   for (const row of [...new Set(rows.values())].sort((a, b) => a - b)) {
     const members = graph.nodes.filter((node) => rows.get(node.id) === row);
@@ -310,7 +332,7 @@ export function layoutFlow(graph: FlowGraph): FlowGraph {
     ...graph,
     nodes: graph.nodes.map((node) => ({
       ...node,
-      position: snap({ x: placed.get(node.id) ?? 0, y: (rows.get(node.id) ?? 0) * ROW }),
+      position: snap({ x: placed.get(node.id) ?? 0, y: (rows.get(node.id) ?? 0) * row }),
     })),
   };
 }
@@ -338,7 +360,7 @@ export function fitView(nodes: readonly FlowNode[], width: number, height: numbe
   const left = Math.min(...nodes.map((node) => node.position.x));
   const top = Math.min(...nodes.map((node) => node.position.y));
   const right = Math.max(...nodes.map((node) => node.position.x + FLOW_NODE.width));
-  const bottom = Math.max(...nodes.map((node) => node.position.y + FLOW_NODE.height + PORT_DROP));
+  const bottom = Math.max(...nodes.map((node) => node.position.y + nodeHeight(node) + PORT_DROP));
   const zoom = clampZoom(
     Math.min(1, (width - FIT_PADDING * 2) / (right - left), (height - FIT_PADDING * 2) / (bottom - top))
   );
@@ -364,7 +386,7 @@ export function revealIn(viewport: FlowViewport, node: FlowNode, width: number, 
   const top = viewport.y + node.position.y * zoom;
   return {
     x: viewport.x + shiftInto(left, left + FLOW_NODE.width * zoom, width),
-    y: viewport.y + shiftInto(top, top + (FLOW_NODE.height + PORT_DROP) * zoom, height),
+    y: viewport.y + shiftInto(top, top + (nodeHeight(node) + PORT_DROP) * zoom, height),
     zoom,
   };
 }

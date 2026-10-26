@@ -61,6 +61,11 @@
   stroke: var(--tone, var(--jl-muted));
 }
 
+.edge-group.taken .edge {
+  stroke: var(--tone, var(--jl-muted));
+  stroke-width: 3;
+}
+
 .edge-group.selected .edge {
   stroke: var(--jl-accent);
   stroke-width: 3;
@@ -71,14 +76,16 @@
   stroke-dasharray: 5 5;
 }
 
+/* The box's size is the one lib/flow.ts computes the edges with: 240 wide, and the height the script sets (64, or 96
+   with a detail line). */
 .node {
   --tone: var(--jl-accent);
   position: absolute;
   top: 0;
   left: 0;
   display: flex;
-  align-items: center;
-  gap: var(--jl-space-3);
+  flex-direction: column;
+  justify-content: center;
   width: 240px;
   height: 64px;
   padding: 0 var(--jl-space-3) var(--jl-space-1);
@@ -101,9 +108,84 @@
   box-shadow: var(--jl-focus-ring);
 }
 
+/* How a node did in a run: a ring while it works or waits for someone, a border once it is done or failed. */
+.node[data-status="running"] {
+  --state: var(--jl-info);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--jl-info) 30%, transparent);
+}
+
+.node[data-status="done"] {
+  --state: var(--jl-ok);
+  border-color: color-mix(in srgb, var(--jl-ok) 55%, var(--jl-line));
+}
+
+.node[data-status="waiting"] {
+  --state: var(--jl-brand);
+  border-color: var(--jl-brand);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--jl-brand) 30%, transparent);
+}
+
+.node[data-status="failed"] {
+  --state: var(--jl-danger);
+  border-color: var(--jl-danger);
+}
+
 .node.selected {
   border-color: var(--jl-accent);
   box-shadow: 0 0 0 3px var(--jl-accent-soft);
+}
+
+.head {
+  display: flex;
+  align-items: center;
+  gap: var(--jl-space-3);
+  min-width: 0;
+}
+
+/* With a detail line, the head sits at the top and the detail under it, clear of the exits below. */
+.node:has(.detail) {
+  justify-content: flex-start;
+  padding-top: 10px;
+}
+
+.detail {
+  overflow: hidden;
+  margin-top: 6px;
+  padding-top: 5px;
+  line-height: 16px;
+  border-top: 1px dashed var(--jl-line);
+  color: var(--jl-muted);
+  font-size: var(--jl-font-xs);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.problem {
+  display: inline-flex;
+  flex: none;
+  color: var(--jl-danger);
+}
+
+.status {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--state);
+  color: var(--jl-on-accent);
+}
+
+.node[data-status="running"] .status jl-icon {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    rotate: 360deg;
+  }
 }
 
 .input {
@@ -132,6 +214,7 @@
 
 .text {
   display: grid;
+  flex: 1;
   min-width: 0;
 }
 
@@ -183,6 +266,12 @@
 
 .port:has(.add) {
   padding-right: 3px;
+}
+
+/* The exit a run left by. */
+.port[data-taken] {
+  border-color: var(--tone);
+  background: color-mix(in srgb, var(--tone) 14%, var(--jl-surface));
 }
 
 .dot {

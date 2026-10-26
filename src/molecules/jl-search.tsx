@@ -46,7 +46,7 @@ function isTyping(event: KeyboardEvent): boolean {
 export class JlSearch extends JlFormControl {
   static readonly selector = 'jl-search';
 
-  readonly events = this.useEvents<{ input: string; search: string }>();
+  readonly events = this.useEvents<{ input: string; search: string; enter: string }>();
 
   readonly value = this.useChange('', (value) => this.renderValue(value), { attribute: 'value' });
   readonly placeholder = this.useChange('', (value) => setOrRemove(this._refs.native, 'placeholder', value), {
@@ -109,6 +109,14 @@ export class JlSearch extends JlFormControl {
     this._refs.native.select();
   }
 
+  /** Empties the field, as its clear button does: `input` and `search` fire with `''`, and it takes the focus. */
+  clear(): void {
+    this.value.set('');
+    this.events.emit('input', '');
+    this.search('');
+    this.focus();
+  }
+
   templateHtml(): Node {
     return (
       <div class="control" attrs={{ part: 'base' }}>
@@ -166,6 +174,7 @@ export class JlSearch extends JlFormControl {
     if (event.key === 'Enter') {
       event.preventDefault();
       this.search(this.value.get());
+      this.events.emit('enter', this.value.get());
       return;
     }
     // Escape empties a field with text, as native search fields do; an empty one lets Escape through (a dialog).
@@ -202,13 +211,6 @@ export class JlSearch extends JlFormControl {
     window.clearTimeout(this._state.timer);
     this._state.lastSearch = query;
     this.events.emit('search', query);
-  }
-
-  private clear(): void {
-    this.value.set('');
-    this.events.emit('input', '');
-    this.search('');
-    this.focus();
   }
 
   private renderValue(value: string): void {

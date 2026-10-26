@@ -1,11 +1,12 @@
 import { css } from '@jadis/core';
-import { Maximize, Minus, Plus, WandSparkles, X } from 'lucide';
+import { Check, CircleAlert, Hourglass, LoaderCircle, Maximize, Minus, Plus, WandSparkles, X } from 'lucide';
 
 import { JlIcon } from '../atoms/jl-icon';
 import { JlElement } from '../base/jl-element';
 import { jsonOf } from '../lib/attributes';
 import { setOrRemove, svgElement } from '../lib/dom';
 import {
+  centeredAt,
   connect,
   edgeEnds,
   edgeMidpoint,
@@ -13,10 +14,12 @@ import {
   FLOW_NODE,
   FLOW_ZOOM,
   fitView,
+  isEdgeTaken,
   isPortFree,
   layoutFlow,
   moveNode,
   nodeAt,
+  nodeHeight,
   outputAnchor,
   portsOf,
   portX,
@@ -34,17 +37,29 @@ import styles from './jl-flow.css?raw';
 
 import type {
   FlowAddRequest,
+  FlowDropRequest,
   FlowEdgeEnds,
   FlowGesture,
   FlowGraph,
   FlowNode,
+  FlowNodeStatus,
   FlowPoint,
   FlowPort,
   FlowViewport,
 } from '../types/jl-flow.types';
 
 // The icons it draws itself: a page registers only the names it writes.
-registerIcons({ maximize: Maximize, minus: Minus, plus: Plus, 'wand-sparkles': WandSparkles, x: X });
+registerIcons({
+  check: Check,
+  'circle-alert': CircleAlert,
+  hourglass: Hourglass,
+  'loader-circle': LoaderCircle,
+  maximize: Maximize,
+  minus: Minus,
+  plus: Plus,
+  'wand-sparkles': WandSparkles,
+  x: X,
+});
 
 const EMPTY: FlowGraph = { edges: [], nodes: [] };
 const IDLE: FlowGesture = { kind: 'idle' };
@@ -59,6 +74,7 @@ const PERCENT = 100;
 const ICON_SIZE = 16;
 const ADD_ICON_SIZE = 12;
 const CONTROL_ICON_SIZE = 14;
+const STATUS_ICON_SIZE = 12;
 // Room between two exits' pills.
 const PORT_GAP = 6;
 const ID_LENGTH = 8;
@@ -70,6 +86,24 @@ const ARROWS = new Map<string, FlowPoint>([
   ['ArrowRight', { x: 1, y: 0 }],
   ['ArrowUp', { x: 0, y: -1 }],
 ]);
+
+const STATUS_ICONS: Record<FlowNodeStatus, string> = {
+  done: 'check',
+  failed: 'x',
+  running: 'loader-circle',
+  waiting: 'hourglass',
+};
+
+const STATUS_LABELS: Record<FlowNodeStatus, string> = {
+  done: 'Done',
+  failed: 'Failed',
+  running: 'Running',
+  waiting: 'Waiting',
+};
+
+/** What screen readers hear after a node's label: how it did in the run, and what to fix. */
+const noteOf = (node: FlowNode): string =>
+  [node.status ? STATUS_LABELS[node.status] : '', node.problem ?? ''].filter((part) => part !== '').join('. ');
 
 /** What the pointer is on, read from the marks the nodes, exits, edges and buttons carry. */
 type Target = { node?: string; port?: string; add?: string; edge?: string; control: boolean };
@@ -103,12 +137,18 @@ const addLabel = (node: FlowNode, port: FlowPort): string =>
 /**
  * A flow of nodes joined by edges, to edit: people move the nodes, draw an edge from a node's exit to another node,
  * press + on a free exit to ask for the next node, and move and zoom the view. Every edit goes out as a new graph
- * (`change`); the page adds nodes itself, when `add` asks.
+ * (`change`); the page adds nodes itself, when `add` or `drop` asks. Nodes can show how a run went (`status`,
+ * `taken`) and what to fix (`problem`).
  */
 export class JlFlow extends JlElement {
   static readonly selector = 'jl-flow';
 
-  readonly events = this.useEvents<{ change: FlowGraph; select: string; add: FlowAddRequest }>();
+  readonly events = this.useEvents<{
+    change: FlowGraph;
+    select: string;
+    add: FlowAddRequest;
+    drop: FlowDropRequest;
+  }>();
 
   readonly graph = this.useChange<FlowGraph>(EMPTY, (graph) => this.show(graph), {
     attribute: 'graph',
@@ -132,6 +172,11 @@ export class JlFlow extends JlElement {
     },
     { attribute: 'readonly' }
   );
+  /**
+   * The drag-and-drop type the canvas takes (`application/x-step`): something dragged in carrying it asks for a node
+   * where it is dropped, with `drop`.
+   */
+  readonly dropType = this.useChange('', () => undefined, { attribute: 'drop-type' });
   /** The canvas's name for screen readers. */
   readonly label = this.useChange(
     '',
@@ -177,6 +222,29 @@ export class JlFlow extends JlElement {
       this._state.fitted = true;
       this.setViewport(fitView(this._state.graph.nodes, width, height));
     });
+  }
+
+  /** Moves the view, when needed, so that a node is in sight: one just added, or moved with the keys. */
+  reveal(id: string): void {
+    this.whenRendered(() => {
+      const node = this.nodeOf(id);
+      const { width, height } = this._refs.viewport.getBoundingClientRect();
+      if (!node || width === 0) {
+        return;
+      }
+      this.setViewport(revealIn(this._state.viewport, node, width, height));
+    });
+  }
+
+  /** Where a node added after an exit goes, as + puts it: a row below, under that exit. */
+  positionAfter(from: string, port: string): FlowPoint {
+    return positionAfter(this._state.graph, from, port);
+  }
+
+  /** Where a node added without a place goes: in the middle of the view (its top left corner). */
+  centerPosition(): FlowPoint {
+    const { width, height } = this._refs.viewport.getBoundingClientRect();
+    return centeredAt(toWorld(this._state.viewport, { x: width / 2, y: height / 2 }));
   }
 
   /** Lays the nodes out again, in rows from the starts down (`change` gives the new positions), and shows them all. */
@@ -233,6 +301,8 @@ export class JlFlow extends JlElement {
     this.on(viewport, 'wheel', (event) => this.wheel(event));
     this.on(viewport, 'keydown', (event) => this.key(event));
     this.on(viewport, 'click', (event) => this.pressAdd(event));
+    this.on(viewport, 'dragover', (event) => this.dragOver(event));
+    this.on(viewport, 'drop', (event) => this.dropOn(event));
     this.on(viewport, 'focusin', (event) => {
       const node = targetOf(event).node;
       if (node !== undefined) {
@@ -420,6 +490,29 @@ export class JlFlow extends JlElement {
     this.events.emit('add', { from: node, port: add, position: positionAfter(this._state.graph, node, add) });
   }
 
+  /** Whether a drag carries what the canvas takes: then it may be dropped here. */
+  private carriesDrop(event: DragEvent): boolean {
+    const type = this.dropType.get();
+    return type !== '' && !this.readonly.get() && (event.dataTransfer?.types.includes(type) ?? false);
+  }
+
+  private dragOver(event: DragEvent): void {
+    if (this.carriesDrop(event)) {
+      event.preventDefault();
+    }
+  }
+
+  private dropOn(event: DragEvent): void {
+    if (!this.carriesDrop(event)) {
+      return;
+    }
+    // The native drop crosses the shadow root: stop it, or the page's drop listeners would also hear it, empty.
+    event.preventDefault();
+    event.stopPropagation();
+    const data = event.dataTransfer?.getData(this.dropType.get()) ?? '';
+    this.events.emit('drop', { data, position: centeredAt(this.worldPoint(event)) });
+  }
+
   private key(event: KeyboardEvent): void {
     const target = targetOf(event);
     if (target.control || target.add !== undefined) {
@@ -452,16 +545,6 @@ export class JlFlow extends JlElement {
     const position = { x: node.position.x + arrow.x * step, y: node.position.y + arrow.y * step };
     this.commit(moveNode(this._state.graph, node.id, position));
     this.reveal(node.id);
-  }
-
-  /** Moves the view, when needed, so that a node is in sight: one just added, or moved with the keys. */
-  private reveal(id: string): void {
-    const node = this.nodeOf(id);
-    const { width, height } = this._refs.viewport.getBoundingClientRect();
-    if (!node || width === 0) {
-      return;
-    }
-    this.setViewport(revealIn(this._state.viewport, node, width, height));
   }
 
   /** Two fingers or the wheel move the view; with Ctrl or ⌘ (a pinch on a trackpad), they zoom. */
@@ -548,30 +631,60 @@ export class JlFlow extends JlElement {
   private drawNode(element: HTMLElement, node: FlowNode): void {
     const ports = portsOf(node);
     element.setAttribute('aria-label', node.label);
+    setOrRemove(element, 'aria-description', noteOf(node));
     element.part.toggle('start', node.start === true);
     setOrRemove(element, 'data-tone', node.tone ?? '');
+    setOrRemove(element, 'data-status', node.status ?? '');
+    element.style.height = `${nodeHeight(node)}px`;
+    this.paintIcon(element, node.color ?? '');
     element.replaceChildren(
       <>
         {node.start === true ? null : <span class="input" />}
-        {node.icon ? (
-          <span class="icon" attrs={{ part: 'icon' }}>
-            <JlIcon name={node.icon} size={ICON_SIZE} />
+        <span class="head">
+          {node.icon ? (
+            <span class="icon" attrs={{ part: 'icon' }}>
+              <JlIcon name={node.icon} size={ICON_SIZE} />
+            </span>
+          ) : null}
+          <span class="text">
+            <span class="label" attrs={{ part: 'label' }}>
+              {node.label}
+            </span>
+            {node.description ? (
+              <span class="description" attrs={{ part: 'description' }}>
+                {node.description}
+              </span>
+            ) : null}
           </span>
-        ) : null}
-        <span class="text">
-          <span class="label" attrs={{ part: 'label' }}>
-            {node.label}
-          </span>
-          {node.description ? (
-            <span class="description" attrs={{ part: 'description' }}>
-              {node.description}
+          {node.problem ? (
+            <span class="problem" title={node.problem} attrs={{ part: 'problem' }}>
+              <JlIcon name="circle-alert" size={ICON_SIZE} />
+            </span>
+          ) : null}
+          {node.status ? (
+            <span class="status" title={STATUS_LABELS[node.status]} attrs={{ part: 'status' }}>
+              <JlIcon name={STATUS_ICONS[node.status]} size={STATUS_ICON_SIZE} />
             </span>
           ) : null}
         </span>
+        {node.detail ? (
+          <span class="detail" title={node.detail} attrs={{ part: 'detail' }}>
+            {node.detail}
+          </span>
+        ) : null}
         <span class="ports">{ports.map((port, index) => this.portElement(node, port, index, ports.length))}</span>
       </>
     );
     this.place(element, node.position);
+  }
+
+  /** A colour of the page's own for the icon wins over the tone's. */
+  private paintIcon(element: HTMLElement, color: string): void {
+    if (color === '') {
+      element.style.removeProperty('--tone');
+      return;
+    }
+    element.style.setProperty('--tone', color);
   }
 
   private portElement(node: FlowNode, port: FlowPort, index: number, count: number): HTMLElement {
@@ -590,6 +703,7 @@ export class JlFlow extends JlElement {
     element.style.left = `${portX(index, count)}px`;
     element.style.maxWidth = `${FLOW_NODE.width / count - PORT_GAP}px`;
     setOrRemove(element, 'data-tone', port.tone ?? '');
+    element.toggleAttribute('data-taken', node.taken === port.id);
     return element;
   }
 
@@ -610,19 +724,23 @@ export class JlFlow extends JlElement {
     const { edge: selected, graph } = this._state;
     const groups = graph.edges.flatMap((edge) => {
       const ends = edgeEnds(graph, edge);
-      return ends ? [this.edgeGroup(edge.id, ends, edge.id === selected)] : [];
+      return ends ? [this.edgeGroup(edge.id, ends, edge.id === selected, isEdgeTaken(graph, edge))] : [];
     });
     this._svg.root.replaceChildren(...groups, this._svg.draft);
     this.renderEdgeTool();
   }
 
-  /** An edge, with a wide invisible twin that catches the pointer: a thin line is still easy to press. */
-  private edgeGroup(id: string, ends: FlowEdgeEnds, selected: boolean): SVGGElement {
+  /**
+   * An edge, with a wide invisible twin that catches the pointer: a thin line is still easy to press. One a run took
+   * stands out.
+   */
+  private edgeGroup(id: string, ends: FlowEdgeEnds, selected: boolean, taken: boolean): SVGGElement {
     const d = edgePath(ends.from, ends.to);
-    const group = svgElement('g', { class: selected ? 'edge-group selected' : 'edge-group', 'data-edge': id });
+    const states = [selected ? 'selected' : '', taken ? 'taken' : ''].filter((state) => state !== '');
+    const group = svgElement('g', { class: ['edge-group', ...states].join(' '), 'data-edge': id });
     group.append(
       svgElement('path', { class: 'edge-hit', d }),
-      svgElement('path', { class: 'edge', d, 'data-tone': ends.tone, part: selected ? 'edge selected' : 'edge' })
+      svgElement('path', { class: 'edge', d, 'data-tone': ends.tone, part: ['edge', ...states].join(' ') })
     );
     return group;
   }

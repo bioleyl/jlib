@@ -5,12 +5,14 @@ import { JlIcon } from '../atoms/jl-icon';
 import { JlElement } from '../base/jl-element';
 import { jsonOf, oneOf } from '../lib/attributes';
 import { registerIcons } from '../lib/icons';
+import { TONES } from '../lib/options';
 import { areaAttribute, pointsAttribute, sparklinePoints } from '../lib/sparkline';
 import { trendOfDelta } from '../lib/trend';
 import { BASE_STYLES } from '../styles/shared';
 import styles from './jl-stat.css?raw';
 
 import type { StatTrend } from '../types/jl-stat.types';
+import type { Tone } from '../types/options.types';
 import type { SparkBox } from '../types/sparkline.types';
 
 // The icons it draws itself: a page registers only the names it writes.
@@ -73,6 +75,11 @@ export class JlStat extends JlElement {
     },
     { attribute: 'icon' }
   );
+  /** The colour of the icon: neutral (quiet) by default, or what the figure is about (`ok`, `info`…). */
+  readonly tone = this.useChange<Tone>('neutral', (value) => this.reflect('tone', value), {
+    attribute: 'tone',
+    parse: oneOf(TONES, 'neutral'),
+  });
   /** A note under the figure: "vs. last month". */
   readonly caption = this.useChange(
     '',

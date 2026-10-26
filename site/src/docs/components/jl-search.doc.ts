@@ -33,6 +33,11 @@ field. Escape empties the field; loading shows a spinner in place of the search 
       name: 'search',
     },
     { description: 'Each change as people type.', detail: 'string', name: 'input' },
+    {
+      description: 'Enter was pressed: to act on the first result, where search would only filter.',
+      detail: 'string',
+      name: 'enter',
+    },
   ],
   examples: [
     {
@@ -109,6 +114,12 @@ field. Escape empties the field; loading shows a spinner in place of the search 
   methods: [
     { description: 'Focuses the field.', name: 'focus', signature: 'focus(options?: FocusOptions): void' },
     { description: 'Selects the whole text.', name: 'select', signature: 'select(): void' },
+    {
+      description:
+        'Empties the field, as its clear button does: input and search fire with an empty text, and it takes the focus.',
+      name: 'clear',
+      signature: 'clear(): void',
+    },
   ],
   name: 'Search',
   playground: {

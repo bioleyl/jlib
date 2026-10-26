@@ -36,6 +36,26 @@
   color: var(--jl-faint);
 }
 
+:host([tone="accent"]) .icon {
+  color: var(--jl-accent);
+}
+
+:host([tone="ok"]) .icon {
+  color: var(--jl-ok);
+}
+
+:host([tone="warn"]) .icon {
+  color: var(--jl-warn);
+}
+
+:host([tone="danger"]) .icon {
+  color: var(--jl-danger);
+}
+
+:host([tone="info"]) .icon {
+  color: var(--jl-info);
+}
+
 .figure {
   display: flex;
   flex-wrap: wrap;

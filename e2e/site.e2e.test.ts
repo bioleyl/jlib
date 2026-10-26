@@ -198,6 +198,24 @@ describe('the flow editor', () => {
     expect(new Set(rows)).toEqual(new Set([0]));
     expect(state.errors).toEqual([]);
   });
+
+  it('asks for one node where a step from the page is dropped', async () => {
+    const page = await open('/components/flow');
+    const flow = page.locator('jl-flow.dropped');
+    await flow.scrollIntoViewIfNeeded();
+    const labels = (): Promise<string[]> =>
+      flow.evaluate((element) => (element as JlFlow).graph.get().nodes.map((node) => node.label));
+    const box = await flow.boundingBox();
+    if (box === null) {
+      throw new Error('The example has no flow to drop on');
+    }
+    await page
+      .locator('jl-chip[data-step="Wait a day"]')
+      .dragTo(flow, { targetPosition: { x: box.width / 4, y: box.height / 4 } });
+    // The page heard the flow's drop alone, not the browser's own drop crossing the shadow root as well.
+    expect(await labels()).toEqual(['Start', 'Wait a day']);
+    expect(state.errors).toEqual([]);
+  });
 });
 
 describe('the theme switch', () => {

@@ -30,7 +30,7 @@ documentation site that shows and tests every component. Load the project skills
   objects use `parse: jsonOf(fallback)` (HTML writes them as JSON: `items='[{"label":"A"}]'`). Mirror state the CSS
   needs on the host with `this.reflect('variant', value)` and style it with `:host([variant="primary"])`.
 - **Outputs are `useEvents`** with a detail: `press`, `change` (detail = the new value), `input`, `open`, `close`,
-  `select`… They do not bubble. Native events that cross shadow roots (`input`, `click`, `keydown`, `focusin`…) must
+  `select`… They do not bubble. Native events that cross shadow roots (`input`, `click`, `keydown`, `focusin`, `drop`…) must
   not be re-emitted under the same name without `event.stopPropagation()` on the native one (see `jl-input`).
 - Child components are used **by class** in JSX (`<JlIcon name="x" />`) so bundlers keep them. A component imported
   only for its side effect is dropped by tree-shaking (`sideEffects` in package.json): when a template needs a tag

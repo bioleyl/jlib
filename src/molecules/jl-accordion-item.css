@@ -26,9 +26,19 @@ summary::-webkit-details-marker {
   display: none;
 }
 
-.heading {
+.titles {
+  display: grid;
   flex: 1;
   min-width: 0;
+}
+
+.description {
+  overflow: hidden;
+  color: var(--jl-muted);
+  font-size: var(--jl-font-sm);
+  font-weight: 400;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .icon {

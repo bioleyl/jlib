@@ -34,6 +34,16 @@ unless trend says otherwise; invert swaps the colours for figures where down is 
       title: 'A row of stats',
     },
     {
+      description: 'tone colours the icon, for what the figure is about.',
+      html: `
+        <div class="row">
+          <jl-stat label="Runs today" icon="zap" value="128" tone="info"></jl-stat>
+          <jl-stat label="Approved" icon="circle-check" value="96%" tone="ok"></jl-stat>
+          <jl-stat label="Waiting" icon="clock" value="5" tone="warn"></jl-stat>
+        </div>`,
+      title: 'Coloured icons',
+    },
+    {
       description: 'Down in red; invert for figures where down is good; flat in grey.',
       html: `
         <div class="row" style="align-items: flex-start; gap: 40px">
@@ -114,6 +124,14 @@ unless trend says otherwise; invert swaps the colours for figures where down is 
       description: 'An icon beside the label.',
       name: 'icon',
       type: 'string',
+    },
+    {
+      attribute: 'tone',
+      control: { kind: 'select', options: ['neutral', 'accent', 'ok', 'warn', 'danger', 'info'] },
+      default: "'neutral'",
+      description: 'The colour of the icon: quiet by default, or what the figure is about.',
+      name: 'tone',
+      type: "'neutral' | 'accent' | 'ok' | 'warn' | 'danger' | 'info'",
     },
     {
       attribute: 'caption',
