@@ -1,10 +1,12 @@
 import { DESIGN_PAGES } from '../docs/design';
 import { COMPONENT_DOCS, GUIDES, LEVEL_LABELS, slugOf } from '../docs/registry';
+import { REPOSITORY_URL } from './project';
 
 import type { PaletteCommand } from 'jlib';
 import type { ThemeMode } from '../types/site.types';
 
 const GO_PREFIX = 'go:';
+const OPEN_ID = 'open:repository';
 const THEME_PREFIX = 'theme:';
 
 const THEMES: readonly { mode: ThemeMode; label: string; icon: string }[] = [
@@ -39,15 +41,31 @@ export function searchCommands(): PaletteCommand[] {
     id: `${THEME_PREFIX}${theme.mode}`,
     label: theme.label,
   }));
-  return [...guides, ...design, ...components, ...themes];
+  const links = [
+    {
+      group: 'Links',
+      icon: 'external-link',
+      id: OPEN_ID,
+      keywords: ['github', 'source', 'code'],
+      label: 'GitHub repository',
+    },
+  ];
+  return [...guides, ...design, ...components, ...themes, ...links];
 }
 
-export type SearchAction = { kind: 'go'; path: string } | { kind: 'theme'; mode: ThemeMode } | { kind: 'none' };
+export type SearchAction =
+  | { kind: 'go'; path: string }
+  | { kind: 'open'; url: string }
+  | { kind: 'theme'; mode: ThemeMode }
+  | { kind: 'none' };
 
 /** What choosing a command does, from its id. */
 export function actionOf(id: string): SearchAction {
   if (id.startsWith(GO_PREFIX)) {
     return { kind: 'go', path: id.slice(GO_PREFIX.length) };
+  }
+  if (id === OPEN_ID) {
+    return { kind: 'open', url: REPOSITORY_URL };
   }
   const mode = THEMES.find((theme) => `${THEME_PREFIX}${theme.mode}` === id)?.mode;
   return mode === undefined ? { kind: 'none' } : { kind: 'theme', mode };

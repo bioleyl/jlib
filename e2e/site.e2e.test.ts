@@ -61,7 +61,7 @@ async function open(path: string): Promise<Page> {
     throw new Error('The browser did not start');
   }
   state.errors = [];
-  await page.goto(`${state.base}#${path}`);
+  await page.goto(new URL(path.slice(1), state.base).href);
   await page.waitForTimeout(SETTLE_MS);
   return page;
 }
@@ -131,5 +131,35 @@ describe('the theme switch', () => {
     })()`);
     expect(await page.evaluate('document.documentElement.dataset.theme')).toBe('dark');
     expect(await page.evaluate('getComputedStyle(document.body).backgroundColor')).toBe('rgb(15, 17, 19)');
+  });
+});
+
+describe('the routes', () => {
+  it('open a page from its own address, as a link from elsewhere does', async () => {
+    const page = await open('/components/button');
+    expect(await page.evaluate("document.querySelector('site-shell > div > *').localName")).toBe(
+      'site-component-page'
+    );
+    expect(await page.evaluate('document.title')).toBe('Button · jlib');
+  });
+
+  it('follow a link without reloading the page', async () => {
+    const page = await open('/components');
+    await page.evaluate('window.stillTheSamePage = true');
+    await page.evaluate(`(() => {
+      const list = document.querySelector('site-shell > div > *').shadowRoot;
+      list.querySelector('a.tile[href$="/components/badge"]').click();
+    })()`);
+    await page.waitForTimeout(SETTLE_MS);
+    expect(new URL(page.url()).pathname.endsWith('/components/badge')).toBe(true);
+    expect(await page.evaluate('window.stillTheSamePage')).toBe(true);
+    expect(await page.evaluate('document.title')).toBe('Badge · jlib');
+  });
+
+  it('show the not-found page for an address the site does not have', async () => {
+    const page = await open('/no-such-page');
+    expect(await page.evaluate("document.querySelector('site-shell > div > *').localName")).toBe(
+      'site-not-found-page'
+    );
   });
 });

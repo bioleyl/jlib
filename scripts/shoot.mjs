@@ -58,7 +58,7 @@ page.on('console', (message) => {
 page.on('pageerror', (error) => errors.push(`${page.url()}: ${error.message}`));
 
 for (const path of paths) {
-  await page.goto(`${base}#${path}`);
+  await page.goto(new URL(path.slice(1), base).href);
   await page.waitForTimeout(Number(values.wait));
   if (values.eval !== undefined) {
     const result = await page.evaluate(values.eval);

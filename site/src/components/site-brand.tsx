@@ -3,6 +3,7 @@ import { JlElement } from 'jlib';
 import { BASE_STYLES } from 'jlib/styles/shared';
 
 import { LOGO_MIN_HEIGHT } from '../lib/syware-logo';
+import { pageHref } from '../services/navigation';
 import styles from './site-brand.css?raw';
 import { SiteLogo } from './site-logo';
 
@@ -12,7 +13,7 @@ export class SiteBrand extends JlElement {
 
   templateHtml(): Node {
     return (
-      <a class="brand" href="#/" aria-label="jlib, home">
+      <a class="brand" href={pageHref('/')} aria-label="jlib, home">
         <SiteLogo variant="mark" height={LOGO_MIN_HEIGHT} />
         <span class="word">
           j<span class="lib">lib</span>

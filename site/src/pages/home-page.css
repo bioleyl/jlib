@@ -31,6 +31,24 @@
   gap: 10px;
 }
 
+.repo {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: var(--jl-control-lg);
+  padding: 0 16px;
+  border-radius: var(--jl-radius);
+  color: var(--jl-text);
+  font-size: 15px;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.repo:hover {
+  background: var(--jl-surface-2);
+  text-decoration: none;
+}
+
 .hero jl-code-block {
   max-width: 400px;
 }

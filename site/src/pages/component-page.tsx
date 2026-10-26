@@ -5,8 +5,9 @@ import { BASE_STYLES } from 'jlib/styles/shared';
 import { SiteApi } from '../components/site-api';
 import { SiteExample } from '../components/site-example';
 import { SitePlayground } from '../components/site-playground';
-import { COMPONENT_DOCS, docBySlug, docPath, LEVEL_SINGULAR } from '../docs/registry';
+import { COMPONENT_DOCS, docBySlug, docRoute, LEVEL_SINGULAR } from '../docs/registry';
 import { importSnippet } from '../lib/snippets';
+import { pageHref } from '../services/navigation';
 import { EXAMPLE_STYLES, PROSE_STYLES } from '../styles/site-styles';
 import styles from './component-page.css?raw';
 
@@ -24,7 +25,7 @@ function pagerLink(doc: ComponentDoc | undefined, direction: 'previous' | 'next'
     return <span />;
   }
   return (
-    <a class={`pager-link ${direction}`} href={docPath(doc)}>
+    <a class={`pager-link ${direction}`} href={pageHref(docRoute(doc))}>
       <span class="label">{direction === 'previous' ? 'Previous' : 'Next'}</span>
       <span class="pager-name">
         {direction === 'previous' ? <JlIcon name="arrow-left" size={15} /> : null}
@@ -77,7 +78,8 @@ export class ComponentPage extends JlElement {
           <JlCodeBlock language="ts" code={importSnippet(doc.className)} />
           <p class="define-hint">
             Writing <code>{`<${doc.tag}>`}</code> in HTML without using the class in your code? Also call{' '}
-            <code>{`define(${doc.className})`}</code>, or the bundler drops it. <a href="#/getting-started">Why</a>
+            <code>{`define(${doc.className})`}</code>, or the bundler drops it.{' '}
+            <a href={pageHref('/getting-started')}>Why</a>
           </p>
         </header>
         <section class="block">
@@ -107,7 +109,7 @@ export class ComponentPage extends JlElement {
       <article>
         <h1>No such component</h1>
         <p class="lead">
-          There is no component called <code>{slug}</code>. <a href="#/components">See them all</a>.
+          There is no component called <code>{slug}</code>. <a href={pageHref('/components')}>See them all</a>.
         </p>
       </article>
     );

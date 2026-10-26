@@ -13,18 +13,19 @@ import {
   MIN_CUT_PX,
   sywareMark,
 } from '../../lib/syware-logo';
+import { assetHref } from '../../services/navigation';
 import { DESIGN_STYLES, PROSE_STYLES } from '../../styles/site-styles';
 import styles from './logo-page.css?raw';
 
-const LOGO_FILE = './syware-logo';
-const DARK_FILE = './syware-logo-dark';
-const MARK_FILE = './syware-mark';
-const MARK_DARK_FILE = './syware-mark-dark';
+const LOGO_FILE = assetHref('syware-logo');
+const DARK_FILE = assetHref('syware-logo-dark');
+const MARK_FILE = assetHref('syware-mark');
+const MARK_DARK_FILE = assetHref('syware-mark-dark');
 const SVG = '.svg';
 const PNG = '.png';
 const LADDER = [16, 20, 24, 32];
 // scripts/logo-png.mjs captures how a standard screen draws the small marks, from the SVG and from the PNG.
-const CAPTURE_FILE = './logo-small-sizes.png';
+const CAPTURE_FILE = assetHref('logo-small-sizes.png');
 const CAPTURE_WIDTH = 157;
 // How much the magnified ladder enlarges each pixel.
 const MAGNIFY = 4;
@@ -53,7 +54,7 @@ type Source = 'svg' | 'png';
 const SOURCE_LABELS: Record<Source, string> = { png: 'PNG, shrunk by the browser', svg: 'SVG, drawn at size' };
 
 const cutAt = (height: number): string => (height * MARK_CUT_RATIO).toFixed(1);
-const fileName = (file: string, extension: string): string => `${file.slice(2)}${extension}`;
+const fileName = (file: string, extension: string): string => `${file.split('/').at(-1) ?? file}${extension}`;
 
 /** The mark at one height, from the vector or from the large PNG, at its real size. */
 function realSize(source: Source, height: number): Node {

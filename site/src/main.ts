@@ -6,9 +6,12 @@ import 'jlib/all';
 
 import { SiteShell } from './components/site-shell';
 import { mountRouter } from './router';
+import { interceptLinks } from './services/navigation';
 import { applyTheme } from './services/theme';
 
 applyTheme();
+// The page lives as long as the tab: its link handling never needs to stop.
+interceptLinks(new AbortController().signal);
 
 const shell = new SiteShell();
 const outlet = document.createElement('div');

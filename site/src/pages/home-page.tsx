@@ -5,10 +5,13 @@ import { BASE_STYLES } from 'jlib/styles/shared';
 import { SiteLogo } from '../components/site-logo';
 import { COMPONENT_DOCS, docsOfLevel, LEVEL_DESCRIPTIONS, LEVEL_LABELS, LEVELS } from '../docs/registry';
 import { codeSample } from '../lib/blocks';
+import { githubMark, REPOSITORY_URL } from '../lib/project';
+import { assetHref, navigate, pageHref } from '../services/navigation';
 import { PROSE_STYLES } from '../styles/site-styles';
 import styles from './home-page.css?raw';
 
 const MAKER_LOGO_HEIGHT = 56;
+const REPO_MARK_SIZE = 18;
 
 const PRINCIPLES: readonly { icon: string; title: string; text: string }[] = [
   {
@@ -96,6 +99,10 @@ export class HomePage extends JlElement {
             <div class="cta">
               <JlButton class="start" variant="primary" size="lg" iconEnd="arrow-right" label="Get started" />
               <JlButton class="browse" size="lg" label="Browse components" />
+              <a class="repo" href={REPOSITORY_URL} target="_blank" rel="noopener">
+                {githubMark(REPO_MARK_SIZE)}
+                <span>GitHub</span>
+              </a>
             </div>
             <JlCodeBlock language="bash" code="npm install jlib @jadis/core" />
           </div>
@@ -121,7 +128,7 @@ export class HomePage extends JlElement {
               The same element either way. In HTML, attributes set the inputs and JSON carries lists. In JSX, the
               classes give you typed props and keep your bundle to what you reference.
             </p>
-            <a href="#/getting-started">Read the guide</a>
+            <a href={pageHref('/getting-started')}>Read the guide</a>
           </div>
           <div class="usage-code">
             {codeSample(
@@ -148,7 +155,7 @@ export class HomePage extends JlElement {
           <h2>Four levels</h2>
           <div class="level-grid">
             {LEVELS.map((level) => (
-              <a class="level" href="#/components">
+              <a class="level" href={pageHref('/components')}>
                 <span class="level-count">{String(docsOfLevel(level).length)}</span>
                 <span class="level-name">{LEVEL_LABELS[level]}</span>
                 <span class="level-text">{LEVEL_DESCRIPTIONS[level]}</span>
@@ -167,13 +174,13 @@ export class HomePage extends JlElement {
               licence.
             </p>
             <p class="maker-links">
-              <a href="./syware-logo.svg" download="syware-logo.svg">
+              <a href={assetHref('syware-logo.svg')} download="syware-logo.svg">
                 SyWare logo (SVG)
               </a>
-              <a href="./syware-logo-dark.svg" download="syware-logo-dark.svg">
+              <a href={assetHref('syware-logo-dark.svg')} download="syware-logo-dark.svg">
                 For dark backgrounds
               </a>
-              <a href="./syware-mark.svg" download="syware-mark.svg">
+              <a href={assetHref('syware-mark.svg')} download="syware-mark.svg">
                 The mark alone
               </a>
             </p>
@@ -190,10 +197,10 @@ export class HomePage extends JlElement {
   onConnect(): void {
     document.title = 'jlib · Web Components on Jadis';
     this._refs.start.events.register('press', () => {
-      window.location.hash = '#/getting-started';
+      navigate('/getting-started');
     });
     this._refs.browse.events.register('press', () => {
-      window.location.hash = '#/components';
+      navigate('/components');
     });
   }
 }

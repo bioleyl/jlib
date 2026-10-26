@@ -68,6 +68,22 @@
   text-decoration: none;
 }
 
+.github {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.credit a {
+  color: var(--jl-accent);
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.credit a:hover {
+  text-decoration: underline;
+}
+
 .top-link:hover {
   color: var(--jl-text);
   background: var(--jl-surface-2);
@@ -172,7 +188,8 @@ main {
 }
 
 @media (max-width: 560px) {
-  .top-link,
+  .top-link:not(.github),
+  .github-text,
   .version {
     display: none;
   }

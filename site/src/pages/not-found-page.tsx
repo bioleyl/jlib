@@ -2,6 +2,7 @@ import { css } from '@jadis/core';
 import { JlElement } from 'jlib';
 import { BASE_STYLES } from 'jlib/styles/shared';
 
+import { pageHref } from '../services/navigation';
 import { PROSE_STYLES } from '../styles/site-styles';
 
 /** Any address the site does not know. */
@@ -14,8 +15,8 @@ export class NotFoundPage extends JlElement {
         <p class="label">404</p>
         <h1>This page does not exist</h1>
         <p class="lead">
-          It may have moved. <a href="#/">Go to the introduction</a> or{' '}
-          <a href="#/components">browse the components</a>.
+          It may have moved. <a href={pageHref('/')}>Go to the introduction</a> or{' '}
+          <a href={pageHref('/components')}>browse the components</a>.
         </p>
       </article>
     );

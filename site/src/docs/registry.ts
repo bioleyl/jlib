@@ -34,7 +34,8 @@ export const COMPONENT_DOCS: readonly ComponentDoc[] = Object.values(modules).so
 
 export const slugOf = (doc: ComponentDoc): string => doc.tag.replace(/^jl-/, '');
 
-export const docPath = (doc: ComponentDoc): string => `#/components/${slugOf(doc)}`;
+/** The route of a component's page: `/components/button`. */
+export const docRoute = (doc: ComponentDoc): string => `/components/${slugOf(doc)}`;
 
 export const docBySlug = (slug: string): ComponentDoc | undefined =>
   COMPONENT_DOCS.find((doc) => slugOf(doc) === slug);

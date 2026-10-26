@@ -5,6 +5,7 @@ import { BASE_STYLES } from 'jlib/styles/shared';
 import { SiteLogo } from '../../components/site-logo';
 import { DESIGN_PAGES, PRINCIPLES } from '../../docs/design';
 import { designIntro } from '../../lib/design-blocks';
+import { pageHref } from '../../services/navigation';
 import { DESIGN_STYLES, PROSE_STYLES } from '../../styles/site-styles';
 import styles from './design-overview-page.css?raw';
 
@@ -95,11 +96,11 @@ export class DesignOverviewPage extends JlElement {
           <h2>Foundations</h2>
           <p>
             Every value below is a design token, a CSS custom property that the components read. Change one and
-            every component follows: see <a href="#/theming">Theming</a>.
+            every component follows: see <a href={pageHref('/theming')}>Theming</a>.
           </p>
           <div class="foundations">
             {foundations.map((page) => (
-              <a class="foundation" href={`#${page.path}`}>
+              <a class="foundation" href={pageHref(page.path)}>
                 <span class="foundation-preview">{PREVIEWS[page.path]?.() ?? null}</span>
                 <span class="foundation-name">{page.label}</span>
                 <span class="foundation-summary">{page.summary}</span>

@@ -19,7 +19,8 @@ import { NotFoundPage } from './pages/not-found-page';
 import { ThemingPage } from './pages/theming-page';
 import { TreeShakingPage } from './pages/tree-shaking-page';
 
-// Hash routes: the site is static, so every address must be the same index.html. Links are plain `#/…` hrefs.
+// History routes under the site's base (/jlib/ on GitHub Pages). The build writes a copy of index.html for every
+// route, so a page opened directly finds the app; links are taken over by services/navigation.
 // biome-ignore assist/source/useSortedKeys: the first matching route wins, so the catch-all stays last
 const routes = defineRoutes({
   home: { page: HomePage, path: '/' },
@@ -43,6 +44,6 @@ const routes = defineRoutes({
 });
 
 export function mountRouter(outlet: HTMLElement): void {
-  const router = new Router(routes, { mode: 'hash' });
+  const router = new Router(routes, { baseUrl: import.meta.env.BASE_URL, mode: 'history' });
   router.mountOn(outlet);
 }

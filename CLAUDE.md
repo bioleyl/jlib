@@ -12,7 +12,10 @@ documentation site that shows and tests every component. Load the project skills
   `styles/`, the base classes in `base/`.
 - `src/index.ts` and `src/all.ts` are **generated** by `npm run generate` from the component folders: never edit
   them by hand; run the script after adding a component.
-- `site/`: the documentation site (Vite root `site/`, hash routes, built with Jadis and jlib itself). A component's
+- `site/`: the documentation site (Vite root `site/`, built with Jadis and jlib itself), on GitHub Pages under
+  `/jlib/`. History routes: links use `pageHref('/route')`, files of `site/public` use `assetHref('file')` (never
+  relative paths: the page's address has folders), and `services/navigation` takes over clicks on internal links.
+  The build writes a copy of `index.html` for every route and a `404.html`. A component's
   page is made from `site/src/docs/components/<tag>.doc.ts` (picked up by `import.meta.glob`, no registry to edit).
 - `scripts/shoot.mjs`: screenshots site pages and reports console errors (own Vite server and Chromium per run).
 

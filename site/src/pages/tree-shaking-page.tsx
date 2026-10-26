@@ -4,6 +4,7 @@ import { BASE_STYLES } from 'jlib/styles/shared';
 
 import report from '../generated/sizes.json';
 import { codeSample, registrationTable } from '../lib/blocks';
+import { pageHref } from '../services/navigation';
 import { PROSE_STYLES } from '../styles/site-styles';
 import styles from './guide-page.css?raw';
 
@@ -55,8 +56,8 @@ export class TreeShakingPage extends JlElement {
             A bundler keeps a component only when your code uses its class. When the page writes{' '}
             <code>{'<jl-dialog>'}</code> in its HTML and no script names <code>JlDialog</code>, the component is
             dropped and the tag stays an empty element. Name the classes in <code>define</code>: that is both the
-            registration and the use that keeps them. <a href="#/getting-started">Getting started</a> shows both
-            cases side by side.
+            registration and the use that keeps them. <a href={pageHref('/getting-started')}>Getting started</a>{' '}
+            shows both cases side by side.
           </p>
           {registrationTable()}
           <div class="note">
@@ -89,7 +90,7 @@ export class TreeShakingPage extends JlElement {
                 {bySize.map((size) => (
                   <tr>
                     <td>
-                      <a href={`#/components/${size.tag.replace(/^jl-/, '')}`}>
+                      <a href={pageHref(`/components/${size.tag.replace(/^jl-/, '')}`)}>
                         <code>{`<${size.tag}>`}</code>
                       </a>
                     </td>

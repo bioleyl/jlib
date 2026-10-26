@@ -6,6 +6,7 @@ import { KEY_PATTERNS } from '../../docs/design';
 import { codeSample } from '../../lib/blocks';
 import { contrastLevel, contrastRatio, parseColour } from '../../lib/contrast';
 import { designIntro } from '../../lib/design-blocks';
+import { pageHref } from '../../services/navigation';
 import { themeBus } from '../../services/theme';
 import { DESIGN_STYLES, PROSE_STYLES } from '../../styles/site-styles';
 
@@ -153,7 +154,7 @@ export class AccessibilityPage extends JlElement {
           <h2>Motion</h2>
           <p>
             With <code>prefers-reduced-motion: reduce</code>, transitions and animations become instant; only the
-            spinner keeps turning, slowly. See <a href="#/design/motion">Motion</a>.
+            spinner keeps turning, slowly. See <a href={pageHref('/design/motion')}>Motion</a>.
           </p>
         </section>
       </article>

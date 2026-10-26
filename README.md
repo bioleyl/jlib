@@ -6,8 +6,8 @@ A component library on [Jadis](https://github.com/bioleyl/jadis) and native Web 
 design: tags that work in any page, typed classes for JSX, form fields that submit like native ones, and a bundle
 that holds only the components an app uses. Made by SyWare, for SyWare's own apps, and free for anyone to use.
 
-The documentation site (`npm run dev`) explains the library and shows every component with a live playground,
-examples and its API.
+The documentation site, https://bioleyl.github.io/jlib/ (or `npm run dev`), explains the library and shows every
+component with a live playground, examples and its API.
 
 ## Install
 

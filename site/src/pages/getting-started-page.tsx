@@ -3,6 +3,7 @@ import { JlElement } from 'jlib';
 import { BASE_STYLES } from 'jlib/styles/shared';
 
 import { bundlerCase, codeSample, registrationTable } from '../lib/blocks';
+import { pageHref } from '../services/navigation';
 import { PROSE_STYLES } from '../styles/site-styles';
 import styles from './guide-page.css?raw';
 
@@ -209,7 +210,7 @@ export class GettingStartedPage extends JlElement {
           <p>
             Components draw their own icons with no setup. The icon names you write yourself (
             <code>{'<jl-icon name="settings">'}</code>, <code>icon="plus"</code> on a button) are registered once,
-            so your bundle holds only the icons you use. See <a href="#/design/icons">Icons</a>.
+            so your bundle holds only the icons you use. See <a href={pageHref('/design/icons')}>Icons</a>.
           </p>
           {codeSample(
             'ts',
@@ -224,19 +225,20 @@ export class GettingStartedPage extends JlElement {
           <h2>Next</h2>
           <ul>
             <li>
-              <a href="#/tree-shaking">Tree-shaking</a>: how the bundle keeps only what you use.
+              <a href={pageHref('/tree-shaking')}>Tree-shaking</a>: how the bundle keeps only what you use.
             </li>
             <li>
-              <a href="#/theming">Theming</a>: the tokens, dark mode and your own colours.
+              <a href={pageHref('/theming')}>Theming</a>: the tokens, dark mode and your own colours.
             </li>
             <li>
-              <a href="#/design">Design system</a>: the principles, colour, type, spacing and the rest of the look.
+              <a href={pageHref('/design')}>Design system</a>: the principles, colour, type, spacing and the rest
+              of the look.
             </li>
             <li>
-              <a href="#/forms">Forms</a>: fields that submit like native ones.
+              <a href={pageHref('/forms')}>Forms</a>: fields that submit like native ones.
             </li>
             <li>
-              <a href="#/components">All components</a>, each with a playground.
+              <a href={pageHref('/components')}>All components</a>, each with a playground.
             </li>
           </ul>
         </section>

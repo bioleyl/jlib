@@ -3,15 +3,15 @@ import { JlElement, JlIcon, JlInput } from 'jlib';
 import { BASE_STYLES } from 'jlib/styles/shared';
 
 import { DESIGN_PAGES } from '../docs/design';
-import { docPath, docsOfLevel, GUIDES, LEVEL_LABELS, LEVELS } from '../docs/registry';
-import { currentPath } from '../lib/route-path';
+import { docRoute, docsOfLevel, GUIDES, LEVEL_LABELS, LEVELS } from '../docs/registry';
+import { currentRoute, onRouteChange, pageHref } from '../services/navigation';
 import styles from './site-nav.css?raw';
 
 const ICON_SIZE = 15;
 
 const linkTo = (path: string, label: string, icon?: string): HTMLElement => (
   <li data-label={label.toLowerCase()}>
-    <a href={`#${path}`} data-path={path}>
+    <a href={pageHref(path)} data-path={path}>
       {icon === undefined ? null : <JlIcon name={icon} size={ICON_SIZE} />}
       <span>{label}</span>
     </a>
@@ -46,7 +46,7 @@ export class SiteNav extends JlElement {
           {LEVELS.map((level) => (
             <section data-group={level}>
               <p class="label">{LEVEL_LABELS[level]}</p>
-              <ul>{docsOfLevel(level).map((doc) => linkTo(docPath(doc).slice(1), doc.name))}</ul>
+              <ul>{docsOfLevel(level).map((doc) => linkTo(docRoute(doc), doc.name))}</ul>
             </section>
           ))}
         </div>
@@ -63,12 +63,12 @@ export class SiteNav extends JlElement {
 
   onConnect(): void {
     this.markCurrent();
-    this.on(window, 'hashchange', () => this.markCurrent());
+    onRouteChange(() => this.markCurrent(), this.killSignal);
     this._refs.filter.events.register('input', (text) => this.filter(text));
   }
 
   private markCurrent(): void {
-    const path = currentPath();
+    const path = currentRoute();
     for (const link of this._refs.groups.querySelectorAll<HTMLAnchorElement>('a[data-path]')) {
       if (link.dataset.path !== path) {
         link.removeAttribute('aria-current');

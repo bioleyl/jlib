@@ -5,6 +5,14 @@
   "type": "module",
   "license": "MIT",
   "author": "SyWare",
+  "homepage": "https://bioleyl.github.io/jlib/",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bioleyl/jlib.git"
+  },
+  "bugs": {
+    "url": "https://github.com/bioleyl/jlib/issues"
+  },
   "engines": {
     "node": ">=24.0.0"
   },

@@ -2,7 +2,8 @@ import { css } from '@jadis/core';
 import { JlElement } from 'jlib';
 import { BASE_STYLES } from 'jlib/styles/shared';
 
-import { COMPONENT_DOCS, docPath, docsOfLevel, LEVEL_DESCRIPTIONS, LEVEL_LABELS, LEVELS } from '../docs/registry';
+import { COMPONENT_DOCS, docRoute, docsOfLevel, LEVEL_DESCRIPTIONS, LEVEL_LABELS, LEVELS } from '../docs/registry';
+import { pageHref } from '../services/navigation';
 import { PROSE_STYLES } from '../styles/site-styles';
 import styles from './components-page.css?raw';
 
@@ -30,7 +31,7 @@ export class ComponentsPage extends JlElement {
             <p>{LEVEL_DESCRIPTIONS[level]}</p>
             <div class="grid">
               {docsOfLevel(level).map((doc) => (
-                <a class="tile" href={docPath(doc)}>
+                <a class="tile" href={pageHref(docRoute(doc))}>
                   <span class="tile-name">{doc.name}</span>
                   <span class="tile-summary">{doc.summary}</span>
                   <code class="tile-tag">{`<${doc.tag}>`}</code>

@@ -3,6 +3,7 @@ import { JlElement, oneOf } from 'jlib';
 import { BASE_STYLES } from 'jlib/styles/shared';
 
 import { LOGO_MIN_HEIGHT } from '../lib/syware-logo';
+import { assetHref } from '../services/navigation';
 import { isDarkNow, onDarkChange } from '../services/theme';
 import styles from './site-logo.css?raw';
 
@@ -54,8 +55,8 @@ export class SiteLogo extends JlElement {
     const height = this.height.get();
     const width = Math.round(height * ASPECTS[variant]);
     for (const [image, file] of [
-      [this._refs.light, `./syware-${variant}.png`],
-      [this._refs.dark, `./syware-${variant}-dark.png`],
+      [this._refs.light, assetHref(`syware-${variant}.png`)],
+      [this._refs.dark, assetHref(`syware-${variant}-dark.png`)],
     ] as const) {
       image.src = file;
       image.width = width;
