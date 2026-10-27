@@ -38,7 +38,9 @@ dialog::backdrop {
   border-bottom: 1px solid var(--jl-line);
 }
 
-.search-icon {
+.search-icon,
+.search-spinner {
+  flex: none;
   color: var(--jl-faint);
 }
 
@@ -131,6 +133,16 @@ kbd {
   flex: 1;
   min-width: 0;
   overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.option-description {
+  flex: none;
+  max-width: 40%;
+  overflow: hidden;
+  color: var(--jl-muted);
+  font-size: var(--jl-font-xs);
   text-overflow: ellipsis;
   white-space: nowrap;
 }

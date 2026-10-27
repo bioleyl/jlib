@@ -2,6 +2,7 @@ import { css } from '@jadis/core';
 import { Search } from 'lucide';
 
 import { JlIcon } from '../atoms/jl-icon';
+import { JlSpinner } from '../atoms/jl-spinner';
 import { JlElement } from '../base/jl-element';
 import { jsonOf } from '../lib/attributes';
 import { setOrRemove } from '../lib/dom';
@@ -9,6 +10,7 @@ import { highlightSegments } from '../lib/fuzzy';
 import { hotkeyLabels, isApplePlatform, matchesHotkey, parseHotkey } from '../lib/hotkey';
 import { registerIcons } from '../lib/icons';
 import { groupMatches, matchCommands } from '../lib/palette';
+import { jlText } from '../lib/texts';
 import { BASE_STYLES } from '../styles/shared';
 import styles from './jl-command-palette.css?raw';
 
@@ -19,10 +21,8 @@ registerIcons({ search: Search });
 
 const DEFAULT_HOTKEY = 'mod+k';
 const NO_HOTKEY = 'none';
-const DEFAULT_PLACEHOLDER = 'Type a command or search…';
-const DEFAULT_EMPTY_TEXT = 'No matching commands';
-const DEFAULT_LABEL = 'Command palette';
 const SEARCH_ICON_SIZE = 18;
+const DEFAULT_DEBOUNCE_MS = 250;
 const OPTION_ICON_SIZE = 16;
 
 /** How far each key moves the active command. */
@@ -53,7 +53,8 @@ function highlighted(label: string, positions: readonly number[]): (Node | strin
 export class JlCommandPalette extends JlElement {
   static readonly selector = 'jl-command-palette';
 
-  readonly events = this.useEvents<{ select: string; open: undefined; close: undefined }>();
+  /** `search`: what was typed, once typing pauses (and empty when it opens), for a page that answers it. */
+  readonly events = this.useEvents<{ select: string; open: undefined; close: undefined; search: string }>();
 
   readonly commands = this.useChange<PaletteCommand[]>([], () => this.renderResults(), {
     attribute: 'commands',
@@ -61,7 +62,7 @@ export class JlCommandPalette extends JlElement {
   });
   readonly open = this.useChange(false, (value) => this.renderOpen(value), { attribute: 'open' });
   readonly placeholder = this.useChange(
-    DEFAULT_PLACEHOLDER,
+    jlText('commandPlaceholder'),
     (value) => {
       this._refs.input.placeholder = value;
     },
@@ -71,18 +72,33 @@ export class JlCommandPalette extends JlElement {
   readonly hotkey = this.useChange(DEFAULT_HOTKEY, () => this.renderHotkey(), { attribute: 'hotkey' });
   /** What it says when nothing matches. */
   readonly emptyText = this.useChange(
-    DEFAULT_EMPTY_TEXT,
+    jlText('noCommands'),
     (value) => {
       this._refs.empty.textContent = value;
     },
     { attribute: 'empty-text' }
   );
+  /** How long typing pauses, in milliseconds, before `search` fires. */
+  readonly debounce = this.useChange(DEFAULT_DEBOUNCE_MS, () => undefined, { attribute: 'debounce' });
+  /** Shows a spinner in place of the search icon, while the page looks for what was typed. */
+  readonly loading = this.useChange(
+    false,
+    (value) => {
+      this._refs.searchIcon.hidden = value;
+      this._refs.spinner.hidden = !value;
+    },
+    { attribute: 'loading' }
+  );
   /** The dialog's name for screen readers. */
-  readonly label = this.useChange(DEFAULT_LABEL, (value) => this._refs.dialog.setAttribute('aria-label', value), {
-    attribute: 'label',
-  });
+  readonly label = this.useChange(
+    jlText('commandPalette'),
+    (value) => this._refs.dialog.setAttribute('aria-label', value),
+    {
+      attribute: 'label',
+    }
+  );
 
-  private readonly _state = { active: 0, matches: [] as PaletteMatch[] };
+  private readonly _state = { active: 0, matches: [] as PaletteMatch[], timer: 0 };
 
   private readonly _refs = this.useRefs((ref) => ({
     dialog: ref('dialog'),
@@ -91,6 +107,8 @@ export class JlCommandPalette extends JlElement {
     hotkeyKeys: ref('.hotkey-keys'),
     input: ref<HTMLInputElement>('input'),
     results: ref('.results'),
+    searchIcon: ref<JlIcon>('.search-icon'),
+    spinner: ref(JlSpinner),
   }));
 
   show(): void {
@@ -106,6 +124,7 @@ export class JlCommandPalette extends JlElement {
       <dialog attrs={{ part: 'base' }}>
         <div class="search">
           <JlIcon class="search-icon" name="search" size={SEARCH_ICON_SIZE} />
+          <JlSpinner class="search-spinner" size={SEARCH_ICON_SIZE} hidden />
           <input
             type="text"
             role="combobox"
@@ -117,7 +136,7 @@ export class JlCommandPalette extends JlElement {
           />
           <kbd class="escape">Esc</kbd>
         </div>
-        <div class="results" id="results" role="listbox" aria-label="Commands" />
+        <div class="results" id="results" role="listbox" aria-label={jlText('commands')} />
         <p class="empty" role="status" hidden />
         <footer aria-hidden="true">
           <span class="hint">
@@ -150,6 +169,7 @@ export class JlCommandPalette extends JlElement {
       // Ours alone: the native event crosses the shadow root, and a page listening to the palette would hear it.
       event.stopPropagation();
       this.renderResults();
+      this.scheduleSearch();
     });
     this.on(input, 'keydown', (event) => this.navigate(event));
     this.on(this._refs.results, 'pointermove', (event) => {
@@ -237,10 +257,21 @@ export class JlCommandPalette extends JlElement {
     }
     this._refs.input.value = '';
     this.renderResults();
+    this.search('');
     dialog.showModal();
     this._refs.input.focus();
     this.reflect('open', true);
     this.events.emit('open');
+  }
+
+  private scheduleSearch(): void {
+    window.clearTimeout(this._state.timer);
+    this._state.timer = window.setTimeout(() => this.search(this._refs.input.value), this.debounce.get());
+  }
+
+  private search(query: string): void {
+    window.clearTimeout(this._state.timer);
+    this.events.emit('search', query);
   }
 
   private renderHotkey(): void {
@@ -291,6 +322,7 @@ export class JlCommandPalette extends JlElement {
       <div class="option" role="option" id={optionId(index)} data-index={index} aria-selected="false">
         {icon}
         <span class="option-label">{highlighted(command.label, match.positions)}</span>
+        {command.description ? <span class="option-description">{command.description}</span> : null}
         {command.shortcut === undefined ? null : <span class="keys">{keycaps(command.shortcut)}</span>}
       </div>
     );

@@ -41,6 +41,12 @@ What the docuteam engines' pages need to move to jlib, starting with the storage
 - **Steps**: a step can be `failed` (a payment refused, a transaction rolled back): an × in the danger colour, and
   screen readers hear that it failed.
 - **File drop**: `add(files)` takes files as a drop would, for files dropped elsewhere on the page.
+- **Command palette**: it can search the app's data. `search` says what was typed once typing pauses (`debounce`),
+  and an empty text when it opens; the page answers with commands marked `result`, listed as it gave them after the
+  commands the text matches (records whose title holds it, "Open" for an ID pasted whole), with `loading` on while
+  it looks.
+- **Command palette**: a command's `description` says what it is, quieter, beside its label (a record's type, a
+  person's username), to tell apart two of one name.
 
 ### Fixed
 

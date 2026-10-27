@@ -5,6 +5,8 @@ import type { PaletteCommand, PaletteGroup, PaletteMatch } from '../types/jl-com
 /** A match on a keyword counts less than one on the label people read. */
 const KEYWORD_WEIGHT = 0.5;
 const NO_GROUP = '';
+// The page's results come after the commands the search matches, in the page's order.
+const RESULT_SCORE = 0;
 
 function keywordScore(query: string, keywords: readonly string[]): number | null {
   const scores = keywords
@@ -15,6 +17,9 @@ function keywordScore(query: string, keywords: readonly string[]): number | null
 
 function matchCommand(query: string, command: PaletteCommand): PaletteMatch | null {
   const label = fuzzyMatch(query, command.label);
+  if (command.result === true) {
+    return { command, positions: label?.positions ?? [], score: RESULT_SCORE };
+  }
   const keyword = keywordScore(query, command.keywords ?? []);
   if (label === null && keyword === null) {
     return null;

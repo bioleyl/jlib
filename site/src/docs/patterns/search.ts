@@ -21,7 +21,7 @@ export const search: PatternDoc = {
       list(
         '`jl-command-palette`, opened from anywhere by `Ctrl K` (`⌘K`), by the `jl-search-button` at the top of the side nav, and by the same button, `compact`, in the top bar of a phone.',
         'Its placeholder says what it finds: "Search orders, articles, pages…".',
-        'It searches as people type, by name, number, reference, barcode or id, with the words in any order.',
+        'It searches as people type, by name, number, reference, barcode or id, with the words in any order: the page answers its `search` event with what it found, as commands marked `result`, and `loading` on meanwhile.',
         'When nothing matches: "Nothing matches “x”. Try a number, a name or a page."'
       )
     ),
