@@ -9,6 +9,9 @@ What the docuteam engines' pages need to move to jlib, starting with the storage
 
 ### Added
 
+- **Facts** (`jl-facts`): the facts about one thing, label and value, such as an archived object's kind, size and
+  digest. A fact without a value is left out, and an element with none takes no room. Values can be code (monospace,
+  broken anywhere) or links; `orientation="vertical"` puts each label over its value, the facts side by side.
 - **Tree**: a `loader` loads it a level at a time and a page at a time, for trees too large to give at once: the
   roots first, a `lazy` folder's children when it opens, the next page from the **Show 75 more** row that ends a
   level, and again from the row of a level that failed. `reveal(path)` opens the folders down to an item, loading
@@ -34,6 +37,7 @@ What the docuteam engines' pages need to move to jlib, starting with the storage
 - `download(url, { title })`: a file fetched with its progress in a toast (the time the server takes to prepare it,
   the bytes received, a bar when the size is known), saved under the server's name; **Cancel** stops it, and its
   texts can be set.
+- **Facts**: a fact with a `key` is drawn by the renderer of that key (`renderers`): a badge, links, a list.
 - **Table**: a column's `description` names a field shown as a quieter line under the value; the `datetime`
   format shows a date with its time; `cellOf<Row>()` writes a renderer for the page's own type of row; a column's
   `wrap` breaks long text over lines instead of widening the table; `marked` rows (a search's matches) carry a bar
