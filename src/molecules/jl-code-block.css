@@ -1,6 +1,7 @@
 :host {
   display: block;
   min-width: 0;
+  --max-height: none;
 }
 
 figure {
@@ -41,6 +42,8 @@ header {
 .body {
   display: flex;
   min-width: 0;
+  max-height: var(--max-height);
+  overflow-y: auto;
 }
 
 .gutter,

@@ -9,6 +9,7 @@ What the docuteam engines' pages need to move to jlib, starting with the storage
 
 ### Added
 
+- **Code block**: `max-height`, past which the code scrolls under its header, the copy button staying in view.
 - **Texts**: what the components say on their own (close and clear buttons, "Show more", a file drop's refusals,
   the labels screen readers hear, the defaults of their text inputs) comes from one registry: `setTexts({...})`
   gives them in the page's language, once, before it draws; `DEFAULT_TEXTS` lists them in English.

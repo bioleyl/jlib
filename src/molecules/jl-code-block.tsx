@@ -2,6 +2,7 @@ import { css } from '@jadis/core';
 
 import { JlElement } from '../base/jl-element';
 import { oneOf } from '../lib/attributes';
+import { cssLength } from '../lib/css-length';
 import { highlightedNodes } from '../lib/highlight';
 import { dedent } from '../lib/text';
 import { BASE_STYLES } from '../styles/shared';
@@ -44,6 +45,12 @@ export class JlCodeBlock extends JlElement {
   );
   /** Wraps long lines instead of scrolling sideways. */
   readonly wrap = this.useChange(false, (value) => this.reflect('wrap', value), { attribute: 'wrap' });
+  /** A CSS height past which the code scrolls under its header: `320px`, `50vh`; a number is pixels. */
+  readonly maxHeight = this.useChange(
+    '',
+    (value) => this.style.setProperty('--max-height', value.trim() === '' ? 'none' : cssLength(value)),
+    { attribute: 'max-height' }
+  );
 
   private readonly _refs = this.useRefs((ref) => ({
     code: ref('code'),

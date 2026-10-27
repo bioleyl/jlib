@@ -94,6 +94,15 @@ so wrap it in a template to keep it as text.`,
       type: 'boolean',
     },
     {
+      attribute: 'max-height',
+      control: { kind: 'text' },
+      default: "''",
+      description:
+        'A CSS height past which the code scrolls under its header, the copy button staying in view: 320px, 50vh; a number is pixels.',
+      name: 'maxHeight',
+      type: 'string',
+    },
+    {
       attribute: 'hide-copy',
       control: { kind: 'boolean' },
       default: 'false',
