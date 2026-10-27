@@ -2,6 +2,7 @@ import { css } from '@jadis/core';
 
 import { JlElement } from '../base/jl-element';
 import { clampedNumber, oneOf } from '../lib/attributes';
+import { watchSizes } from '../lib/resize';
 import { clampMin, clampSplit, positionAfterKey, positionAt } from '../lib/split';
 import { BASE_STYLES } from '../styles/shared';
 import styles from './jl-split-view.css?raw';
@@ -80,7 +81,7 @@ export class JlSplitView extends JlElement {
   private readonly _drag = { from: DEFAULT_POSITION };
 
   // Its own width decides whether it stacks: the page around it may be narrow on a wide screen.
-  private readonly _resize = new ResizeObserver(() => this.renderStacked());
+  private readonly _resize = watchSizes(() => this.renderStacked());
 
   /** Whether it shows one pane at a time now. */
   isStacked(): boolean {

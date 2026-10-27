@@ -4,6 +4,7 @@ import { Menu } from 'lucide';
 import { JlIcon } from '../atoms/jl-icon';
 import { JlElement } from '../base/jl-element';
 import { registerIcons } from '../lib/icons';
+import { watchSizes } from '../lib/resize';
 import { BASE_STYLES } from '../styles/shared';
 import styles from './jl-app-shell.css?raw';
 
@@ -44,7 +45,7 @@ export class JlAppShell extends JlElement {
   };
 
   // The main area is inert behind an open drawer; whether the drawer covers it depends on the shell's width.
-  private readonly _resize = new ResizeObserver(() => {
+  private readonly _resize = watchSizes(() => {
     this.renderInert();
     this.renderShellBottom();
   });

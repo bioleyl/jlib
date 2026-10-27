@@ -6,6 +6,7 @@ import { oneOf } from '../lib/attributes';
 import { define } from '../lib/define';
 import { setOrRemove, uniqueId } from '../lib/dom';
 import { moveIndicator } from '../lib/indicator';
+import { watchSizes } from '../lib/resize';
 import { firstIndex, lastIndex, stepIndex } from '../lib/roving';
 import { BASE_STYLES } from '../styles/shared';
 import { JlTabPanel } from './jl-tab-panel';
@@ -72,7 +73,7 @@ export class JlTabs extends JlElement {
 
   private readonly _observers = {
     mutations: new MutationObserver((records) => this.onMutations(records)),
-    resize: new ResizeObserver(() => this.placeIndicator()),
+    resize: watchSizes(() => this.placeIndicator()),
   };
 
   private readonly _refs = this.useRefs((ref) => ({

@@ -5,6 +5,13 @@ and documented on [the documentation site](https://bioleyl.github.io/jlib/).
 
 ## Unreleased
 
+### Fixed
+
+- Every component can be created in jsdom, where pages run their unit tests: the app shell, the split view, tabs and
+  the segmented control no longer fail for want of `ResizeObserver` (jsdom has no layout: they watch nothing), and
+  the form controls (input, select, checkbox, file drop…) no longer fail for want of the form methods of the
+  element's internals (they keep no form value there, and find every value valid).
+
 ### Changed
 
 - **Requires Jadis 1.4** (`@jadis/core` `^1.4.0`, a peer dependency): the components find their children with

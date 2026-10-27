@@ -6,6 +6,7 @@ import { jsonOf, oneOf } from '../lib/attributes';
 import { setOrRemove } from '../lib/dom';
 import { moveIndicator } from '../lib/indicator';
 import { CONTROL_SIZES } from '../lib/options';
+import { watchSizes } from '../lib/resize';
 import { firstIndex, lastIndex, stepIndex } from '../lib/roving';
 import { BASE_STYLES } from '../styles/shared';
 import styles from './jl-segmented.css?raw';
@@ -77,7 +78,7 @@ export class JlSegmented extends JlFormControl {
 
   private readonly _state = { disabledByForm: false };
 
-  private readonly _resize = new ResizeObserver(() => this.placeThumb());
+  private readonly _resize = watchSizes(() => this.placeThumb());
 
   private readonly _refs = this.useRefs((ref) => ({
     group: ref('.group'),

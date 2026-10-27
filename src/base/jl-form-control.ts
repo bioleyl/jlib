@@ -1,3 +1,4 @@
+import { formInternals } from '../lib/internals';
 import { JlElement } from './jl-element';
 
 type ValidatedElement = HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement;
@@ -9,7 +10,7 @@ type ValidatedElement = HTMLInputElement | HTMLSelectElement | HTMLTextAreaEleme
 export abstract class JlFormControl extends JlElement {
   static readonly formAssociated = true;
 
-  protected readonly internals = this.attachInternals();
+  protected readonly internals = formInternals(this);
 
   /** The field's name in the form's data. Reflected, so a name set from JSX reaches the form too. */
   readonly name = this.useChange('', (value) => this.reflect('name', value), { attribute: 'name' });
