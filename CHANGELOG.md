@@ -34,6 +34,8 @@ What the docuteam engines' pages need to move to jlib, starting with the storage
   theme's `--jl-brand` (a page's own theme shows in the browser's tab too).
 - **Input list** (`jl-input-list`): a field that takes several values, each in a row of its own, typed (any input
   type, or a text area) or picked from options; rows are added and removed, up to `max`. Its texts can be set.
+- **Load more** (`jl-load-more`): the end of a long list read a page at a time, "30 of 120" and a **Show more**
+  button (`more`), its spinner while the next page comes; it takes no room once the whole list shows.
 - **Toast**: `working` and `progress` show the progress of the work it tells about, and `toast()`'s handle can
   `update()` it while it shows (its text, tone, progress, action…).
 - `download(url, { title })`: a file fetched with its progress in a toast (the time the server takes to prepare it,

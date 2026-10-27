@@ -109,6 +109,7 @@ export * from './molecules/jl-field';
 export * from './molecules/jl-file-drop';
 export * from './molecules/jl-input-list';
 export * from './molecules/jl-list-item';
+export * from './molecules/jl-load-more';
 export * from './molecules/jl-load-state';
 export * from './molecules/jl-menu';
 export * from './molecules/jl-number-input';
