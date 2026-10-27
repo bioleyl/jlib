@@ -1,7 +1,10 @@
 import { css } from '@jadis/core';
 
 import { JlElement } from '../base/jl-element';
+import { appIconSvg, CORNER_SHARE, GLYPH_SHARE } from '../lib/app-icon';
 import { clampedNumber } from '../lib/attributes';
+import { iconNode } from '../lib/icons';
+import { adoptTokens } from '../lib/tokens';
 import { BASE_STYLES } from '../styles/shared';
 import styles from './jl-app-icon.css?raw';
 import { JlIcon } from './jl-icon';
@@ -9,9 +12,31 @@ import { JlIcon } from './jl-icon';
 const DEFAULT_SIZE = 28;
 const MIN_SIZE = 12;
 const MAX_SIZE = 512;
-// The glyph's share of the tile, and the tile's corner: the same proportions at every size.
-const GLYPH_SHARE = 0.62;
-const CORNER_SHARE = 0.26;
+// The tokens the tile is drawn in, and the favicon the page shows.
+const TILE_TOKEN = '--jl-brand';
+const GLYPH_TOKEN = '--jl-on-brand';
+const FAVICON_SELECTOR = 'link[rel="icon"]';
+const FAVICON_REL = 'icon';
+const SVG_TYPE = 'image/svg+xml';
+
+/**
+ * Makes an app's icon the page's favicon: the tile `jl-app-icon` draws, its glyph a registered icon name, in the
+ * theme's `--jl-brand` and `--jl-on-brand` as the document has them, so a page's own theme shows in the tab too.
+ */
+export function setFavicon(icon: string): void {
+  adoptTokens();
+  const style = getComputedStyle(document.documentElement);
+  const svg = appIconSvg(iconNode(icon), {
+    glyph: style.getPropertyValue(GLYPH_TOKEN).trim(),
+    tile: style.getPropertyValue(TILE_TOKEN).trim(),
+  });
+  const link =
+    document.head.querySelector<HTMLLinkElement>(FAVICON_SELECTOR)
+    ?? document.head.appendChild(document.createElement('link'));
+  link.rel = FAVICON_REL;
+  link.type = SVG_TYPE;
+  link.href = `data:${SVG_TYPE},${encodeURIComponent(svg)}`;
+}
 
 /**
  * An app's icon: its glyph in white on a rounded tile of the brand's blue, one family for every SyWare app. Beside

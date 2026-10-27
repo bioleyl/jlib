@@ -4,7 +4,8 @@ import type { IconNode } from 'lucide';
 
 // Drawn for a name nobody registered, so the layout keeps its place.
 const FALLBACK: IconNode = CircleAlert;
-const STROKE_WIDTH = 1.9;
+/** The width of every glyph's strokes, on lucide's 24-unit grid. */
+export const ICON_STROKE_WIDTH = 1.9;
 
 /**
  * The icons `jl-icon` can draw, by name. It starts empty: each component registers the icons it draws itself, and
@@ -40,12 +41,15 @@ function missing(name: string): IconNode {
   return FALLBACK;
 }
 
+/** An icon's shapes, by its name; a name nobody registered gives a neutral mark instead of nothing. */
+export const iconNode = (name: string): IconNode => registry.get(name) ?? missing(name);
+
 /** An icon as an SVG element; a name nobody registered draws a neutral mark instead of nothing. */
 export function iconElement(name: string, size: number): SVGElement {
-  return createElement(registry.get(name) ?? missing(name), {
+  return createElement(iconNode(name), {
     'aria-hidden': 'true',
     height: size,
-    'stroke-width': STROKE_WIDTH,
+    'stroke-width': ICON_STROKE_WIDTH,
     width: size,
   });
 }

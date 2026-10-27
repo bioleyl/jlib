@@ -27,6 +27,8 @@ What the docuteam engines' pages need to move to jlib, starting with the storage
   the labels screen readers hear, the defaults of their text inputs) comes from one registry: `setTexts({...})`
   gives them in the page's language, once, before it draws; `DEFAULT_TEXTS` lists them in English. `download()`'s
   texts follow it (`downloadTexts()`).
+- **App icon**: `setFavicon(icon)` makes the app's icon the page's favicon, the tile `jl-app-icon` draws, in the
+  theme's `--jl-brand` (a page's own theme shows in the browser's tab too).
 - **Toast**: `working` and `progress` show the progress of the work it tells about, and `toast()`'s handle can
   `update()` it while it shows (its text, tone, progress, action…).
 - `download(url, { title })`: a file fetched with its progress in a toast (the time the server takes to prepare it,

@@ -11,7 +11,8 @@ sign-in panel and the documentation.
 
 Beside the wordmark at the top of the side nav, the icon is decorative; alone, give it a label, the app's name. The
 tile looks the same in both themes, as a favicon does. The favicon and the home screen icon are the same tile, drawn
-as files: see the Logo page.`,
+as files: see the Logo page. \`setFavicon('workflow')\` makes the tile the page's favicon, in the theme's
+\`--jl-brand\`, so an app on its own theme shows it in the browser's tab too.`,
   examples: [
     {
       description: 'At the top of the side nav, beside the wordmark.',
@@ -35,6 +36,14 @@ as files: see the Logo page.`,
     },
   ],
   level: 'atom',
+  methods: [
+    {
+      description:
+        "A function, not a method: makes the app's icon the page's favicon, the tile of a registered icon name in the theme's --jl-brand and --jl-on-brand, so a page's own theme shows in the browser's tab too.",
+      name: 'setFavicon',
+      signature: 'setFavicon(icon: string): void',
+    },
+  ],
   name: 'App icon',
   playground: { attributes: { icon: 'package', label: '', size: '28' } },
   props: [

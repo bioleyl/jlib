@@ -295,8 +295,9 @@ export class LogoPage extends JlElement {
               Beside it, the wordmark: "sw" in ink, the app's name in the brand's blue, in Manrope at weight 800.
             </li>
             <li>
-              The favicon is the same tile, as an SVG file. A phone's home screen icon fills its square with the
-              blue and keeps the glyph in the middle 60%, where every phone's mask leaves it whole.
+              The favicon is the same tile, as an SVG file: <code>setFavicon('package')</code> draws it from the
+              glyph and the theme's brand colour and gives it to the page. A phone's home screen icon fills its
+              square with the blue and keeps the glyph in the middle 60%, where every phone's mask leaves it whole.
             </li>
           </ul>
           {codeSample(

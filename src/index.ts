@@ -20,6 +20,7 @@ export type * from './types/fuzzy.types';
 export type * from './types/highlight.types';
 export type * from './types/hotkey.types';
 export type * from './types/jl-accordion.types';
+export type * from './types/jl-app-icon.types';
 export type * from './types/jl-avatar.types';
 export type * from './types/jl-badge.types';
 export type * from './types/jl-breadcrumb.types';
