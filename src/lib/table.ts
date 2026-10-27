@@ -1,6 +1,7 @@
 import type {
   TableAlign,
   TableCellFormat,
+  TableCellRenderer,
   TableColumn,
   TableRow,
   TableRowKey,
@@ -14,6 +15,7 @@ const NEXT_DIRECTION: Record<TableSortDirection, TableSortDirection> = { asc: 'd
 const DIRECTION_SIGN: Record<TableSortDirection, number> = { asc: 1, desc: -1, none: 0 };
 
 const DATE_FORMAT: Intl.DateTimeFormatOptions = { dateStyle: 'medium' };
+const DATE_TIME_FORMAT: Intl.DateTimeFormatOptions = { dateStyle: 'medium', timeStyle: 'short' };
 
 export const nextSortDirection = (direction: TableSortDirection): TableSortDirection => NEXT_DIRECTION[direction];
 
@@ -50,6 +52,7 @@ const COMPARERS: Record<TableCellFormat, (a: unknown, b: unknown, locale?: strin
   badge: (a, b, locale) => String(a).localeCompare(String(b), locale),
   code: (a, b, locale) => String(a).localeCompare(String(b), locale),
   date: (a, b) => compareNumbers(toTime(a), toTime(b)),
+  datetime: (a, b) => compareNumbers(toTime(a), toTime(b)),
   number: (a, b) => compareNumbers(toNumber(a), toNumber(b)),
   text: (a, b, locale) => String(a).localeCompare(String(b), locale, { numeric: true }),
 };
@@ -63,6 +66,7 @@ function isUnorderable(value: unknown, format: TableCellFormat): boolean {
     badge: () => false,
     code: () => false,
     date: () => Number.isNaN(toTime(value)),
+    datetime: () => Number.isNaN(toTime(value)),
     number: () => Number.isNaN(toNumber(value)),
     text: () => false,
   };
@@ -113,6 +117,10 @@ const FORMATTERS: Record<TableCellFormat, (value: unknown, locale?: string) => s
   date: (value, locale) => {
     const time = toTime(value);
     return Number.isNaN(time) ? String(value) : new Intl.DateTimeFormat(locale, DATE_FORMAT).format(time);
+  },
+  datetime: (value, locale) => {
+    const time = toTime(value);
+    return Number.isNaN(time) ? String(value) : new Intl.DateTimeFormat(locale, DATE_TIME_FORMAT).format(time);
   },
   number: (value, locale) => {
     const number = toNumber(value);
@@ -171,3 +179,12 @@ export function toggleKey(selected: readonly TableRowKey[], key: TableRowKey, on
   const without = selected.filter((candidate) => candidate !== key);
   return on ? [...without, key] : without;
 }
+
+/**
+ * A renderer of `renderers` written for the page's own type of row: the table hands each renderer back a row the
+ * page gave it, so `cellOf<Order>((order) => <JlLink href={order.href} label={order.name} />)` reads it typed.
+ */
+export const cellOf =
+  <Row>(draw: (row: Row) => Node): TableCellRenderer =>
+  (row: TableRow) =>
+    draw(row as Row);

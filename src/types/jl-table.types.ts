@@ -1,7 +1,7 @@
 import type { Tone } from './options.types';
 
-/** How a cell shows its value: as it is, a localised number or date, a badge, or code. */
-export type TableCellFormat = 'text' | 'number' | 'date' | 'badge' | 'code';
+/** How a cell shows its value: as it is, a localised number, date or date and time, a badge, or code. */
+export type TableCellFormat = 'text' | 'number' | 'date' | 'datetime' | 'badge' | 'code';
 
 export type TableAlign = 'left' | 'center' | 'right';
 
@@ -20,6 +20,13 @@ export type TableColumn = {
   format?: TableCellFormat;
   /** For badges: the tone of each value (`{ "Active": "ok" }`); neutral otherwise. */
   tones?: Record<string, Tone>;
+  /** The row's field shown as a quieter line under the value: a package's format under its name. */
+  description?: string;
+  /**
+   * Long text, a description or a note, breaks over lines instead of widening the table; cells stay on one line
+   * otherwise.
+   */
+  wrap?: boolean;
 };
 
 export type TableRow = Record<string, unknown>;

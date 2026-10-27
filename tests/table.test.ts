@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+  cellOf,
   columnAlign,
   columnWidth,
   compareCells,
@@ -143,5 +144,18 @@ describe('selection', () => {
     expect(toggleKey([1], 2, true)).toEqual([1, 2]);
     expect(toggleKey([1, 2], 1, false)).toEqual([2]);
     expect(toggleKey([1], 1, true)).toEqual([1]);
+  });
+});
+
+describe('datetime cells and typed renderers', () => {
+  it('formats a date with its time, and orders such dates by time', () => {
+    expect(formatCell('2026-10-23T14:44:48Z', 'datetime', 'en-GB')).toMatch(/23 Oct 2026, \d\d:44/);
+    expect(compareCells('2026-10-23T14:44:48Z', '2026-10-24T08:00:00Z', 'datetime')).toBeLessThan(0);
+  });
+
+  it("hands a renderer the page's row as it gave it", () => {
+    // The unit tests run without a DOM: a stand-in for the node is enough.
+    const draw = cellOf<{ name: string }>((row) => ({ textContent: row.name.toUpperCase() }) as unknown as Node);
+    expect(draw({ name: 'ada' }).textContent).toBe('ADA');
   });
 });

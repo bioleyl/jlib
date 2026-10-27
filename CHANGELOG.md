@@ -13,6 +13,10 @@ What the docuteam engines' pages need to move to jlib, starting with the storage
 - **Texts**: what the components say on their own (close and clear buttons, "Show more", a file drop's refusals,
   the labels screen readers hear, the defaults of their text inputs) comes from one registry: `setTexts({...})`
   gives them in the page's language, once, before it draws; `DEFAULT_TEXTS` lists them in English.
+- **Table**: a column's `description` names a field shown as a quieter line under the value; the `datetime`
+  format shows a date with its time; `cellOf<Row>()` writes a renderer for the page's own type of row; a column's
+  `wrap` breaks long text over lines instead of widening the table; `marked` rows (a search's matches) carry a bar
+  and a shade.
 - **Steps**: a step can be `failed` (a payment refused, a transaction rolled back): an × in the danger colour, and
   screen readers hear that it failed.
 - **File drop**: `add(files)` takes files as a drop would, for files dropped elsewhere on the page.

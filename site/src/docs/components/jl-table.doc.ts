@@ -278,6 +278,23 @@ For a cell that is more than a value (a person with an avatar, a link, a menu), 
           rows='[{"sku":"KB-104","product":"Keyboard","stock":"In stock","price":89.5,"updated":"2025-04-02"},{"sku":"MS-220","product":"Mouse","stock":"Low","price":39,"updated":"2025-05-18"},{"sku":"HD-310","product":"Headset","stock":"Out","price":1249,"updated":"2025-01-27"}]'></jl-table>`,
       title: 'Formats',
     },
+    {
+      description:
+        'Cells keep to one line and the table scrolls sideways; a column with wrap breaks its long text over lines instead.',
+      html: `
+        <jl-table row-key="field"
+          columns='[{"key":"field","label":"Field","width":"28%"},{"key":"value","label":"Value","wrap":true}]'
+          rows='[{"field":"title","value":"Minutes of the town council, 1952 to 1957"},{"field":"description","value":"The council\\u2019s minutes, bound by year, with the indexes of the decisions and the letters received, as the clerk kept them."},{"field":"storedAt","value":"https://archive.example.com/objects/rr_1622818982000013/i_2/content/minutes-1952-1957.pdf"}]'></jl-table>`,
+      title: 'Long text',
+    },
+    {
+      description: 'Marked rows, here the properties a search for “title” matches, stand out among the others.',
+      html: `
+        <jl-table row-key="name" marked='["title","additionalTitle"]'
+          columns='[{"key":"name","label":"Property","format":"code"},{"key":"kind","label":"Kind"},{"key":"description","label":"Description","wrap":true}]'
+          rows='[{"name":"abstract","kind":"string","description":"Abstract summarizing the resource."},{"name":"additionalTitle","kind":"string","description":"Another title of the resource."},{"name":"extent","kind":"string","description":"How much there is."},{"name":"title","kind":"string","description":"The name of the resource."}]'></jl-table>`,
+      title: 'Marked rows',
+    },
   ],
   level: 'organism',
   name: 'Table',
@@ -296,7 +313,7 @@ For a cell that is more than a value (a person with an avatar, a link, a menu), 
       control: { kind: 'json' },
       default: '[]',
       description:
-        'The columns: key (the field shown), label, and optionally align, sortable, width, format (text, number, date, badge, code) and tones (a badge tone per value).',
+        'The columns: key (the field shown), label, and optionally align, sortable, width, format (text, number, date, datetime, badge, code), tones (a badge tone per value), description (a field shown as a quieter line under the value) and wrap (long text breaks over lines instead of widening the table).',
       name: 'columns',
       type: 'TableColumn[]',
     },
@@ -349,6 +366,15 @@ For a cell that is more than a value (a person with an avatar, a link, a menu), 
       type: 'Array<string | number>',
     },
     {
+      attribute: 'marked',
+      control: { kind: 'json' },
+      default: '[]',
+      description:
+        "The keys of rows to draw attention to, such as a search's matches: a bar at their start and a shade. A mark, not a selection: nothing acts on them.",
+      name: 'marked',
+      type: 'Array<string | number>',
+    },
+    {
       attribute: 'dense',
       control: { kind: 'boolean' },
       default: 'false',
@@ -398,7 +424,8 @@ For a cell that is more than a value (a person with an avatar, a link, a menu), 
     },
     {
       default: '{}',
-      description: 'Draws the cells of some columns by code, by column key: (row) => Node.',
+      description:
+        "Draws the cells of some columns by code, by column key: (row) => Node. cellOf<Row>((row) => …) writes one for the page's own type of row.",
       name: 'renderers',
       type: 'Record<string, (row: Record<string, unknown>) => Node>',
     },

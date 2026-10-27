@@ -112,11 +112,20 @@ tbody tr[data-selected] td {
   background: var(--jl-accent-soft);
 }
 
+/* Marked rows (a search's matches) carry a bar at their start and a shade, which selection and hover take over. */
+tbody tr[data-marked] td {
+  background: var(--jl-accent-soft);
+}
+
+tbody tr[data-marked] td:first-child {
+  box-shadow: inset 3px 0 0 var(--jl-accent);
+}
+
 tbody tr:not(.empty, .skeleton, [data-selected]):hover td {
   background: var(--jl-surface-2);
 }
 
-:host([striped]) tbody tr:nth-child(even):not(.empty, [data-selected]) td {
+:host([striped]) tbody tr:nth-child(even):not(.empty, [data-selected], [data-marked]) td {
   background: var(--jl-surface-2);
 }
 
@@ -126,6 +135,13 @@ tbody tr:not(.empty, .skeleton, [data-selected]):hover td {
 
 .format-number {
   font-variant-numeric: tabular-nums;
+}
+
+/* Broken anywhere, so a long address wraps too; never so narrow that a word stands alone on each line. */
+td.wrap {
+  min-width: 160px;
+  white-space: normal;
+  overflow-wrap: anywhere;
 }
 
 .format-date {
@@ -262,4 +278,11 @@ tbody tr.skeleton:nth-child(3n) .bone:not(.box) {
   to {
     background-position: 0 0;
   }
+}
+
+/* A column's description: a quieter line under the cell's value. */
+.cell-description {
+  margin-top: 2px;
+  color: var(--jl-muted);
+  font-size: var(--jl-font-xs);
 }

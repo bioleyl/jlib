@@ -43,6 +43,7 @@ const index = [
   "export { COMMON_ICONS } from './lib/icon-set';",
   "export { hasIcon, iconElement, iconNames, registerIcons } from './lib/icons';",
   "export { CONTROL_SIZES, TONE_ICON_FILLED, TONE_ICONS, TONES } from './lib/options';",
+  "export { cellOf } from './lib/table';",
   "export { formatDuration, formatRelativeTime } from './lib/time';",
   "export { DEFAULT_TEXTS, jlText, setTexts } from './lib/texts';",
   "export { adoptTokens } from './lib/tokens';",

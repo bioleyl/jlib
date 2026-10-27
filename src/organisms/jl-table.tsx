@@ -18,6 +18,7 @@ import {
   toggleAll,
   toggleKey,
 } from '../lib/table';
+import { jlText } from '../lib/texts';
 import { BASE_STYLES } from '../styles/shared';
 import styles from './jl-table.css?raw';
 
@@ -36,8 +37,8 @@ registerIcons({ 'arrow-down': ArrowDown, 'arrow-up': ArrowUp, 'chevrons-up-down'
 
 export const TABLE_SORT_DIRECTIONS: readonly TableSortDirection[] = ['none', 'asc', 'desc'];
 
+const MARKED_ATTRIBUTE = 'data-marked';
 const DEFAULT_ROW_KEY = 'id';
-const DEFAULT_EMPTY_TEXT = 'No data';
 const SKELETON_ROWS = 5;
 const SORT_ICON_SIZE = 14;
 const EMPTY_ICON_SIZE = 18;
@@ -56,6 +57,7 @@ const CELL_MAKERS: Record<TableCellFormat, CellMaker> = {
   badge: (text, column) => (text === '' ? '' : <JlBadge label={text} tone={column.tones?.[text] ?? 'neutral'} />),
   code: (text) => (text === '' ? '' : <code>{text}</code>),
   date: (text) => text,
+  datetime: (text) => text,
   number: (text) => text,
   text: (text) => text,
 };
@@ -114,6 +116,11 @@ export class JlTable extends JlElement {
     attribute: 'selected',
     parse: jsonOf<TableRowKey[]>([]),
   });
+  /** The keys of rows to draw attention to, such as a search's matches: a mark, not a selection. */
+  readonly marked = this.useChange<TableRowKey[]>([], () => this.renderMarks(), {
+    attribute: 'marked',
+    parse: jsonOf<TableRowKey[]>([]),
+  });
   /** Shorter rows, for long lists. */
   readonly dense = this.useChange(false, (value) => this.reflect('dense', value), { attribute: 'dense' });
   /** Shades every other row. */
@@ -121,7 +128,7 @@ export class JlTable extends JlElement {
   /** A CSS height past which the rows scroll under the header: `320px`, `50vh`; a number is pixels. */
   readonly maxHeight = this.useChange('', (value) => this.renderMaxHeight(value), { attribute: 'max-height' });
   /** What the table says when it has no rows. */
-  readonly emptyText = this.useChange(DEFAULT_EMPTY_TEXT, () => this.schedule('body'), {
+  readonly emptyText = this.useChange(jlText('noData'), () => this.schedule('body'), {
     attribute: 'empty-text',
   });
   /** Shows placeholder rows while the data loads. */
@@ -302,6 +309,7 @@ export class JlTable extends JlElement {
     const sorted = this.sortedRows();
     this._view.keys = sorted.map((row, index) => keys.get(row) ?? index);
     this._refs.body.replaceChildren(...sorted.map((row, index) => this.bodyRow(row, index, columns)));
+    this.renderMarks();
   }
 
   private bodyRow(row: TableRow, index: number, columns: TableColumn[]): Node {
@@ -312,7 +320,8 @@ export class JlTable extends JlElement {
       <tr>
         {select}
         {columns.map((column) => (
-          <td class={`align-${columnAlign(column)} format-${column.format ?? 'text'}`}>
+          <td
+            class={`align-${columnAlign(column)} format-${column.format ?? 'text'}${column.wrap ? ' wrap' : ''}`}>
             {this.cell(row, column)}
           </td>
         ))}
@@ -320,7 +329,22 @@ export class JlTable extends JlElement {
     );
   }
 
+  /** A cell's value, drawn by its renderer or in its format, with the row's description under it when it has one. */
   private cell(row: TableRow, column: TableColumn): Node | string {
+    const value = this.cellValue(row, column);
+    const description = column.description === undefined ? '' : formatCell(row[column.description]);
+    if (description === '') {
+      return value;
+    }
+    return (
+      <>
+        <div class="cell-value">{value}</div>
+        <div class="cell-description">{description}</div>
+      </>
+    );
+  }
+
+  private cellValue(row: TableRow, column: TableColumn): Node | string {
     const renderer = this.renderers.get()[column.key];
     if (renderer !== undefined) {
       return renderer(row);
@@ -358,6 +382,16 @@ export class JlTable extends JlElement {
         </td>
       </tr>
     );
+  }
+
+  /** The bar and the shade of marked rows, changed in place: one body row per key while there are rows. */
+  private renderMarks(): void {
+    const marked = new Set(this.marked.get());
+    const rows = this._view.keys.length === 0 ? [] : [...this._refs.body.children];
+    for (const [index, row] of rows.entries()) {
+      const key = this._view.keys[index];
+      row.toggleAttribute(MARKED_ATTRIBUTE, key !== undefined && marked.has(key));
+    }
   }
 
   /** The checkboxes and the shading of selected rows, changed in place. */
