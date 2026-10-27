@@ -6,6 +6,8 @@ export type SideNavItem = {
   icon?: string;
   /** A link to follow; without it the item is a button that fires `select`. */
   href?: string;
+  /** Where the link opens: `_blank` for a new tab (the API's documentation beside the app). */
+  target?: string;
   /** A count or a short word beside the label: `3`, `New`. */
   badge?: string | number;
   children?: SideNavItem[];

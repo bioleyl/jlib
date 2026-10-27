@@ -6,7 +6,7 @@
   transition: width var(--jl-slow) var(--jl-ease);
 }
 
-:host([collapsed]) {
+:host([rail]) {
   width: var(--rail-width, 60px);
 }
 
@@ -22,8 +22,20 @@ nav {
   font-size: var(--jl-font-md);
 }
 
-::slotted([slot="footer"]) {
+/* The footer and the fold button keep to the bottom; the button is centred in the rail. */
+.bottom {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
   margin-top: auto;
+}
+
+.fold {
+  align-self: flex-start;
+}
+
+:host([rail]) .fold {
+  align-self: center;
 }
 
 .sections {
@@ -209,7 +221,7 @@ nav {
 }
 
 /* The rail: icons only, centred; labels stay for screen readers, and show as tooltips. */
-:host([collapsed]) .section-label {
+:host([rail]) .section-label {
   height: 1px;
   margin: 4px 10px;
   padding: 0;
@@ -218,16 +230,16 @@ nav {
   color: transparent;
 }
 
-:host([collapsed]) .section:first-child .section-label {
+:host([rail]) .section:first-child .section-label {
   display: none;
 }
 
-:host([collapsed]) .item {
+:host([rail]) .item {
   justify-content: center;
   padding: 0;
 }
 
-:host([collapsed]) .item-label {
+:host([rail]) .item-label {
   position: absolute;
   width: 1px;
   height: 1px;
@@ -235,11 +247,11 @@ nav {
   clip-path: inset(50%);
 }
 
-:host([collapsed]) .item-initial {
+:host([rail]) .item-initial {
   display: inline-flex;
 }
 
-:host([collapsed]) .item-badge {
+:host([rail]) .item-badge {
   position: absolute;
   top: 5px;
   right: 9px;
@@ -252,6 +264,6 @@ nav {
   color: transparent;
 }
 
-:host([collapsed]) .children {
+:host([rail]) .children {
   display: none;
 }

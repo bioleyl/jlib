@@ -37,6 +37,13 @@ export class JlAppShell extends JlElement {
 
   /** Whether the drawer is open, on narrow screens; wide ones always show the sidebar. */
   readonly navOpen = this.useChange(false, (value) => this.renderNavOpen(value), { attribute: 'nav-open' });
+  /**
+   * The top bar only on narrow screens, as the navigation pattern lays it out: there it holds the menu button and
+   * the app's name; wide, the side nav's own header names the app.
+   */
+  readonly narrowHeader = this.useChange(false, (value) => this.reflect('narrow-header', value), {
+    attribute: 'narrow-header',
+  });
 
   private readonly _state = {
     navListeners: new AbortController(),
@@ -49,6 +56,7 @@ export class JlAppShell extends JlElement {
   private readonly _resize = watchSizes(() => {
     this.renderInert();
     this.renderShellBottom();
+    this.renderDrawer();
   });
 
   private readonly _refs = this.useRefs((ref) => ({
@@ -222,6 +230,15 @@ export class JlAppShell extends JlElement {
       element.addEventListener('select', () => this.setNavOpen(false), { signal });
     }
     this.renderInert();
+    this.renderDrawer();
+  }
+
+  /** Narrow, the nav is a drawer: a side nav shows whole there, whether it is folded on a wide screen or not. */
+  private renderDrawer(): void {
+    const narrow = this.isNarrow();
+    for (const element of this._refs.navSlot.assignedElements()) {
+      element.toggleAttribute('in-drawer', narrow);
+    }
   }
 }
 

@@ -1,4 +1,4 @@
-import type { JlButton, JlSideNav } from '@syware/jlib';
+import type { JlSideNav } from '@syware/jlib';
 import type { ComponentDoc } from '../../types/docs.types';
 
 const SECTIONS = JSON.stringify([
@@ -44,11 +44,22 @@ and items with children that open with a chevron. value is the active item: it i
 the parents above it open to show it.
 
 collapsed turns it into a rail of icons, for when the content needs the room: the labels become tooltips (and stay
-for screen readers), badges become dots, and a parent leads to its first child. Every item is a link (with an href)
-or a button, so the Tab key reaches it; Up and Down move between the visible items, Right opens a parent and Left
-closes it. Items without an href fire select; put the side nav in the nav slot of jl-app-shell for the whole
-frame.`,
-  events: [{ description: 'An item was chosen: its id.', detail: 'string', name: 'select' }],
+for screen readers), badges become dots, and a parent leads to its first child. collapsible lets people do it: a
+button at the bottom folds the side nav into its rail and unfolds it, and collapse says so for the app to remember it
+on the device. In the drawer of a narrow jl-app-shell, the side nav shows whole and the button hides. While it shows
+as a rail, the host carries the rail attribute, for styles around it: jl-side-nav[rail].
+
+Every item is a link (with an href) or a button, so the Tab key reaches it; Up and Down move between the visible
+items, Right opens a parent and Left closes it. Items without an href fire select; put the side nav in the nav slot
+of jl-app-shell for the whole frame.`,
+  events: [
+    { description: 'An item was chosen: its id.', detail: 'string', name: 'select' },
+    {
+      description: 'People folded the side nav into its rail (true) or unfolded it (false), with its button.',
+      detail: 'boolean',
+      name: 'collapse',
+    },
+  ],
   examples: [
     {
       description: 'Badges, a nested group, and the active item inside it.',
@@ -59,29 +70,12 @@ frame.`,
       title: 'Sections and nesting',
     },
     {
-      description: 'The rail keeps only the icons; hover one for its label.',
+      description:
+        'collapsible: the button at the bottom folds it into a rail of icons (hover one for its label), and unfolds it.',
       html: `
-        <div class="row" style="align-items: start">
-          <div class="demo-rail-frame" style="${FRAME}">
-            <jl-side-nav class="demo-rail" collapsed value="inbox" sections='${SECTIONS}'></jl-side-nav>
-          </div>
-          <jl-button class="demo-rail-toggle" icon="panel-left" label="Expand"></jl-button>
+        <div style="${FRAME}">
+          <jl-side-nav collapsible collapsed value="inbox" sections='${SECTIONS}'></jl-side-nav>
         </div>`,
-      script: `
-        const nav = root.querySelector('.demo-rail');
-        const toggle = root.querySelector('.demo-rail-toggle');
-        toggle.events.register('press', () => {
-          nav.collapsed.set(!nav.collapsed.get());
-          toggle.label.set(nav.collapsed.get() ? 'Expand' : 'Collapse');
-        });`,
-      setup: (root) => {
-        const nav = root.querySelector<JlSideNav>('.demo-rail');
-        const toggle = root.querySelector<JlButton>('.demo-rail-toggle');
-        toggle?.events.register('press', () => {
-          nav?.collapsed.set(!nav.collapsed.get());
-          toggle.label.set(nav?.collapsed.get() === true ? 'Expand' : 'Collapse');
-        });
-      },
       title: 'Collapsed rail',
     },
     {
@@ -134,7 +128,8 @@ frame.`,
       attribute: 'sections',
       control: { kind: 'json' },
       default: '[]',
-      description: 'The sections: an optional label, and items with id, label, icon, href, badge and children.',
+      description:
+        'The sections: an optional label, and items with id, label, icon, href (and target: _blank for a new tab), badge and children.',
       name: 'sections',
       type: 'SideNavSection[]',
     },
@@ -152,6 +147,36 @@ frame.`,
       default: 'false',
       description: 'A narrow rail of icons, with the labels as tooltips.',
       name: 'collapsed',
+      type: 'boolean',
+    },
+    {
+      attribute: 'collapsible',
+      control: { kind: 'boolean' },
+      default: 'false',
+      description: 'A button at the bottom that folds the side nav into its rail and unfolds it.',
+      name: 'collapsible',
+      type: 'boolean',
+    },
+    {
+      attribute: 'collapse-label',
+      default: "'Collapse the menu'",
+      description: 'The fold button’s text while the side nav is open.',
+      name: 'collapseLabel',
+      type: 'string',
+    },
+    {
+      attribute: 'expand-label',
+      default: "'Expand the menu'",
+      description: 'Its hint while the side nav is a rail.',
+      name: 'expandLabel',
+      type: 'string',
+    },
+    {
+      attribute: 'in-drawer',
+      default: 'false',
+      description:
+        'Set by jl-app-shell while the side nav is its drawer: it shows whole there, and its fold button hides.',
+      name: 'inDrawer',
       type: 'boolean',
     },
     {

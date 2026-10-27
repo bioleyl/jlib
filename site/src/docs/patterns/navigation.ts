@@ -88,14 +88,14 @@ export const navigation: PatternDoc = {
         'What people need everywhere lives in the frame, not in icons scattered in a corner of the page. A basket, notifications or an inbox are destinations with a count: they have a name screen readers can say, and the same place in every app.'
       ),
       text(
-        'A work surface that needs the width (an editor, a canvas) folds the side nav into a rail of icons, and gives it back when people leave.'
+        'People fold the side nav into a rail of icons with the button at its bottom (`collapsible`), and the app remembers it on the device; a phone keeps the drawer whole. A work surface that needs the width (an editor, a canvas) folds it too, and gives it back when people leave.'
       )
     ),
     section(
       'The frame on a phone',
       text('Under 960px the side nav becomes a drawer, and two bars take its place:'),
       list(
-        "**A top bar** (the shell's `header` slot): the menu button, the app's icon and wordmark, then on the right the search and the person, `jl-search-button` and `jl-account-button` with `compact`. Never a bar with the menu button alone: people must see which app they are in.",
+        "**A top bar** (the shell's `header` slot, which `narrow-header` keeps to phones): the menu button, the app's icon and wordmark, then on the right the search and the person, `jl-search-button` and `jl-account-button` with `compact`. Never a bar with the menu button alone: people must see which app they are in.",
         "**A tab bar** (`jl-tab-bar`, in the shell's `tabs` slot) along the bottom: the destinations of the daily work, four at most, in the order of the side nav and with their counts. **More** opens the drawer for the rest.",
         'The drawer holds the same side nav as on a computer: nothing is only on a phone, nothing only on a computer.'
       ),

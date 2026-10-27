@@ -157,6 +157,15 @@ bottom: calc(var(--jl-shell-bottom, 0px) + 16px).`,
       name: 'navOpen',
       type: 'boolean',
     },
+    {
+      attribute: 'narrow-header',
+      control: { kind: 'boolean' },
+      default: 'false',
+      description:
+        "Shows the top bar only when the shell is narrow, with the menu button and the header slot (the app's name); wide, the side nav's header names the app, as the navigation pattern lays it out.",
+      name: 'narrowHeader',
+      type: 'boolean',
+    },
   ],
   slots: [
     {

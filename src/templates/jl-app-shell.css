@@ -31,7 +31,8 @@
   background: var(--jl-surface);
 }
 
-:host(:not([has-header])) .top {
+:host(:not([has-header])) .top,
+:host([narrow-header]) .top {
   display: none;
 }
 
@@ -122,7 +123,8 @@
     grid-area: tabs;
   }
 
-  :host([has-nav]) .top {
+  :host([has-nav]) .top,
+  :host([narrow-header][has-header]) .top {
     display: flex;
   }
 

@@ -16,6 +16,12 @@ What the docuteam engines' pages need to move to jlib, starting with the storage
   middle click opens in a new tab) and a `hint` (a tooltip). Every text the tree shows can be set: `empty-text`,
   `loading-text`, `more-text`, `error-text`, `retry-label`.
 - **Code block**: `max-height`, past which the code scrolls under its header, the copy button staying in view.
+- **Side nav**: `collapsible` adds a button at its bottom that folds it into its rail and unfolds it (`collapse`
+  says so, for the app to remember it); its texts are `collapse-label` and `expand-label`. The rail is now said by
+  the `rail` attribute on the host, whose styles read it.
+- **App shell**: in its drawer, on a narrow screen, a side nav shows whole even when it is folded on a wide one.
+- **App shell**: `narrow-header` keeps the top bar to narrow screens, where it holds the menu button and the app's
+  name, as the navigation pattern lays it out; wide, the side nav's header names the app.
 - **Texts**: what the components say on their own (close and clear buttons, "Show more", a file drop's refusals,
   the labels screen readers hear, the defaults of their text inputs) comes from one registry: `setTexts({...})`
   gives them in the page's language, once, before it draws; `DEFAULT_TEXTS` lists them in English.
@@ -24,6 +30,7 @@ What the docuteam engines' pages need to move to jlib, starting with the storage
   `wrap` breaks long text over lines instead of widening the table; `marked` rows (a search's matches) carry a bar
   and a shade.
 - **Tree**: an item's `badge`, a count or a short word after its label.
+- **Side nav**: an item's `target`, `_blank` opening its link in a new tab.
 - **Steps**: a step can be `failed` (a payment refused, a transaction rolled back): an × in the danger colour, and
   screen readers hear that it failed.
 - **File drop**: `add(files)` takes files as a drop would, for files dropped elsewhere on the page.

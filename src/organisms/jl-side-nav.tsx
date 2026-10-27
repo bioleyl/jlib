@@ -1,24 +1,34 @@
 import { css } from '@jadis/core';
-import { ChevronRight } from 'lucide';
+import { ChevronRight, PanelLeftClose, PanelLeftOpen } from 'lucide';
 
+import { JlButton } from '../atoms/jl-button';
 import { JlIcon } from '../atoms/jl-icon';
 import { JlElement } from '../base/jl-element';
 import { jsonOf } from '../lib/attributes';
 import { setOrRemove, uniqueId } from '../lib/dom';
 import { registerIcons } from '../lib/icons';
 import { findItem, firstLeaf, pathInSections } from '../lib/nav-tree';
+import { jlText } from '../lib/texts';
 import { BASE_STYLES } from '../styles/shared';
 import styles from './jl-side-nav.css?raw';
 
 import type { SideNavItem, SideNavSection } from '../types/jl-side-nav.types';
 
 // The icons it draws itself: a page registers only the names it writes.
-registerIcons({ 'chevron-right': ChevronRight });
+registerIcons({
+  'chevron-right': ChevronRight,
+  'panel-left-close': PanelLeftClose,
+  'panel-left-open': PanelLeftOpen,
+});
 
 const ICON_SIZE = 16;
 const CHEVRON_SIZE = 14;
-const DEFAULT_LABEL = 'Main';
+const COLLAPSE_ICON = 'panel-left-close';
+const EXPAND_ICON = 'panel-left-open';
 const ROW_SELECTOR = '.item';
+const NEW_TAB = '_blank';
+// A page opened in a new tab gets no handle on this one.
+const SAFE_REL = 'noopener noreferrer';
 
 /** A JSON attribute that should hold a list of sections; anything else gives none. */
 const parseSections = (value: string | null): SideNavSection[] => {
@@ -34,12 +44,14 @@ const isReachable = (row: HTMLElement): boolean => row.closest('[hidden]') === n
 /**
  * The navigation of an app, down its side: sections of items with icons, badges and nested items that open with
  * a chevron. `value` is the active item (its parents open to show it); `collapsed` makes it a rail of icons, with
- * the labels as tooltips. Items with an `href` are links; the others fire `select`.
+ * the labels as tooltips, and `collapsible` lets people fold and unfold it with a button at its bottom. Items with
+ * an `href` are links; the others fire `select`.
  */
 export class JlSideNav extends JlElement {
   static readonly selector = 'jl-side-nav';
 
-  readonly events = this.useEvents<{ select: string }>();
+  /** `collapse`: people folded the side nav into its rail (true) or unfolded it (false), for the app to remember. */
+  readonly events = this.useEvents<{ select: string; collapse: boolean }>();
 
   readonly sections = this.useChange<SideNavSection[]>([], () => this.render(), {
     attribute: 'sections',
@@ -52,15 +64,30 @@ export class JlSideNav extends JlElement {
     false,
     (value) => {
       this.reflect('collapsed', value);
-      this.render();
+      this.renderRail();
     },
     { attribute: 'collapsed' }
   );
+  /** Adds a button at the bottom that folds the side nav into its rail and unfolds it. */
+  readonly collapsible = this.useChange(false, () => this.renderFold(), { attribute: 'collapsible' });
+  /** The fold button's text while the side nav is open. */
+  readonly collapseLabel = this.useChange(jlText('collapseMenu'), () => this.renderFold(), {
+    attribute: 'collapse-label',
+  });
+  /** Its hint while the side nav is a rail. */
+  readonly expandLabel = this.useChange(jlText('expandMenu'), () => this.renderFold(), {
+    attribute: 'expand-label',
+  });
+  /**
+   * Set by `jl-app-shell` while the side nav is its drawer, on a narrow screen: the drawer shows it whole, and its
+   * fold button hides, `collapsed` waiting for a wide screen again.
+   */
+  readonly inDrawer = this.useChange(false, () => this.renderRail(), { attribute: 'in-drawer' });
   /** The name of the navigation for screen readers. */
   readonly label = this.useChange(
-    DEFAULT_LABEL,
+    jlText('mainNavigation'),
     (value) => {
-      this._refs.nav.setAttribute('aria-label', value === '' ? DEFAULT_LABEL : value);
+      this._refs.nav.setAttribute('aria-label', value === '' ? jlText('mainNavigation') : value);
     },
     { attribute: 'label' }
   );
@@ -71,6 +98,7 @@ export class JlSideNav extends JlElement {
   private readonly _state = { open: new Set<string>() };
 
   private readonly _refs = this.useRefs((ref) => ({
+    fold: ref(JlButton),
     nav: ref('nav'),
     sections: ref('.sections'),
   }));
@@ -80,7 +108,10 @@ export class JlSideNav extends JlElement {
       <nav attrs={{ part: 'base' }}>
         <slot name="header" />
         <div class="sections" />
-        <slot name="footer" />
+        <div class="bottom">
+          <slot name="footer" />
+          <JlButton class="fold" variant="ghost" size="sm" hidden />
+        </div>
       </nav>
     );
   }
@@ -90,6 +121,7 @@ export class JlSideNav extends JlElement {
   }
 
   onConnect(): void {
+    this._refs.fold.events.register('press', () => this.fold());
     this.on(this._refs.sections, 'click', (event) => this.onClick(event));
     this.on(this._refs.sections, 'keydown', (event) => this.onKey(event));
   }
@@ -117,11 +149,38 @@ export class JlSideNav extends JlElement {
     if (item === null) {
       return;
     }
-    if (hasChildren(item) && item.href === undefined && !this.collapsed.get()) {
+    if (hasChildren(item) && item.href === undefined && !this.isRail()) {
       this.toggleItem(item.id);
       return;
     }
     this.choose(row?.dataset.target ?? item.id);
+  }
+
+  /** Whether it shows as the rail now: folded, and not in a drawer. */
+  private isRail(): boolean {
+    return this.collapsed.get() && !this.inDrawer.get();
+  }
+
+  private fold(): void {
+    const collapsed = !this.collapsed.get();
+    this.collapsed.set(collapsed);
+    this.events.emit('collapse', collapsed);
+  }
+
+  /** The rail, or the whole side nav: drawn again, said on the host (`rail`) for the styles and the page. */
+  private renderRail(): void {
+    this.reflect('rail', this.isRail());
+    this.render();
+    this.renderFold();
+  }
+
+  private renderFold(): void {
+    const fold = this._refs.fold;
+    const rail = this.isRail();
+    fold.hidden = !this.collapsible.get() || this.inDrawer.get();
+    fold.icon.set(rail ? EXPAND_ICON : COLLAPSE_ICON);
+    fold.label.set(rail ? '' : this.collapseLabel.get());
+    fold.hint.set(rail ? this.expandLabel.get() : '');
   }
 
   private choose(id: string): void {
@@ -154,7 +213,7 @@ export class JlSideNav extends JlElement {
   }
 
   private openOrGoDown(id: string, row: HTMLElement): void {
-    if (row.dataset.parent === undefined || this.collapsed.get()) {
+    if (row.dataset.parent === undefined || this.isRail()) {
       return;
     }
     if (!this._state.open.has(id)) {
@@ -207,7 +266,7 @@ export class JlSideNav extends JlElement {
     return (
       <li class="entry">
         {this.rowNode(item, depth, childrenId)}
-        {parent && item.href !== undefined && !this.collapsed.get() ? (
+        {parent && item.href !== undefined && !this.isRail() ? (
           <button
             class="expander"
             type="button"
@@ -232,7 +291,7 @@ export class JlSideNav extends JlElement {
    * leaf, since its children cannot show there.
    */
   private rowNode(item: SideNavItem, depth: number, childrenId: string): Node {
-    const collapsed = this.collapsed.get();
+    const collapsed = this.isRail();
     const parent = hasChildren(item);
     const target = collapsed ? firstLeaf(item) : item;
     const toggles = parent && item.href === undefined && !collapsed;
@@ -247,7 +306,11 @@ export class JlSideNav extends JlElement {
     };
     if (target.href !== undefined) {
       return (
-        <a href={target.href} {...attributes}>
+        <a
+          href={target.href}
+          target={target.target}
+          rel={target.target === NEW_TAB ? SAFE_REL : undefined}
+          {...attributes}>
           {content}
         </a>
       );
@@ -306,7 +369,7 @@ export class JlSideNav extends JlElement {
     }
     for (const row of this._refs.sections.querySelectorAll<HTMLElement>(ROW_SELECTOR)) {
       const id = row.dataset.id ?? '';
-      const active = id === value || (this.collapsed.get() && row.dataset.target === value);
+      const active = id === value || (this.isRail() && row.dataset.target === value);
       setOrRemove(row, 'aria-current', active ? 'page' : '');
       row.classList.toggle('holds-active', !active && path.includes(id));
     }
