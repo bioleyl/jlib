@@ -116,6 +116,12 @@ from a native file input, so a multipart submission sends them. Read them with t
   methods: [
     { description: 'Opens the file chooser.', name: 'browse', signature: 'browse(): void' },
     {
+      description:
+        'Takes files as a drop would, such as files dropped elsewhere on the page: those it accepts fire change, the others say why not.',
+      name: 'add',
+      signature: 'add(files: File[]): void',
+    },
+    {
       description: 'Takes every file back and empties the list of refused ones; fires nothing.',
       name: 'clear',
       signature: 'clear(): void',

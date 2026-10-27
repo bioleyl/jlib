@@ -15,6 +15,7 @@ What the docuteam engines' pages need to move to jlib, starting with the storage
   gives them in the page's language, once, before it draws; `DEFAULT_TEXTS` lists them in English.
 - **Steps**: a step can be `failed` (a payment refused, a transaction rolled back): an × in the danger colour, and
   screen readers hear that it failed.
+- **File drop**: `add(files)` takes files as a drop would, for files dropped elsewhere on the page.
 
 ### Fixed
 

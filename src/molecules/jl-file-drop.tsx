@@ -9,6 +9,7 @@ import { checkFiles, describeAccept, formatFileSize, isSameFile } from '../lib/f
 import { registerIcons } from '../lib/icons';
 import { pageLocale } from '../lib/locale';
 import { CONTROL_SIZES } from '../lib/options';
+import { jlText } from '../lib/texts';
 import { BASE_STYLES } from '../styles/shared';
 import styles from './jl-file-drop.css?raw';
 
@@ -25,13 +26,11 @@ const ALERT_ICON_SIZE = 14;
 const NO_LIMIT = 0;
 const FILES_TYPE = 'Files';
 const IMAGE_FAMILY = 'image/';
-const VALUE_MISSING = 'Choose a file.';
-const DEFAULT_TEXT = { multiple: 'Drop files here', single: 'Drop a file here' };
 
 const REASONS: Record<FileRefusal, (rules: FileRules) => string> = {
-  count: () => 'is one too many: the field takes a single file',
-  size: (rules) => `is larger than ${formatFileSize(rules.maxSize, pageLocale())}`,
-  type: (rules) => `is not an accepted type (${describeAccept(rules.accept)})`,
+  count: () => jlText('fileTooMany'),
+  size: (rules) => jlText('fileTooLarge', { size: formatFileSize(rules.maxSize, pageLocale()) }),
+  type: (rules) => jlText('fileWrongType', { types: describeAccept(rules.accept) }),
 };
 
 const hasFiles = (event: DragEvent): boolean => event.dataTransfer?.types.includes(FILES_TYPE) ?? false;
@@ -131,6 +130,14 @@ export class JlFileDrop extends JlFormControl {
     });
   }
 
+  /**
+   * Takes files as a drop would, such as files dropped elsewhere on the page: the ones it accepts join the list (or
+   * replace the file there) and fire `change`, the others say why not.
+   */
+  add(files: readonly File[]): void {
+    this.whenRendered(() => this.take([...files]));
+  }
+
   /** Takes every file back, and empties the list of refused ones. */
   clear(): void {
     this.whenRendered(() => {
@@ -153,12 +160,12 @@ export class JlFileDrop extends JlFormControl {
           <p class="text" id={this._ids.text} />
           <p class="hint" id={this._ids.hint} hidden />
           <button class="browse" type="button" aria-describedby={this._ids.hint}>
-            Browse
+            {jlText('browse')}
           </button>
         </div>
         <input class="picker" type="file" tabIndex={-1} hidden />
         <ul class="refused" aria-live="polite" hidden />
-        <ul class="files" aria-label="Chosen files" hidden />
+        <ul class="files" aria-label={jlText('chosenFiles')} hidden />
       </>
     );
   }
@@ -316,7 +323,7 @@ export class JlFileDrop extends JlFormControl {
             <button
               class="file-remove"
               type="button"
-              aria-label={`Remove ${file.name}`}
+              aria-label={jlText('removeNamed', { name: file.name })}
               data-index={String(index)}>
               <JlIcon name="x" size={REMOVE_ICON_SIZE} />
             </button>
@@ -343,7 +350,7 @@ export class JlFileDrop extends JlFormControl {
 
   private renderText(): void {
     const text = this.text.get();
-    const fallback = this.multiple.get() ? DEFAULT_TEXT.multiple : DEFAULT_TEXT.single;
+    const fallback = jlText(this.multiple.get() ? 'dropFiles' : 'dropFile');
     this._refs.text.textContent = text === '' ? fallback : text;
   }
 
@@ -351,7 +358,7 @@ export class JlFileDrop extends JlFormControl {
   private renderHint(): void {
     const types = describeAccept(this.accept.get());
     const maxSize = this.maxSize.get();
-    const limit = maxSize === NO_LIMIT ? '' : `up to ${formatFileSize(maxSize, pageLocale())}`;
+    const limit = maxSize === NO_LIMIT ? '' : jlText('fileUpTo', { size: formatFileSize(maxSize, pageLocale()) });
     const hint = [types, limit].filter((part) => part !== '').join(' · ');
     this._refs.hint.textContent = hint;
     this._refs.hint.hidden = hint === '';
@@ -373,7 +380,7 @@ export class JlFileDrop extends JlFormControl {
 
   private renderValidity(): void {
     if (this.required.get() && this._state.files.length === 0) {
-      this.internals.setValidity({ valueMissing: true }, VALUE_MISSING, this._refs.browse);
+      this.internals.setValidity({ valueMissing: true }, jlText('chooseFile'), this._refs.browse);
       return;
     }
     this.internals.setValidity({});
