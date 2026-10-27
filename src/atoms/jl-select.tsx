@@ -7,7 +7,7 @@ import { setOrRemove } from '../lib/dom';
 import { registerIcons } from '../lib/icons';
 import { groupOptions } from '../lib/option-groups';
 import { CONTROL_SIZES } from '../lib/options';
-import { BASE_STYLES, CONTROL_STYLES } from '../styles/shared';
+import { BASE_STYLES, CONTROL_STYLES, FLOATING_STYLES } from '../styles/shared';
 import { JlIcon } from './jl-icon';
 import styles from './jl-select.css?raw';
 
@@ -35,8 +35,9 @@ const groupNodes = (group: SelectOptionGroup): Node[] => {
 };
 
 /**
- * A choice among a list, on the browser's own `<select>`: its list opens the way the platform does it. The choices
- * come from `options` (JSON) or from `<option>` and `<optgroup>` elements written inside it.
+ * A choice among a list, on the browser's own `<select>`: its list opens the way the platform does it on a touch
+ * screen, and with a mouse looks like the combobox's where the browser lets the page draw it (customizable select).
+ * The choices come from `options` (JSON) or from `<option>` and `<optgroup>` elements written inside it.
  */
 export class JlSelect extends JlFormControl {
   static readonly selector = 'jl-select';
@@ -107,7 +108,7 @@ export class JlSelect extends JlFormControl {
   }
 
   templateCss(): string {
-    return css`${BASE_STYLES}${CONTROL_STYLES}${styles}`;
+    return css`${BASE_STYLES}${CONTROL_STYLES}${FLOATING_STYLES}${styles}`;
   }
 
   onConnect(): void {

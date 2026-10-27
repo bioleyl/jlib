@@ -24,6 +24,10 @@ What the docuteam engines' pages need to move to jlib, starting with the storage
 
 - **Requires Jadis 1.4** (`@jadis/core` `^1.4.0`, a peer dependency): the components find their children with
   `useRefs`' `ref(Class)`, new in 1.4. Update Jadis along with jlib; nothing else changes for pages.
+- **Select**: with a mouse, in Chrome and Edge, its open list looks like the combobox's: a panel with a shadow,
+  rounded rows that light up under the pointer and the arrows, a check at the end of the chosen one, and quiet group
+  headings. It stays the browser's own select (keyboard, type-ahead, form); touch screens keep the platform's sheet,
+  and other browsers their own list. The chevron turns while the list is open.
 
 ## 0.6.0 (2026-10-26)
 

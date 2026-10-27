@@ -36,8 +36,121 @@ optgroup {
   right: 12px;
   color: var(--jl-muted);
   pointer-events: none;
+  transition: transform var(--jl-fast) var(--jl-ease);
+}
+
+.native:open + .chevron {
+  transform: rotate(180deg);
 }
 
 :host([disabled]) .chevron {
   color: var(--jl-faint);
+}
+
+/*
+ * Where the browser lets the page draw the list (customizable select), it is the combobox's: the same panel, rows
+ * and check. Touch screens keep the platform's own sheet, and other browsers their own list.
+ */
+@media (hover: hover) and (pointer: fine) {
+  @supports (appearance: base-select) {
+    /* The list lines up with the frame, not with the select inside its border. */
+    .control {
+      anchor-name: --frame;
+    }
+
+    .native,
+    .native::picker(select) {
+      appearance: base-select;
+    }
+
+    /*
+     * The browser draws the chosen label in a box of its own, out of text-overflow's reach: clamped to one line and
+     * clipped at the padding, it still ends with an ellipsis.
+     */
+    .native {
+      display: -webkit-box;
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 1;
+      padding-block: calc((var(--height, var(--jl-control-md)) - 2px - 1lh) / 2);
+      overflow: clip;
+      overflow-clip-margin: content-box;
+    }
+
+    .native::picker-icon {
+      display: none;
+    }
+
+    .native::picker(select) {
+      position-anchor: --frame;
+      /* Under the field when it fits there, as the combobox's list. */
+      position-try-order: normal;
+      box-sizing: border-box;
+      min-inline-size: anchor-size(self-inline);
+      max-block-size: 274px;
+      margin-block: 6px;
+      padding: 4px;
+      border: 1px solid var(--jl-line);
+      border-radius: var(--jl-radius);
+      background: var(--jl-surface);
+      color: var(--jl-text);
+      box-shadow: var(--jl-shadow-lg);
+      animation: jl-float-in var(--jl-fast) var(--jl-ease);
+    }
+
+    /*
+     * A heading as the command palette's. The browser draws the label itself, half an em in: text-indent reaches it
+     * and lines it up with the options' text.
+     */
+    optgroup {
+      padding-block-start: 8px;
+      color: var(--jl-muted);
+      font-size: var(--jl-font-xs);
+      font-weight: 600;
+      text-indent: calc(10px - 0.5em);
+    }
+
+    optgroup > option:first-of-type {
+      margin-block-start: 4px;
+    }
+
+    option {
+      box-sizing: border-box;
+      gap: 10px;
+      min-block-size: 34px;
+      padding: 6px 10px;
+      border-radius: var(--jl-radius-xs);
+      font-size: var(--jl-font-md);
+      font-weight: 400;
+      line-height: 1.35;
+      text-indent: 0;
+      cursor: pointer;
+    }
+
+    option:enabled:is(:hover, :focus-visible) {
+      background: var(--jl-surface-3);
+      box-shadow: none;
+    }
+
+    option:checked {
+      font-weight: 600;
+    }
+
+    option:disabled {
+      color: var(--jl-faint);
+      cursor: not-allowed;
+    }
+
+    /* Lucide's check, at the end of the row as in the combobox. */
+    option::checkmark {
+      order: 1;
+      width: 14px;
+      height: 14px;
+      margin-inline-start: auto;
+      background: var(--jl-accent);
+      content: "";
+      mask:
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 6 9 17l-5-5'/%3E%3C/svg%3E")
+        center / contain no-repeat;
+    }
+  }
 }

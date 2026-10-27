@@ -11,8 +11,10 @@ const REGIONS = JSON.stringify([
 
 export const doc: ComponentDoc = {
   className: 'JlSelect',
-  description: `A choice among a list, on the browser's own select: the list opens the way the platform does it
-(a sheet on phones), the keyboard works as people expect, and the form gets the chosen value.
+  description: `A choice among a list, on the browser's own select: the keyboard works as people expect, the form
+gets the chosen value, and on a touch screen the list opens the way the platform does it (a sheet on phones). With a
+mouse, in the browsers that let a page draw a select's list (Chrome, Edge), it looks like the combobox's: the same
+panel, rows and check; the others show their own.
 
 Give the choices as JSON in options (an option with a group goes under that heading), or write option and optgroup
 elements inside the element, as for a native select: they are copied in when it connects. A placeholder shows
