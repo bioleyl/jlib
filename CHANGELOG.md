@@ -3,7 +3,7 @@
 What changed in each version of [@syware/jlib](https://www.npmjs.com/package/@syware/jlib). Every component is shown
 and documented on [the documentation site](https://bioleyl.github.io/jlib/).
 
-## Unreleased
+## 0.7.0 (2026-10-27)
 
 What the docuteam engines' pages need to move to jlib, starting with the storage engine's.
 
@@ -73,6 +73,22 @@ What the docuteam engines' pages need to move to jlib, starting with the storage
   rounded rows that light up under the pointer and the arrows, a check at the end of the chosen one, and quiet group
   headings. It stays the browser's own select (keyboard, type-ahead, form); touch screens keep the platform's sheet,
   and other browsers their own list. The chevron turns while the list is open.
+
+### Worth a look when you update
+
+- Update Jadis to 1.4 along with jlib. 1.4.1 is recommended: with it, a component written by its class takes
+  children in JSX (`<JlDialog>…</JlDialog>`), its inputs type-checked.
+- An app in another language calls `setTexts` once at start, before its first component is created: the components
+  read their default texts when they are made. Attributes written on every element only to translate a default can
+  go.
+- An app that folds the side nav with a button of its own can use `collapsible`, and keep the choice from `collapse`.
+- Styles that read `jl-side-nav[collapsed]` to style around the rail should read `jl-side-nav[rail]`: in the app
+  shell's drawer, a folded side nav shows whole.
+- An app shell whose top bar repeats the side nav's header on wide screens can take `narrow-header`.
+- A toast that a page dismissed and showed again to report progress can `update()` instead.
+- Unit tests that stubbed `ResizeObserver` or `ElementInternals` for jlib can drop the stubs.
+
+No property, event or method was removed or renamed.
 
 ## 0.6.0 (2026-10-26)
 
