@@ -20,6 +20,12 @@ pixels, horizontal steps keep their markers and the current step's text.`,
   ],
   examples: [
     {
+      description: 'A step that failed: the process stopped there, and says so.',
+      html: `
+        <jl-steps current="3" items='[{"label":"Received","description":"10:42:01"},{"label":"Planned","description":"10:42:03"},{"label":"Rolled back","description":"The package was refused","failed":true}]'></jl-steps>`,
+      title: 'A failed step',
+    },
+    {
       html: `<jl-steps current="2" items='${CHECKOUT}'></jl-steps>`,
       title: 'Horizontal',
     },
@@ -69,7 +75,8 @@ pixels, horizontal steps keep their markers and the current step's text.`,
       attribute: 'items',
       control: { kind: 'json' },
       default: '[]',
-      description: 'The steps, in order: { label, description? }.',
+      description:
+        'The steps, in order: { label, description?, failed? }. A failed step (a payment refused, a transaction rolled back) shows an × in the danger colour.',
       name: 'items',
       type: 'StepItem[]',
     },

@@ -1,29 +1,35 @@
 import { css } from '@jadis/core';
-import { Check } from 'lucide';
+import { Check, X } from 'lucide';
 
 import { JlIcon } from '../atoms/jl-icon';
 import { JlElement } from '../base/jl-element';
 import { clampedNumber, jsonOf, oneOf } from '../lib/attributes';
 import { registerIcons } from '../lib/icons';
+import { jlText } from '../lib/texts';
 import { BASE_STYLES } from '../styles/shared';
 import styles from './jl-steps.css?raw';
 
 import type { StepItem, StepStatus, StepsOrientation } from '../types/jl-steps.types';
+import type { JlTextKey } from '../types/texts.types';
 
 // The icons it draws itself: a page registers only the names it writes.
-registerIcons({ check: Check });
+registerIcons({ check: Check, x: X });
 
 export const STEPS_ORIENTATIONS: readonly StepsOrientation[] = ['horizontal', 'vertical'];
 
 const CHECK_SIZE = 14;
 const MAX_STEPS = 100;
-const DEFAULT_LABEL = 'Progress';
 
-// What screen readers hear after a step's label.
-const STATUS_TEXT: Record<StepStatus, string> = {
-  current: ', current step',
-  done: ', completed',
-  upcoming: '',
+// What a screen reader hears after a step's name, by its status: nothing for one still to come.
+const STATUS_TEXTS: Record<StepStatus, JlTextKey | null> = {
+  current: 'stepCurrent',
+  done: 'stepDone',
+  upcoming: null,
+};
+
+const statusText = (status: StepStatus): string => {
+  const key = STATUS_TEXTS[status];
+  return key === null ? '' : jlText(key);
 };
 
 const statusOf = (index: number, current: number): StepStatus => {
@@ -60,9 +66,9 @@ export class JlSteps extends JlElement {
   readonly clickable = this.useChange(false, () => this.render(), { attribute: 'clickable' });
   /** The list's name for screen readers. */
   readonly label = this.useChange(
-    DEFAULT_LABEL,
+    jlText('progress'),
     (value) => {
-      this._refs.list.setAttribute('aria-label', value || DEFAULT_LABEL);
+      this._refs.list.setAttribute('aria-label', value || jlText('progress'));
     },
     { attribute: 'label' }
   );
@@ -93,22 +99,34 @@ export class JlSteps extends JlElement {
     );
   }
 
+  /** A failed step's ×, a done one's check, or the step's number. */
+  private markerOf(item: StepItem, index: number, status: StepStatus): Node | string {
+    if (item.failed) {
+      return <JlIcon name="x" size={CHECK_SIZE} />;
+    }
+    return status === 'done' ? <JlIcon name="check" size={CHECK_SIZE} /> : String(index + 1);
+  }
+
   private step(item: StepItem, index: number, status: StepStatus): Node {
     const content = [
       <span class="marker" aria-hidden="true">
-        {status === 'done' ? <JlIcon name="check" size={CHECK_SIZE} /> : String(index + 1)}
+        {this.markerOf(item, index, status)}
       </span>,
       <span class="text">
         <span class="label">
           {item.label}
-          <span class="sr-only">{STATUS_TEXT[status]}</span>
+          <span class="sr-only">{item.failed ? jlText('failedStep') : statusText(status)}</span>
         </span>
         {item.description === undefined ? '' : <span class="description">{item.description}</span>}
       </span>,
     ];
     const canGoBack = status === 'done' && this.clickable.get();
     return (
-      <li class="step" data-status={status} aria-current={status === 'current' ? 'step' : undefined}>
+      <li
+        class="step"
+        data-status={status}
+        data-failed={item.failed ? '' : undefined}
+        aria-current={status === 'current' ? 'step' : undefined}>
         {canGoBack ? (
           <button type="button" class="head" data-index={index}>
             {content}

@@ -94,6 +94,17 @@ button.head {
   font-weight: 700;
 }
 
+.step[data-failed] .marker {
+  border-color: color-mix(in srgb, var(--jl-danger) 40%, var(--jl-line));
+  background: var(--jl-danger-soft);
+  color: var(--jl-danger);
+  box-shadow: none;
+}
+
+.step[data-failed] .label {
+  color: var(--jl-danger);
+}
+
 button.head:hover .label {
   text-decoration: underline;
   text-underline-offset: 3px;
