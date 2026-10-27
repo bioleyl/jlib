@@ -94,7 +94,7 @@
     "@biomejs/biome": "^2.6.3",
     "@fontsource-variable/jetbrains-mono": "^5.3.0",
     "@fontsource-variable/manrope": "^5.3.0",
-    "@jadis/core": "^1.4.0",
+    "@jadis/core": "^1.4.1",
     "@types/node": "^24.13.3",
     "playwright-core": "^1.64.1",
     "typescript": "^7.0.2",
