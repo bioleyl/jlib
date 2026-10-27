@@ -3,10 +3,13 @@ import { CircleCheck, CircleX, Info, Sparkles, TriangleAlert, X } from 'lucide';
 
 import { JlButton } from '../atoms/jl-button';
 import { JlIcon } from '../atoms/jl-icon';
+import { JlProgress } from '../atoms/jl-progress';
 import { JlElement } from '../base/jl-element';
 import { oneOf } from '../lib/attributes';
 import { registerIcons } from '../lib/icons';
 import { TONE_ICON_FILLED, TONE_ICONS } from '../lib/options';
+import { optionalNumber } from '../lib/progress';
+import { jlText } from '../lib/texts';
 import { BASE_STYLES } from '../styles/shared';
 import styles from './jl-toast.css?raw';
 
@@ -48,7 +51,9 @@ const prefersReducedMotion = (): boolean => window.matchMedia(REDUCED_MOTION).ma
 /**
  * One notification: a heading, a line of text, an icon in its tone's colour, and maybe an action such as "Undo".
  * With a `duration` it closes by itself, a thin line showing the time left; hovering or focusing it pauses the
- * line. It emits `dismiss` once it has closed. Most pages call `toast()` rather than writing it.
+ * line. While `working`, it shows the progress of the work it tells about (a download): `progress` percent, or a
+ * bar running back and forth without it. It emits `dismiss` once it has closed. Most pages call `toast()` rather
+ * than writing it.
  */
 export class JlToast extends JlElement {
   static readonly selector = 'jl-toast';
@@ -101,6 +106,19 @@ export class JlToast extends JlElement {
   );
   /** How long it stays, in milliseconds; 0 keeps it until it is closed. */
   readonly duration = this.useChange(0, () => this.startTimer(), { attribute: 'duration' });
+  /** Shows a progress bar under the text, while the work it tells about runs. */
+  readonly working = this.useChange(
+    false,
+    (value) => {
+      this._refs.work.hidden = !value;
+    },
+    { attribute: 'working' }
+  );
+  /** How far the work is, in percent; `null` (no attribute) for work of unknown length. */
+  readonly progress = this.useChange<number | null>(null, (value) => this._refs.work.value.set(value), {
+    attribute: 'progress',
+    parse: optionalNumber,
+  });
 
   private readonly _timer = { animation: null as Animation | null, entered: false };
   private readonly _hold = { focus: false, pointer: false };
@@ -114,6 +132,7 @@ export class JlToast extends JlElement {
     progress: ref('.progress'),
     text: ref('.text'),
     toast: ref('.toast'),
+    work: ref(JlProgress),
   }));
 
   /** Closes the toast: it leaves, hides, then emits `dismiss`. */
@@ -155,11 +174,12 @@ export class JlToast extends JlElement {
         <div class="content">
           <p class="heading" hidden />
           <p class="text" hidden />
+          <JlProgress class="work" size="sm" hidden />
           <slot />
         </div>
         <div class="buttons">
           <JlButton class="action" variant="ghost" size="sm" hidden />
-          <JlButton class="close" variant="ghost" size="sm" icon="x" hint="Close" hidden />
+          <JlButton class="close" variant="ghost" size="sm" icon="x" hint={jlText('close')} hidden />
         </div>
         <div class="progress" aria-hidden="true" hidden>
           <div class="bar" />

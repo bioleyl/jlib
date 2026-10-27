@@ -24,7 +24,13 @@ What the docuteam engines' pages need to move to jlib, starting with the storage
   name, as the navigation pattern lays it out; wide, the side nav's header names the app.
 - **Texts**: what the components say on their own (close and clear buttons, "Show more", a file drop's refusals,
   the labels screen readers hear, the defaults of their text inputs) comes from one registry: `setTexts({...})`
-  gives them in the page's language, once, before it draws; `DEFAULT_TEXTS` lists them in English.
+  gives them in the page's language, once, before it draws; `DEFAULT_TEXTS` lists them in English. `download()`'s
+  texts follow it (`downloadTexts()`).
+- **Toast**: `working` and `progress` show the progress of the work it tells about, and `toast()`'s handle can
+  `update()` it while it shows (its text, tone, progress, action…).
+- `download(url, { title })`: a file fetched with its progress in a toast (the time the server takes to prepare it,
+  the bytes received, a bar when the size is known), saved under the server's name; **Cancel** stops it, and its
+  texts can be set.
 - **Table**: a column's `description` names a field shown as a quieter line under the value; the `datetime`
   format shows a date with its time; `cellOf<Row>()` writes a renderer for the page's own type of row; a column's
   `wrap` breaks long text over lines instead of widening the table; `marked` rows (a search's matches) carry a bar

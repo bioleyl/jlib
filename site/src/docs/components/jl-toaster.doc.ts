@@ -1,4 +1,4 @@
-import { toast } from '@syware/jlib';
+import { download, toast } from '@syware/jlib';
 
 import type { JlButton, JlDialog, JlToaster, ToastOptions } from '@syware/jlib';
 import type { ComponentDoc } from '../../types/docs.types';
@@ -10,6 +10,52 @@ const TONE_TOASTS: Record<string, ToastOptions> = {
   ok: { heading: 'Changes saved', text: 'Your profile is up to date.', tone: 'ok' },
   warn: { heading: 'Storage almost full', text: 'You have used 92% of 10 GB.', tone: 'warn' },
 };
+
+// The upload of the progress example: a step every so often until it is done.
+const UPLOAD_STEP_MS = 400;
+const UPLOAD_STEP = 20;
+const PERCENT = 100;
+// The file of the download example: rows of a report, made in the page.
+const REPORT_ROWS = 200_000;
+
+/** Uploads nothing, but shows how a toast follows work that takes a while. */
+function fakeUpload(): void {
+  const upload = toast({
+    closable: false,
+    duration: 0,
+    heading: 'Uploading report.pdf',
+    icon: 'upload',
+    progress: 0,
+    text: '0 of 2.4 MB',
+    working: true,
+  });
+  const sent = { percent: 0 };
+  const timer = window.setInterval(() => {
+    sent.percent += UPLOAD_STEP;
+    if (sent.percent < PERCENT) {
+      upload.update({ progress: sent.percent, text: `${((2.4 * sent.percent) / PERCENT).toFixed(1)} of 2.4 MB` });
+      return;
+    }
+    window.clearInterval(timer);
+    upload.update({
+      closable: true,
+      duration: 5000,
+      icon: '',
+      text: 'Shared with the team.',
+      tone: 'ok',
+      working: false,
+    });
+  }, UPLOAD_STEP_MS);
+}
+
+/** A report made in the page, downloaded as a server's file would be. */
+function downloadReport(): void {
+  const rows = Array.from({ length: REPORT_ROWS }, (_, index) => `${index},row ${index}`).join('\n');
+  const url = URL.createObjectURL(new Blob([rows], { type: 'text/csv' }));
+  void download(url, { fileName: 'report.csv', title: 'Report of the quarter' }).finally(() =>
+    URL.revokeObjectURL(url)
+  );
+}
 
 /** Calls `action` when the button of the example is pressed. */
 function onPress(root: HTMLElement, selector: string, action: () => void): void {
@@ -83,33 +129,38 @@ close button, unless the options say otherwise. Write a jl-toaster in the page y
       title: 'With an action',
     },
     {
-      description: 'A toast that stays (duration 0) while the work runs, closed from code by its handle.',
+      description:
+        'A toast that stays (duration 0) while the work runs, its bar showing how far (working, progress), updated from code by its handle, then closing by itself once done.',
       html: `
         <div class="row">
           <jl-button class="upload" variant="primary" icon="upload" label="Upload report.pdf"></jl-button>
         </div>`,
       script: `
-        root.querySelector('.upload').events.register('press', () => {
-          const pending = toast({ heading: 'Uploading report.pdf…', icon: 'upload', duration: 0, closable: false });
-          setTimeout(() => {
-            pending.dismiss();
-            toast({ heading: 'report.pdf uploaded', text: '2.4 MB, shared with the team.', tone: 'ok' });
-          }, 2000);
-        });`,
-      setup: (root) =>
-        onPress(root, '.upload', () => {
-          const pending = toast({
-            closable: false,
-            duration: 0,
-            heading: 'Uploading report.pdf…',
-            icon: 'upload',
-          });
-          setTimeout(() => {
-            pending.dismiss();
-            toast({ heading: 'report.pdf uploaded', text: '2.4 MB, shared with the team.', tone: 'ok' });
-          }, 2000);
-        }),
-      title: 'Closing from code',
+        const upload = toast({ heading: 'Uploading report.pdf', icon: 'upload', duration: 0, closable: false,
+          working: true, progress: 0, text: '0 of 2.4 MB' });
+        // As the work goes on:
+        upload.update({ progress: 40, text: '1.0 of 2.4 MB' });
+        // Once it is done:
+        upload.update({ working: false, tone: 'ok', icon: '', text: 'Shared with the team.', duration: 5000,
+          closable: true });`,
+      setup: (root) => onPress(root, '.upload', fakeUpload),
+      title: 'Work in progress',
+    },
+    {
+      description:
+        'download() fetches a file with its progress in a toast: the time the server takes to prepare it, the bytes received, then the name it was saved under, or why it failed. Its Cancel stops it.',
+      html: `
+        <div class="row">
+          <jl-button class="download" icon="download" label="Download the report"></jl-button>
+        </div>`,
+      script: `
+        import { download } from '@syware/jlib';
+
+        root.querySelector('.download').events.register('press', () =>
+          download('/api/reports/q3.csv', { title: 'Report of the quarter' })
+        );`,
+      setup: (root) => onPress(root, '.download', downloadReport),
+      title: 'Downloading a file',
     },
     {
       description: 'A toaster of your own decides where its toasts go: notify() shows one in it.',
@@ -164,9 +215,21 @@ close button, unless the options say otherwise. Write a jl-toaster in the page y
     },
     {
       description:
-        "A function, not a method: shows a toast in the page's toaster, made on first use. Options: heading, text, tone, icon, duration, closable, actionLabel, onAction.",
+        "A function, not a method: shows a toast in the page's toaster, made on first use. Options: heading, text, tone, icon, duration, closable, actionLabel, onAction, working, progress. The handle's update() changes them while it shows.",
       name: 'toast',
-      signature: 'toast(options: ToastOptions): { dismiss(): void }',
+      signature: 'toast(options: ToastOptions): { update(changes: ToastOptions): void; dismiss(): void }',
+    },
+    {
+      description:
+        'A function: downloads a file with its progress in a toast, and saves it under the name the server gives. Options: title, fileName, init (the request), texts (preparing, received, receivedOf, saved, failed, cancel, with {time}, {received}, {total}, {name}, {size} and {error}). Says how it ended.',
+      name: 'download',
+      signature: 'download(url: string, options?: DownloadOptions): Promise<DownloadResult>',
+    },
+    {
+      description:
+        "A function: the texts download() says unless its options give others, in the page's language as setTexts gave it.",
+      name: 'downloadTexts',
+      signature: 'downloadTexts(): DownloadTexts',
     },
   ],
   name: 'Toaster',

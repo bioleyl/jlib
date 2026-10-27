@@ -1,12 +1,29 @@
 import { css } from '@jadis/core';
+import { Download } from 'lucide';
 
 import { JlElement } from '../base/jl-element';
 import { clampedNumber, oneOf } from '../lib/attributes';
+import { answerError, dispositionFileName, readWithProgress, saveBlob, urlFileName } from '../lib/download';
+import { formatFileSize } from '../lib/files';
+import { registerIcons } from '../lib/icons';
+import { fillText } from '../lib/text';
+import { jlText } from '../lib/texts';
+import { formatDuration } from '../lib/time';
 import { JlToast } from '../molecules/jl-toast';
 import { BASE_STYLES } from '../styles/shared';
 import styles from './jl-toaster.css?raw';
 
-import type { ToasterPlacement, ToastHandle, ToastOptions } from '../types/jl-toaster.types';
+import type {
+  DownloadOptions,
+  DownloadResult,
+  DownloadTexts,
+  ToasterPlacement,
+  ToastHandle,
+  ToastOptions,
+} from '../types/jl-toaster.types';
+
+// The icon it draws itself: a page registers only the names it writes.
+registerIcons({ download: Download });
 
 export const TOASTER_PLACEMENTS: readonly ToasterPlacement[] = [
   'bottom-right',
@@ -22,13 +39,32 @@ const DEFAULT_DURATION = 5000;
 // Long enough to read an error, or to reach the button of an action such as Undo.
 const LONG_DURATION = 8000;
 const LONG_TONE = 'danger';
-const DEFAULT_LABEL = 'Notifications';
 const STACKED = 'data-stacked';
 
 /** How long a toast stays when its options do not say: longer for an error, or to give time to press its action. */
 const defaultDuration = (options: ToastOptions): number =>
   options.tone === LONG_TONE || (options.actionLabel ?? '') !== '' ? LONG_DURATION : DEFAULT_DURATION;
 const OPEN = ':popover-open';
+
+/** The inputs of a toast that an update may change, each set when the update gives it. */
+const TOAST_SETTERS: { [Key in keyof ToastOptions]: (toast: JlToast, value: ToastOptions[Key]) => void } = {
+  actionLabel: (toast, value) => toast.actionLabel.set(value ?? ''),
+  closable: (toast, value) => toast.closable.set(value ?? false),
+  duration: (toast, value) => toast.duration.set(value ?? 0),
+  heading: (toast, value) => toast.heading.set(value ?? ''),
+  icon: (toast, value) => toast.icon.set(value ?? ''),
+  onAction: () => undefined,
+  progress: (toast, value) => toast.progress.set(value ?? null),
+  text: (toast, value) => toast.text.set(value ?? ''),
+  tone: (toast, value) => toast.tone.set(value ?? 'neutral'),
+  working: (toast, value) => toast.working.set(value ?? false),
+};
+
+function updateToast(toast: JlToast, changes: ToastOptions): void {
+  for (const key of Object.keys(changes) as (keyof ToastOptions)[]) {
+    (TOAST_SETTERS[key] as (target: JlToast, value: unknown) => void)(toast, changes[key]);
+  }
+}
 
 /**
  * The corner of the window where notifications stack, newest nearest the edge, at most `max` at a time. It lives in
@@ -52,9 +88,13 @@ export class JlToaster extends JlElement {
     parse: clampedNumber(DEFAULT_MAX, 1, MAX_LIMIT),
   });
   /** The region's name for screen readers. */
-  readonly label = this.useChange(DEFAULT_LABEL, (value) => this._refs.region.setAttribute('aria-label', value), {
-    attribute: 'label',
-  });
+  readonly label = this.useChange(
+    jlText('notifications'),
+    (value) => this._refs.region.setAttribute('aria-label', value),
+    {
+      attribute: 'label',
+    }
+  );
 
   private readonly _watched = new WeakSet<JlToast>();
 
@@ -77,15 +117,24 @@ export class JlToaster extends JlElement {
         duration={options.duration ?? defaultDuration(options)}
         closable={options.closable ?? true}
         actionLabel={options.actionLabel}
+        working={options.working}
+        progress={options.progress}
       />
     ) as JlToast;
-    const onAction = options.onAction;
-    if (onAction !== undefined) {
-      toast.addEventListener('action', () => onAction());
-    }
+    // The action may change while the toast shows (a download's Cancel, gone once it is saved).
+    const actions = { onAction: options.onAction };
+    toast.addEventListener('action', () => actions.onAction?.());
     this.append(toast);
     this.whenRendered(() => this.raise());
-    return { dismiss: () => toast.dismiss() };
+    return {
+      dismiss: () => toast.dismiss(),
+      update: (changes) => {
+        if ('onAction' in changes) {
+          actions.onAction = changes.onAction;
+        }
+        updateToast(toast, changes);
+      },
+    };
   }
 
   templateHtml(): Node {
@@ -193,4 +242,110 @@ function pageToaster(): JlToaster {
  */
 export function toast(options: ToastOptions): ToastHandle {
   return pageToaster().notify(options);
+}
+
+// A download's toast: its progress while the file comes, then where it was saved for a while, or why it failed.
+const DOWNLOAD_ICON = 'download';
+const SAVED_VISIBLE_MS = 6000;
+const PREPARING_TICK_MS = 1000;
+const PROGRESS_INTERVAL_MS = 250;
+const PERCENT = 100;
+const FALLBACK_NAME = 'download';
+const CONTENT_LENGTH = 'content-length';
+const CONTENT_DISPOSITION = 'content-disposition';
+
+/** A download's texts, in the language the page set (`setTexts`): what `download()` says unless told otherwise. */
+export const downloadTexts = (): DownloadTexts => ({
+  cancel: jlText('downloadCancel'),
+  failed: jlText('downloadFailed'),
+  preparing: jlText('downloadPreparing'),
+  received: jlText('downloadReceived'),
+  receivedOf: jlText('downloadReceivedOf'),
+  saved: jlText('downloadSaved'),
+});
+
+/** The toast's text and bar for the bytes received: a share of the size when the server said it. */
+function receiving(received: number, total: number, texts: DownloadTexts): ToastOptions {
+  const size = formatFileSize(received);
+  if (total <= 0) {
+    return { progress: null, text: fillText(texts.received, { received: size }) };
+  }
+  return {
+    progress: Math.min(PERCENT, (received / total) * PERCENT),
+    text: fillText(texts.receivedOf, { received: size, total: formatFileSize(total) }),
+  };
+}
+
+async function failureOf(response: Response): Promise<Error> {
+  const body: unknown = await response.json().catch(() => null);
+  return new Error(answerError(body, response.status));
+}
+
+/**
+ * Downloads a file with its progress in a toast of the page's toaster: the time the server takes to prepare it,
+ * the bytes received (a bar when it says the size), then the name it was saved under, or why it failed. Its
+ * Cancel stops it. Call it from a download link's click, leaving a modified click (a new tab) to the browser.
+ */
+export async function download(url: string, options: DownloadOptions = {}): Promise<DownloadResult> {
+  const texts = { ...downloadTexts(), ...options.texts };
+  const controller = new AbortController();
+  const started = performance.now();
+  const preparingText = (): string =>
+    fillText(texts.preparing, { time: formatDuration(performance.now() - started) });
+  const handle = toast({
+    actionLabel: texts.cancel,
+    closable: false,
+    duration: 0,
+    heading: options.title ?? urlFileName(url, FALLBACK_NAME),
+    icon: DOWNLOAD_ICON,
+    onAction: () => controller.abort(),
+    progress: null,
+    text: preparingText(),
+    working: true,
+  });
+  const preparing = window.setInterval(() => handle.update({ text: preparingText() }), PREPARING_TICK_MS);
+  try {
+    const response = await fetch(url, { ...options.init, signal: controller.signal });
+    window.clearInterval(preparing);
+    if (!response.ok) {
+      throw await failureOf(response);
+    }
+    const total = Number(response.headers.get(CONTENT_LENGTH)) || 0;
+    const blob = await readWithProgress(
+      response,
+      (received) => handle.update(receiving(received, total, texts)),
+      PROGRESS_INTERVAL_MS
+    );
+    const name =
+      dispositionFileName(response.headers.get(CONTENT_DISPOSITION))
+      ?? options.fileName
+      ?? urlFileName(url, FALLBACK_NAME);
+    saveBlob(blob, name);
+    handle.update({
+      actionLabel: '',
+      closable: true,
+      duration: SAVED_VISIBLE_MS,
+      icon: '',
+      text: fillText(texts.saved, { name, size: formatFileSize(blob.size) }),
+      tone: 'ok',
+      working: false,
+    });
+    return { name, outcome: 'saved', size: blob.size };
+  } catch (error) {
+    window.clearInterval(preparing);
+    if (controller.signal.aborted) {
+      handle.dismiss();
+      return { outcome: 'canceled' };
+    }
+    const message = error instanceof Error ? error.message : String(error);
+    handle.update({
+      actionLabel: '',
+      closable: true,
+      icon: '',
+      text: fillText(texts.failed, { error: message }),
+      tone: 'danger',
+      working: false,
+    });
+    return { error: message, outcome: 'failed' };
+  }
 }

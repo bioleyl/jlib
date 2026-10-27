@@ -95,6 +95,10 @@
   --jl-accent-soft: color-mix(in srgb, var(--fg) 12%, transparent);
 }
 
+.work {
+  margin-top: 8px;
+}
+
 .progress {
   position: absolute;
   right: 0;
