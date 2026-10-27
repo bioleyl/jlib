@@ -1,0 +1,24 @@
+:host {
+  display: block;
+}
+
+.list,
+.rows {
+  display: grid;
+  gap: var(--jl-space-2);
+}
+
+.row {
+  display: flex;
+  align-items: start;
+  gap: var(--jl-space-1);
+}
+
+.row > :first-child {
+  flex: 1;
+  min-width: 0;
+}
+
+[hidden] {
+  display: none;
+}

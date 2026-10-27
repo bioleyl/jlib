@@ -32,6 +32,8 @@ What the docuteam engines' pages need to move to jlib, starting with the storage
   texts follow it (`downloadTexts()`).
 - **App icon**: `setFavicon(icon)` makes the app's icon the page's favicon, the tile `jl-app-icon` draws, in the
   theme's `--jl-brand` (a page's own theme shows in the browser's tab too).
+- **Input list** (`jl-input-list`): a field that takes several values, each in a row of its own, typed (any input
+  type, or a text area) or picked from options; rows are added and removed, up to `max`. Its texts can be set.
 - **Toast**: `working` and `progress` show the progress of the work it tells about, and `toast()`'s handle can
   `update()` it while it shows (its text, tone, progress, action…).
 - `download(url, { title })`: a file fetched with its progress in a toast (the time the server takes to prepare it,
