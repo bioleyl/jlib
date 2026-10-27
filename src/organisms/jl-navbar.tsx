@@ -5,6 +5,7 @@ import { JlIcon } from '../atoms/jl-icon';
 import { JlElement } from '../base/jl-element';
 import { jsonOf } from '../lib/attributes';
 import { registerIcons } from '../lib/icons';
+import { jlText } from '../lib/texts';
 import { BASE_STYLES } from '../styles/shared';
 import styles from './jl-navbar.css?raw';
 
@@ -14,7 +15,6 @@ import type { NavbarLink } from '../types/jl-navbar.types';
 registerIcons({ menu: Menu, x: X });
 
 const ICON_SIZE = 18;
-const DEFAULT_LABEL = 'Main';
 const MENU_ICON = 'menu';
 const CLOSE_ICON = 'x';
 
@@ -34,10 +34,10 @@ export class JlNavbar extends JlElement {
   readonly sticky = this.useChange(false, (value) => this.reflect('sticky', value), { attribute: 'sticky' });
   /** The navigation's name for screen readers. */
   readonly label = this.useChange(
-    DEFAULT_LABEL,
+    jlText('mainNavigation'),
     (value) => {
-      this._refs.links.setAttribute('aria-label', value || DEFAULT_LABEL);
-      this._refs.drawer.setAttribute('aria-label', value || DEFAULT_LABEL);
+      this._refs.links.setAttribute('aria-label', value || jlText('mainNavigation'));
+      this._refs.drawer.setAttribute('aria-label', value || jlText('mainNavigation'));
     },
     { attribute: 'label' }
   );
@@ -64,7 +64,12 @@ export class JlNavbar extends JlElement {
           <div class="actions">
             <slot name="actions" />
           </div>
-          <button type="button" class="toggle" aria-expanded="false" aria-controls="drawer" aria-label="Menu">
+          <button
+            type="button"
+            class="toggle"
+            aria-expanded="false"
+            aria-controls="drawer"
+            aria-label={jlText('menu')}>
             <JlIcon name={MENU_ICON} size={ICON_SIZE} />
           </button>
         </div>
@@ -114,7 +119,7 @@ export class JlNavbar extends JlElement {
   private setDrawer(open: boolean): void {
     this._refs.drawer.hidden = !open;
     this._refs.toggle.setAttribute('aria-expanded', String(open));
-    this._refs.toggle.setAttribute('aria-label', open ? 'Close the menu' : 'Menu');
+    this._refs.toggle.setAttribute('aria-label', open ? jlText('closeMenu') : jlText('menu'));
     this._refs.toggleIcon.name.set(open ? CLOSE_ICON : MENU_ICON);
     this.reflect('expanded', open);
   }

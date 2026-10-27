@@ -15,6 +15,7 @@ import {
   shortcutLabels,
 } from '../lib/key-shortcut';
 import { CONTROL_SIZES } from '../lib/options';
+import { jlText } from '../lib/texts';
 import { BASE_STYLES, CONTROL_STYLES } from '../styles/shared';
 import styles from './jl-search.css?raw';
 
@@ -26,7 +27,6 @@ registerIcons({ search: Search, x: X });
 const DEFAULT_DEBOUNCE_MS = 250;
 const ICON_SIZE = 16;
 const ACTION_ICON_SIZE = 14;
-const DEFAULT_LABEL = 'Search';
 const MAC_PATTERN = /Mac|iPhone|iPad|iPod/;
 // Where a key press is typing, so a shortcut without a modifier must leave it alone.
 const TYPING_TARGETS = 'input, textarea, select, [contenteditable]';
@@ -55,7 +55,7 @@ export class JlSearch extends JlFormControl {
   /** The field's name for screen readers; "Search" when nothing else names it. */
   readonly label = this.useChange(
     '',
-    (value) => this._refs.native.setAttribute('aria-label', value || DEFAULT_LABEL),
+    (value) => this._refs.native.setAttribute('aria-label', value || jlText('search')),
     {
       attribute: 'label',
     }
@@ -125,7 +125,7 @@ export class JlSearch extends JlFormControl {
           <JlSpinner size={ICON_SIZE} hidden />
         </span>
         <input class="native" type="search" autocomplete="off" />
-        <button class="action clear" type="button" aria-label="Clear the search" tabIndex={-1} hidden>
+        <button class="action clear" type="button" aria-label={jlText('clearSearch')} tabIndex={-1} hidden>
           <JlIcon name="x" size={ACTION_ICON_SIZE} />
         </button>
         <span class="keys" aria-hidden="true" hidden />

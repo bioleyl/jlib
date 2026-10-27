@@ -7,6 +7,7 @@ import { clampedNumber, oneOf } from '../lib/attributes';
 import { registerIcons } from '../lib/icons';
 import { CONTROL_SIZES } from '../lib/options';
 import { clampPage, pageItems } from '../lib/pagination';
+import { jlText } from '../lib/texts';
 import { BASE_STYLES } from '../styles/shared';
 import styles from './jl-pagination.css?raw';
 
@@ -17,7 +18,6 @@ import type { PageItem } from '../types/pagination.types';
 registerIcons({ 'chevron-left': ChevronLeft, 'chevron-right': ChevronRight });
 
 const ICON_SIZES: Record<ControlSize, number> = { lg: 18, md: 16, sm: 14 };
-const DEFAULT_LABEL = 'Pagination';
 const MAX_PAGES = Number.MAX_SAFE_INTEGER;
 const MAX_NEIGHBOURS = 5;
 const STEP_BACK = -1;
@@ -67,9 +67,9 @@ export class JlPagination extends JlElement {
   });
   /** The navigation's name for screen readers, when a page has more than one. */
   readonly label = this.useChange(
-    DEFAULT_LABEL,
+    jlText('pagination'),
     (value) => {
-      this._refs.nav.setAttribute('aria-label', value || DEFAULT_LABEL);
+      this._refs.nav.setAttribute('aria-label', value || jlText('pagination'));
     },
     { attribute: 'label' }
   );
@@ -87,12 +87,12 @@ export class JlPagination extends JlElement {
   templateHtml(): Node {
     return (
       <nav attrs={{ part: 'base' }}>
-        <button type="button" class="button previous" aria-label="Previous page">
+        <button type="button" class="button previous" aria-label={jlText('previousPage')}>
           <JlIcon name="chevron-left" />
         </button>
         <ol class="pages" />
         <span class="status" hidden />
-        <button type="button" class="button next" aria-label="Next page">
+        <button type="button" class="button next" aria-label={jlText('nextPage')}>
           <JlIcon name="chevron-right" />
         </button>
       </nav>

@@ -4,6 +4,7 @@ import { JlButton } from '../atoms/jl-button';
 import { JlElement } from '../base/jl-element';
 import { oneOf } from '../lib/attributes';
 import { define } from '../lib/define';
+import { jlText } from '../lib/texts';
 import { BASE_STYLES } from '../styles/shared';
 import styles from './jl-confirm.css?raw';
 import { JlDialog } from './jl-dialog';
@@ -150,9 +151,6 @@ export function confirmDialog(options: ConfirmOptions): Promise<boolean> {
 }
 
 const LEAVE_HEADING = 'Leave without saving?';
-const LEAVE_TEXT = 'Your changes are lost.';
-const LEAVE_LABEL = 'Leave';
-const STAY_LABEL = 'Keep editing';
 
 /**
  * Guards a form or an editor against leaving with changes not saved. Closing or reloading the tab asks the
@@ -177,10 +175,10 @@ export function guardLeave(options: LeaveGuardOptions): () => Promise<boolean> {
       return Promise.resolve(true);
     }
     asking.pending ??= confirmDialog({
-      cancelLabel: options.stayLabel ?? STAY_LABEL,
-      confirmLabel: options.leaveLabel ?? LEAVE_LABEL,
+      cancelLabel: options.stayLabel ?? jlText('stay'),
+      confirmLabel: options.leaveLabel ?? jlText('leave'),
       heading: options.heading ?? LEAVE_HEADING,
-      text: options.text ?? LEAVE_TEXT,
+      text: options.text ?? jlText('leaveText'),
       tone: 'danger',
     }).finally(() => {
       asking.pending = null;

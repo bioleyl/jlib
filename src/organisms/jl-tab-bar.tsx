@@ -6,6 +6,7 @@ import { JlElement } from '../base/jl-element';
 import { jsonOf } from '../lib/attributes';
 import { setOrRemove } from '../lib/dom';
 import { registerIcons } from '../lib/icons';
+import { jlText } from '../lib/texts';
 import { BASE_STYLES } from '../styles/shared';
 import styles from './jl-tab-bar.css?raw';
 
@@ -15,7 +16,6 @@ import type { TabBarItem } from '../types/jl-tab-bar.types';
 registerIcons({ ellipsis: Ellipsis });
 
 const ICON_SIZE = 22;
-const DEFAULT_LABEL = 'Shortcuts';
 const MAX_COUNT = 99;
 const ITEM_SELECTOR = '.item';
 
@@ -61,8 +61,8 @@ export class JlTabBar extends JlElement {
   );
   /** The name of the navigation for screen readers. */
   readonly label = this.useChange(
-    DEFAULT_LABEL,
-    (value) => this._refs.nav.setAttribute('aria-label', value === '' ? DEFAULT_LABEL : value),
+    jlText('shortcuts'),
+    (value) => this._refs.nav.setAttribute('aria-label', value === '' ? jlText('shortcuts') : value),
     { attribute: 'label' }
   );
 

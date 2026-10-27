@@ -11,6 +11,7 @@ import { keepInView } from '../lib/keep-in-view';
 import { filterOptions, matchParts, nextEnabledIndex } from '../lib/option-filter';
 import { CONTROL_SIZES } from '../lib/options';
 import { addTags, hasTag, hasTagSeparator, splitTags } from '../lib/tags';
+import { jlText } from '../lib/texts';
 import { BASE_STYLES, CONTROL_STYLES, FLOATING_STYLES } from '../styles/shared';
 import styles from './jl-tag-input.css?raw';
 
@@ -23,7 +24,6 @@ registerIcons({ x: X });
 const REMOVE_ICON_SIZE = 12;
 const NONE = -1;
 const PLACEMENT: Placement = 'bottom-start';
-const VALUE_MISSING = 'Add at least one tag.';
 const NO_LIMIT = 0;
 const COMMA = ',';
 // Suggestions shown at once: a short list helps, a long one is a select.
@@ -511,7 +511,7 @@ export class JlTagInput extends JlFormControl {
 
   private renderValidity(): void {
     if (this.required.get() && this.value.get().length === 0) {
-      this.internals.setValidity({ valueMissing: true }, VALUE_MISSING, this._refs.native);
+      this.internals.setValidity({ valueMissing: true }, jlText('addTag'), this._refs.native);
       return;
     }
     this.internals.setValidity({});

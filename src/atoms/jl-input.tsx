@@ -6,6 +6,7 @@ import { oneOf } from '../lib/attributes';
 import { setOrRemove } from '../lib/dom';
 import { registerIcons } from '../lib/icons';
 import { CONTROL_SIZES } from '../lib/options';
+import { jlText } from '../lib/texts';
 import { BASE_STYLES, CONTROL_STYLES } from '../styles/shared';
 import { JlIcon } from './jl-icon';
 import styles from './jl-input.css?raw';
@@ -126,10 +127,10 @@ export class JlInput extends JlFormControl {
         <JlIcon class="adornment icon" size={ICON_SIZE} hidden />
         <slot name="start" />
         <input class="native" />
-        <button class="action clear" type="button" aria-label="Clear" tabIndex={-1} hidden>
+        <button class="action clear" type="button" aria-label={jlText('clear')} tabIndex={-1} hidden>
           <JlIcon name="x" size={ACTION_ICON_SIZE} />
         </button>
-        <button class="action reveal" type="button" aria-label="Show the password" hidden>
+        <button class="action reveal" type="button" aria-label={jlText('showPassword')} hidden>
           <JlIcon name="eye" size={ICON_SIZE} />
         </button>
         <slot name="end" />
@@ -177,7 +178,7 @@ export class JlInput extends JlFormControl {
     const revealed = native.type === PASSWORD;
     native.type = revealed ? REVEALED : PASSWORD;
     this._refs.revealIcon.name.set(revealed ? 'eye-off' : 'eye');
-    this._refs.reveal.setAttribute('aria-label', revealed ? 'Hide the password' : 'Show the password');
+    this._refs.reveal.setAttribute('aria-label', revealed ? jlText('hidePassword') : jlText('showPassword'));
   }
 
   private renderValue(value: string): void {

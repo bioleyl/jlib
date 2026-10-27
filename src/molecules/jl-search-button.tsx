@@ -7,13 +7,13 @@ import { JlElement } from '../base/jl-element';
 import { setOrRemove } from '../lib/dom';
 import { registerIcons } from '../lib/icons';
 import { parseShortcut, shortcutAria } from '../lib/key-shortcut';
+import { jlText } from '../lib/texts';
 import { BASE_STYLES } from '../styles/shared';
 import styles from './jl-search-button.css?raw';
 
 // The icons it draws itself: a page registers only the names it writes.
 registerIcons({ search: Search });
 
-const DEFAULT_LABEL = 'Search';
 const DEFAULT_HOTKEY = 'mod+k';
 // `hotkey="none"` shows no keys.
 const NO_HOTKEY = 'none';
@@ -33,7 +33,7 @@ export class JlSearchButton extends JlElement {
   readonly events = this.useEvents<{ press: undefined }>();
 
   /** The text, and the button's name: "Search". */
-  readonly label = this.useChange(DEFAULT_LABEL, () => this.renderLabel(), { attribute: 'label' });
+  readonly label = this.useChange(jlText('search'), () => this.renderLabel(), { attribute: 'label' });
   /** The keys that open the palette, as `jl-kbd` writes them: `mod+k`; `none` for no keys. */
   readonly hotkey = this.useChange(DEFAULT_HOTKEY, () => this.renderHotkey(), { attribute: 'hotkey' });
   /** The icon alone, the label as its tooltip. */
@@ -70,7 +70,7 @@ export class JlSearchButton extends JlElement {
   }
 
   private renderLabel(): void {
-    const label = this.label.get() || DEFAULT_LABEL;
+    const label = this.label.get() || jlText('search');
     this._refs.text.textContent = label;
     this._refs.button.setAttribute('aria-label', label);
     this._refs.button.title = label;

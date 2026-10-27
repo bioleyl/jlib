@@ -8,6 +8,7 @@ import { oneOf } from '../lib/attributes';
 import { registerIcons } from '../lib/icons';
 import { TONE_ICON_FILLED, TONE_ICONS, TONES } from '../lib/options';
 import { hasSlotted } from '../lib/slots';
+import { jlText } from '../lib/texts';
 import { BASE_STYLES } from '../styles/shared';
 import styles from './jl-alert.css?raw';
 
@@ -117,7 +118,7 @@ export class JlAlert extends JlElement {
             <slot name="actions" />
           </div>
         </div>
-        <JlButton class="close" variant="ghost" icon="x" hint="Dismiss" size="sm" hidden />
+        <JlButton class="close" variant="ghost" icon="x" hint={jlText('dismiss')} size="sm" hidden />
       </div>
     );
   }

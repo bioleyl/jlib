@@ -20,6 +20,7 @@ import { followAnchor } from '../lib/floating';
 import { registerIcons } from '../lib/icons';
 import { pageLocale } from '../lib/locale';
 import { CONTROL_SIZES } from '../lib/options';
+import { jlText } from '../lib/texts';
 import { BASE_STYLES, CONTROL_STYLES, FLOATING_STYLES } from '../styles/shared';
 import { JlCalendar } from './jl-calendar';
 import styles from './jl-date-picker.css?raw';
@@ -37,8 +38,6 @@ const PLACEMENT: Placement = 'bottom-start';
 const MONDAY: Weekday = 1;
 const SUNDAY: Weekday = 0;
 const SATURDAY: Weekday = 6;
-const VALUE_MISSING = 'Choose a date.';
-const DIALOG_LABEL = 'Choose a date';
 
 const parseWeekday = (value: string | null): Weekday =>
   Math.round(clampedNumber(MONDAY, SUNDAY, SATURDAY)(value)) as Weekday;
@@ -152,13 +151,13 @@ export class JlDatePicker extends JlFormControl {
             aria-expanded="false"
             aria-controls={this._popupId}
           />
-          <button class="action clear" type="button" aria-label="Clear" tabIndex={-1} hidden>
+          <button class="action clear" type="button" aria-label={jlText('clear')} tabIndex={-1} hidden>
             <JlIcon name="x" size={ACTION_ICON_SIZE} />
           </button>
           <button
             class="action open"
             type="button"
-            aria-label={DIALOG_LABEL}
+            aria-label={jlText('chooseDate')}
             aria-haspopup="dialog"
             aria-expanded="false"
             aria-controls={this._popupId}>
@@ -170,7 +169,7 @@ export class JlDatePicker extends JlFormControl {
           id={this._popupId}
           popover="auto"
           role="dialog"
-          aria-label={DIALOG_LABEL}
+          aria-label={jlText('chooseDate')}
           attrs={{ part: 'popup' }}>
           <JlCalendar class="calendar" />
         </div>
@@ -384,7 +383,7 @@ export class JlDatePicker extends JlFormControl {
 
   private renderMissing(anchor: HTMLElement): void {
     if (this.required.get()) {
-      this.internals.setValidity({ valueMissing: true }, VALUE_MISSING, anchor);
+      this.internals.setValidity({ valueMissing: true }, jlText('chooseDateMissing'), anchor);
       return;
     }
     this.internals.setValidity({});

@@ -6,6 +6,7 @@ import { clampedNumber, oneOf } from '../lib/attributes';
 import { iconElement, registerIcons } from '../lib/icons';
 import { CONTROL_SIZES } from '../lib/options';
 import { ratingAfterChoice, ratingAfterKey } from '../lib/rating';
+import { jlText } from '../lib/texts';
 import { BASE_STYLES } from '../styles/shared';
 import styles from './jl-rating.css?raw';
 
@@ -19,8 +20,6 @@ const DEFAULT_MAX = 5;
 // Digit keys set the rating: a scale of ten is as far as they reach, and as far as a row of stars stays readable.
 const MAX_LIMIT = 10;
 const NO_PREVIEW = 0;
-const DEFAULT_LABEL = 'Rating';
-const VALUE_MISSING = 'Choose a rating.';
 
 /**
  * A row of stars (or hearts, or any icon) to give a score: a click, the arrows or a digit set it, and choosing the
@@ -60,9 +59,9 @@ export class JlRating extends JlFormControl {
   );
   /** The name screen readers give the scale. */
   readonly label = this.useChange(
-    DEFAULT_LABEL,
+    jlText('rating'),
     (value) => {
-      this._refs.slider.setAttribute('aria-label', value === '' ? DEFAULT_LABEL : value);
+      this._refs.slider.setAttribute('aria-label', value === '' ? jlText('rating') : value);
     },
     { attribute: 'label' }
   );
@@ -215,7 +214,7 @@ export class JlRating extends JlFormControl {
 
   private renderValidity(): void {
     if (this.required.get() && this.current() === 0) {
-      this.internals.setValidity({ valueMissing: true }, VALUE_MISSING, this._refs.slider);
+      this.internals.setValidity({ valueMissing: true }, jlText('chooseRating'), this._refs.slider);
       return;
     }
     this.internals.setValidity({});

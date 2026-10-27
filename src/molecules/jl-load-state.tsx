@@ -7,6 +7,7 @@ import { JlElement } from '../base/jl-element';
 import { clampedNumber, oneOf } from '../lib/attributes';
 import { define } from '../lib/define';
 import { registerIcons } from '../lib/icons';
+import { jlText } from '../lib/texts';
 import { BASE_STYLES } from '../styles/shared';
 import { JlEmpty } from './jl-empty';
 import styles from './jl-load-state.css?raw';
@@ -23,8 +24,6 @@ export const LOAD_STATES: readonly LoadState[] = ['loading', 'ready', 'empty', '
 export const LOAD_SKELETONS: readonly LoadSkeleton[] = ['rows', 'cards', 'lines'];
 
 const DEFAULT_ERROR_HEADING = 'This could not be loaded';
-const DEFAULT_ERROR_TEXT = 'Check the connection, then try again. Nothing was changed.';
-const DEFAULT_RETRY_LABEL = 'Try again';
 // A quick answer shows no skeleton at all: it would only flash.
 const DEFAULT_DELAY_MS = 300;
 const MAX_DELAY_MS = 5000;
@@ -90,10 +89,14 @@ export class JlLoadState extends JlElement {
   readonly errorHeading = this.useChange(DEFAULT_ERROR_HEADING, (value) => this._refs.error.heading.set(value), {
     attribute: 'error-heading',
   });
-  readonly errorText = this.useChange(DEFAULT_ERROR_TEXT, (value) => this._refs.error.description.set(value), {
-    attribute: 'error-text',
-  });
-  readonly retryLabel = this.useChange(DEFAULT_RETRY_LABEL, (value) => this._refs.retry.label.set(value), {
+  readonly errorText = this.useChange(
+    jlText('loadStateError'),
+    (value) => this._refs.error.description.set(value),
+    {
+      attribute: 'error-text',
+    }
+  );
+  readonly retryLabel = this.useChange(jlText('retry'), (value) => this._refs.retry.label.set(value), {
     attribute: 'retry-label',
   });
 
@@ -165,9 +168,9 @@ export class JlLoadState extends JlElement {
           class="error"
           icon="circle-alert"
           heading={DEFAULT_ERROR_HEADING}
-          description={DEFAULT_ERROR_TEXT}
+          description={jlText('loadStateError')}
           hidden>
-          <JlButton class="retry" icon="refresh" label={DEFAULT_RETRY_LABEL} />
+          <JlButton class="retry" icon="refresh" label={jlText('retry')} />
         </jl-empty>
         <div class="empty" hidden>
           <slot name="empty" />

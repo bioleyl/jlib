@@ -10,6 +10,7 @@ import { registerIcons } from '../lib/icons';
 import { keepInView } from '../lib/keep-in-view';
 import { edgeEnabledIndex, filterOptions, foldText, matchParts, nextEnabledIndex } from '../lib/option-filter';
 import { CONTROL_SIZES } from '../lib/options';
+import { jlText } from '../lib/texts';
 import { BASE_STYLES, CONTROL_STYLES, FLOATING_STYLES } from '../styles/shared';
 import styles from './jl-combobox.css?raw';
 
@@ -25,8 +26,6 @@ const ACTION_ICON_SIZE = 14;
 const CHECK_SIZE = 14;
 const NONE = -1;
 const PLACEMENT: Placement = 'bottom-start';
-const VALUE_MISSING = 'Choose an option.';
-const DEFAULT_EMPTY_TEXT = 'No results';
 
 type Direction = 1 | -1;
 
@@ -74,7 +73,7 @@ export class JlCombobox extends JlFormControl {
   readonly clearable = this.useChange(false, () => this.renderClear(), { attribute: 'clearable' });
   /** What the list says when no option matches. */
   readonly emptyText = this.useChange(
-    DEFAULT_EMPTY_TEXT,
+    jlText('noResults'),
     (value) => {
       this._refs.empty.textContent = value;
     },
@@ -141,10 +140,10 @@ export class JlCombobox extends JlFormControl {
             autocomplete="off"
             spellcheck={false}
           />
-          <button class="action clear" type="button" aria-label="Clear" tabIndex={-1} hidden>
+          <button class="action clear" type="button" aria-label={jlText('clear')} tabIndex={-1} hidden>
             <JlIcon name="x" size={ACTION_ICON_SIZE} />
           </button>
-          <button class="action toggle" type="button" aria-label="Show the options" tabIndex={-1}>
+          <button class="action toggle" type="button" aria-label={jlText('showOptions')} tabIndex={-1}>
             <JlIcon name="chevron-down" size={ICON_SIZE} />
           </button>
         </div>
@@ -498,7 +497,7 @@ export class JlCombobox extends JlFormControl {
 
   private renderValidity(): void {
     if (this.required.get() && this.value.get() === '') {
-      this.internals.setValidity({ valueMissing: true }, VALUE_MISSING, this._refs.native);
+      this.internals.setValidity({ valueMissing: true }, jlText('chooseOption'), this._refs.native);
       return;
     }
     this.internals.setValidity({});

@@ -222,6 +222,28 @@ export class GettingStartedPage extends JlElement {
         </section>
 
         <section>
+          <h2>Other languages</h2>
+          <p>
+            What the components say on their own (a close button, "Show more", a file drop's refusals, the labels
+            screen readers hear) is English. An app in another language gives them its texts once, before it draws
+            anything: <code>setTexts</code> takes some or all of them, by name, and the rest stay English. The
+            texts that name your own content (a page's heading, a tree's empty text) are inputs of each component,
+            as before.
+          </p>
+          {codeSample(
+            'ts',
+            `
+            import { setTexts } from '@syware/jlib';
+
+            setTexts({ close: 'Fermer', showMore: 'Afficher plus', shownOfTotal: '{shown} sur {total}' });`
+          )}
+          <p>
+            <code>DEFAULT_TEXTS</code> lists every name with its English text; <code>{'{placeholders}'}</code> are
+            filled when the text is shown.
+          </p>
+        </section>
+
+        <section>
           <h2>Next</h2>
           <ul>
             <li>

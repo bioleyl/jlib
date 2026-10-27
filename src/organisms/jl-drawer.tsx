@@ -5,6 +5,7 @@ import { JlButton } from '../atoms/jl-button';
 import { JlElement } from '../base/jl-element';
 import { oneOf } from '../lib/attributes';
 import { registerIcons } from '../lib/icons';
+import { jlText } from '../lib/texts';
 import { BASE_STYLES } from '../styles/shared';
 import styles from './jl-drawer.css?raw';
 
@@ -89,7 +90,7 @@ export class JlDrawer extends JlElement {
           </div>
           <div class="actions">
             <slot name="actions" />
-            <JlButton class="close" variant="ghost" icon="x" hint="Close" size="sm" />
+            <JlButton class="close" variant="ghost" icon="x" hint={jlText('close')} size="sm" />
           </div>
         </header>
         <div class="body">

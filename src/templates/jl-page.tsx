@@ -7,6 +7,7 @@ import { oneOf } from '../lib/attributes';
 import { define } from '../lib/define';
 import { setOrRemove } from '../lib/dom';
 import { registerIcons } from '../lib/icons';
+import { jlText } from '../lib/texts';
 import { JlPageHeader } from '../organisms/jl-page-header';
 import { BASE_STYLES } from '../styles/shared';
 import styles from './jl-page.css?raw';
@@ -22,7 +23,6 @@ define(JlPageHeader);
 export const PAGE_WIDTHS: readonly PageWidth[] = ['standard', 'form', 'wide', 'full'];
 
 const BREADCRUMB_SLOT = 'breadcrumb';
-const DEFAULT_BACK_LABEL = 'Back';
 const TITLE_SEPARATOR = ' · ';
 
 /**
@@ -91,7 +91,7 @@ export class JlPage extends JlElement {
     const back = this._refs.back;
     const href = this.back.get();
     back.href.set(href);
-    back.label.set(this.backLabel.get() || DEFAULT_BACK_LABEL);
+    back.label.set(this.backLabel.get() || jlText('back'));
     setOrRemove(back, 'slot', href === '' ? '' : BREADCRUMB_SLOT);
   }
 

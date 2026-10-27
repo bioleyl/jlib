@@ -3,6 +3,7 @@ import { css } from '@jadis/core';
 import { JlFormControl } from '../base/jl-form-control';
 import { jsonOf, oneOf } from '../lib/attributes';
 import { rovingIndex } from '../lib/roving-index';
+import { jlText } from '../lib/texts';
 import { BASE_STYLES } from '../styles/shared';
 import styles from './jl-radio-group.css?raw';
 
@@ -14,7 +15,6 @@ export const RADIO_GROUP_VARIANTS: readonly RadioGroupVariant[] = ['plain', 'car
 
 const NO_VALUE = '';
 const OPTION_SELECTOR = '[role="radio"]';
-const VALUE_MISSING = 'Please select one of these options.';
 
 /** The keys that move the choice, as with native radios: both arrow pairs whatever the orientation. */
 const MOVES = new Map<string, RovingMove>([
@@ -255,7 +255,11 @@ export class JlRadioGroup extends JlFormControl {
       this.internals.setValidity({});
       return;
     }
-    this.internals.setValidity({ valueMissing: true }, VALUE_MISSING, this.radios()[0] ?? this._refs.group);
+    this.internals.setValidity(
+      { valueMissing: true },
+      jlText('selectOption'),
+      this.radios()[0] ?? this._refs.group
+    );
   }
 }
 

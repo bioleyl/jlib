@@ -24,6 +24,7 @@ import { setOrRemove, uniqueId } from '../lib/dom';
 import { registerIcons } from '../lib/icons';
 import { pageLocale } from '../lib/locale';
 import { CONTROL_SIZES } from '../lib/options';
+import { jlText } from '../lib/texts';
 import { BASE_STYLES } from '../styles/shared';
 import styles from './jl-calendar.css?raw';
 
@@ -38,7 +39,6 @@ const MONDAY: Weekday = 1;
 const SUNDAY: Weekday = 0;
 const SATURDAY: Weekday = 6;
 const SELECT_KEYS = ['Enter', ' '];
-const VALUE_MISSING = 'Choose a date.';
 const FULL_DATE: Intl.DateTimeFormatOptions = { dateStyle: 'full' };
 
 /** The first day of the week from its attribute: 0 (Sunday) to 6 (Saturday), Monday when absent. */
@@ -133,11 +133,11 @@ export class JlCalendar extends JlFormControl {
       // biome-ignore lint/a11y/useSemanticElements: a fieldset groups form fields; this is one widget with its header
       <div class="calendar" role="group" aria-labelledby={this._titleId} attrs={{ part: 'base' }}>
         <header>
-          <button class="nav previous" type="button" aria-label="Previous month">
+          <button class="nav previous" type="button" aria-label={jlText('previousMonth')}>
             <JlIcon name="chevron-left" size={NAV_ICON_SIZE} />
           </button>
           <div class="title" id={this._titleId} aria-live="polite" />
-          <button class="nav next" type="button" aria-label="Next month">
+          <button class="nav next" type="button" aria-label={jlText('nextMonth')}>
             <JlIcon name="chevron-right" size={NAV_ICON_SIZE} />
           </button>
         </header>
@@ -357,7 +357,7 @@ export class JlCalendar extends JlFormControl {
 
   private renderValidity(): void {
     if (this.required.get() && parseIsoDate(this.value.get()) === null) {
-      this.internals.setValidity({ valueMissing: true }, VALUE_MISSING);
+      this.internals.setValidity({ valueMissing: true }, jlText('chooseDateMissing'));
       return;
     }
     this.internals.setValidity({});

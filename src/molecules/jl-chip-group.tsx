@@ -8,6 +8,7 @@ import { setOrRemove } from '../lib/dom';
 import { registerIcons } from '../lib/icons';
 import { CONTROL_SIZES } from '../lib/options';
 import { rovingIndex } from '../lib/roving-index';
+import { jlText } from '../lib/texts';
 import { BASE_STYLES } from '../styles/shared';
 import styles from './jl-chip-group.css?raw';
 
@@ -21,7 +22,6 @@ registerIcons({ check: Check });
 const ICON_SIZES: Record<ControlSize, number> = { lg: 16, md: 14, sm: 12 };
 const SELECTED_ICON = 'check';
 const CHIP_SELECTOR = '.chip';
-const VALUE_MISSING = 'Please select one of these options.';
 
 /** The keys that move between the chips; with one choice, the choice moves too, as with native radios. */
 const MOVES = new Map<string, RovingMove>([
@@ -307,7 +307,11 @@ export class JlChipGroup extends JlFormControl {
       this.internals.setValidity({});
       return;
     }
-    this.internals.setValidity({ valueMissing: true }, VALUE_MISSING, this.chips()[0] ?? this._refs.group);
+    this.internals.setValidity(
+      { valueMissing: true },
+      jlText('selectOption'),
+      this.chips()[0] ?? this._refs.group
+    );
   }
 }
 

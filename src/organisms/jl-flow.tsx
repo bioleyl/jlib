@@ -32,6 +32,7 @@ import {
   zoomAt,
 } from '../lib/flow';
 import { registerIcons } from '../lib/icons';
+import { jlText } from '../lib/texts';
 import { BASE_STYLES } from '../styles/shared';
 import styles from './jl-flow.css?raw';
 
@@ -63,7 +64,6 @@ registerIcons({
 
 const EMPTY: FlowGraph = { edges: [], nodes: [] };
 const IDLE: FlowGesture = { kind: 'idle' };
-const DEFAULT_LABEL = 'Flow';
 const DOT_SPACING = 20;
 const WHEEL_ZOOM_SPEED = 0.0018;
 // Below this, a press that moves is still a press: hands shake.
@@ -180,7 +180,7 @@ export class JlFlow extends JlElement {
   /** The canvas's name for screen readers. */
   readonly label = this.useChange(
     '',
-    (value) => this._refs.viewport.setAttribute('aria-label', value || DEFAULT_LABEL),
+    (value) => this._refs.viewport.setAttribute('aria-label', value || jlText('flow')),
     {
       attribute: 'label',
     }
@@ -262,7 +262,7 @@ export class JlFlow extends JlElement {
         <div class="world">
           {this._svg.root}
           <div class="nodes" />
-          <button type="button" class="remove-edge" data-control="" hidden aria-label="Remove this edge">
+          <button type="button" class="remove-edge" data-control="" hidden aria-label={jlText('removeEdge')}>
             <JlIcon name="x" size={ADD_ICON_SIZE} />
           </button>
         </div>
@@ -270,17 +270,21 @@ export class JlFlow extends JlElement {
           <slot name="empty">Nothing here yet.</slot>
         </div>
         <div class="controls" data-control="">
-          <button type="button" class="control zoom-out" title="Zoom out" aria-label="Zoom out">
+          <button type="button" class="control zoom-out" title={jlText('zoomOut')} aria-label={jlText('zoomOut')}>
             <JlIcon name="minus" size={CONTROL_ICON_SIZE} />
           </button>
           <span class="zoom-label" />
-          <button type="button" class="control zoom-in" title="Zoom in" aria-label="Zoom in">
+          <button type="button" class="control zoom-in" title={jlText('zoomIn')} aria-label={jlText('zoomIn')}>
             <JlIcon name="plus" size={CONTROL_ICON_SIZE} />
           </button>
-          <button type="button" class="control fit" title="Show every node" aria-label="Show every node">
+          <button type="button" class="control fit" title={jlText('fitView')} aria-label={jlText('fitView')}>
             <JlIcon name="maximize" size={CONTROL_ICON_SIZE} />
           </button>
-          <button type="button" class="control tidy" title="Tidy up the layout" aria-label="Tidy up the layout">
+          <button
+            type="button"
+            class="control tidy"
+            title={jlText('tidyLayout')}
+            aria-label={jlText('tidyLayout')}>
             <JlIcon name="wand-sparkles" size={CONTROL_ICON_SIZE} />
           </button>
         </div>
@@ -690,7 +694,7 @@ export class JlFlow extends JlElement {
   private portElement(node: FlowNode, port: FlowPort, index: number, count: number): HTMLElement {
     const free = !this.readonly.get() && isPortFree(this._state.graph, node, port.id);
     const element = (
-      <span class="port" data-port={port.id} title="Drag to another node to connect" attrs={{ part: 'port' }}>
+      <span class="port" data-port={port.id} title={jlText('dragToConnect')} attrs={{ part: 'port' }}>
         <span class="dot" />
         {port.label ? <span class="port-label">{port.label}</span> : null}
         {free ? (

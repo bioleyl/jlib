@@ -34,3 +34,9 @@ export function starredParts(text: string): StarredPart[] {
     .map((piece, index) => ({ accent: index % 2 === 1, text: piece }))
     .filter((part) => part.text !== '');
 }
+
+const PLACEHOLDER = /\{(\w+)\}/g;
+
+/** A text with its `{placeholders}` filled; one without a value stays as it is. */
+export const fillText = (template: string, values: Readonly<Record<string, string>>): string =>
+  template.replace(PLACEHOLDER, (whole: string, key: string) => values[key] ?? whole);

@@ -6,6 +6,7 @@ import { JlElement } from '../base/jl-element';
 import { oneOf } from '../lib/attributes';
 import { registerIcons } from '../lib/icons';
 import { CONTROL_SIZES } from '../lib/options';
+import { jlText } from '../lib/texts';
 import { BASE_STYLES } from '../styles/shared';
 import styles from './jl-copy-button.css?raw';
 
@@ -38,7 +39,7 @@ export class JlCopyButton extends JlElement {
   private readonly _refs = this.useRefs((ref) => ({ button: ref(JlButton) }));
 
   templateHtml(): Node {
-    return <JlButton variant="ghost" icon={COPY_ICON} hint="Copy" />;
+    return <JlButton variant="ghost" icon={COPY_ICON} hint={jlText('copy')} />;
   }
 
   templateCss(): string {
@@ -64,12 +65,12 @@ export class JlCopyButton extends JlElement {
   private confirm(): void {
     const button = this._refs.button;
     button.icon.set(DONE_ICON);
-    button.hint.set('Copied');
+    button.hint.set(jlText('copied'));
     this.reflect('copied', true);
     window.clearTimeout(this._timer.id);
     this._timer.id = window.setTimeout(() => {
       button.icon.set(COPY_ICON);
-      button.hint.set('Copy');
+      button.hint.set(jlText('copy'));
       this.reflect('copied', false);
     }, CONFIRM_MS);
   }

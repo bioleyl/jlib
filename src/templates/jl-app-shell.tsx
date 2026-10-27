@@ -5,6 +5,7 @@ import { JlIcon } from '../atoms/jl-icon';
 import { JlElement } from '../base/jl-element';
 import { registerIcons } from '../lib/icons';
 import { watchSizes } from '../lib/resize';
+import { jlText } from '../lib/texts';
 import { BASE_STYLES } from '../styles/shared';
 import styles from './jl-app-shell.css?raw';
 
@@ -72,7 +73,12 @@ export class JlAppShell extends JlElement {
     return (
       <div class="shell" attrs={{ part: 'base' }}>
         <header class="top" attrs={{ part: 'header' }}>
-          <button class="menu" type="button" aria-label="Navigation" aria-expanded="false" aria-controls="nav">
+          <button
+            class="menu"
+            type="button"
+            aria-label={jlText('navigation')}
+            aria-expanded="false"
+            aria-controls="nav">
             <JlIcon name="menu" size={MENU_ICON_SIZE} />
           </button>
           <slot name="header" />

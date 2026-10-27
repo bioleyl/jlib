@@ -5,6 +5,7 @@ import { JlElement } from '../base/jl-element';
 import { oneOf } from '../lib/attributes';
 import { registerIcons } from '../lib/icons';
 import { isActivationKey } from '../lib/surface';
+import { jlText } from '../lib/texts';
 import { BASE_STYLES } from '../styles/shared';
 import styles from './jl-chip.css?raw';
 import { JlIcon } from './jl-icon';
@@ -104,7 +105,7 @@ export class JlChip extends JlElement {
           <span class="label" />
           <slot />
         </span>
-        <button class="dismiss" type="button" aria-label="Remove" hidden>
+        <button class="dismiss" type="button" aria-label={jlText('remove')} hidden>
           <JlIcon name="x" />
         </button>
       </span>
@@ -175,7 +176,10 @@ export class JlChip extends JlElement {
   private renderLabel(): void {
     const label = this.label.get();
     this._refs.label.textContent = label;
-    this._refs.dismiss.setAttribute('aria-label', label === '' ? 'Remove' : `Remove ${label}`);
+    this._refs.dismiss.setAttribute(
+      'aria-label',
+      label === '' ? jlText('remove') : jlText('removeNamed', { name: label })
+    );
   }
 
   private renderSize(size: ChipSize): void {

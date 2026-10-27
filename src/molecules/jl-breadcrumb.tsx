@@ -5,6 +5,7 @@ import { JlIcon } from '../atoms/jl-icon';
 import { JlElement } from '../base/jl-element';
 import { jsonOf } from '../lib/attributes';
 import { registerIcons } from '../lib/icons';
+import { jlText } from '../lib/texts';
 import { BASE_STYLES } from '../styles/shared';
 import styles from './jl-breadcrumb.css?raw';
 
@@ -15,7 +16,6 @@ registerIcons({ 'chevron-right': ChevronRight, ellipsis: Ellipsis });
 
 const ICON_SIZE = 15;
 const SEPARATOR_SIZE = 14;
-const DEFAULT_LABEL = 'Breadcrumb';
 // Collapsed, the trail keeps its first item and the last `max - 1`: below 2 there is nothing to keep.
 const MIN_MAX = 2;
 
@@ -46,9 +46,9 @@ export class JlBreadcrumb extends JlElement {
   readonly max = this.useChange(0, () => this.render(), { attribute: 'max' });
   /** The trail's name for screen readers. */
   readonly label = this.useChange(
-    DEFAULT_LABEL,
+    jlText('breadcrumb'),
     (value) => {
-      this._refs.nav.setAttribute('aria-label', value || DEFAULT_LABEL);
+      this._refs.nav.setAttribute('aria-label', value || jlText('breadcrumb'));
     },
     { attribute: 'label' }
   );

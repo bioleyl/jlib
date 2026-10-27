@@ -4,6 +4,7 @@ import { JlElement } from '../base/jl-element';
 import { clampedNumber, oneOf } from '../lib/attributes';
 import { watchSizes } from '../lib/resize';
 import { clampMin, clampSplit, positionAfterKey, positionAt } from '../lib/split';
+import { jlText } from '../lib/texts';
 import { BASE_STYLES } from '../styles/shared';
 import styles from './jl-split-view.css?raw';
 
@@ -17,7 +18,6 @@ const DEFAULT_MIN = 15;
 const FULL = 100;
 const MAX_MIN = 50;
 const PRIMARY_BUTTON = 0;
-const DEFAULT_LABEL = 'Resize the panes';
 const STACKED = 'stacked';
 // The widest `stack-below` reads: a split view stacks under a phone or a tablet's width, not a desktop's.
 const MAX_STACK_WIDTH = 4000;
@@ -71,9 +71,9 @@ export class JlSplitView extends JlElement {
   });
   /** The divider's name for screen readers. */
   readonly label = this.useChange(
-    DEFAULT_LABEL,
+    jlText('resizePanes'),
     (value) => {
-      this._refs.divider.setAttribute('aria-label', value === '' ? DEFAULT_LABEL : value);
+      this._refs.divider.setAttribute('aria-label', value === '' ? jlText('resizePanes') : value);
     },
     { attribute: 'label' }
   );

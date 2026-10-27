@@ -8,6 +8,7 @@ import { setOrRemove } from '../lib/dom';
 import { registerIcons } from '../lib/icons';
 import { clamp, parseNumber, stepValue } from '../lib/numeric';
 import { CONTROL_SIZES } from '../lib/options';
+import { jlText } from '../lib/texts';
 import { BASE_STYLES, CONTROL_STYLES } from '../styles/shared';
 import styles from './jl-number-input.css?raw';
 
@@ -20,7 +21,6 @@ const DEFAULT_STEP = 1;
 // Page Up and Page Down move ten steps at a time.
 const PAGE_STEPS = 10;
 const ICON_SIZE = 14;
-const VALUE_MISSING = 'Please fill in this field.';
 
 const positiveStep = (value: string | null): number => {
   const parsed = parseNumber(value);
@@ -103,11 +103,11 @@ export class JlNumberInput extends JlFormControl {
   templateHtml(): Node {
     return (
       <div class="control" attrs={{ part: 'base' }}>
-        <button class="action step down" type="button" tabIndex={-1} aria-label="Decrease">
+        <button class="action step down" type="button" tabIndex={-1} aria-label={jlText('decrease')}>
           <JlIcon name="minus" size={ICON_SIZE} />
         </button>
         <input class="native" type="text" inputMode="decimal" role="spinbutton" autocomplete="off" />
-        <button class="action step up" type="button" tabIndex={-1} aria-label="Increase">
+        <button class="action step up" type="button" tabIndex={-1} aria-label={jlText('increase')}>
           <JlIcon name="plus" size={ICON_SIZE} />
         </button>
       </div>
@@ -238,7 +238,7 @@ export class JlNumberInput extends JlFormControl {
       this.internals.setValidity({});
       return;
     }
-    this.internals.setValidity({ valueMissing: true }, VALUE_MISSING, this._refs.native);
+    this.internals.setValidity({ valueMissing: true }, jlText('fillField'), this._refs.native);
   }
 }
 
