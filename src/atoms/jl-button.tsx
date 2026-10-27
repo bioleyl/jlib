@@ -77,6 +77,8 @@ export class JlButton extends JlElement {
   readonly href = this.useChange('', () => this.renderLink(), { attribute: 'href' });
   /** Where the link opens (`_blank` for a new tab), with an `href`. */
   readonly target = this.useChange('', () => this.renderLink(), { attribute: 'target' });
+  /** With an `href`, saves what it points to as a file of this name instead of opening it. */
+  readonly download = this.useChange('', () => this.renderLink(), { attribute: 'download' });
 
   private readonly _internals = this.attachInternals();
 
@@ -159,6 +161,7 @@ export class JlButton extends JlElement {
     link.hidden = !isLink;
     setOrRemove(link, 'href', isLink && !off ? href : '');
     setOrRemove(link, 'target', target);
+    setOrRemove(link, 'download', this.download.get());
     setOrRemove(link, 'rel', target === NEW_TAB ? SAFE_REL : '');
     setOrRemove(link, 'role', off ? 'link' : '');
     setOrRemove(link, 'aria-disabled', off ? 'true' : '');

@@ -22,6 +22,7 @@ What the docuteam engines' pages need to move to jlib, starting with the storage
 - **App shell**: in its drawer, on a narrow screen, a side nav shows whole even when it is folded on a wide one.
 - **App shell**: `narrow-header` keeps the top bar to narrow screens, where it holds the menu button and the app's
   name, as the navigation pattern lays it out; wide, the side nav's header names the app.
+- **Button**: `download`, with an `href`: saves what it points to as a file of that name instead of opening it.
 - **Texts**: what the components say on their own (close and clear buttons, "Show more", a file drop's refusals,
   the labels screen readers hear, the defaults of their text inputs) comes from one registry: `setTexts({...})`
   gives them in the page's language, once, before it draws; `DEFAULT_TEXTS` lists them in English. `download()`'s

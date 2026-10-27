@@ -11,7 +11,9 @@ button never runs its action. In a form, type="submit" and type="reset" act on t
 across shadow roots.
 
 Give it an href when it goes somewhere rather than does something: it becomes a real link with the same look, so a
-middle click or Ctrl+click opens a new tab and the address shows on hover. press still fires.`,
+middle click or Ctrl+click opens a new tab and the address shows on hover. press still fires. With download as
+well, it saves what the address points to as a file of that name instead of opening it: an address of the page's own
+site, or a data: or blob: URL, since browsers open the others.`,
   events: [
     { description: 'The button was pressed while enabled and not loading.', detail: 'undefined', name: 'press' },
   ],
@@ -79,6 +81,16 @@ middle click or Ctrl+click opens a new tab and the address shows on hover. press
           <jl-button label="Archived" href="#archived" disabled></jl-button>
         </div>`,
       title: 'As a link',
+    },
+    {
+      description:
+        'With download, the link saves the file under that name. A file the server takes a while to make, or that can fail, takes download() of the toaster: its progress and errors show in a toast.',
+      html: `
+        <div class="row">
+          <jl-button icon="download" label="Export as CSV" download="stock.csv"
+            href="data:text/csv;charset=utf-8,sku%2Cstock%0AKB-104%2C12%0AMS-220%2C3"></jl-button>
+        </div>`,
+      title: 'Saving a file',
     },
     {
       html: `<jl-button variant="primary" label="Create account" block></jl-button>`,
@@ -177,6 +189,15 @@ middle click or Ctrl+click opens a new tab and the address shows on hover. press
       default: "''",
       description: 'Where the link opens, with an href: _blank for a new tab.',
       name: 'target',
+      type: 'string',
+    },
+    {
+      attribute: 'download',
+      control: { kind: 'text' },
+      default: "''",
+      description:
+        "With an href, saves what it points to as a file of this name instead of opening it: an address of the page's own site, data: or blob:.",
+      name: 'download',
       type: 'string',
     },
     {
