@@ -87,7 +87,7 @@ export class JlButton extends JlElement {
     label: ref('.text'),
     link: ref<HTMLAnchorElement>('a'),
     slot: ref('slot'),
-    spinner: ref<JlSpinner>('jl-spinner'),
+    spinner: ref(JlSpinner),
     start: ref<JlIcon>('.start'),
   }));
 

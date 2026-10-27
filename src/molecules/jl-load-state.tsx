@@ -110,7 +110,7 @@ export class JlLoadState extends JlElement {
     bones: ref('.bones'),
     content: ref('.content'),
     empty: ref('.empty'),
-    error: ref<JlEmpty>('jl-empty'),
+    error: ref(JlEmpty),
     loading: ref('.loading'),
     retry: ref<JlButton>('.retry'),
   }));

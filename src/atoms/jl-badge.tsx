@@ -43,7 +43,7 @@ export class JlBadge extends JlElement {
   private readonly _refs = this.useRefs((ref) => ({
     badge: ref('.badge'),
     dot: ref('.dot'),
-    icon: ref<JlIcon>('jl-icon'),
+    icon: ref(JlIcon),
     label: ref('.label'),
   }));
 

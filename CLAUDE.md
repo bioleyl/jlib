@@ -37,6 +37,8 @@ documentation site that shows and tests every component. Load the project skills
   with children (`<jl-popover>…</jl-popover>`), also write `define(JlPopover)` at module level.
 - `onConnect` wires listeners with `this.on`, `events.register`, `onBus`; it can run several times. The first
   `slotchange` can fire before `onConnect`: draw slot-dependent state there too (see `jl-dialog`).
+- `useRefs` finds a child component by its class when it is the one with that tag: `icon: ref(JlIcon)` (Jadis 1.4);
+  among several, by its own selector: `close: ref<JlButton>('.close')`.
 - Methods callable before the element connects use `this.whenRendered(() => …)`.
 - Don't name an input or method like an `HTMLElement` member (`title`, `hidden`, `role`, `remove`, `click`,
   `setAttribute`…). `key` is reserved by the JSX runtime.

@@ -60,7 +60,7 @@ export class JlPage extends JlElement {
 
   private readonly _refs = this.useRefs((ref) => ({
     back: ref<JlButton>('.back'),
-    header: ref<JlPageHeader>('jl-page-header'),
+    header: ref(JlPageHeader),
   }));
 
   templateHtml(): Node {

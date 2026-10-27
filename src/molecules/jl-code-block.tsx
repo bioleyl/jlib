@@ -47,7 +47,7 @@ export class JlCodeBlock extends JlElement {
 
   private readonly _refs = this.useRefs((ref) => ({
     code: ref('code'),
-    copy: ref<JlCopyButton>('jl-copy-button'),
+    copy: ref(JlCopyButton),
     gutter: ref('.gutter'),
     header: ref('header'),
     heading: ref('.heading'),

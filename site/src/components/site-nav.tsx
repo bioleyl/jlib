@@ -25,7 +25,7 @@ export class SiteNav extends JlElement {
 
   private readonly _refs = this.useRefs((ref) => ({
     empty: ref('.empty'),
-    filter: ref<JlInput>('jl-input'),
+    filter: ref(JlInput),
     groups: ref('.groups'),
   }));
 

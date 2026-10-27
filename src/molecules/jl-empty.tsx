@@ -58,7 +58,7 @@ export class JlEmpty extends JlElement {
     actions: ref('.actions'),
     description: ref('.description'),
     heading: ref('.heading'),
-    icon: ref<JlIcon>('jl-icon'),
+    icon: ref(JlIcon),
     medallion: ref('.medallion'),
     slot: ref('slot'),
   }));

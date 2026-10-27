@@ -3,6 +3,13 @@
 What changed in each version of [@syware/jlib](https://www.npmjs.com/package/@syware/jlib). Every component is shown
 and documented on [the documentation site](https://bioleyl.github.io/jlib/).
 
+## Unreleased
+
+### Changed
+
+- **Requires Jadis 1.4** (`@jadis/core` `^1.4.0`, a peer dependency): the components find their children with
+  `useRefs`' `ref(Class)`, new in 1.4. Update Jadis along with jlib; nothing else changes for pages.
+
 ## 0.6.0 (2026-10-26)
 
 What swai and swstock still worked around, now jlib's, and one icon per app.

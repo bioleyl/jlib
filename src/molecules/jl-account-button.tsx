@@ -46,7 +46,7 @@ export class JlAccountButton extends JlElement {
   readonly current = this.useChange(false, (value) => this.renderCurrent(value), { attribute: 'current' });
 
   private readonly _refs = this.useRefs((ref) => ({
-    avatar: ref<JlAvatar>('jl-avatar'),
+    avatar: ref(JlAvatar),
     button: ref('button'),
     content: ref('.content'),
     description: ref('.description'),

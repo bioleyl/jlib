@@ -27,7 +27,7 @@ export class SiteShell extends JlElement {
 
   private readonly _refs = this.useRefs((ref) => ({
     menu: ref<JlButton>('.menu'),
-    palette: ref<JlCommandPalette>('jl-command-palette'),
+    palette: ref(JlCommandPalette),
     scrim: ref('.scrim'),
     search: ref('.search'),
   }));

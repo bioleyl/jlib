@@ -19,7 +19,7 @@ export class IconsPage extends JlElement {
   private readonly _refs = this.useRefs((ref) => ({
     count: ref('.count'),
     empty: ref('.empty'),
-    filter: ref<JlInput>('jl-input'),
+    filter: ref(JlInput),
     grid: ref('.icon-grid'),
   }));
 

@@ -50,7 +50,7 @@ export class JlLink extends JlElement {
 
   private readonly _refs = this.useRefs((ref) => ({
     anchor: ref('a'),
-    icon: ref<JlIcon>('jl-icon'),
+    icon: ref(JlIcon),
     label: ref('.label'),
     newTab: ref('.new-tab'),
   }));

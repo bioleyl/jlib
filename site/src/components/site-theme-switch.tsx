@@ -22,7 +22,7 @@ const isMode = (value: string): value is ThemeMode => MODES.some((mode) => mode 
 export class SiteThemeSwitch extends JlElement {
   static readonly selector = 'site-theme-switch';
 
-  private readonly _refs = this.useRefs((ref) => ({ choice: ref<JlSegmented>('jl-segmented') }));
+  private readonly _refs = this.useRefs((ref) => ({ choice: ref(JlSegmented) }));
 
   templateHtml(): Node {
     return <JlSegmented size="sm" label="Theme" options={OPTIONS} value={storedTheme()} />;

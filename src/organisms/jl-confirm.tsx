@@ -62,7 +62,7 @@ export class JlConfirm extends JlElement {
   private readonly _refs = this.useRefs((ref) => ({
     cancel: ref<JlButton>('.cancel'),
     confirm: ref<JlButton>('.confirm'),
-    dialog: ref<JlDialog>('jl-dialog'),
+    dialog: ref(JlDialog),
     text: ref('.text'),
   }));
 

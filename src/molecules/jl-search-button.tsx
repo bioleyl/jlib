@@ -41,7 +41,7 @@ export class JlSearchButton extends JlElement {
 
   private readonly _refs = this.useRefs((ref) => ({
     button: ref('button'),
-    keys: ref<JlKbd>('jl-kbd'),
+    keys: ref(JlKbd),
     text: ref('.text'),
   }));
 

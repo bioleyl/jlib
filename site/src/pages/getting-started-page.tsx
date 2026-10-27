@@ -156,7 +156,7 @@ export class GettingStartedPage extends JlElement {
             export class SignUp extends Jadis {
               static readonly selector = 'app-sign-up';
 
-              private readonly refs = this.useRefs((ref) => ({ save: ref<JlButton>('jl-button') }));
+              private readonly refs = this.useRefs((ref) => ({ save: ref(JlButton) }));
 
               templateHtml(): Node {
                 return (

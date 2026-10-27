@@ -97,7 +97,7 @@ export class JlSearch extends JlFormControl {
     icon: ref<JlIcon>('.icon'),
     keys: ref('.keys'),
     native: ref<HTMLInputElement>('input'),
-    spinner: ref<JlSpinner>('jl-spinner'),
+    spinner: ref(JlSpinner),
   }));
 
   override focus(options?: FocusOptions): void {

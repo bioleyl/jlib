@@ -116,7 +116,7 @@ export class JlDatePicker extends JlFormControl {
   };
 
   private readonly _refs = this.useRefs((ref) => ({
-    calendar: ref<JlCalendar>('jl-calendar'),
+    calendar: ref(JlCalendar),
     clear: ref<HTMLButtonElement>('.clear'),
     control: ref('.control'),
     native: ref<HTMLInputElement>('input'),

@@ -32,7 +32,7 @@ export class JlAppIcon extends JlElement {
   readonly label = this.useChange('', (value) => this.renderLabel(value), { attribute: 'label' });
 
   private readonly _refs = this.useRefs((ref) => ({
-    glyph: ref<JlIcon>('jl-icon'),
+    glyph: ref(JlIcon),
     tile: ref('.tile'),
   }));
 

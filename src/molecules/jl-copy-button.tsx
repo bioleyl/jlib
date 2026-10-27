@@ -35,7 +35,7 @@ export class JlCopyButton extends JlElement {
 
   private readonly _timer = { id: 0 };
 
-  private readonly _refs = this.useRefs((ref) => ({ button: ref<JlButton>('jl-button') }));
+  private readonly _refs = this.useRefs((ref) => ({ button: ref(JlButton) }));
 
   templateHtml(): Node {
     return <JlButton variant="ghost" icon={COPY_ICON} hint="Copy" />;
