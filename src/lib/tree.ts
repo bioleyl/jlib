@@ -1,7 +1,48 @@
 import type { TreeAction, TreeItem, VisibleTreeItem } from '../types/jl-tree.types';
 
-/** An item with `children`, even empty, is a folder. */
-export const isFolder = (item: TreeItem): boolean => Array.isArray(item.children);
+/** An item with `children`, even empty, is a folder; so is a `lazy` one, whose children are not loaded yet. */
+export const isFolder = (item: TreeItem): boolean => Array.isArray(item.children) || item.lazy === true;
+
+/** The items of a level: the roots when `parent` is null, otherwise that folder's children (none when unknown). */
+export function childrenOf(items: readonly TreeItem[], parent: string | null): readonly TreeItem[] {
+  if (parent === null) {
+    return items;
+  }
+  return allItems(items).find((entry) => entry.item.id === parent)?.item.children ?? [];
+}
+
+/** The tree with a page of items added at the end of a level: the roots when `parent` is null. */
+export function withPage(
+  items: readonly TreeItem[],
+  parent: string | null,
+  page: readonly TreeItem[]
+): TreeItem[] {
+  if (parent === null) {
+    return [...items, ...page];
+  }
+  return items.map((item) => {
+    if (item.id === parent) {
+      return { ...item, children: [...(item.children ?? []), ...page] };
+    }
+    return item.children === undefined ? item : { ...item, children: withPage(item.children, parent, page) };
+  });
+}
+
+/**
+ * The tree with one more row at the end of the levels that have one (`extraRow` gives its id, or null): the row
+ * that loads a level's next page, or loads it again after an error. The keyboard then reaches it as an item.
+ */
+export function withExtraRows(
+  items: readonly TreeItem[],
+  extraRow: (parent: string | null) => string | null,
+  parent: string | null = null
+): TreeItem[] {
+  const own = items.map((item) =>
+    isFolder(item) ? { ...item, children: withExtraRows(item.children ?? [], extraRow, item.id) } : item
+  );
+  const extra = extraRow(parent);
+  return extra === null ? own : [...own, { id: extra, label: '' }];
+}
 
 /** The items a person sees, in order: the roots, and the children of every open folder, with their depth. */
 export function visibleItems(

@@ -9,6 +9,12 @@ What the docuteam engines' pages need to move to jlib, starting with the storage
 
 ### Added
 
+- **Tree**: a `loader` loads it a level at a time and a page at a time, for trees too large to give at once: the
+  roots first, a `lazy` folder's children when it opens, the next page from the **Show 75 more** row that ends a
+  level, and again from the row of a level that failed. `reveal(path)` opens the folders down to an item, loading
+  what it needs on the way, and selects it; `reload()` starts again. Items take an `href` (the row is a link, which a
+  middle click opens in a new tab) and a `hint` (a tooltip). Every text the tree shows can be set: `empty-text`,
+  `loading-text`, `more-text`, `error-text`, `retry-label`.
 - **Code block**: `max-height`, past which the code scrolls under its header, the copy button staying in view.
 - **Texts**: what the components say on their own (close and clear buttons, "Show more", a file drop's refusals,
   the labels screen readers hear, the defaults of their text inputs) comes from one registry: `setTexts({...})`
@@ -17,6 +23,7 @@ What the docuteam engines' pages need to move to jlib, starting with the storage
   format shows a date with its time; `cellOf<Row>()` writes a renderer for the page's own type of row; a column's
   `wrap` breaks long text over lines instead of widening the table; `marked` rows (a search's matches) carry a bar
   and a shade.
+- **Tree**: an item's `badge`, a count or a short word after its label.
 - **Steps**: a step can be `failed` (a payment refused, a transaction rolled back): an × in the danger colour, and
   screen readers hear that it failed.
 - **File drop**: `add(files)` takes files as a drop would, for files dropped elsewhere on the page.

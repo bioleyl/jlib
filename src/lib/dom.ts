@@ -28,3 +28,7 @@ export function svgElement<Tag extends keyof SVGElementTagNameMap>(
   }
   return element;
 }
+
+/** Whether a click asks the browser for something of its own: a new tab or window, a download. */
+export const isModifiedClick = (event: MouseEvent): boolean =>
+  event.ctrlKey || event.metaKey || event.shiftKey || event.altKey || event.button !== 0;

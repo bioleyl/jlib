@@ -81,3 +81,61 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+
+/* A link's row looks like any row: the address shows in the status bar, and a middle click opens a tab. */
+a.row {
+  color: inherit;
+  text-decoration: none;
+}
+
+/* What ends a level: its page on the way, the button for its next page, an error to load again. */
+.item.level-end > .row {
+  color: var(--jl-muted);
+}
+
+.level-end[aria-disabled="true"] > .row {
+  cursor: default;
+}
+
+.level-end[aria-disabled="true"] > .row:hover {
+  background: none;
+}
+
+.spinner {
+  flex: none;
+  color: var(--jl-muted);
+}
+
+.more,
+.retry {
+  flex: none;
+  color: var(--jl-accent);
+  font-weight: 500;
+}
+
+.level-end > .row:hover .more,
+.level-end > .row:hover .retry {
+  color: var(--jl-accent-strong);
+}
+
+.icon.error {
+  color: var(--jl-danger);
+}
+
+.note {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-height: var(--row-height);
+  padding: 0 8px 0 calc(8px + var(--level) * var(--indent));
+  color: var(--jl-muted);
+}
+
+/* A folder's count, or a short word, after its label. */
+.badge {
+  flex: none;
+  margin-left: auto;
+  color: var(--jl-faint);
+  font-size: var(--jl-font-xs);
+  font-variant-numeric: tabular-nums;
+}

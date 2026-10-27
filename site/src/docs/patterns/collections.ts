@@ -157,6 +157,7 @@ export const collections: PatternDoc = {
       list(
         'Load 30 to 50 items, then a **Show more** button under them, with "30 of 120" beside it. Feeds and histories grow at the bottom this way.',
         'A table of a fixed set, where the position of a row matters, takes `jl-pagination`.',
+        'A large tree (an archive, a file store) loads a level when it opens and a page at a time: `jl-tree` with a `loader` ends each level with its **Show 75 more** row.',
         'A list never stops at a limit without saying so: "The last 100 runs", and a way to see more.'
       )
     ),

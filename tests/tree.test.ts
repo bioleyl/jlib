@@ -1,6 +1,15 @@
 import { describe, expect, it } from 'vitest';
 
-import { ancestorsOf, treeKeyAction, visibleItems, withExpanded } from '../src/lib/tree';
+import {
+  ancestorsOf,
+  childrenOf,
+  isFolder,
+  treeKeyAction,
+  visibleItems,
+  withExpanded,
+  withExtraRows,
+  withPage,
+} from '../src/lib/tree';
 
 import type { TreeItem } from '../src/types/jl-tree.types';
 
@@ -76,5 +85,48 @@ describe('treeKeyAction', () => {
     expect(treeKeyAction(TREE, open, 'index', 'Enter')).toEqual({ id: 'index', kind: 'select' });
     expect(treeKeyAction(TREE, open, 'index', ' ')).toEqual({ id: 'index', kind: 'select' });
     expect(treeKeyAction(TREE, open, 'index', 'a')).toBeNull();
+  });
+});
+
+describe('isFolder', () => {
+  it('takes an item with children, even none, and a lazy one whose children are not loaded', () => {
+    expect(isFolder({ children: [], id: 'a', label: 'a' })).toBe(true);
+    expect(isFolder({ id: 'b', label: 'b', lazy: true })).toBe(true);
+    expect(isFolder({ id: 'c', label: 'c' })).toBe(false);
+  });
+});
+
+describe('childrenOf', () => {
+  it('gives the roots for no parent, a folder its children, and nothing for a file or an unknown id', () => {
+    expect(childrenOf(TREE, null).map((item) => item.id)).toEqual(['src', 'empty', 'readme']);
+    expect(childrenOf(TREE, 'atoms').map((item) => item.id)).toEqual(['button']);
+    expect(childrenOf(TREE, 'readme')).toEqual([]);
+    expect(childrenOf(TREE, 'missing')).toEqual([]);
+  });
+});
+
+describe('withPage', () => {
+  it('adds a page at the end of the roots, or of a folder at any depth', () => {
+    const page = [{ id: 'more', label: 'more.ts' }];
+    expect(withPage(TREE, null, page).map((item) => item.id)).toEqual(['src', 'empty', 'readme', 'more']);
+    expect(childrenOf(withPage(TREE, 'atoms', page), 'atoms').map((item) => item.id)).toEqual(['button', 'more']);
+  });
+
+  it('gives a lazy folder its first children, and leaves the tree it was given as it was', () => {
+    const lazy = [{ id: 'object', label: 'object', lazy: true }];
+    expect(withPage(lazy, 'object', [{ id: 'file', label: 'file' }])).toEqual([
+      { children: [{ id: 'file', label: 'file' }], id: 'object', label: 'object', lazy: true },
+    ]);
+    expect(lazy).toEqual([{ id: 'object', label: 'object', lazy: true }]);
+  });
+});
+
+describe('withExtraRows', () => {
+  it('ends the levels that have one with their extra row, which the keyboard then reaches', () => {
+    const extra = (parent: string | null) => (parent === null || parent === 'src' ? `end:${parent ?? ''}` : null);
+    const items = withExtraRows(TREE, extra);
+    expect(childrenOf(items, null).map((item) => item.id)).toEqual(['src', 'empty', 'readme', 'end:']);
+    expect(childrenOf(items, 'src').map((item) => item.id)).toEqual(['atoms', 'index', 'end:src']);
+    expect(treeKeyAction(items, new Set(), 'readme', 'ArrowDown')).toEqual({ id: 'end:', kind: 'focus' });
   });
 });
