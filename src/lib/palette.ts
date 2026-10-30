@@ -15,7 +15,7 @@ function keywordScore(query: string, keywords: readonly string[]): number | null
   return scores.length === 0 ? null : Math.max(...scores) * KEYWORD_WEIGHT;
 }
 
-function matchCommand(query: string, command: PaletteCommand): PaletteMatch | null {
+function matchCommand<Id extends string>(query: string, command: PaletteCommand<Id>): PaletteMatch<Id> | null {
   const label = fuzzyMatch(query, command.label);
   if (command.result === true) {
     return { command, positions: label?.positions ?? [], score: RESULT_SCORE };
@@ -34,10 +34,13 @@ function matchCommand(query: string, command: PaletteCommand): PaletteMatch | nu
  * The commands that match the search, best first; an empty search keeps them all in their order. The label's
  * matched letters come with each, for highlighting; a command found by a keyword only has none.
  */
-export function matchCommands(commands: readonly PaletteCommand[], query: string): PaletteMatch[] {
+export function matchCommands<Id extends string>(
+  commands: readonly PaletteCommand<Id>[],
+  query: string
+): PaletteMatch<Id>[] {
   const matches = commands
     .map((command) => matchCommand(query, command))
-    .filter((match): match is PaletteMatch => match !== null);
+    .filter((match): match is PaletteMatch<Id> => match !== null);
   if (query.trim() === '') {
     return matches;
   }
@@ -46,8 +49,8 @@ export function matchCommands(commands: readonly PaletteCommand[], query: string
 }
 
 /** The matches under their group headings, groups in the order their first command comes. */
-export function groupMatches(matches: readonly PaletteMatch[]): PaletteGroup[] {
-  const groups = new Map<string, PaletteMatch[]>();
+export function groupMatches<Id extends string>(matches: readonly PaletteMatch<Id>[]): PaletteGroup<Id>[] {
+  const groups = new Map<string, PaletteMatch<Id>[]>();
   for (const match of matches) {
     const label = match.command.group ?? NO_GROUP;
     groups.set(label, [...(groups.get(label) ?? []), match]);

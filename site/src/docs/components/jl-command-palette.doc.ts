@@ -1,3 +1,6 @@
+import commandPaletteCode from '../typing/jl-command-palette.code.ts?raw';
+import commandPaletteJsx from '../typing/jl-command-palette.jsx.tsx?raw';
+
 import type { JlButton, JlCommandPalette, PaletteCommand } from '@syware/jlib';
 import type { ComponentDoc } from '../../types/docs.types';
 
@@ -107,7 +110,7 @@ it, or "Open rr_12" for an ID pasted whole.`,
   events: [
     {
       description: 'A command was chosen; the palette closes first.',
-      detail: 'string (the command id)',
+      detail: 'Id (the command id)',
       name: 'select',
     },
     { description: 'The palette opened.', detail: 'undefined', name: 'open' },
@@ -252,7 +255,7 @@ it, or "Open rr_12" for an ID pasted whole.`,
       description:
         'The commands: id, label, and optionally group, icon, description (what it is, beside the label: the kind of a record), shortcut (mod+shift+p), keywords, and result (found by the page for what was typed: always listed).',
       name: 'commands',
-      type: 'PaletteCommand[]',
+      type: 'PaletteCommand<Id>[]',
     },
     {
       attribute: 'open',
@@ -316,4 +319,10 @@ it, or "Open rr_12" for an ID pasted whole.`,
   summary:
     "A search box over every command of an app, opened by ⌘K or Ctrl+K, with fuzzy matching, and the app's own results for what was typed.",
   tag: 'jl-command-palette',
+  typing: {
+    code: commandPaletteCode,
+    description:
+      "Typed by its ids, JlCommandPalette<'new-order' | 'theme'> takes commands of those ids only, and gives select one of them, for a Record of one handler per command. The records a search finds take ids of their own form, open: and the record's id, typed as a template literal that a type guard tells apart.",
+    jsx: commandPaletteJsx,
+  },
 };

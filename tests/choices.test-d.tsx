@@ -7,6 +7,7 @@ import type { JlChipGroup } from '../src/molecules/jl-chip-group';
 import type { JlMenu } from '../src/molecules/jl-menu';
 import type { JlRadioGroup } from '../src/molecules/jl-radio-group';
 import type { JlSegmented } from '../src/molecules/jl-segmented';
+import type { JlCommandPalette } from '../src/organisms/jl-command-palette';
 import type { View } from './types/choices.types';
 
 declare const select: JlSelect<View>;
@@ -81,5 +82,16 @@ describe('a menu typed by its values', () => {
     menu.items.set([{ label: 'Copy', value: 'copy' }]);
     const actions: Record<'edit' | 'delete', () => void> = { delete: () => undefined, edit: () => undefined };
     menu.events.register('select', (value) => actions[value]());
+  });
+});
+
+declare const palette: JlCommandPalette<'theme' | `open:${string}`>;
+
+describe('a command palette typed by its ids', () => {
+  it('takes commands of those ids only, and gives select one of them', () => {
+    palette.commands.set([{ id: 'open:42', label: 'Order 42' }]);
+    // @ts-expect-error: not a command of the palette
+    palette.commands.set([{ id: 'quit', label: 'Quit' }]);
+    palette.events.register('select', (id) => expectTypeOf(id).toEqualTypeOf<'theme' | `open:${string}`>());
   });
 });

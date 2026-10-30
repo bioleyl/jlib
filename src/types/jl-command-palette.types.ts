@@ -1,5 +1,9 @@
-export type PaletteCommand = {
-  id: string;
+/**
+ * A command of the palette: `select` fires with its id. Typed by its ids (`PaletteCommand<'theme' | 'logout'>`, or
+ * `` `open:${string}` `` for the records a search finds), `id` is one of them.
+ */
+export type PaletteCommand<Id extends string = string> = {
+  id: Id;
   label: string;
   /** The heading the command is listed under. */
   group?: string;
@@ -18,14 +22,14 @@ export type PaletteCommand = {
 };
 
 /** A command that matches the search, with the places of the matched letters in its label. */
-export type PaletteMatch = {
-  command: PaletteCommand;
+export type PaletteMatch<Id extends string = string> = {
+  command: PaletteCommand<Id>;
   score: number;
   positions: number[];
 };
 
 /** Commands under one heading, in the order they are listed. */
-export type PaletteGroup = {
+export type PaletteGroup<Id extends string = string> = {
   label: string;
-  matches: PaletteMatch[];
+  matches: PaletteMatch<Id>[];
 };

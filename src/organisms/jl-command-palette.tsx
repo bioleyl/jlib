@@ -49,16 +49,18 @@ function highlighted(label: string, positions: readonly number[]): (Node | strin
  * A search box over every command of an app, opened by ⌘K (Ctrl+K off Apple) or `show()`. Typing filters the
  * commands by their letters in order, best matches first, under their groups; arrows move, Enter runs the command
  * (`select` with its id) and Escape closes. It sits near the top of the window, on the browser's modal `<dialog>`.
+ * Typed by its ids, `JlCommandPalette<'theme' | 'logout'>` takes commands of those ids and gives `select` one of
+ * them.
  */
-export class JlCommandPalette extends JlElement {
+export class JlCommandPalette<Id extends string = string> extends JlElement {
   static readonly selector = 'jl-command-palette';
 
   /** `search`: what was typed, once typing pauses (and empty when it opens), for a page that answers it. */
-  readonly events = this.useEvents<{ select: string; open: undefined; close: undefined; search: string }>();
+  readonly events = this.useEvents<{ select: Id; open: undefined; close: undefined; search: string }>();
 
-  readonly commands = this.useChange<PaletteCommand[]>([], () => this.renderResults(), {
+  readonly commands = this.useChange<PaletteCommand<Id>[]>([], () => this.renderResults(), {
     attribute: 'commands',
-    parse: jsonOf<PaletteCommand[]>([]),
+    parse: jsonOf<PaletteCommand<Id>[]>([]),
   });
   readonly open = this.useChange(false, (value) => this.renderOpen(value), { attribute: 'open' });
   readonly placeholder = this.useChange(
@@ -98,7 +100,11 @@ export class JlCommandPalette extends JlElement {
     }
   );
 
-  private readonly _state = { active: 0, matches: [] as PaletteMatch[], timer: 0 };
+  private readonly _state: { active: number; matches: PaletteMatch<Id>[]; timer: number } = {
+    active: 0,
+    matches: [],
+    timer: 0,
+  };
 
   private readonly _refs = this.useRefs((ref) => ({
     dialog: ref('dialog'),
@@ -290,8 +296,8 @@ export class JlCommandPalette extends JlElement {
     this.activate(0);
   }
 
-  private groupNode(group: PaletteGroup, groupIndex: number): Node {
-    const first = this._state.matches.indexOf(group.matches[0] as PaletteMatch);
+  private groupNode(group: PaletteGroup<Id>, groupIndex: number): Node {
+    const first = this._state.matches.indexOf(group.matches[0] as PaletteMatch<Id>);
     const options = group.matches.map((match, index) => this.optionNode(match, first + index));
     if (group.label === '') {
       // biome-ignore lint/a11y/useSemanticElements: a group of options in a listbox has no HTML element
@@ -309,7 +315,7 @@ export class JlCommandPalette extends JlElement {
     );
   }
 
-  private optionNode(match: PaletteMatch, index: number): Node {
+  private optionNode(match: PaletteMatch<Id>, index: number): Node {
     const { command } = match;
     const icon =
       command.icon === undefined ? (
