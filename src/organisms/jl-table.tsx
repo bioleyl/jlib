@@ -192,10 +192,8 @@ export class JlTable<Row extends object = TableRow, Extra extends string = never
   readonly striped = this.useChange(false, (value) => this.reflect('striped', value), { attribute: 'striped' });
   /** A CSS height past which the rows scroll under the header: `320px`, `50vh`; a number is pixels. */
   readonly maxHeight = this.useChange('', (value) => this.renderMaxHeight(value), { attribute: 'max-height' });
-  /** What the table says when it has no rows. */
-  readonly emptyText = this.useChange(jlText('noData'), () => this.schedule('body'), {
-    attribute: 'empty-text',
-  });
+  /** What the table says when it has no rows; jlib's own text when empty. */
+  readonly emptyText = this.useChange('', () => this.schedule('body'), { attribute: 'empty-text' });
   /** Shows placeholder rows while the data loads. */
   readonly loading = this.useChange(
     false,
@@ -280,6 +278,10 @@ export class JlTable<Row extends object = TableRow, Extra extends string = never
   }
 
   /** Draws on the next microtask: the inputs set while connecting give one drawing, not one each. */
+  protected drawTexts(): void {
+    this.schedule('head', 'body');
+  }
+
   private schedule(...parts: Part[]): void {
     for (const part of parts) {
       this._pending[part] = true;
@@ -383,7 +385,7 @@ export class JlTable<Row extends object = TableRow, Extra extends string = never
   private renderHead(): void {
     const selectAll = this.selectable.get() ? (
       <th class="select-cell" scope="col">
-        {checkbox('Select all rows', null)}
+        {checkbox(jlText('selectAllRows'), null)}
       </th>
     ) : null;
     const details = this.isExpandable() ? (
@@ -468,7 +470,9 @@ export class JlTable<Row extends object = TableRow, Extra extends string = never
   private bodyRow(row: Row, index: number, columns: TableColumn<Row, Extra>[]): Node {
     const first = columns[0];
     const name = first === undefined ? String(index + 1) : formatCell(fieldOf(row, first.key), first.format);
-    const select = this.selectable.get() ? <td class="select-cell">{checkbox(`Select ${name}`, index)}</td> : null;
+    const select = this.selectable.get() ? (
+      <td class="select-cell">{checkbox(jlText('selectNamed', { name }), index)}</td>
+    ) : null;
     const chevron = this.isExpandable() ? (
       <td class="expand-cell">
         <button type="button" class="expand" aria-expanded="false" aria-label={jlText('detailsOf', { name })}>
@@ -540,7 +544,7 @@ export class JlTable<Row extends object = TableRow, Extra extends string = never
         <td colSpan={Math.max(1, span)}>
           <span class="empty-content">
             <JlIcon name="inbox" size={EMPTY_ICON_SIZE} />
-            <span>{this.emptyText.get()}</span>
+            <span>{this.emptyText.get() || jlText('noData')}</span>
           </span>
         </td>
       </tr>

@@ -80,7 +80,7 @@ export class JlDialog extends JlElement {
             <h2 id="heading" />
             <p class="description" hidden />
           </div>
-          <JlButton class="close" variant="ghost" icon="x" hint={jlText('close')} size="sm" />
+          <JlButton class="close" variant="ghost" icon="x" size="sm" />
         </header>
         <div class="body">
           <slot />
@@ -94,6 +94,10 @@ export class JlDialog extends JlElement {
 
   templateCss(): string {
     return css`${BASE_STYLES}${styles}`;
+  }
+
+  protected drawTexts(): void {
+    this._refs.close.hint.set(jlText('close'));
   }
 
   onConnect(): void {

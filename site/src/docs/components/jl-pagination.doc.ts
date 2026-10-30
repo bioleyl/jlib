@@ -135,8 +135,9 @@ page from code when the results move for another reason.`,
     {
       attribute: 'label',
       control: { kind: 'text' },
-      default: "'Pagination'",
-      description: 'The navigation’s name for screen readers, when a page has more than one.',
+      default: "''",
+      description:
+        "The navigation’s name for screen readers, when a page has more than one. Empty: jlib's own text, in the language shown.",
       name: 'label',
       type: 'string',
     },

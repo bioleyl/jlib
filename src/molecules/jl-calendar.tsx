@@ -133,11 +133,11 @@ export class JlCalendar extends JlFormControl {
       // biome-ignore lint/a11y/useSemanticElements: a fieldset groups form fields; this is one widget with its header
       <div class="calendar" role="group" aria-labelledby={this._titleId} attrs={{ part: 'base' }}>
         <header>
-          <button class="nav previous" type="button" aria-label={jlText('previousMonth')}>
+          <button class="nav previous" type="button">
             <JlIcon name="chevron-left" size={NAV_ICON_SIZE} />
           </button>
           <div class="title" id={this._titleId} aria-live="polite" />
-          <button class="nav next" type="button" aria-label={jlText('nextMonth')}>
+          <button class="nav next" type="button">
             <JlIcon name="chevron-right" size={NAV_ICON_SIZE} />
           </button>
         </header>
@@ -154,6 +154,12 @@ export class JlCalendar extends JlFormControl {
 
   templateCss(): string {
     return css`${BASE_STYLES}${styles}`;
+  }
+
+  protected drawTexts(): void {
+    this._refs.previous.setAttribute('aria-label', jlText('previousMonth'));
+    this._refs.next.setAttribute('aria-label', jlText('nextMonth'));
+    this.renderValidity();
   }
 
   onConnect(): void {

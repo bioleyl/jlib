@@ -119,16 +119,17 @@ its label, hint and error. For short words people pick or type, such as keywords
     {
       attribute: 'add-label',
       control: { kind: 'text' },
-      default: "'Add a value'",
-      description: "The add button's text.",
+      default: "''",
+      description: "The add button's text. Empty: jlib's own text, in the language shown.",
       name: 'addLabel',
       type: 'string',
     },
     {
       attribute: 'remove-label',
       control: { kind: 'text' },
-      default: "'Remove this value'",
-      description: "What a screen reader says for each row's remove button.",
+      default: "''",
+      description:
+        "What a screen reader says for each row's remove button. Empty: jlib's own text, in the language shown.",
       name: 'removeLabel',
       type: 'string',
     },

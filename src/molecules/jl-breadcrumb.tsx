@@ -45,13 +45,7 @@ export class JlBreadcrumb extends JlElement {
   /** The most items shown before the middle folds; 0 never folds. */
   readonly max = this.useChange(0, () => this.render(), { attribute: 'max' });
   /** The trail's name for screen readers. */
-  readonly label = this.useChange(
-    jlText('breadcrumb'),
-    (value) => {
-      this._refs.nav.setAttribute('aria-label', value || jlText('breadcrumb'));
-    },
-    { attribute: 'label' }
-  );
+  readonly label = this.useChange('', () => this.renderLabel(), { attribute: 'label' });
 
   private readonly _state = { expanded: false };
 
@@ -78,6 +72,15 @@ export class JlBreadcrumb extends JlElement {
         this.expand();
       }
     });
+  }
+
+  protected drawTexts(): void {
+    this.renderLabel();
+    this.render();
+  }
+
+  private renderLabel(): void {
+    this._refs.nav.setAttribute('aria-label', this.label.get() || jlText('breadcrumb'));
   }
 
   /** A new trail starts folded. */
@@ -121,8 +124,9 @@ export class JlBreadcrumb extends JlElement {
   }
 
   private moreButton(hidden: number): Node {
+    const label = jlText('showMoreCount', { count: hidden });
     return (
-      <button type="button" class="more" aria-label={`Show ${hidden} more`} title={`Show ${hidden} more`}>
+      <button type="button" class="more" aria-label={label} title={label}>
         <JlIcon name="ellipsis" size={ICON_SIZE} />
       </button>
     );

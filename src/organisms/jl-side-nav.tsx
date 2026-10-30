@@ -75,27 +75,17 @@ export class JlSideNav<Id extends string = string> extends JlElement {
   );
   /** Adds a button at the bottom that folds the side nav into its rail and unfolds it. */
   readonly collapsible = this.useChange(false, () => this.renderFold(), { attribute: 'collapsible' });
-  /** The fold button's text while the side nav is open. */
-  readonly collapseLabel = this.useChange(jlText('collapseMenu'), () => this.renderFold(), {
-    attribute: 'collapse-label',
-  });
-  /** Its hint while the side nav is a rail. */
-  readonly expandLabel = this.useChange(jlText('expandMenu'), () => this.renderFold(), {
-    attribute: 'expand-label',
-  });
+  /** The fold button's text while the side nav is open; jlib's own when empty. */
+  readonly collapseLabel = this.useChange('', () => this.renderFold(), { attribute: 'collapse-label' });
+  /** Its hint while the side nav is a rail; jlib's own when empty. */
+  readonly expandLabel = this.useChange('', () => this.renderFold(), { attribute: 'expand-label' });
   /**
    * Set by `jl-app-shell` while the side nav is its drawer, on a narrow screen: the drawer shows it whole, and its
    * fold button hides, `collapsed` waiting for a wide screen again.
    */
   readonly inDrawer = this.useChange(false, () => this.renderRail(), { attribute: 'in-drawer' });
   /** The name of the navigation for screen readers. */
-  readonly label = this.useChange(
-    jlText('mainNavigation'),
-    (value) => {
-      this._refs.nav.setAttribute('aria-label', value === '' ? jlText('mainNavigation') : value);
-    },
-    { attribute: 'label' }
-  );
+  readonly label = this.useChange('', () => this.renderLabel(), { attribute: 'label' });
 
   private readonly _prefix = uniqueId('jl-side-nav');
 
@@ -180,13 +170,23 @@ export class JlSideNav<Id extends string = string> extends JlElement {
     this.renderFold();
   }
 
+  protected drawTexts(): void {
+    this.renderLabel();
+    this.renderFold();
+    this.render();
+  }
+
+  private renderLabel(): void {
+    this._refs.nav.setAttribute('aria-label', this.label.get() || jlText('mainNavigation'));
+  }
+
   private renderFold(): void {
     const fold = this._refs.fold;
     const rail = this.isRail();
     fold.hidden = !this.collapsible.get() || this.inDrawer.get();
     fold.icon.set(rail ? EXPAND_ICON : COLLAPSE_ICON);
-    fold.label.set(rail ? '' : this.collapseLabel.get());
-    fold.hint.set(rail ? this.expandLabel.get() : '');
+    fold.label.set(rail ? '' : this.collapseLabel.get() || jlText('collapseMenu'));
+    fold.hint.set(rail ? this.expandLabel.get() || jlText('expandMenu') : '');
   }
 
   private choose(id: Id): void {
@@ -277,7 +277,7 @@ export class JlSideNav<Id extends string = string> extends JlElement {
             class="expander"
             type="button"
             data-id={item.id}
-            aria-label={`Show the pages of ${item.label}`}
+            aria-label={jlText('showPagesOf', { name: item.label })}
             aria-controls={childrenId}>
             <JlIcon name="chevron-right" size={CHEVRON_SIZE} />
           </button>

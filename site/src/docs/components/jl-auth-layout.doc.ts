@@ -88,10 +88,11 @@ password, or anything else before the app opens. See the Accounts and settings p
     {
       attribute: 'origin',
       control: { kind: 'text' },
-      default: "'Made in Switzerland by SyWare'",
-      description: 'Where the app comes from, at the foot of the panel; empty shows nothing.',
+      default: 'null',
+      description:
+        "Where the app comes from, at the foot of the panel: jlib's own text, in the language shown, when not set; empty shows nothing.",
       name: 'origin',
-      type: 'string',
+      type: 'string | null',
     },
   ],
   slots: [

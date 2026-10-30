@@ -66,13 +66,7 @@ export class JlPagination extends JlElement {
     parse: oneOf(CONTROL_SIZES, 'md'),
   });
   /** The navigation's name for screen readers, when a page has more than one. */
-  readonly label = this.useChange(
-    jlText('pagination'),
-    (value) => {
-      this._refs.nav.setAttribute('aria-label', value || jlText('pagination'));
-    },
-    { attribute: 'label' }
-  );
+  readonly label = this.useChange('', () => this.renderLabel(), { attribute: 'label' });
 
   private readonly _refs = this.useRefs((ref) => ({
     list: ref('.pages'),
@@ -87,12 +81,12 @@ export class JlPagination extends JlElement {
   templateHtml(): Node {
     return (
       <nav attrs={{ part: 'base' }}>
-        <button type="button" class="button previous" aria-label={jlText('previousPage')}>
+        <button type="button" class="button previous">
           <JlIcon name="chevron-left" />
         </button>
         <ol class="pages" />
         <span class="status" hidden />
-        <button type="button" class="button next" aria-label={jlText('nextPage')}>
+        <button type="button" class="button next">
           <JlIcon name="chevron-right" />
         </button>
       </nav>
@@ -101,6 +95,17 @@ export class JlPagination extends JlElement {
 
   templateCss(): string {
     return css`${BASE_STYLES}${styles}`;
+  }
+
+  protected drawTexts(): void {
+    this._refs.previous.setAttribute('aria-label', jlText('previousPage'));
+    this._refs.next.setAttribute('aria-label', jlText('nextPage'));
+    this.renderLabel();
+    this.render();
+  }
+
+  private renderLabel(): void {
+    this._refs.nav.setAttribute('aria-label', this.label.get() || jlText('pagination'));
   }
 
   onConnect(): void {
@@ -128,7 +133,10 @@ export class JlPagination extends JlElement {
     this._refs.next.disabled = page >= pages;
     this._refs.list.hidden = compact;
     this._refs.status.hidden = !compact;
-    this._refs.status.replaceChildren(<span class="sr-only">Page </span>, `${page} of ${Math.max(pages, 1)}`);
+    this._refs.status.replaceChildren(
+      <span class="sr-only">{`${jlText('page')} `}</span>,
+      jlText('pageOfTotal', { page, total: Math.max(pages, 1) })
+    );
     if (!compact) {
       const items = pageItems(page, pages, this.siblings.get(), this.boundaries.get());
       this._refs.list.replaceChildren(...items.map((item) => this.entry(item, page)));
@@ -150,7 +158,7 @@ export class JlPagination extends JlElement {
           type="button"
           class="button page"
           data-page={item.page}
-          aria-label={`Page ${item.page}`}
+          aria-label={jlText('pageNumber', { page: item.page })}
           aria-current={isCurrent ? 'page' : undefined}>
           {String(item.page)}
         </button>

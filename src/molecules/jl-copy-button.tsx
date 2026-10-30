@@ -39,7 +39,7 @@ export class JlCopyButton extends JlElement {
   private readonly _refs = this.useRefs((ref) => ({ button: ref(JlButton) }));
 
   templateHtml(): Node {
-    return <JlButton variant="ghost" icon={COPY_ICON} hint={jlText('copy')} />;
+    return <JlButton variant="ghost" icon={COPY_ICON} />;
   }
 
   templateCss(): string {
@@ -62,16 +62,20 @@ export class JlCopyButton extends JlElement {
     this.confirm();
   }
 
+  protected drawTexts(): void {
+    this._refs.button.hint.set(jlText(this.hasAttribute('copied') ? 'copied' : 'copy'));
+  }
+
   private confirm(): void {
     const button = this._refs.button;
     button.icon.set(DONE_ICON);
-    button.hint.set(jlText('copied'));
     this.reflect('copied', true);
+    this.drawTexts();
     window.clearTimeout(this._timer.id);
     this._timer.id = window.setTimeout(() => {
       button.icon.set(COPY_ICON);
-      button.hint.set(jlText('copy'));
       this.reflect('copied', false);
+      this.drawTexts();
     }, CONFIRM_MS);
   }
 }

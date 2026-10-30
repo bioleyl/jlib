@@ -127,10 +127,10 @@ export class JlInput extends JlFormControl {
         <JlIcon class="adornment icon" size={ICON_SIZE} hidden />
         <slot name="start" />
         <input class="native" />
-        <button class="action clear" type="button" aria-label={jlText('clear')} tabIndex={-1} hidden>
+        <button class="action clear" type="button" tabIndex={-1} hidden>
           <JlIcon name="x" size={ACTION_ICON_SIZE} />
         </button>
-        <button class="action reveal" type="button" aria-label={jlText('showPassword')} hidden>
+        <button class="action reveal" type="button" hidden>
           <JlIcon name="eye" size={ICON_SIZE} />
         </button>
         <slot name="end" />
@@ -173,11 +173,21 @@ export class JlInput extends JlFormControl {
     this.focus();
   }
 
+  protected drawTexts(): void {
+    this._refs.clear.setAttribute('aria-label', jlText('clear'));
+    this.renderRevealLabel();
+  }
+
   private toggleReveal(): void {
     const native = this._refs.native;
     const revealed = native.type === PASSWORD;
     native.type = revealed ? REVEALED : PASSWORD;
     this._refs.revealIcon.name.set(revealed ? 'eye-off' : 'eye');
+    this.renderRevealLabel();
+  }
+
+  private renderRevealLabel(): void {
+    const revealed = this._refs.native.type === REVEALED;
     this._refs.reveal.setAttribute('aria-label', revealed ? jlText('hidePassword') : jlText('showPassword'));
   }
 

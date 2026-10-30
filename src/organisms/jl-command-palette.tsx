@@ -63,23 +63,12 @@ export class JlCommandPalette<Id extends string = string> extends JlElement {
     parse: jsonOf<PaletteCommand<Id>[]>([]),
   });
   readonly open = this.useChange(false, (value) => this.renderOpen(value), { attribute: 'open' });
-  readonly placeholder = this.useChange(
-    jlText('commandPlaceholder'),
-    (value) => {
-      this._refs.input.placeholder = value;
-    },
-    { attribute: 'placeholder' }
-  );
+  /** What the field says before anything is typed; jlib's own text when empty. */
+  readonly placeholder = this.useChange('', () => this.drawTexts(), { attribute: 'placeholder' });
   /** The keys that open and close it from anywhere on the page; `none` for no keys. `mod` is ⌘ or Ctrl. */
   readonly hotkey = this.useChange(DEFAULT_HOTKEY, () => this.renderHotkey(), { attribute: 'hotkey' });
-  /** What it says when nothing matches. */
-  readonly emptyText = this.useChange(
-    jlText('noCommands'),
-    (value) => {
-      this._refs.empty.textContent = value;
-    },
-    { attribute: 'empty-text' }
-  );
+  /** What it says when nothing matches; jlib's own text when empty. */
+  readonly emptyText = this.useChange('', () => this.drawTexts(), { attribute: 'empty-text' });
   /** How long typing pauses, in milliseconds, before `search` fires. */
   readonly debounce = this.useChange(DEFAULT_DEBOUNCE_MS, () => undefined, { attribute: 'debounce' });
   /** Shows a spinner in place of the search icon, while the page looks for what was typed. */
@@ -92,13 +81,7 @@ export class JlCommandPalette<Id extends string = string> extends JlElement {
     { attribute: 'loading' }
   );
   /** The dialog's name for screen readers. */
-  readonly label = this.useChange(
-    jlText('commandPalette'),
-    (value) => this._refs.dialog.setAttribute('aria-label', value),
-    {
-      attribute: 'label',
-    }
-  );
+  readonly label = this.useChange('', () => this.drawTexts(), { attribute: 'label' });
 
   private readonly _state: { active: number; matches: PaletteMatch<Id>[]; timer: number } = {
     active: 0,
@@ -142,7 +125,7 @@ export class JlCommandPalette<Id extends string = string> extends JlElement {
           />
           <kbd class="escape">Esc</kbd>
         </div>
-        <div class="results" id="results" role="listbox" aria-label={jlText('commands')} />
+        <div class="results" id="results" role="listbox" />
         <p class="empty" role="status" hidden />
         <footer aria-hidden="true">
           <span class="hint">
@@ -165,6 +148,13 @@ export class JlCommandPalette<Id extends string = string> extends JlElement {
 
   templateCss(): string {
     return css`${BASE_STYLES}${styles}`;
+  }
+
+  protected drawTexts(): void {
+    this._refs.input.placeholder = this.placeholder.get() || jlText('commandPlaceholder');
+    this._refs.empty.textContent = this.emptyText.get() || jlText('noCommands');
+    this._refs.dialog.setAttribute('aria-label', this.label.get() || jlText('commandPalette'));
+    this._refs.results.setAttribute('aria-label', jlText('commands'));
   }
 
   onConnect(): void {

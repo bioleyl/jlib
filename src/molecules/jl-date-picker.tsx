@@ -151,13 +151,12 @@ export class JlDatePicker extends JlFormControl {
             aria-expanded="false"
             aria-controls={this._popupId}
           />
-          <button class="action clear" type="button" aria-label={jlText('clear')} tabIndex={-1} hidden>
+          <button class="action clear" type="button" tabIndex={-1} hidden>
             <JlIcon name="x" size={ACTION_ICON_SIZE} />
           </button>
           <button
             class="action open"
             type="button"
-            aria-label={jlText('chooseDate')}
             aria-haspopup="dialog"
             aria-expanded="false"
             aria-controls={this._popupId}>
@@ -169,7 +168,6 @@ export class JlDatePicker extends JlFormControl {
           id={this._popupId}
           popover="auto"
           role="dialog"
-          aria-label={jlText('chooseDate')}
           attrs={{ part: 'popup' }}>
           <JlCalendar class="calendar" />
         </div>
@@ -179,6 +177,13 @@ export class JlDatePicker extends JlFormControl {
 
   templateCss(): string {
     return css`${BASE_STYLES}${CONTROL_STYLES}${FLOATING_STYLES}${styles}`;
+  }
+
+  protected drawTexts(): void {
+    this._refs.clear.setAttribute('aria-label', jlText('clear'));
+    this._refs.open.setAttribute('aria-label', jlText('chooseDate'));
+    this._refs.popup.setAttribute('aria-label', jlText('chooseDate'));
+    this.renderValidity();
   }
 
   onConnect(): void {
@@ -371,11 +376,19 @@ export class JlDatePicker extends JlFormControl {
     const max = parseIsoDate(this.max.get());
     const locale = pageLocale(this.locale.get());
     if (min !== null && compareDates(date, min) < 0) {
-      this.internals.setValidity({ rangeUnderflow: true }, `Choose ${formatDate(min, locale)} or later.`, anchor);
+      this.internals.setValidity(
+        { rangeUnderflow: true },
+        jlText('chooseDateFrom', { date: formatDate(min, locale) }),
+        anchor
+      );
       return;
     }
     if (max !== null && compareDates(date, max) > 0) {
-      this.internals.setValidity({ rangeOverflow: true }, `Choose ${formatDate(max, locale)} or earlier.`, anchor);
+      this.internals.setValidity(
+        { rangeOverflow: true },
+        jlText('chooseDateUntil', { date: formatDate(max, locale) }),
+        anchor
+      );
       return;
     }
     this.internals.setValidity({});

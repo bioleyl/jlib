@@ -81,12 +81,7 @@ export class JlAppShell extends JlElement {
     return (
       <div class="shell" attrs={{ part: 'base' }}>
         <header class="top" attrs={{ part: 'header' }}>
-          <button
-            class="menu"
-            type="button"
-            aria-label={jlText('navigation')}
-            aria-expanded="false"
-            aria-controls="nav">
+          <button class="menu" type="button" aria-expanded="false" aria-controls="nav">
             <JlIcon name="menu" size={MENU_ICON_SIZE} />
           </button>
           <slot name="header" />
@@ -110,6 +105,10 @@ export class JlAppShell extends JlElement {
 
   templateCss(): string {
     return css`${BASE_STYLES}${styles}`;
+  }
+
+  protected drawTexts(): void {
+    this._refs.menu.setAttribute('aria-label', jlText('navigation'));
   }
 
   onConnect(): void {

@@ -18,8 +18,6 @@ define(JlDialog);
 export const CONFIRM_TONES: readonly ConfirmTone[] = ['accent', 'danger'];
 
 const CONFIRM_VARIANTS: Record<ConfirmTone, ButtonVariant> = { accent: 'primary', danger: 'danger' };
-const DEFAULT_CONFIRM = 'Confirm';
-const DEFAULT_CANCEL = 'Cancel';
 const CLOSE = 'close';
 
 type Resolve = (confirmed: boolean) => void;
@@ -43,12 +41,10 @@ export class JlConfirm extends JlElement {
     },
     { attribute: 'text' }
   );
-  readonly confirmLabel = this.useChange(DEFAULT_CONFIRM, (value) => this._refs.confirm.label.set(value), {
-    attribute: 'confirm-label',
-  });
-  readonly cancelLabel = this.useChange(DEFAULT_CANCEL, (value) => this._refs.cancel.label.set(value), {
-    attribute: 'cancel-label',
-  });
+  /** The confirm button's text; jlib's own when empty. */
+  readonly confirmLabel = this.useChange('', () => this.drawTexts(), { attribute: 'confirm-label' });
+  /** The cancel button's text; jlib's own when empty. */
+  readonly cancelLabel = this.useChange('', () => this.drawTexts(), { attribute: 'cancel-label' });
   readonly tone = this.useChange<ConfirmTone>(
     'accent',
     (value) => {
@@ -80,14 +76,19 @@ export class JlConfirm extends JlElement {
       <jl-dialog size="sm">
         <p class="text" hidden />
         <slot />
-        <JlButton slot="actions" class="cancel" label={DEFAULT_CANCEL} />
-        <JlButton slot="actions" class="confirm" variant="primary" label={DEFAULT_CONFIRM} />
+        <JlButton slot="actions" class="cancel" />
+        <JlButton slot="actions" class="confirm" variant="primary" />
       </jl-dialog>
     );
   }
 
   templateCss(): string {
     return css`${BASE_STYLES}${styles}`;
+  }
+
+  protected drawTexts(): void {
+    this._refs.confirm.label.set(this.confirmLabel.get() || jlText('confirm'));
+    this._refs.cancel.label.set(this.cancelLabel.get() || jlText('cancel'));
   }
 
   onConnect(): void {
@@ -150,8 +151,6 @@ export function confirmDialog(options: ConfirmOptions): Promise<boolean> {
   return element.ask().finally(() => element.remove());
 }
 
-const LEAVE_HEADING = 'Leave without saving?';
-
 /**
  * Guards a form or an editor against leaving with changes not saved. Closing or reloading the tab asks the
  * browser's own question; the function it returns asks in the page, for the app's router to call before it moves
@@ -177,7 +176,7 @@ export function guardLeave(options: LeaveGuardOptions): () => Promise<boolean> {
     asking.pending ??= confirmDialog({
       cancelLabel: options.stayLabel ?? jlText('stay'),
       confirmLabel: options.leaveLabel ?? jlText('leave'),
-      heading: options.heading ?? LEAVE_HEADING,
+      heading: options.heading ?? jlText('leaveHeading'),
       text: options.text ?? jlText('leaveText'),
       tone: 'danger',
     }).finally(() => {

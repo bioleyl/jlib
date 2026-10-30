@@ -305,6 +305,10 @@ export class JlChipGroup<Value extends string = string> extends JlFormControl {
     this.internals.setFormValue(data);
   }
 
+  protected drawTexts(): void {
+    this.renderValidity();
+  }
+
   private renderValidity(): void {
     const missing = this.required.get() && this.chosen().length === 0;
     if (!missing) {

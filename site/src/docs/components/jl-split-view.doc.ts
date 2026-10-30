@@ -181,8 +181,8 @@ set pane to end when an item opens, and give the item a way back. stack fires wh
     {
       attribute: 'label',
       control: { kind: 'text' },
-      default: "'Resize the panes'",
-      description: "The divider's name for screen readers.",
+      default: "''",
+      description: "The divider's name for screen readers. Empty: jlib's own text, in the language shown.",
       name: 'label',
       type: 'string',
     },

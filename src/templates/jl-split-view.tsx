@@ -70,13 +70,7 @@ export class JlSplitView extends JlElement {
     parse: oneOf(SPLIT_PANES, 'start'),
   });
   /** The divider's name for screen readers. */
-  readonly label = this.useChange(
-    jlText('resizePanes'),
-    (value) => {
-      this._refs.divider.setAttribute('aria-label', value === '' ? jlText('resizePanes') : value);
-    },
-    { attribute: 'label' }
-  );
+  readonly label = this.useChange('', () => this.drawTexts(), { attribute: 'label' });
 
   private readonly _drag = { from: DEFAULT_POSITION };
 
@@ -125,6 +119,10 @@ export class JlSplitView extends JlElement {
 
   templateCss(): string {
     return css`${BASE_STYLES}${styles}`;
+  }
+
+  protected drawTexts(): void {
+    this._refs.divider.setAttribute('aria-label', this.label.get() || jlText('resizePanes'));
   }
 
   onConnect(): void {

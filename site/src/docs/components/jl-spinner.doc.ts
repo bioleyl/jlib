@@ -39,8 +39,8 @@ says more. The spinner follows the text colour and has the status role, so scree
     {
       attribute: 'label',
       control: { kind: 'text' },
-      default: "'Loading'",
-      description: 'What screen readers say.',
+      default: "''",
+      description: "What screen readers say. Empty: jlib's own text, in the language shown.",
       name: 'label',
       type: 'string',
     },

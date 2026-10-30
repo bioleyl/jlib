@@ -53,13 +53,7 @@ export class JlSearch extends JlFormControl {
     attribute: 'placeholder',
   });
   /** The field's name for screen readers; "Search" when nothing else names it. */
-  readonly label = this.useChange(
-    '',
-    (value) => this._refs.native.setAttribute('aria-label', value || jlText('search')),
-    {
-      attribute: 'label',
-    }
-  );
+  readonly label = this.useChange('', () => this.renderLabel(), { attribute: 'label' });
   /** How long typing must pause, in milliseconds, before `search` fires. */
   readonly debounce = this.useChange(DEFAULT_DEBOUNCE_MS, () => undefined, { attribute: 'debounce' });
   /** Keys that focus the field from anywhere: "/" or "mod+k" (⌘ on a Mac, Ctrl elsewhere). */
@@ -125,7 +119,7 @@ export class JlSearch extends JlFormControl {
           <JlSpinner size={ICON_SIZE} hidden />
         </span>
         <input class="native" type="search" autocomplete="off" />
-        <button class="action clear" type="button" aria-label={jlText('clearSearch')} tabIndex={-1} hidden>
+        <button class="action clear" type="button" tabIndex={-1} hidden>
           <JlIcon name="x" size={ACTION_ICON_SIZE} />
         </button>
         <span class="keys" aria-hidden="true" hidden />
@@ -135,6 +129,15 @@ export class JlSearch extends JlFormControl {
 
   templateCss(): string {
     return css`${BASE_STYLES}${CONTROL_STYLES}${styles}`;
+  }
+
+  protected drawTexts(): void {
+    this._refs.clear.setAttribute('aria-label', jlText('clearSearch'));
+    this.renderLabel();
+  }
+
+  private renderLabel(): void {
+    this._refs.native.setAttribute('aria-label', this.label.get() || jlText('search'));
   }
 
   onConnect(): void {

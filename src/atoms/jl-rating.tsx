@@ -58,13 +58,7 @@ export class JlRating extends JlFormControl {
     { attribute: 'size', parse: oneOf(CONTROL_SIZES, 'md') }
   );
   /** The name screen readers give the scale. */
-  readonly label = this.useChange(
-    jlText('rating'),
-    (value) => {
-      this._refs.slider.setAttribute('aria-label', value === '' ? jlText('rating') : value);
-    },
-    { attribute: 'label' }
-  );
+  readonly label = this.useChange('', () => this.renderLabel(), { attribute: 'label' });
   readonly required = this.useChange(
     false,
     (value) => {
@@ -183,6 +177,15 @@ export class JlRating extends JlFormControl {
     this.events.emit('change', value);
   }
 
+  protected drawTexts(): void {
+    this.renderLabel();
+    this.renderValue();
+  }
+
+  private renderLabel(): void {
+    this._refs.slider.setAttribute('aria-label', this.label.get() || jlText('rating'));
+  }
+
   private renderIcons(): void {
     const name = this.icon.get() === '' ? 'star' : this.icon.get();
     const size = ICON_SIZES[this.size.get()];
@@ -207,7 +210,7 @@ export class JlRating extends JlFormControl {
     const slider = this._refs.slider;
     slider.setAttribute('aria-valuenow', String(value));
     slider.setAttribute('aria-valuemax', String(max));
-    slider.setAttribute('aria-valuetext', value === 0 ? 'No rating' : `${value} of ${max}`);
+    slider.setAttribute('aria-valuetext', value === 0 ? jlText('noRating') : jlText('ratingOf', { max, value }));
     this.internals.setFormValue(String(value));
     this.renderValidity();
   }

@@ -8,7 +8,7 @@ import { jsonOf } from '../lib/attributes';
 import { isModifiedClick, setOrRemove, uniqueId } from '../lib/dom';
 import { registerIcons } from '../lib/icons';
 import { pageLocale } from '../lib/locale';
-import { jlText } from '../lib/texts';
+import { jlTemplate, jlText } from '../lib/texts';
 import { allItems, childrenOf, isFolder, treeKeyAction, withExpanded, withExtraRows, withPage } from '../lib/tree';
 import { BASE_STYLES } from '../styles/shared';
 import styles from './jl-tree.css?raw';
@@ -75,20 +75,14 @@ export class JlTree extends JlElement {
   });
   /** What an empty tree says, such as "No object yet"; none by default. */
   readonly emptyText = this.useChange('', () => this.renderItems(), { attribute: 'empty-text' });
-  /** Said while a page loads. */
-  readonly loadingText = this.useChange(jlText('loadingMore'), () => this.renderItems(), {
-    attribute: 'loading-text',
-  });
-  /** The button that loads a level's next page; `{count}` is how many items are left. */
-  readonly moreText = this.useChange(jlText('showMoreCount'), () => this.renderItems(), {
-    attribute: 'more-text',
-  });
-  /** Said where a page could not be loaded. */
-  readonly errorText = this.useChange(jlText('loadError'), () => this.renderItems(), { attribute: 'error-text' });
-  /** The action that loads it again. */
-  readonly retryLabel = this.useChange(jlText('retry'), () => this.renderItems(), {
-    attribute: 'retry-label',
-  });
+  /** Said while a page loads; jlib's own text when empty. */
+  readonly loadingText = this.useChange('', () => this.renderItems(), { attribute: 'loading-text' });
+  /** The button that loads a level's next page, `{count}` being how many items are left; jlib's own when empty. */
+  readonly moreText = this.useChange('', () => this.renderItems(), { attribute: 'more-text' });
+  /** Said where a page could not be loaded; jlib's own text when empty. */
+  readonly errorText = this.useChange('', () => this.renderItems(), { attribute: 'error-text' });
+  /** The action that loads it again; jlib's own text when empty. */
+  readonly retryLabel = this.useChange('', () => this.renderItems(), { attribute: 'retry-label' });
 
   // A function cannot be a useChange input: its set() would call it as an updater.
   private readonly _source: { loader: TreeLoader | null } = { loader: null };
@@ -331,7 +325,7 @@ export class JlTree extends JlElement {
       return;
     }
     const total = this._loading.levels.get(parent)?.total ?? 0;
-    this._loading.levels.set(parent, { error: messageOf(error) || this.errorText.get(), pending: null, total });
+    this._loading.levels.set(parent, { error: messageOf(error) || this.errorLabel(), pending: null, total });
     this.whenRendered(() => this.renderItems());
   }
 
@@ -383,6 +377,14 @@ export class JlTree extends JlElement {
   }
 
   // Drawing
+
+  protected drawTexts(): void {
+    this.renderItems();
+  }
+
+  private errorLabel(): string {
+    return this.errorText.get() || jlText('loadError');
+  }
 
   private renderItems(): void {
     const hadFocus = this.hasFocusInside();
@@ -483,7 +485,7 @@ export class JlTree extends JlElement {
   }
 
   private loadingNode(parent: string | null, level: number): HTMLElement {
-    const text = this.loadingText.get();
+    const text = this.loadingText.get() || jlText('loadingMore');
     return this.levelEndRow(
       parent,
       level,
@@ -499,7 +501,8 @@ export class JlTree extends JlElement {
 
   private moreNode(parent: string | null, level: number): HTMLElement {
     const left = (this._loading.levels.get(parent)?.total ?? 0) - childrenOf(this.items.get(), parent).length;
-    const text = this.moreText.get().replace(COUNT_PLACEHOLDER, left.toLocaleString(pageLocale()));
+    const template = this.moreText.get() || jlTemplate('showMoreCount');
+    const text = template.replace(COUNT_PLACEHOLDER, left.toLocaleString(pageLocale()));
     return this.levelEndRow(parent, level, [<span class="label more">{text}</span>], false);
   }
 
@@ -509,8 +512,8 @@ export class JlTree extends JlElement {
       level,
       [
         <JlIcon class="icon error" size={ICON_SIZE} name={ERROR_ICON} />,
-        <span class="label">{this.errorText.get()}</span>,
-        <span class="retry">{this.retryLabel.get()}</span>,
+        <span class="label">{this.errorLabel()}</span>,
+        <span class="retry">{this.retryLabel.get() || jlText('retry')}</span>,
       ],
       false
     );

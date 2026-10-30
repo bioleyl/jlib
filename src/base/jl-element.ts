@@ -1,5 +1,6 @@
 import { Jadis } from '@jadis/core';
 
+import { jlTexts } from '../lib/texts';
 import { adoptTokens } from '../lib/tokens';
 
 /**
@@ -7,6 +8,19 @@ import { adoptTokens } from '../lib/tokens';
  * JSON lists (`{ attribute: 'label' }`), so they work from HTML, from JSX and from code alike.
  */
 export abstract class JlElement extends Jadis {
+  constructor() {
+    super();
+    if (this.drawTexts) {
+      this.useTranslation(jlTexts, () => this.drawTexts?.());
+    }
+  }
+
+  /**
+   * Writes jlib's texts the component shows, with `jlText`. A component that has some defines it: it is called at
+   * every connection, once the template exists and before the browser paints, then at each change of jlib's language.
+   */
+  protected drawTexts?(): void;
+
   /** Defines the element, and gives the document the design tokens the first time. */
   static override register(): void {
     adoptTokens();

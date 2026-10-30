@@ -23,7 +23,6 @@ define(JlEmpty);
 export const LOAD_STATES: readonly LoadState[] = ['loading', 'ready', 'empty', 'error'];
 export const LOAD_SKELETONS: readonly LoadSkeleton[] = ['rows', 'cards', 'lines'];
 
-const DEFAULT_ERROR_HEADING = 'This could not be loaded';
 // A quick answer shows no skeleton at all: it would only flash.
 const DEFAULT_DELAY_MS = 300;
 const MAX_DELAY_MS = 5000;
@@ -86,19 +85,12 @@ export class JlLoadState extends JlElement {
     attribute: 'delay',
     parse: clampedNumber(DEFAULT_DELAY_MS, 0, MAX_DELAY_MS),
   });
-  readonly errorHeading = this.useChange(DEFAULT_ERROR_HEADING, (value) => this._refs.error.heading.set(value), {
-    attribute: 'error-heading',
-  });
-  readonly errorText = this.useChange(
-    jlText('loadStateError'),
-    (value) => this._refs.error.description.set(value),
-    {
-      attribute: 'error-text',
-    }
-  );
-  readonly retryLabel = this.useChange(jlText('retry'), (value) => this._refs.retry.label.set(value), {
-    attribute: 'retry-label',
-  });
+  /** The heading of a failed load; jlib's own when empty. */
+  readonly errorHeading = this.useChange('', () => this.drawTexts(), { attribute: 'error-heading' });
+  /** What a failed load says under its heading; jlib's own when empty. */
+  readonly errorText = this.useChange('', () => this.drawTexts(), { attribute: 'error-text' });
+  /** The button that runs the load again; jlib's own text when empty. */
+  readonly retryLabel = this.useChange('', () => this.drawTexts(), { attribute: 'retry-label' });
 
   // The last load, which Try again runs again, and the timer that shows the skeleton.
   // The last load, which Try again runs again; the number of the latest load, which alone may draw; and the timer
@@ -164,13 +156,8 @@ export class JlLoadState extends JlElement {
             <div class="bones" />
           </slot>
         </div>
-        <jl-empty
-          class="error"
-          icon="circle-alert"
-          heading={DEFAULT_ERROR_HEADING}
-          description={jlText('loadStateError')}
-          hidden>
-          <JlButton class="retry" icon="refresh" label={jlText('retry')} />
+        <jl-empty class="error" icon="circle-alert" hidden>
+          <JlButton class="retry" icon="refresh" />
         </jl-empty>
         <div class="empty" hidden>
           <slot name="empty" />
@@ -184,6 +171,12 @@ export class JlLoadState extends JlElement {
 
   templateCss(): string {
     return css`${BASE_STYLES}${styles}`;
+  }
+
+  protected drawTexts(): void {
+    this._refs.error.heading.set(this.errorHeading.get() || jlText('loadStateHeading'));
+    this._refs.error.description.set(this.errorText.get() || jlText('loadStateError'));
+    this._refs.retry.label.set(this.retryLabel.get() || jlText('retry'));
   }
 
   onConnect(): void {

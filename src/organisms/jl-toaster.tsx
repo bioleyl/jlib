@@ -7,7 +7,7 @@ import { answerError, dispositionFileName, readWithProgress, saveBlob, urlFileNa
 import { formatFileSize } from '../lib/files';
 import { registerIcons } from '../lib/icons';
 import { fillText } from '../lib/text';
-import { jlText } from '../lib/texts';
+import { jlTemplate, jlText } from '../lib/texts';
 import { formatDuration } from '../lib/time';
 import { JlToast } from '../molecules/jl-toast';
 import { BASE_STYLES } from '../styles/shared';
@@ -88,13 +88,7 @@ export class JlToaster extends JlElement {
     parse: clampedNumber(DEFAULT_MAX, 1, MAX_LIMIT),
   });
   /** The region's name for screen readers. */
-  readonly label = this.useChange(
-    jlText('notifications'),
-    (value) => this._refs.region.setAttribute('aria-label', value),
-    {
-      attribute: 'label',
-    }
-  );
+  readonly label = this.useChange('', () => this.drawTexts(), { attribute: 'label' });
 
   private readonly _watched = new WeakSet<JlToast>();
 
@@ -152,6 +146,10 @@ export class JlToaster extends JlElement {
 
   templateCss(): string {
     return css`${BASE_STYLES}${styles}`;
+  }
+
+  protected drawTexts(): void {
+    this._refs.region.setAttribute('aria-label', this.label.get() || jlText('notifications'));
   }
 
   onConnect(): void {
@@ -254,14 +252,14 @@ const FALLBACK_NAME = 'download';
 const CONTENT_LENGTH = 'content-length';
 const CONTENT_DISPOSITION = 'content-disposition';
 
-/** A download's texts, in the language the page set (`setTexts`): what `download()` says unless told otherwise. */
+/** A download's texts, in jlib's language, their placeholders left to fill: what `download()` says unless told otherwise. */
 export const downloadTexts = (): DownloadTexts => ({
   cancel: jlText('downloadCancel'),
-  failed: jlText('downloadFailed'),
-  preparing: jlText('downloadPreparing'),
-  received: jlText('downloadReceived'),
-  receivedOf: jlText('downloadReceivedOf'),
-  saved: jlText('downloadSaved'),
+  failed: jlTemplate('downloadFailed'),
+  preparing: jlTemplate('downloadPreparing'),
+  received: jlTemplate('downloadReceived'),
+  receivedOf: jlTemplate('downloadReceivedOf'),
+  saved: jlTemplate('downloadSaved'),
 });
 
 /** The toast's text and bar for the bytes received: a share of the size when the server said it. */

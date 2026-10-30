@@ -10,7 +10,6 @@ import { BASE_STYLES } from '../styles/shared';
 import styles from './jl-steps.css?raw';
 
 import type { StepItem, StepStatus, StepsOrientation } from '../types/jl-steps.types';
-import type { JlTextKey } from '../types/texts.types';
 
 // The icons it draws itself: a page registers only the names it writes.
 registerIcons({ check: Check, x: X });
@@ -21,7 +20,7 @@ const CHECK_SIZE = 14;
 const MAX_STEPS = 100;
 
 // What a screen reader hears after a step's name, by its status: nothing for one still to come.
-const STATUS_TEXTS: Record<StepStatus, JlTextKey | null> = {
+const STATUS_TEXTS: Record<StepStatus, 'stepCurrent' | 'stepDone' | null> = {
   current: 'stepCurrent',
   done: 'stepDone',
   upcoming: null,
@@ -65,13 +64,7 @@ export class JlSteps extends JlElement {
   /** Done steps become buttons that go back to them. */
   readonly clickable = this.useChange(false, () => this.render(), { attribute: 'clickable' });
   /** The list's name for screen readers. */
-  readonly label = this.useChange(
-    jlText('progress'),
-    (value) => {
-      this._refs.list.setAttribute('aria-label', value || jlText('progress'));
-    },
-    { attribute: 'label' }
-  );
+  readonly label = this.useChange('', () => this.renderLabel(), { attribute: 'label' });
 
   private readonly _refs = this.useRefs((ref) => ({ list: ref('ol') }));
 
@@ -90,6 +83,15 @@ export class JlSteps extends JlElement {
         this.goBackTo(Number(target.dataset.index));
       }
     });
+  }
+
+  protected drawTexts(): void {
+    this.renderLabel();
+    this.render();
+  }
+
+  private renderLabel(): void {
+    this._refs.list.setAttribute('aria-label', this.label.get() || jlText('progress'));
   }
 
   private render(): void {

@@ -6,13 +6,13 @@ import { JlElement } from '../base/jl-element';
 import { jsonOf } from '../lib/attributes';
 import { registerIcons } from '../lib/icons';
 import { starredParts } from '../lib/text';
+import { jlText } from '../lib/texts';
 import { BASE_STYLES, TOKEN_STYLES } from '../styles/shared';
 import styles from './jl-auth-layout.css?raw';
 
 // The icons it draws itself: a page registers only the names it writes.
 registerIcons({ check: Check });
 
-const DEFAULT_ORIGIN = 'Made in Switzerland by SyWare';
 const POINT_ICON_SIZE = 12;
 const SVG_NAMESPACE = 'http://www.w3.org/2000/svg';
 // The SyWare mark as the designer drew it (site/public/syware-mark.svg): its ink and its blue parts.
@@ -76,15 +76,11 @@ export class JlAuthLayout extends JlElement {
     attribute: 'points',
     parse: jsonOf<string[]>([]),
   });
-  /** Where the app comes from, at the foot of the panel. */
-  readonly origin = this.useChange(
-    DEFAULT_ORIGIN,
-    (value) => {
-      this._refs.origin.textContent = value;
-      this._refs.origin.hidden = value === '';
-    },
-    { attribute: 'origin' }
-  );
+  /** Where the app comes from, at the foot of the panel: jlib's own text when not set, nothing when empty. */
+  readonly origin = this.useChange<string | null>(null, () => this.drawTexts(), {
+    attribute: 'origin',
+    parse: (value) => value,
+  });
 
   private readonly _refs = this.useRefs((ref) => ({
     headline: ref('.headline'),
@@ -92,6 +88,12 @@ export class JlAuthLayout extends JlElement {
     points: ref('.points'),
     text: ref('.text'),
   }));
+
+  protected drawTexts(): void {
+    const origin = this.origin.get() ?? jlText('authOrigin');
+    this._refs.origin.textContent = origin;
+    this._refs.origin.hidden = origin === '';
+  }
 
   templateHtml(): Node {
     return (
@@ -105,7 +107,7 @@ export class JlAuthLayout extends JlElement {
             <p class="text" hidden />
           </div>
           <ul class="points" hidden />
-          <p class="origin">{DEFAULT_ORIGIN}</p>
+          <p class="origin" />
           {backdrop()}
         </section>
         <main class="side" attrs={{ part: 'side' }}>

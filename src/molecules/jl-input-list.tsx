@@ -57,10 +57,10 @@ export class JlInputList extends JlElement {
   /** The name of each row for screen readers: the field's label. */
   readonly label = this.useChange('', () => this.renderRows(), { attribute: 'label' });
   readonly disabled = this.useChange(false, (value) => this.renderDisabled(value), { attribute: 'disabled' });
-  /** The add button's text. */
-  readonly addLabel = this.useChange(jlText('addValue'), () => this.renderAdd(), { attribute: 'add-label' });
-  /** The text a screen reader says for each row's remove button. */
-  readonly removeLabel = this.useChange(jlText('removeValue'), () => this.renderRows(), {
+  /** The add button's text; jlib's own when empty. */
+  readonly addLabel = this.useChange('', () => this.renderAdd(), { attribute: 'add-label' });
+  /** The text a screen reader says for each row's remove button; jlib's own when empty. */
+  readonly removeLabel = this.useChange('', () => this.renderRows(), {
     attribute: 'remove-label',
   });
 
@@ -97,6 +97,10 @@ export class JlInputList extends JlElement {
     this.renderRows();
   }
 
+  protected drawTexts(): void {
+    this.renderRows();
+  }
+
   private renderRows(): void {
     this._refs.rows.replaceChildren(...this._state.rows.map((value, index) => this.row(value, index)));
     this.renderAdd();
@@ -104,7 +108,7 @@ export class JlInputList extends JlElement {
 
   private renderAdd(): void {
     const add = this._refs.add;
-    add.label.set(this.addLabel.get());
+    add.label.set(this.addLabel.get() || jlText('addValue'));
     add.hidden = this.disabled.get() || !canAddRow(this._state.rows.length, this.max.get());
   }
 
@@ -116,7 +120,13 @@ export class JlInputList extends JlElement {
   private row(value: string, index: number): Node {
     const control = this.control(value, (text) => this.change(index, text));
     const remove = (
-      <JlButton class="remove" variant="ghost" size="sm" icon="x" hint={this.removeLabel.get()} />
+      <JlButton
+        class="remove"
+        variant="ghost"
+        size="sm"
+        icon="x"
+        hint={this.removeLabel.get() || jlText('removeValue')}
+      />
     ) as JlButton;
     remove.events.register('press', () => this.removeRow(index));
     remove.hidden = this.disabled.get() || this._state.rows.length === 1;

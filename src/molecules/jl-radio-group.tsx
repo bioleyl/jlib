@@ -253,6 +253,10 @@ export class JlRadioGroup<Value extends string = string> extends JlFormControl {
     return enabled.find((radio) => radio.dataset.value === value) ?? enabled[0];
   }
 
+  protected drawTexts(): void {
+    this.renderValidity();
+  }
+
   private renderValidity(): void {
     const missing = this.required.get() && this.value.get() === NO_VALUE;
     if (!missing) {

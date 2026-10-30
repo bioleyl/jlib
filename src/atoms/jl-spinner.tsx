@@ -14,13 +14,8 @@ export class JlSpinner extends JlElement {
   readonly size = this.useChange(DEFAULT_SIZE, (value) => this.style.setProperty('--size', `${value}px`), {
     attribute: 'size',
   });
-  readonly label = this.useChange(
-    jlText('loading'),
-    (value) => this._refs.ring.setAttribute('aria-label', value),
-    {
-      attribute: 'label',
-    }
-  );
+  /** What screen readers say; jlib's own text when empty. */
+  readonly label = this.useChange('', () => this.drawTexts(), { attribute: 'label' });
 
   private readonly _refs = this.useRefs((ref) => ({ ring: ref('.ring') }));
 
@@ -30,6 +25,10 @@ export class JlSpinner extends JlElement {
 
   templateCss(): string {
     return css`${BASE_STYLES}${styles}`;
+  }
+
+  protected drawTexts(): void {
+    this._refs.ring.setAttribute('aria-label', this.label.get() || jlText('loading'));
   }
 }
 

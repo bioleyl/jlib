@@ -225,21 +225,49 @@ export class GettingStartedPage extends JlElement {
           <h2>Other languages</h2>
           <p>
             What the components say on their own (a close button, "Show more", a file drop's refusals, the labels
-            screen readers hear) is English. An app in another language gives them its texts once, before it draws
-            anything: <code>setTexts</code> takes some or all of them, by name, and the rest stay English. The
-            texts that name your own content (a page's heading, a tree's empty text) are inputs of each component,
-            as before.
+            screen readers hear) is in English, French or German: jlib translates them itself, and shows English
+            until the app chooses. The texts that name your own content (a page's heading, a tree's empty text) are
+            inputs of each component, as before.
+          </p>
+          <p>
+            An app in one language chooses it once, in <code>main.tsx</code>, before it draws anything:
           </p>
           {codeSample(
             'ts',
             `
-            import { setTexts } from '@syware/jlib';
+            import { jlTexts } from '@syware/jlib';
 
-            setTexts({ close: 'Fermer', showMore: 'Afficher plus', shownOfTotal: '{shown} sur {total}' });`
+            await jlTexts.setLocale('fr'); // a region takes its language: 'fr-CH' shows French`
           )}
           <p>
-            <code>DEFAULT_TEXTS</code> lists every name with its English text; <code>{'{placeholders}'}</code> are
-            filled when the text is shown.
+            An app with a Jadis <code>Translator</code> has jlib follow it: jlib loads its texts for each of the
+            app's languages, then changes language with the app's own texts, every component drawing its texts
+            again.
+          </p>
+          {codeSample(
+            'ts',
+            `
+            import { jlTexts } from '@syware/jlib';
+            import { i18n } from './i18n';
+
+            await jlTexts.follow(i18n);`
+          )}
+          <p>
+            A language jlib does not translate is added, all its texts or one of jlib's languages shown for it; a
+            text can be fixed in one language, a region included. Each is checked against the English texts: every
+            key, and each text's <code>{'{placeholders}'}</code>. A language jlib has no texts for is refused, by{' '}
+            <code>setLocale</code> and, at start, by <code>follow</code> for each of the app's languages.
+          </p>
+          {codeSample(
+            'ts',
+            `
+            jlTexts.add('es', () => import('./jl-es')); // a file: export default defineTranslations(DEFAULT_TEXTS, { … })
+            jlTexts.add('it', 'en'); // jlib's English, for Italian
+            jlTexts.fix('de-CH', { close: 'Schliessen' }); // Swiss German writes no ß`
+          )}
+          <p>
+            <code>DEFAULT_TEXTS</code> lists every name with its English text; <code>JL_LANGUAGES</code> the
+            languages jlib translates.
           </p>
         </section>
 

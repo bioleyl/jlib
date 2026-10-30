@@ -227,7 +227,7 @@ close button, unless the options say otherwise. Write a jl-toaster in the page y
     },
     {
       description:
-        "A function: the texts download() says unless its options give others, in the page's language as setTexts gave it.",
+        "A function: the texts download() says unless its options give others, in jlib's language (jlTexts), their placeholders left to fill.",
       name: 'downloadTexts',
       signature: 'downloadTexts(): DownloadTexts',
     },
@@ -273,8 +273,8 @@ close button, unless the options say otherwise. Write a jl-toaster in the page y
     {
       attribute: 'label',
       control: { kind: 'text' },
-      default: "'Notifications'",
-      description: 'The name of the region for screen readers.',
+      default: "''",
+      description: "The name of the region for screen readers. Empty: jlib's own text, in the language shown.",
       name: 'label',
       type: 'string',
     },

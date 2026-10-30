@@ -86,6 +86,10 @@ export class JlPage extends JlElement {
     this._refs.back.events.register('press', () => this.events.emit('back'));
   }
 
+  protected drawTexts(): void {
+    this.renderBack();
+  }
+
   /** The back link stays out of the header's breadcrumb slot without an address, so the header takes no room for it. */
   private renderBack(): void {
     const back = this._refs.back;

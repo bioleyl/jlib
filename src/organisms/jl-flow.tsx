@@ -178,13 +178,7 @@ export class JlFlow extends JlElement {
    */
   readonly dropType = this.useChange('', () => undefined, { attribute: 'drop-type' });
   /** The canvas's name for screen readers. */
-  readonly label = this.useChange(
-    '',
-    (value) => this._refs.viewport.setAttribute('aria-label', value || jlText('flow')),
-    {
-      attribute: 'label',
-    }
-  );
+  readonly label = this.useChange('', () => this.renderLabel(), { attribute: 'label' });
 
   private readonly _state = {
     edge: '',
@@ -201,6 +195,7 @@ export class JlFlow extends JlElement {
 
   private readonly _refs = this.useRefs((ref) => ({
     empty: ref('.empty'),
+    emptySlot: ref<HTMLSlotElement>('slot[name="empty"]'),
     fit: ref<HTMLButtonElement>('.fit'),
     nodes: ref('.nodes'),
     removeEdge: ref('.remove-edge'),
@@ -262,29 +257,25 @@ export class JlFlow extends JlElement {
         <div class="world">
           {this._svg.root}
           <div class="nodes" />
-          <button type="button" class="remove-edge" data-control="" hidden aria-label={jlText('removeEdge')}>
+          <button type="button" class="remove-edge" data-control="" hidden>
             <JlIcon name="x" size={ADD_ICON_SIZE} />
           </button>
         </div>
         <div class="empty" data-control="" hidden>
-          <slot name="empty">Nothing here yet.</slot>
+          <slot name="empty" />
         </div>
         <div class="controls" data-control="">
-          <button type="button" class="control zoom-out" title={jlText('zoomOut')} aria-label={jlText('zoomOut')}>
+          <button type="button" class="control zoom-out">
             <JlIcon name="minus" size={CONTROL_ICON_SIZE} />
           </button>
           <span class="zoom-label" />
-          <button type="button" class="control zoom-in" title={jlText('zoomIn')} aria-label={jlText('zoomIn')}>
+          <button type="button" class="control zoom-in">
             <JlIcon name="plus" size={CONTROL_ICON_SIZE} />
           </button>
-          <button type="button" class="control fit" title={jlText('fitView')} aria-label={jlText('fitView')}>
+          <button type="button" class="control fit">
             <JlIcon name="maximize" size={CONTROL_ICON_SIZE} />
           </button>
-          <button
-            type="button"
-            class="control tidy"
-            title={jlText('tidyLayout')}
-            aria-label={jlText('tidyLayout')}>
+          <button type="button" class="control tidy">
             <JlIcon name="wand-sparkles" size={CONTROL_ICON_SIZE} />
           </button>
         </div>
@@ -294,6 +285,33 @@ export class JlFlow extends JlElement {
 
   templateCss(): string {
     return css`${BASE_STYLES}${styles}`;
+  }
+
+  protected drawTexts(): void {
+    this.renderLabel();
+    this._refs.emptySlot.textContent = jlText('flowEmpty');
+    this._refs.removeEdge.setAttribute('aria-label', jlText('removeEdge'));
+    const controls: [HTMLButtonElement, string][] = [
+      [this._refs.zoomOut, jlText('zoomOut')],
+      [this._refs.zoomIn, jlText('zoomIn')],
+      [this._refs.fit, jlText('fitView')],
+      [this._refs.tidy, jlText('tidyLayout')],
+    ];
+    for (const [button, text] of controls) {
+      button.title = text;
+      button.setAttribute('aria-label', text);
+    }
+    // Nodes and ports drawn already keep their elements: their texts change in place.
+    for (const node of this._nodes.values()) {
+      node.setAttribute('aria-roledescription', jlText('node'));
+    }
+    for (const port of this._refs.nodes.querySelectorAll<HTMLElement>('.port')) {
+      port.title = jlText('dragToConnect');
+    }
+  }
+
+  private renderLabel(): void {
+    this._refs.viewport.setAttribute('aria-label', this.label.get() || jlText('flow'));
   }
 
   onConnect(): void {
@@ -623,7 +641,7 @@ export class JlFlow extends JlElement {
         // biome-ignore lint/a11y/noNoninteractiveTabindex: see above
         tabIndex={0}
         role="group"
-        aria-roledescription="node"
+        aria-roledescription={jlText('node')}
         attrs={{ part: 'node' }}
       />
     );

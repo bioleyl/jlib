@@ -103,11 +103,11 @@ export class JlNumberInput extends JlFormControl {
   templateHtml(): Node {
     return (
       <div class="control" attrs={{ part: 'base' }}>
-        <button class="action step down" type="button" tabIndex={-1} aria-label={jlText('decrease')}>
+        <button class="action step down" type="button" tabIndex={-1}>
           <JlIcon name="minus" size={ICON_SIZE} />
         </button>
         <input class="native" type="text" inputMode="decimal" role="spinbutton" autocomplete="off" />
-        <button class="action step up" type="button" tabIndex={-1} aria-label={jlText('increase')}>
+        <button class="action step up" type="button" tabIndex={-1}>
           <JlIcon name="plus" size={ICON_SIZE} />
         </button>
       </div>
@@ -230,6 +230,12 @@ export class JlNumberInput extends JlFormControl {
     const off = this.disabled.get() || this._state.disabledByForm;
     this._refs.down.disabled = off || (value !== null && min !== null && value <= min);
     this._refs.up.disabled = off || (value !== null && max !== null && value >= max);
+  }
+
+  protected drawTexts(): void {
+    this._refs.down.setAttribute('aria-label', jlText('decrease'));
+    this._refs.up.setAttribute('aria-label', jlText('increase'));
+    this.renderValidity();
   }
 
   private renderValidity(): void {

@@ -90,7 +90,7 @@ export class JlDrawer extends JlElement {
           </div>
           <div class="actions">
             <slot name="actions" />
-            <JlButton class="close" variant="ghost" icon="x" hint={jlText('close')} size="sm" />
+            <JlButton class="close" variant="ghost" icon="x" size="sm" />
           </div>
         </header>
         <div class="body">
@@ -105,6 +105,10 @@ export class JlDrawer extends JlElement {
 
   templateCss(): string {
     return css`${BASE_STYLES}${styles}`;
+  }
+
+  protected drawTexts(): void {
+    this._refs.close.hint.set(jlText('close'));
   }
 
   onConnect(): void {

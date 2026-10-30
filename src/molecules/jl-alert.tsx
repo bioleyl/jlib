@@ -118,13 +118,17 @@ export class JlAlert extends JlElement {
             <slot name="actions" />
           </div>
         </div>
-        <JlButton class="close" variant="ghost" icon="x" hint={jlText('dismiss')} size="sm" hidden />
+        <JlButton class="close" variant="ghost" icon="x" size="sm" hidden />
       </div>
     );
   }
 
   templateCss(): string {
     return css`${BASE_STYLES}${styles}`;
+  }
+
+  protected drawTexts(): void {
+    this._refs.close.hint.set(jlText('dismiss'));
   }
 
   onConnect(): void {

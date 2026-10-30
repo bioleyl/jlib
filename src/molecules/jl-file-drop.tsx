@@ -96,7 +96,7 @@ export class JlFileDrop extends JlFormControl {
 
   private readonly _ids = { hint: uniqueId('jl-file-drop-hint'), text: uniqueId('jl-file-drop-text') };
 
-  private readonly _state = { depth: 0, files: [] as File[] };
+  private readonly _state = { depth: 0, files: [] as File[], refused: [] as RefusedFile<File>[] };
 
   // The form's entries carry the field's name: they are written again when it changes.
   private readonly _nameWatch = new MutationObserver(() => this.renderFormValue());
@@ -159,13 +159,11 @@ export class JlFileDrop extends JlFormControl {
           <JlIcon class="zone-icon" name="upload" size={ZONE_ICON_SIZES.md} />
           <p class="text" id={this._ids.text} />
           <p class="hint" id={this._ids.hint} hidden />
-          <button class="browse" type="button" aria-describedby={this._ids.hint}>
-            {jlText('browse')}
-          </button>
+          <button class="browse" type="button" aria-describedby={this._ids.hint} />
         </div>
         <input class="picker" type="file" tabIndex={-1} hidden />
         <ul class="refused" aria-live="polite" hidden />
-        <ul class="files" aria-label={jlText('chosenFiles')} hidden />
+        <ul class="files" hidden />
       </>
     );
   }
@@ -334,6 +332,7 @@ export class JlFileDrop extends JlFormControl {
   }
 
   private renderRefused(refused: RefusedFile<File>[]): void {
+    this._state.refused = refused;
     const rules = this.rules();
     this._refs.refused.hidden = refused.length === 0;
     this._refs.refused.replaceChildren(
@@ -346,6 +345,16 @@ export class JlFileDrop extends JlFormControl {
         </li>
       ))
     );
+  }
+
+  protected drawTexts(): void {
+    this._refs.browse.textContent = jlText('browse');
+    this._refs.files.setAttribute('aria-label', jlText('chosenFiles'));
+    this.renderText();
+    this.renderHint();
+    this.renderFiles();
+    this.renderRefused(this._state.refused);
+    this.renderValidity();
   }
 
   private renderText(): void {

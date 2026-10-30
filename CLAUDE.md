@@ -40,8 +40,15 @@ documentation site that shows and tests every component. Load the project skills
 - `useRefs` finds a child component by its class when it is the one with that tag: `icon: ref(JlIcon)` (Jadis 1.4);
   among several, by its own selector: `close: ref<JlButton>('.close')`.
 - Methods callable before the element connects use `this.whenRendered(() => …)`.
+- **Texts a component shows on its own** (a close button's hint, an aria-label, a validity message) are jlib's, in
+  `src/lib/texts.ts`: `DEFAULT_TEXTS` in English, `texts-fr.ts` and `texts-de.ts` beside it. A component writes them
+  with `jlText(key, params)` in its `protected drawTexts()`, which `JlElement` calls at every connection (template
+  there, before the paint) and again when jlib's language changes; never in the template, drawn once. A text input
+  that defaults to one of them defaults to `''` and shows `this.label.get() || jlText('…')`; an input holding a text
+  whose placeholders the component fills itself takes `jlTemplate(key)`. A new text goes in the three languages: the
+  types refuse a language without it.
 - Don't name an input or method like an `HTMLElement` member (`title`, `hidden`, `role`, `remove`, `click`,
-  `setAttribute`…). `key` is reserved by the JSX runtime.
+  `translate`, `setAttribute`…). `key` is reserved by the JSX runtime.
 - `part` in JSX: `attrs={{ part: 'base' }}` (expose the main inner element as `base`).
 - Every look comes from `src/styles/tokens.css` (`--jl-*`): no literal colours in components. Flat surfaces with
   lines; shadows only for what floats (menus, dialogs, toasts). Heights: `--jl-control-sm|md|lg`.

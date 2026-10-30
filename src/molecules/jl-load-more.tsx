@@ -4,7 +4,7 @@ import { JlButton } from '../atoms/jl-button';
 import { JlElement } from '../base/jl-element';
 import { pageLocale } from '../lib/locale';
 import { fillText } from '../lib/text';
-import { jlText } from '../lib/texts';
+import { jlTemplate, jlText } from '../lib/texts';
 import { BASE_STYLES } from '../styles/shared';
 import styles from './jl-load-more.css?raw';
 
@@ -25,12 +25,10 @@ export class JlLoadMore extends JlElement {
   readonly loading = this.useChange(false, (value) => this._refs.button.loading.set(value), {
     attribute: 'loading',
   });
-  /** The button's text. */
-  readonly label = this.useChange(jlText('showMore'), (value) => this._refs.button.label.set(value), {
-    attribute: 'label',
-  });
-  /** What shows beside it; `{shown}` and `{total}` are filled. */
-  readonly countText = this.useChange(jlText('shownOfTotal'), () => this.render(), { attribute: 'count-text' });
+  /** The button's text; jlib's own when empty. */
+  readonly label = this.useChange('', () => this.renderLabel(), { attribute: 'label' });
+  /** What shows beside it, `{shown}` and `{total}` filled; jlib's own when empty. */
+  readonly countText = this.useChange('', () => this.render(), { attribute: 'count-text' });
 
   private readonly _refs = this.useRefs((ref) => ({ button: ref(JlButton), count: ref('.count') }));
 
@@ -55,11 +53,20 @@ export class JlLoadMore extends JlElement {
     });
   }
 
+  protected drawTexts(): void {
+    this.renderLabel();
+    this.render();
+  }
+
+  private renderLabel(): void {
+    this._refs.button.label.set(this.label.get() || jlText('showMore'));
+  }
+
   private render(): void {
     const locale = pageLocale();
     const shown = this.shown.get();
     const total = this.total.get();
-    this._refs.count.textContent = fillText(this.countText.get(), {
+    this._refs.count.textContent = fillText(this.countText.get() || jlTemplate('shownOfTotal'), {
       shown: shown.toLocaleString(locale),
       total: total.toLocaleString(locale),
     });

@@ -32,8 +32,8 @@ export class JlSearchButton extends JlElement {
 
   readonly events = this.useEvents<{ press: undefined }>();
 
-  /** The text, and the button's name: "Search". */
-  readonly label = this.useChange(jlText('search'), () => this.renderLabel(), { attribute: 'label' });
+  /** The text, and the button's name; jlib's own when empty. */
+  readonly label = this.useChange('', () => this.renderLabel(), { attribute: 'label' });
   /** The keys that open the palette, as `jl-kbd` writes them: `mod+k`; `none` for no keys. */
   readonly hotkey = this.useChange(DEFAULT_HOTKEY, () => this.renderHotkey(), { attribute: 'hotkey' });
   /** The icon alone, the label as its tooltip. */
@@ -63,8 +63,11 @@ export class JlSearchButton extends JlElement {
     return css`${BASE_STYLES}${styles}`;
   }
 
-  onConnect(): void {
+  protected drawTexts(): void {
     this.renderLabel();
+  }
+
+  onConnect(): void {
     this.renderHotkey();
     this.on(this._refs.button, 'click', () => this.events.emit('press'));
   }

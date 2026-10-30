@@ -105,7 +105,7 @@ export class JlChip extends JlElement {
           <span class="label" />
           <slot />
         </span>
-        <button class="dismiss" type="button" aria-label={jlText('remove')} hidden>
+        <button class="dismiss" type="button" hidden>
           <JlIcon name="x" />
         </button>
       </span>
@@ -171,6 +171,10 @@ export class JlChip extends JlElement {
     const name = checked ? SELECTED_ICON : icon;
     this._refs.icon.name.set(name);
     this._refs.icon.hidden = name === '';
+  }
+
+  protected drawTexts(): void {
+    this.renderLabel();
   }
 
   private renderLabel(): void {

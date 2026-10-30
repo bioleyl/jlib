@@ -65,11 +65,7 @@ export class JlTabBar<Id extends string = string> extends JlElement {
     { attribute: 'more' }
   );
   /** The name of the navigation for screen readers. */
-  readonly label = this.useChange(
-    jlText('shortcuts'),
-    (value) => this._refs.nav.setAttribute('aria-label', value === '' ? jlText('shortcuts') : value),
-    { attribute: 'label' }
-  );
+  readonly label = this.useChange('', () => this.drawTexts(), { attribute: 'label' });
 
   private readonly _refs = this.useRefs((ref) => ({
     items: ref('.items'),
@@ -94,6 +90,10 @@ export class JlTabBar<Id extends string = string> extends JlElement {
 
   templateCss(): string {
     return css`${BASE_STYLES}${styles}`;
+  }
+
+  protected drawTexts(): void {
+    this._refs.nav.setAttribute('aria-label', this.label.get() || jlText('shortcuts'));
   }
 
   onConnect(): void {

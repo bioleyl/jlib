@@ -54,8 +54,8 @@ button only shows them, and fires press when clicked. See the Search and shortcu
     {
       attribute: 'label',
       control: { kind: 'text' },
-      default: "'Search'",
-      description: 'Its text, and its name for screen readers.',
+      default: "''",
+      description: "Its text, and its name for screen readers. Empty: jlib's own text, in the language shown.",
       name: 'label',
       type: 'string',
     },

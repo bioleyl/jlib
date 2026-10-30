@@ -71,14 +71,8 @@ export class JlCombobox extends JlFormControl {
   readonly allowCustom = this.useChange(false, () => this.renderValue(), { attribute: 'allow-custom' });
   /** Shows a button that empties the field while it holds text. */
   readonly clearable = this.useChange(false, () => this.renderClear(), { attribute: 'clearable' });
-  /** What the list says when no option matches. */
-  readonly emptyText = this.useChange(
-    jlText('noResults'),
-    (value) => {
-      this._refs.empty.textContent = value;
-    },
-    { attribute: 'empty-text' }
-  );
+  /** What the list says when no option matches; jlib's own when empty. */
+  readonly emptyText = this.useChange('', () => this.renderEmptyText(), { attribute: 'empty-text' });
   readonly required = this.useChange(
     false,
     (value) => {
@@ -140,10 +134,10 @@ export class JlCombobox extends JlFormControl {
             autocomplete="off"
             spellcheck={false}
           />
-          <button class="action clear" type="button" aria-label={jlText('clear')} tabIndex={-1} hidden>
+          <button class="action clear" type="button" tabIndex={-1} hidden>
             <JlIcon name="x" size={ACTION_ICON_SIZE} />
           </button>
-          <button class="action toggle" type="button" aria-label={jlText('showOptions')} tabIndex={-1}>
+          <button class="action toggle" type="button" tabIndex={-1}>
             <JlIcon name="chevron-down" size={ICON_SIZE} />
           </button>
         </div>
@@ -193,6 +187,17 @@ export class JlCombobox extends JlFormControl {
     this.whenRendered(() => {
       this._refs.native.disabled = disabled || this.disabled.get();
     });
+  }
+
+  protected drawTexts(): void {
+    this._refs.clear.setAttribute('aria-label', jlText('clear'));
+    this._refs.toggle.setAttribute('aria-label', jlText('showOptions'));
+    this.renderEmptyText();
+    this.renderValidity();
+  }
+
+  private renderEmptyText(): void {
+    this._refs.empty.textContent = this.emptyText.get() || jlText('noResults');
   }
 
   private isOpen(): boolean {

@@ -46,7 +46,7 @@ const index = [
   "export { CONTROL_SIZES, TONE_ICON_FILLED, TONE_ICONS, TONES } from './lib/options';",
   "export { cellOf } from './lib/table';",
   "export { formatDuration, formatRelativeTime } from './lib/time';",
-  "export { DEFAULT_TEXTS, jlText, setTexts } from './lib/texts';",
+  "export { DEFAULT_TEXTS, JL_LANGUAGES, jlText, jlTexts } from './lib/texts';",
   "export { adoptTokens } from './lib/tokens';",
   "export { BASE_STYLES, CONTROL_STYLES, FLOATING_STYLES, TOKEN_STYLES } from './styles/shared';",
   ...typeModules.map((path) => `export type * from './${path}';`),

@@ -83,7 +83,7 @@ export const forms: PatternDoc = {
     section(
       'Leaving a form',
       list(
-        'Leaving a page with changes not saved asks first: "Leave without saving?", "Your changes to Bornes Wago 221-413 are lost.", **Keep editing**, **Leave**. Closing the tab asks too. `guardLeave()` from jlib does both; the router calls what it returns before it moves on.',
+        'Leaving a page with changes not saved asks first: "Leave without saving?", "Your changes to Bornes Wago 221-413 are lost.", **Keep editing**, **Leave**. Closing the tab asks too. `guardLeave()` from jlib does both: what it returns is the page\'s `canLeave`, which the Jadis router waits for (from `@jadis/core` 1.5.1) before it moves on, the history staying as it was.',
         'A dialog with changes asks the same before Escape or a click outside closes it.',
         'Never `window.confirm`: it looks like another program, and freezes the page.',
         'What people typed survives a failed save, an ended session (keep a draft on the device), and Back.'

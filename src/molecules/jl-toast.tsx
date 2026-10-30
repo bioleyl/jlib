@@ -179,7 +179,7 @@ export class JlToast extends JlElement {
         </div>
         <div class="buttons">
           <JlButton class="action" variant="ghost" size="sm" hidden />
-          <JlButton class="close" variant="ghost" size="sm" icon="x" hint={jlText('close')} hidden />
+          <JlButton class="close" variant="ghost" size="sm" icon="x" hidden />
         </div>
         <div class="progress" aria-hidden="true" hidden>
           <div class="bar" />
@@ -190,6 +190,10 @@ export class JlToast extends JlElement {
 
   templateCss(): string {
     return css`${BASE_STYLES}${styles}`;
+  }
+
+  protected drawTexts(): void {
+    this._refs.close.hint.set(jlText('close'));
   }
 
   onConnect(): void {

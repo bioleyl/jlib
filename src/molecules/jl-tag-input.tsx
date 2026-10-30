@@ -139,6 +139,11 @@ export class JlTagInput extends JlFormControl {
     return css`${BASE_STYLES}${CONTROL_STYLES}${FLOATING_STYLES}${styles}`;
   }
 
+  protected drawTexts(): void {
+    this.renderTags();
+    this.renderValidity();
+  }
+
   onConnect(): void {
     const native = this._refs.native;
     this._nameWatch.observe(this, { attributeFilter: ['name'], attributes: true });
@@ -281,7 +286,7 @@ export class JlTagInput extends JlFormControl {
     this.closeList();
     if (added.length > 0) {
       this.value.set(result.tags);
-      this.announce(`Added ${added.join(', ')}`);
+      this.announce(jlText('addedNamed', { names: added.join(', ') }));
       this.events.emit('change', result.tags);
     }
     this.flash(result.duplicates);
@@ -295,7 +300,7 @@ export class JlTagInput extends JlFormControl {
     }
     const next = tags.filter((_, position) => position !== index);
     this.value.set(next);
-    this.announce(`Removed ${removed}`);
+    this.announce(jlText('removedNamed', { name: removed }));
     this.events.emit('change', next);
   }
 
@@ -474,7 +479,7 @@ export class JlTagInput extends JlFormControl {
               class="tag-remove"
               type="button"
               tabIndex={-1}
-              aria-label={`Remove ${tag}`}
+              aria-label={jlText('removeNamed', { name: tag })}
               data-index={String(index)}>
               <JlIcon name="x" size={REMOVE_ICON_SIZE} />
             </button>
