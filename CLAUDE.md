@@ -125,8 +125,8 @@ every page in Chromium: no console error, no undefined `jl-*` tag, no unregister
   about a quarter more edge pixels than the vector drawn at size, which on a standard screen shows steps.
 - The package is `@syware/jlib` on npm (the bare name `jlib` belongs to someone else): docs and the site import it by
   that name (an alias to `src/` in development). `npm publish` runs the checks (`prepublishOnly`) and builds the
-  library (`prepack`); a pushed version tag stages the version on npm from GitHub (`.github/workflows/publish.yml`)
-  and creates the GitHub release; a maintainer approves it (`npm stage approve`, with 2FA) to make it public. The
-  whole procedure is in RELEASING.md.
+  library (`prepack`); the **Publish to npm** workflow (`.github/workflows/publish.yml`), started by hand for a
+  pushed version tag (pushing the tag starts nothing), stages the version on npm and creates the GitHub release; a
+  maintainer approves it (`npm stage approve`, with 2FA) to make it public. The whole procedure is in RELEASING.md.
 - Biome leaves JSON files alone (not in its includes, JSON formatter and linter off): npm writes package.json and the
   lockfile in its own layout (`npm version`, `npm install x`), which Biome's formatter used to refuse.

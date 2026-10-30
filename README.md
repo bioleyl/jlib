@@ -105,7 +105,8 @@ npm version patch
 git push --follow-tags
 ```
 
-The tag stages the version on npm and creates the GitHub release; a maintainer then approves it with
+Then a maintainer starts **Publish to npm** in the Actions tab for the tag (`gh workflow run publish.yml -f
+tag=vX.Y.Z`): it stages the version on npm and creates the GitHub release, and they approve it with
 `npm stage approve`. Every step, pre-releases and what to do when something fails: [RELEASING.md](RELEASING.md).
 What changed in each version: [CHANGELOG.md](CHANGELOG.md).
 

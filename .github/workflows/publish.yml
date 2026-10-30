@@ -1,12 +1,17 @@
 name: Publish to npm
 
-# Pushing a version tag (v0.1.3) stages that version on npm and creates its GitHub release; a maintainer then
-# approves the staged version (npm stage approve, with 2FA) to make it public. No npm token: npm trusts this
+# Started by hand for a version's tag (v0.1.3), from the Actions tab or `gh workflow run publish.yml -f tag=v0.1.3`:
+# it stages that version on npm and creates its GitHub release; a maintainer then approves the staged version
+# (npm stage approve, with 2FA) to make it public. Pushing a tag starts nothing. No npm token: npm trusts this
 # workflow (trusted publishing, set in the package's npm settings) and adds a provenance statement. A version
 # already on npm is not staged again: its release gets npm's own tarball.
 on:
-  push:
-    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "The version's tag, pushed already: v0.1.3"
+        required: true
+        type: string
 
 permissions:
   contents: write
@@ -15,8 +20,21 @@ permissions:
 jobs:
   publish:
     runs-on: ubuntu-latest
+    env:
+      TAG: ${{ inputs.tag }}
     steps:
+      # The input reaches the shell through the environment only, never written into a script.
+      - name: Check the tag's form
+        run: |
+          if ! [[ "$TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?$ ]]; then
+            echo "::error title=Not a version tag::$TAG is not a version's tag, such as v0.1.3."
+            exit 1
+          fi
+
+      # The tag itself, not a branch of that name: the release is what the tag points at.
       - uses: actions/checkout@v5
+        with:
+          ref: refs/tags/${{ inputs.tag }}
       - uses: actions/setup-node@v5
         with:
           node-version: '24'
@@ -31,8 +49,8 @@ jobs:
         run: |
           name="$(node -p "require('./package.json').name")"
           version="$(node -p "require('./package.json').version")"
-          if [ "$GITHUB_REF_NAME" != "v$version" ]; then
-            echo "The tag is $GITHUB_REF_NAME but package.json says $version."
+          if [ "$TAG" != "v$version" ]; then
+            echo "The tag is $TAG but package.json says $version."
             exit 1
           fi
           echo "name=$name" >> "$GITHUB_OUTPUT"
@@ -106,11 +124,11 @@ jobs:
           NAME: ${{ steps.package.outputs.name }}
           VERSION: ${{ steps.package.outputs.version }}
         run: |
-          if gh release view "$GITHUB_REF_NAME" > /dev/null 2>&1; then
-            echo "The release $GITHUB_REF_NAME exists already."
+          if gh release view "$TAG" > /dev/null 2>&1; then
+            echo "The release $TAG exists already."
             exit 0
           fi
           notes="Install it with \`npm install $NAME@$VERSION\`: [npm](https://www.npmjs.com/package/$NAME/v/$VERSION) · [documentation](https://bioleyl.github.io/jlib/)"
           prerelease=()
           case "$VERSION" in *-*) prerelease=(--prerelease) ;; esac
-          gh release create "$GITHUB_REF_NAME" ./*.tgz --title "$GITHUB_REF_NAME" --notes "$notes" --generate-notes "${prerelease[@]}"
+          gh release create "$TAG" ./*.tgz --title "$TAG" --notes "$notes" --generate-notes "${prerelease[@]}"

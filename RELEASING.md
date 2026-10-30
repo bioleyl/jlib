@@ -1,13 +1,16 @@
 # Releasing jlib
 
 jlib is published to npm as [`@syware/jlib`](https://www.npmjs.com/package/@syware/jlib) by GitHub Actions. A
-release takes three steps: bump the version, push the tag, approve the staged version on npm.
+release takes four steps: bump the version, push the tag, start the publishing by hand, approve the staged version
+on npm.
 
 ## How it works
 
-Pushing a tag `vX.Y.Z` starts the **Publish to npm** workflow (`.github/workflows/publish.yml`):
+The **Publish to npm** workflow (`.github/workflows/publish.yml`) runs only when a maintainer starts it, for a tag
+`vX.Y.Z` pushed already: pushing a tag starts nothing.
 
-1. It checks that the tag is the version in `package.json`, and stops otherwise.
+1. It checks that the tag is the version in `package.json`, and stops otherwise. It works on the tag's commit, not
+   on the branch.
 2. It runs `npm run check` (generated files, lint, types, unit tests).
 3. It packs the package (`prepack` builds `dist/`).
 4. It **stages** the version on npm with `npm stage publish`, through npm's trusted publishing: no token is stored
@@ -15,8 +18,9 @@ Pushing a tag `vX.Y.Z` starts the **Publish to npm** workflow (`.github/workflow
    it, and carries a provenance statement linking it to the run that built it.
 5. It creates the **GitHub release** for the tag, with install notes, the change list and the package tarball.
 
-The staged version becomes public when a maintainer **approves** it with their two-factor authentication. That is
-the one human step, and the point of staging: no automation can publish jlib on its own.
+The staged version becomes public when a maintainer **approves** it with their two-factor authentication.
+Starting the run and approving what it staged are both a maintainer's: no push and no automation can publish jlib
+on its own.
 
 A version already on npm is not staged again: the run then only creates the missing GitHub release, with npm's own
 tarball.
@@ -45,14 +49,20 @@ tarball.
    Use `patch` for fixes, `minor` for new components or options, `major` for changes that break existing pages.
    Before 1.0, a breaking change may go in a `minor`, but say so in the release notes.
 
-4. Push the commit and its tag:
+4. Push the commit and its tag. Nothing is published yet:
 
    ```bash
    git push --follow-tags
    ```
 
-5. Follow the run in the repository's **Actions** tab (**Publish to npm**). When it is done, its summary page shows
-   what npm staged.
+5. Start the publishing: in the repository's **Actions** tab, **Publish to npm**, **Run workflow**, with the tag
+   (`vX.Y.Z`). With the GitHub CLI:
+
+   ```bash
+   gh workflow run publish.yml -f tag=vX.Y.Z
+   ```
+
+   Follow the run there. When it is done, its summary page shows what npm staged.
 
 6. Approve the staged version (or do it on npmjs.com, on the package's page):
 
@@ -90,7 +100,9 @@ https://bioleyl.github.io/jlib/.
 ## When something goes wrong
 
 - **The tag is not the package's version.** The run stops at once. Delete the tag (on GitHub and locally) and tag
-  the right commit, or bump again.
+  the right commit, or bump again, then start the workflow again.
+- **The tag is not a version's tag**, or not pushed. The run stops before it checks anything out: push the tag, and
+  give it as `vX.Y.Z`.
 - **The checks fail.** Nothing was staged or released. Fix it on `main`, then release the next version (`npm version
   patch` again): the failed tag can be deleted.
 - **npm refuses to stage** (`npm stage publish failed` on the run's page). Check the package's trusted publisher on
@@ -103,8 +115,8 @@ https://bioleyl.github.io/jlib/.
   ```
 
   Its version number cannot be staged again: release the next one.
-- **The GitHub release is missing** although the version is on npm. Re-run the workflow for that tag (**Actions →
-  Publish to npm → Re-run jobs**): it skips npm and creates the release.
+- **The GitHub release is missing** although the version is on npm. Start the workflow again for that tag: it
+  skips npm and creates the release.
 
 ## One-time setup (already done)
 
