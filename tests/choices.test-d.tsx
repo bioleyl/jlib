@@ -3,6 +3,7 @@
 import { describe, expectTypeOf, it } from 'vitest';
 
 import type { JlSelect } from '../src/atoms/jl-select';
+import type { JlChipGroup } from '../src/molecules/jl-chip-group';
 import type { JlRadioGroup } from '../src/molecules/jl-radio-group';
 import type { JlSegmented } from '../src/molecules/jl-segmented';
 import type { View } from './types/choices.types';
@@ -55,5 +56,17 @@ describe('a radio group typed by its values', () => {
     radios.options.set([{ label: 'Table', value: 'table' }]);
     radios.events.register('change', (value) => expectTypeOf(value).toEqualTypeOf<View>());
     expectTypeOf(radios.value.get()).toEqualTypeOf<View | ''>();
+  });
+});
+
+declare const chips: JlChipGroup<View>;
+
+describe('a chip group typed by its values', () => {
+  it('takes options of those values only, and gives change a list of them', () => {
+    chips.options.set([{ label: 'List', value: 'list' }]);
+    // @ts-expect-error: not one of the values
+    chips.options.set([{ label: 'Table', value: 'table' }]);
+    chips.events.register('change', (values) => expectTypeOf(values).toEqualTypeOf<View[]>());
+    expectTypeOf(chips.value.get()).toEqualTypeOf<View[]>();
   });
 });

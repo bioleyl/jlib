@@ -1,3 +1,6 @@
+import chipGroupCode from '../typing/jl-chip-group.code.ts?raw';
+import chipGroupJsx from '../typing/jl-chip-group.jsx.tsx?raw';
+
 import type { JlChipGroup } from '@syware/jlib';
 import type { ComponentDoc } from '../../types/docs.types';
 
@@ -48,7 +51,7 @@ refuses a form while nothing is chosen.`,
   events: [
     {
       description: 'People changed the choice: the chosen values, in the order of the options.',
-      detail: 'string[]',
+      detail: 'Value[]',
       name: 'change',
     },
   ],
@@ -131,7 +134,7 @@ refuses a form while nothing is chosen.`,
       default: '[]',
       description: 'The choices: value, label, and an optional icon, badge and disabled.',
       name: 'options',
-      type: 'ChipGroupOption[]',
+      type: 'ChipGroupOption<Value>[]',
     },
     {
       attribute: 'value',
@@ -139,7 +142,7 @@ refuses a form while nothing is chosen.`,
       default: '[]',
       description: 'The chosen values. In HTML, one value as it is or a JSON list.',
       name: 'value',
-      type: 'string[]',
+      type: 'Value[]',
     },
     {
       attribute: 'multiple',
@@ -201,4 +204,10 @@ refuses a form while nothing is chosen.`,
   styling: [{ description: 'The row of chips.', name: 'base' }],
   summary: 'A row of chips to choose from: one, as radios, or several, each turned on and off.',
   tag: 'jl-chip-group',
+  typing: {
+    code: chipGroupCode,
+    description:
+      "Typed by its values, JlChipGroup<'open' | 'done' | 'failed'> takes options of those values only, and gives change and value as lists of them: the editor completes them and refuses another. In JSX, the type can also be read from the options.",
+    jsx: chipGroupJsx,
+  },
 };

@@ -3,7 +3,7 @@ import { Check } from 'lucide';
 
 import { JlIcon } from '../atoms/jl-icon';
 import { JlFormControl } from '../base/jl-form-control';
-import { jsonOf, oneOf, stringList } from '../lib/attributes';
+import { jsonOf, oneOf, textListOf } from '../lib/attributes';
 import { setOrRemove } from '../lib/dom';
 import { registerIcons } from '../lib/icons';
 import { CONTROL_SIZES } from '../lib/options';
@@ -34,29 +34,30 @@ const MOVES = new Map<string, RovingMove>([
 ]);
 
 /** A JSON attribute that should hold a list of options; anything else gives none. */
-const parseOptions = (value: string | null): ChipGroupOption[] => {
+const parseOptions = <Value extends string>(value: string | null): ChipGroupOption<Value>[] => {
   const parsed = jsonOf<unknown>([])(value);
-  return Array.isArray(parsed) ? (parsed as ChipGroupOption[]) : [];
+  return Array.isArray(parsed) ? (parsed as ChipGroupOption<Value>[]) : [];
 };
 
 /**
  * A row of chips to choose from: a status to filter by, a category, a reason. One choice by default, as radios
  * (choosing the chosen chip again keeps it); `multiple` lets people turn each chip on and off. On a narrow screen
  * the row scrolls sideways; `wrap` lets it go to the next line instead. `change` fires with the chosen values.
+ * Typed by its values, `JlChipGroup<'open' | 'done'>` takes options of those values and gives them back.
  */
-export class JlChipGroup extends JlFormControl {
+export class JlChipGroup<Value extends string = string> extends JlFormControl {
   static readonly selector = 'jl-chip-group';
 
-  readonly events = this.useEvents<{ change: string[] }>();
+  readonly events = this.useEvents<{ change: Value[] }>();
 
-  readonly options = this.useChange<ChipGroupOption[]>([], () => this.renderOptions(), {
+  readonly options = this.useChange<ChipGroupOption<Value>[]>([], () => this.renderOptions(), {
     attribute: 'options',
-    parse: parseOptions,
+    parse: parseOptions<Value>,
   });
   /** The chosen values, in the options' order; with one choice, a list of at most one. */
-  readonly value = this.useChange<string[]>([], () => this.renderValue(), {
+  readonly value = this.useChange<Value[]>([], () => this.renderValue(), {
     attribute: 'value',
-    parse: stringList,
+    parse: textListOf<Value>,
   });
   /** Several chips can be chosen, each turned on and off on its own. */
   readonly multiple = this.useChange(
@@ -140,7 +141,7 @@ export class JlChipGroup extends JlFormControl {
   }
 
   protected resetValue(): void {
-    this.value.set(stringList(this.getAttribute('value')));
+    this.value.set(textListOf<Value>(this.getAttribute('value')));
   }
 
   /** The browser calls it for a disabled fieldset and for the element's own `disabled`, even before it renders. */
@@ -154,7 +155,7 @@ export class JlChipGroup extends JlFormControl {
   }
 
   /** What is chosen: with one choice, only the first value counts. */
-  private chosen(): string[] {
+  private chosen(): Value[] {
     const values = this.value.get();
     return this.multiple.get() ? values : values.slice(0, 1);
   }
@@ -165,7 +166,10 @@ export class JlChipGroup extends JlFormControl {
 
   /** One choice: the chip becomes it. Several: the chip turns on or off, the values keeping the options' order. */
   private press(chip: HTMLButtonElement): void {
-    const value = chip.dataset.value ?? '';
+    const value = this.options.get().find((option) => option.value === chip.dataset.value)?.value;
+    if (value === undefined) {
+      return;
+    }
     this._state.stop = value;
     const chosen = this.chosen();
     if (!this.multiple.get()) {
@@ -185,7 +189,7 @@ export class JlChipGroup extends JlFormControl {
     this.commit(this.options.get().flatMap((option) => (next.has(option.value) ? [option.value] : [])));
   }
 
-  private commit(values: string[]): void {
+  private commit(values: Value[]): void {
     this.value.set(values);
     this.events.emit('change', values);
   }
@@ -225,7 +229,7 @@ export class JlChipGroup extends JlFormControl {
     this.renderValue();
   }
 
-  private chip(option: ChipGroupOption, iconSize: number): HTMLButtonElement {
+  private chip(option: ChipGroupOption<Value>, iconSize: number): HTMLButtonElement {
     const badge = option.badge === undefined ? '' : String(option.badge);
     return (
       <button
@@ -244,7 +248,7 @@ export class JlChipGroup extends JlFormControl {
 
   /** Radios with one choice, toggle buttons with several; each chosen chip shows its icon or a check. */
   private renderValue(): void {
-    const chosen = new Set(this.chosen());
+    const chosen = new Set<string>(this.chosen());
     const multiple = this.multiple.get();
     const groupDisabled = this.isDisabled();
     this._refs.group.setAttribute('role', multiple ? 'group' : 'radiogroup');
