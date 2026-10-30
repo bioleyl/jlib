@@ -3,6 +3,48 @@
 What changed in each version of [@syware/jlib](https://www.npmjs.com/package/@syware/jlib). Every component is shown
 and documented on [the documentation site](https://bioleyl.github.io/jlib/).
 
+## 0.8.0 (2026-10-30)
+
+Rows of a table that open on their details, and the components that hold a page's values or records typed by them:
+the editor completes what they take and refuses a misspelt value.
+
+### Added
+
+- **Table**: rows that open on their details. `expandable="single"` keeps one row open (opening another closes it),
+  `"multiple"` lets any number stay open. A press on the row or on its chevron opens it, the row staying as it is,
+  and `detail` draws what comes under it, from the row, when it opens. `expanded` holds the keys of the open rows,
+  `toggle` says each opening and closing, and `toggle(key, open)` does it from code. The detail lines up with the
+  first column and stays in the frame when the table scrolls sideways.
+- **Table**: typed by its rows. `JlTable<Order>` takes rows of the page's own type, an interface included; its
+  columns (`TableColumn<Order>`), `row-key` and `sort-key` name fields of an order, which the editor completes and
+  checks; its renderers, `detail` and `sort` read an order, without `cellOf`. In JSX, `<JlTable rows={orders} />`
+  reads the type from the rows. A column that is not a field, such as one of actions, is named:
+  `JlTable<Order, 'actions'>`.
+- **Select**, **segmented control**, **radio group** and **chip group**: typed by their values.
+  `JlSegmented<'list' | 'grid'>` takes options of those values only, and gives `change` and `value` as one of them
+  (lists of them for the chip group). In JSX, the type can also be read from the options.
+- **Menu**, **command palette**, **tab bar** and **side nav**: typed by their values or ids.
+  `JlMenu<'rename' | 'delete'>` gives `select` one of them, for a `Record` of one handler per action, which
+  TypeScript refuses while one is missing. A palette's records can take ids of their own form (`` `open:${string}` ``).
+- The documentation shows each of these components typed, in code and in JSX, on its page (**Typing**).
+
+### Changed
+
+- jlib is developed on Jadis 1.4.2, whose `useChange` takes a parser for a field typed by the component's type
+  parameter. The peer dependency stays `^1.4.0`: pages need not update Jadis.
+
+### Worth a look when you update
+
+- Nothing breaks: without a type argument, every component takes and gives text as before, and a table any field.
+  `TableColumn`, `TableSort`, `TableCellRenderer`, `SelectOption` and the like take the type as an optional
+  parameter, so code that names them keeps compiling.
+- jlib's declarations use `NoInfer`: an app type-checks them with TypeScript 5.4 or later.
+- A table of an interface's rows can drop the spread (`{ ...row }`) and `cellOf`: type the table
+  (`querySelector<JlTable<Order>>`, `ref<JlTable<Order>>`, `<JlTable<Order> …/>`) and its renderers read an order.
+  A typed table refuses a column `key` that is not a field: name such columns in its second type argument.
+- Menus, selects and palettes handled with a `switch` on the value, or comparisons of strings, can become a
+  `Record<Action, () => void>` that the compiler keeps complete.
+
 ## 0.7.0 (2026-10-27)
 
 What the docuteam engines' pages need to move to jlib, starting with the storage engine's.
