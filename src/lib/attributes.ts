@@ -49,3 +49,19 @@ export const stringList = (value: string | null): string[] => {
   const parsed = jsonOf<unknown>([])(text);
   return Array.isArray(parsed) ? parsed.map(String) : [];
 };
+
+/**
+ * A text the page wrote, in an attribute or an `<option>`, taken as one of a type's values: a choice's value, a
+ * field of a table's rows. HTML is not checked against the type, as with `jsonOf`.
+ */
+export const asValue = <Value extends string>(text: string): Value => text as Value;
+
+/** A text attribute naming one of a type's values (see `asValue`); a missing one gives the fallback. */
+export const textOf =
+  <Value extends string>(fallback: Value) =>
+  (value: string | null): Value =>
+    value === null ? fallback : asValue<Value>(value);
+
+/** `stringList` for a list of a type's values (see `asValue`). */
+export const textListOf = <Value extends string>(value: string | null): Value[] =>
+  stringList(value).map((text) => asValue<Value>(text));

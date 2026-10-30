@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { stringList } from '../src/lib/attributes';
+import { stringList, textListOf, textOf } from '../src/lib/attributes';
 
 describe('stringList', () => {
   it('reads a JSON list', () => {
@@ -24,5 +24,18 @@ describe('stringList', () => {
 
   it('turns the entries into strings', () => {
     expect(stringList('[1, true, "x"]')).toEqual(['1', 'true', 'x']);
+  });
+});
+
+describe('textOf', () => {
+  it('takes the text as it is, and the fallback when the attribute is missing', () => {
+    const view = textOf<'list' | 'grid' | ''>('');
+    expect(view('grid')).toBe('grid');
+    expect(view(null)).toBe('');
+  });
+
+  it('reads a list of values as stringList does', () => {
+    expect(textListOf<'open' | 'done'>('["open","done"]')).toEqual(['open', 'done']);
+    expect(textListOf<'open' | 'done'>('open')).toEqual(['open']);
   });
 });
