@@ -3,6 +3,67 @@
 What changed in each version of [@syware/jlib](https://www.npmjs.com/package/@syware/jlib). Every component is shown
 and documented on [the documentation site](https://bioleyl.github.io/jlib/).
 
+## 0.9.0 (2026-10-30)
+
+jlib's texts in English, French and German: an app chooses its language in one line, or has jlib follow its Jadis
+translator, every component drawing its texts again when the language changes.
+
+### Added
+
+- **Texts in French and German**: jlib translates what its components say on their own, and shows English until the
+  app chooses: `jlTexts.setLocale('fr')`, a region taking its language (`fr-CH` shows French). Each language is a
+  module of its own, loaded when it is chosen. `JL_LANGUAGES` lists them.
+- **Texts that follow the app**: `jlTexts.follow(translator)` shows jlib's texts in the language of a Jadis
+  `Translator`, now and at each of its changes. It loads them for each of the app's languages first, so they change
+  with the app's own texts; every component draws its texts again, without a reload.
+- **Texts a page adds or fixes**: `jlTexts.add('es', …)` adds a language jlib does not translate, all its texts (as
+  they are, or their loader) or one of jlib's languages shown for it (`jlTexts.add('it', 'en')`);
+  `jlTexts.fix('de-CH', { close: 'Schliessen' })` changes some texts of one language, its regions included. Both are
+  checked against `DEFAULT_TEXTS`: every key, and each text's placeholders, none missing and none added. A language
+  jlib has no texts for is refused, by `setLocale`, and at start by `follow` for each of the app's languages.
+
+### Changed
+
+- **Requires Jadis 1.5.1** (`@jadis/core` `^1.5.1`, a peer dependency): jlib's texts are a translation of Jadis 1.5, and
+  each component draws them with its `useTranslation`. Update Jadis along with jlib.
+- **Texts**: `setTexts()` is gone, and the `JlTexts` type with it. A page in one language calls
+  `jlTexts.setLocale()`; one that kept a map of all the texts in its language drops it for jlib's own, and keeps the
+  texts it wants otherwise with `jlTexts.fix()`. `jlText()` takes the parameters of each text, required by name, and
+  writes a number among them the way the language writes it.
+- **Text inputs**: the inputs whose default was one of jlib's texts (`label`, `empty-text`, `count-text`,
+  `retry-label`, `confirm-label`…) default to `''`, which shows jlib's text in the language shown, so it changes with
+  the language. Reading one gives `''` until the page sets it. `jl-auth-layout`'s `origin` is `null` until set, its
+  text then jlib's; `''` still shows nothing.
+
+### Fixed
+
+- **Texts**: what components still said in English whatever the page's language now comes from jlib's texts: the
+  heading of `guardLeave()`'s question (`leaveHeading`, "Leave without saving?"), the buttons of `jl-confirm` and
+  `confirmDialog()` (`confirm` and `cancel`), the heading of a failed `jl-load-state` (`loadStateHeading`) and the
+  foot of `jl-auth-layout` (`authOrigin`); and what screen readers heard: a rating's value (`noRating`, `ratingOf`),
+  a trail's folded crumbs (`showMoreCount`), a table's check boxes (`selectAllRows`, `selectNamed`), a side nav's
+  expanders (`showPagesOf`), a flow's nodes (`node`) and its empty canvas (`flowEmpty`), a date picker's range
+  errors (`chooseDateFrom`, `chooseDateUntil`), a pagination's pages and its compact status (`page`, `pageNumber`,
+  `pageOfTotal`), a tag input's announcements and remove buttons (`addedNamed`, `removedNamed`, `removeNamed`).
+- **Forms pattern**: `guardLeave()` is a Jadis page's `canLeave` as it is: the router waits for its answer from
+  `@jadis/core` 1.5.1, which takes a `canLeave` that answers with a promise and keeps the history as it was when
+  the page refuses.
+
+### Worth a look when you update
+
+- **This version breaks the pages that set jlib's texts**, as a minor may before 1.0: `setTexts()` and the
+  `JlTexts` type are gone. A page in one language replaces `setTexts(texts)` with `jlTexts.setLocale('fr')` (a region
+  works too: `fr-CH`), awaited before it draws, so nothing shows in English first; its own map of jlib's texts goes,
+  and the few texts it wanted otherwise move to `jlTexts.fix()`. A page in a language jlib does not translate adds it
+  with `jlTexts.add()`.
+- Update Jadis with jlib: `npm install @jadis/core@^1.5.1 @syware/jlib@^0.9.0`. npm refuses an older Jadis now that
+  the peer dependency asks for 1.5.1.
+- `jlText()` takes each text's parameters by name: a call that left one out, or misspelt it, stops compiling.
+- An input that defaulted to one of jlib's texts (`label`, `empty-text`, `count-text`, `retry-label`, `confirm-label`…)
+  reads `''` until the page sets it: code that read that default to show it elsewhere asks `jlText()` instead.
+- A Jadis page that guards a form sets `canLeave = guardLeave({ … })` as it is: the router waits for the answer.
+  Code that refused at once and navigated again itself after the answer can go.
+
 ## 0.8.0 (2026-10-30)
 
 Rows of a table that open on their details, and the components that hold a page's values or records typed by them:
