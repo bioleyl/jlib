@@ -2,7 +2,7 @@ import { css } from '@jadis/core';
 import { ChevronDown } from 'lucide';
 
 import { JlFormControl } from '../base/jl-form-control';
-import { jsonOf, oneOf } from '../lib/attributes';
+import { asValue, jsonOf, oneOf, textOf } from '../lib/attributes';
 import { setOrRemove } from '../lib/dom';
 import { registerIcons } from '../lib/icons';
 import { groupOptions } from '../lib/option-groups';
@@ -37,20 +37,24 @@ const groupNodes = (group: SelectOptionGroup): Node[] => {
 /**
  * A choice among a list, on the browser's own `<select>`: its list opens the way the platform does it on a touch
  * screen, and with a mouse looks like the combobox's where the browser lets the page draw it (customizable select).
- * The choices come from `options` (JSON) or from `<option>` and `<optgroup>` elements written inside it.
+ * The choices come from `options` (JSON) or from `<option>` and `<optgroup>` elements written inside it. Typed by its
+ * values, `JlSelect<'eur' | 'chf'>` takes options of those values and gives `change` one of them.
  */
-export class JlSelect extends JlFormControl {
+export class JlSelect<Value extends string = string> extends JlFormControl {
   static readonly selector = 'jl-select';
 
-  readonly events = this.useEvents<{ change: string }>();
+  readonly events = this.useEvents<{ change: Value }>();
 
   /** The choices; an option with a `group` goes under that heading. Empty: the `<option>` children are used. */
-  readonly options = this.useChange<SelectOption[]>([], () => this.renderOptions(), {
+  readonly options = this.useChange<SelectOption<Value>[]>([], () => this.renderOptions(), {
     attribute: 'options',
-    parse: jsonOf<SelectOption[]>([]),
+    parse: jsonOf<SelectOption<Value>[]>([]),
   });
   /** The chosen value. One that no option has is kept, as an option of its own, rather than replaced. */
-  readonly value = this.useChange(NO_VALUE, () => this.renderOptions(), { attribute: 'value' });
+  readonly value = this.useChange<Value | typeof NO_VALUE>(NO_VALUE, () => this.renderOptions(), {
+    attribute: 'value',
+    parse: textOf<Value | typeof NO_VALUE>(NO_VALUE),
+  });
   /** Shown while nothing is chosen; it cannot be picked back from the list. */
   readonly placeholder = this.useChange('', () => this.renderOptions(), { attribute: 'placeholder' });
   readonly size = this.useChange<ControlSize>('md', (value) => this.reflect('size', value), {
@@ -114,15 +118,16 @@ export class JlSelect extends JlFormControl {
   onConnect(): void {
     const native = this._refs.native;
     this.on(native, 'change', () => {
-      this.value.set(native.value);
-      this.events.emit('change', native.value);
+      const value = asValue<Value>(native.value);
+      this.value.set(value);
+      this.events.emit('change', value);
     });
     // Children the parser added after the element connected are there now.
     this.renderOptions();
   }
 
   protected resetValue(): void {
-    this.value.set(this.getAttribute('value') ?? NO_VALUE);
+    this.value.set(textOf<Value | typeof NO_VALUE>(NO_VALUE)(this.getAttribute('value')));
   }
 
   /** The browser calls it for a disabled fieldset and for the element's own disabled attribute, even before render. */

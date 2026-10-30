@@ -1,3 +1,6 @@
+import selectCode from '../typing/jl-select.code.ts?raw';
+import selectJsx from '../typing/jl-select.jsx.tsx?raw';
+
 import type { JlSelect } from '@syware/jlib';
 import type { ComponentDoc } from '../../types/docs.types';
 
@@ -19,7 +22,7 @@ panel, rows and check; the others show their own.
 Give the choices as JSON in options (an option with a group goes under that heading), or write option and optgroup
 elements inside the element, as for a native select: they are copied in when it connects. A placeholder shows
 while nothing is chosen and cannot be picked back; with required, it stops the submission.`,
-  events: [{ description: 'Someone chose an option.', detail: 'string', name: 'change' }],
+  events: [{ description: 'Someone chose an option.', detail: 'Value', name: 'change' }],
   examples: [
     {
       description: 'Options with a group gather under its heading; a disabled one shows but cannot be chosen.',
@@ -116,7 +119,7 @@ while nothing is chosen and cannot be picked back; with required, it stops the s
       default: '[]',
       description: 'The choices; empty: the option elements written inside are used.',
       name: 'options',
-      type: 'SelectOption[]',
+      type: 'SelectOption<Value>[]',
     },
     {
       attribute: 'value',
@@ -125,7 +128,7 @@ while nothing is chosen and cannot be picked back; with required, it stops the s
       description:
         'The chosen value. One that no option has (a choice since removed, options still loading) shows as an option of its own, first, and the form keeps it.',
       name: 'value',
-      type: 'string',
+      type: "Value | ''",
     },
     {
       attribute: 'placeholder',
@@ -188,4 +191,10 @@ while nothing is chosen and cannot be picked back; with required, it stops the s
   styling: [{ description: 'The frame around the select.', name: 'base' }],
   summary: "A choice among a list, on the browser's own select.",
   tag: 'jl-select',
+  typing: {
+    code: selectCode,
+    description:
+      "Typed by its values, JlSelect<'chf' | 'eur'> takes options of those values only, and gives change and value as one of them: the editor completes them and refuses another. In JSX, the type can also be read from the options. Options written in HTML, as JSON or <option> children, are not checked.",
+    jsx: selectJsx,
+  },
 };
