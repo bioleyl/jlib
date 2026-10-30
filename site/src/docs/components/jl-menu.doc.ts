@@ -1,3 +1,6 @@
+import menuCode from '../typing/jl-menu.code.ts?raw';
+import menuJsx from '../typing/jl-menu.jsx.tsx?raw';
+
 import type { JlMenu } from '@syware/jlib';
 import type { ComponentDoc } from '../../types/docs.types';
 
@@ -34,7 +37,7 @@ value; Escape closes it the same way, Tab closes it and moves on. Items are { va
 description?, danger?, disabled? }, with { divider: true } for a line and { heading } for a title over the items that
 follow it.`,
   events: [
-    { description: 'People chose an item; the detail is its value.', detail: 'string', name: 'select' },
+    { description: 'People chose an item; the detail is its value.', detail: 'Value', name: 'select' },
     { description: 'The menu opened.', detail: 'undefined', name: 'open' },
     { description: 'The menu closed.', detail: 'undefined', name: 'close' },
   ],
@@ -100,7 +103,7 @@ follow it.`,
       description:
         'The items: { value, label, icon?, shortcut?, description?, danger?, disabled? }, { divider: true } or { heading }.',
       name: 'items',
-      type: 'MenuItem[]',
+      type: 'MenuItem<Value>[]',
     },
     {
       attribute: 'placement',
@@ -126,4 +129,10 @@ follow it.`,
   styling: [{ description: 'The floating list of items.', name: 'base' }],
   summary: 'A list of actions that opens from a button, driven by the pointer or entirely by the keyboard.',
   tag: 'jl-menu',
+  typing: {
+    code: menuCode,
+    description:
+      "Typed by its values, JlMenu<'rename' | 'duplicate' | 'delete'> takes actions of those values only, and gives select one of them. A page then handles them with a Record of one handler per action, which TypeScript refuses while one is missing.",
+    jsx: menuJsx,
+  },
 };

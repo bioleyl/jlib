@@ -4,6 +4,7 @@ import { describe, expectTypeOf, it } from 'vitest';
 
 import type { JlSelect } from '../src/atoms/jl-select';
 import type { JlChipGroup } from '../src/molecules/jl-chip-group';
+import type { JlMenu } from '../src/molecules/jl-menu';
 import type { JlRadioGroup } from '../src/molecules/jl-radio-group';
 import type { JlSegmented } from '../src/molecules/jl-segmented';
 import type { View } from './types/choices.types';
@@ -68,5 +69,17 @@ describe('a chip group typed by its values', () => {
     chips.options.set([{ label: 'Table', value: 'table' }]);
     chips.events.register('change', (values) => expectTypeOf(values).toEqualTypeOf<View[]>());
     expectTypeOf(chips.value.get()).toEqualTypeOf<View[]>();
+  });
+});
+
+declare const menu: JlMenu<'edit' | 'delete'>;
+
+describe('a menu typed by its values', () => {
+  it('takes actions of those values only, and gives select one of them, for a mapper that misses none', () => {
+    menu.items.set([{ label: 'Edit', value: 'edit' }, { divider: true }, { label: 'Delete', value: 'delete' }]);
+    // @ts-expect-error: not an action of the menu
+    menu.items.set([{ label: 'Copy', value: 'copy' }]);
+    const actions: Record<'edit' | 'delete', () => void> = { delete: () => undefined, edit: () => undefined };
+    menu.events.register('select', (value) => actions[value]());
   });
 });

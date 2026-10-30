@@ -17,7 +17,7 @@ const ICON_SIZE = 16;
 const CLOSED = 'closed';
 const ITEM_SELECTOR = '[role="menuitem"]';
 
-type Section = { heading: string; entries: (MenuAction | MenuDivider)[] };
+type Section<Value extends string> = { heading: string; entries: (MenuAction<Value> | MenuDivider)[] };
 
 type KeyMove = (enabled: readonly boolean[], from: number) => number;
 
@@ -39,8 +39,8 @@ const OPENING_KEYS = new Map<string, (enabled: readonly boolean[]) => number>([
 const CHOOSING_KEYS = new Set(['Enter', ' ']);
 
 /** The items split under their headings; what comes before the first heading has none. */
-function sectionsOf(items: readonly MenuItem[]): Section[] {
-  const sections: Section[] = [{ entries: [], heading: '' }];
+function sectionsOf<Value extends string>(items: readonly MenuItem<Value>[]): Section<Value>[] {
+  const sections: Section<Value>[] = [{ entries: [], heading: '' }];
   for (const item of items) {
     if ('heading' in item) {
       sections.push({ entries: [], heading: item.heading });
@@ -58,15 +58,17 @@ const isTypeahead = (event: KeyboardEvent): boolean =>
 /**
  * A list of actions that opens from its trigger (`slot="trigger"`, any button): on a press or with ArrowDown. Arrows,
  * Home, End and the first letter move through it; Enter chooses, Escape closes. `select` fires with the value.
+ * Typed by its values, `JlMenu<'edit' | 'delete'>` takes actions of those values and gives `select` one of them:
+ * a page handles them with a `Record<'edit' | 'delete', () => void>`, which misses none.
  */
-export class JlMenu extends JlElement {
+export class JlMenu<Value extends string = string> extends JlElement {
   static readonly selector = 'jl-menu';
 
-  readonly events = this.useEvents<{ select: string; open: undefined; close: undefined }>();
+  readonly events = this.useEvents<{ select: Value; open: undefined; close: undefined }>();
 
-  readonly items = this.useChange<MenuItem[]>([], () => this.renderItems(), {
+  readonly items = this.useChange<MenuItem<Value>[]>([], () => this.renderItems(), {
     attribute: 'items',
-    parse: jsonOf([]),
+    parse: jsonOf<MenuItem<Value>[]>([]),
   });
   /** Where the menu goes; it flips to the other side when there is no room. */
   readonly placement = this.useChange<Placement>('bottom-start', () => this.follow(), {
@@ -240,9 +242,19 @@ export class JlMenu extends JlElement {
     if (!(item instanceof HTMLElement) || item.hasAttribute('aria-disabled')) {
       return;
     }
+    const action = this.actionOf(item);
     this.close();
     this.triggerElement()?.focus();
-    this.events.emit('select', item.dataset.value ?? '');
+    if (action !== undefined) {
+      this.events.emit('select', action.value);
+    }
+  }
+
+  /** The action an item of the list draws. */
+  private actionOf(item: HTMLElement): MenuAction<Value> | undefined {
+    return this.items
+      .get()
+      .find((entry): entry is MenuAction<Value> => 'value' in entry && entry.value === item.dataset.value);
   }
 
   private onToggle(open: boolean): void {
@@ -297,7 +309,7 @@ export class JlMenu extends JlElement {
     this._refs.menu.replaceChildren(...sectionsOf(this.items.get()).map((section) => this.section(section)));
   }
 
-  private section(section: Section): Node {
+  private section(section: Section<Value>): Node {
     const entries = section.entries.map((entry) => this.entry(entry));
     if (section.heading === '') {
       return <>{entries}</>;
@@ -314,7 +326,7 @@ export class JlMenu extends JlElement {
     );
   }
 
-  private entry(entry: MenuAction | MenuDivider): Node {
+  private entry(entry: MenuAction<Value> | MenuDivider): Node {
     if ('divider' in entry) {
       return <hr class="divider" />;
     }

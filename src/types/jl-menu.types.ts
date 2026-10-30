@@ -1,6 +1,6 @@
-/** A choice of a menu: `select` fires with its value. */
-export type MenuAction = {
-  value: string;
+/** A choice of a menu: `select` fires with its value. Typed (`MenuAction<'edit' | 'delete'>`), it is one of those. */
+export type MenuAction<Value extends string = string> = {
+  value: Value;
   label: string;
   icon?: string;
   /** The keys that do the same, shown at the end: "⌘D". */
@@ -18,4 +18,4 @@ export type MenuDivider = { divider: true };
 /** A title over the choices that follow it, up to the next title. */
 export type MenuHeading = { heading: string };
 
-export type MenuItem = MenuAction | MenuDivider | MenuHeading;
+export type MenuItem<Value extends string = string> = MenuAction<Value> | MenuDivider | MenuHeading;
