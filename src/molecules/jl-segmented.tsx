@@ -2,7 +2,7 @@ import { css } from '@jadis/core';
 
 import { JlIcon } from '../atoms/jl-icon';
 import { JlFormControl } from '../base/jl-form-control';
-import { jsonOf, oneOf } from '../lib/attributes';
+import { jsonOf, oneOf, textOf } from '../lib/attributes';
 import { setOrRemove } from '../lib/dom';
 import { moveIndicator } from '../lib/indicator';
 import { CONTROL_SIZES } from '../lib/options';
@@ -19,6 +19,8 @@ const ICON_SIZES: Record<ControlSize, number> = { lg: 18, md: 16, sm: 14 };
 type KeyMove = (enabled: readonly boolean[], from: number) => number;
 
 // Keyboard keys are PascalCase names: a Map keeps them as they are.
+const NO_VALUE = '';
+
 const KEY_MOVES = new Map<string, KeyMove>([
   ['ArrowDown', (enabled, from) => stepIndex(enabled, from, 1)],
   ['ArrowLeft', (enabled, from) => stepIndex(enabled, from, -1)],
@@ -30,19 +32,23 @@ const KEY_MOVES = new Map<string, KeyMove>([
 
 /**
  * A row of a few exclusive choices with a thumb that slides to the chosen one: a view switch, a period, a
- * density. It takes part in forms like a radio group; `change` fires with the value people pick.
+ * density. It takes part in forms like a radio group; `change` fires with the value people pick. Typed by its values,
+ * `JlSegmented<'list' | 'grid'>` takes options of those values and gives `change` one of them.
  */
-export class JlSegmented extends JlFormControl {
+export class JlSegmented<Value extends string = string> extends JlFormControl {
   static readonly selector = 'jl-segmented';
 
-  readonly events = this.useEvents<{ change: string }>();
+  readonly events = this.useEvents<{ change: Value }>();
 
-  readonly options = this.useChange<SegmentedOption[]>([], () => this.renderOptions(), {
+  readonly options = this.useChange<SegmentedOption<Value>[]>([], () => this.renderOptions(), {
     attribute: 'options',
-    parse: jsonOf([]),
+    parse: jsonOf<SegmentedOption<Value>[]>([]),
   });
   /** The chosen option's value; the first option that can be chosen when it names none. */
-  readonly value = this.useChange('', () => this.renderValue(), { attribute: 'value' });
+  readonly value = this.useChange<Value | typeof NO_VALUE>(NO_VALUE, () => this.renderValue(), {
+    attribute: 'value',
+    parse: textOf<Value | typeof NO_VALUE>(NO_VALUE),
+  });
   readonly size = this.useChange<ControlSize>(
     'md',
     (value) => {
@@ -117,7 +123,7 @@ export class JlSegmented extends JlFormControl {
   }
 
   protected resetValue(): void {
-    this.value.set(this.getAttribute('value') ?? '');
+    this.value.set(textOf<Value | typeof NO_VALUE>(NO_VALUE)(this.getAttribute('value')));
   }
 
   /** The browser calls it for a disabled fieldset and for the element's own `disabled`, even before it renders. */
@@ -148,7 +154,7 @@ export class JlSegmented extends JlFormControl {
   }
 
   /** A segment; with only an icon, its value names it. */
-  private segment(option: SegmentedOption, iconSize: number): HTMLButtonElement {
+  private segment(option: SegmentedOption<Value>, iconSize: number): HTMLButtonElement {
     const label = option.label ?? '';
     const name = label === '' ? option.value : undefined;
     return (
@@ -182,7 +188,7 @@ export class JlSegmented extends JlFormControl {
       this.value.set(option.value);
       return;
     }
-    const value = option?.value ?? '';
+    const value = option?.value ?? NO_VALUE;
     this.segments().forEach((segment) => {
       const checked = segment.dataset.value === value;
       segment.setAttribute('aria-checked', String(checked));

@@ -3,6 +3,7 @@
 import { describe, expectTypeOf, it } from 'vitest';
 
 import type { JlSelect } from '../src/atoms/jl-select';
+import type { JlSegmented } from '../src/molecules/jl-segmented';
 import type { View } from './types/choices.types';
 
 declare const select: JlSelect<View>;
@@ -14,5 +15,32 @@ describe('a select typed by its values', () => {
     select.options.set([{ label: 'Table', value: 'table' }]);
     select.events.register('change', (value) => expectTypeOf(value).toEqualTypeOf<View>());
     expectTypeOf(select.value.get()).toEqualTypeOf<View | ''>();
+  });
+});
+
+declare const segmented: JlSegmented<View>;
+declare const untyped: JlSegmented;
+declare const Segmented: typeof JlSegmented;
+
+describe('a segmented control typed by its values', () => {
+  it('takes options of those values only, and gives change one of them', () => {
+    segmented.options.set([{ label: 'List', value: 'list' }]);
+    // @ts-expect-error: not one of the values
+    segmented.options.set([{ label: 'Table', value: 'table' }]);
+    segmented.events.register('change', (value) => expectTypeOf(value).toEqualTypeOf<View>());
+    expectTypeOf(segmented.value.get()).toEqualTypeOf<View | ''>();
+    // @ts-expect-error: not one of the values
+    segmented.value.set('table');
+  });
+
+  it('reads the values from the options in JSX', () => {
+    expectTypeOf(<Segmented options={[{ value: 'list' }]} value="list" />).toBeAny();
+    // @ts-expect-error: not one of the options' values
+    expectTypeOf(<Segmented<View> options={[{ value: 'list' }]} value="table" />).toBeAny();
+  });
+
+  it('stays a string without a type', () => {
+    untyped.options.set([{ value: 'anything' }]);
+    untyped.events.register('change', (value) => expectTypeOf(value).toEqualTypeOf<string>());
   });
 });

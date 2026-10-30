@@ -6,9 +6,9 @@ import { shownSnippet } from '../lib/snippets';
 import styles from './site-typing.css?raw';
 
 import type { SegmentedOption } from '@syware/jlib';
-import type { TypingDoc } from '../types/docs.types';
+import type { TypingDoc, TypingTab } from '../types/docs.types';
 
-const TYPING_TABS: SegmentedOption[] = [
+const TYPING_TABS: SegmentedOption<TypingTab>[] = [
   { label: 'Code', value: 'code' },
   { label: 'JSX', value: 'jsx' },
 ];
@@ -24,14 +24,14 @@ export class SiteTyping extends JlElement {
     code: ref<JlCodeBlock>('.code-snippet'),
     description: ref('.description'),
     jsx: ref<JlCodeBlock>('.jsx-snippet'),
-    tabs: ref<JlSegmented>('.tabs'),
+    tabs: ref<JlSegmented<TypingTab>>('.tabs'),
   }));
 
   templateHtml(): Node {
     return (
       <section class="typing">
         <p class="description" />
-        <JlSegmented class="tabs" size="sm" label="Written" options={TYPING_TABS} value="code" />
+        <JlSegmented<TypingTab> class="tabs" size="sm" label="Written" options={TYPING_TABS} value="code" />
         <JlCodeBlock class="code-snippet" language="ts" />
         <JlCodeBlock class="jsx-snippet" language="ts" hidden />
       </section>
@@ -56,7 +56,7 @@ export class SiteTyping extends JlElement {
     this._refs.jsx.code.set(shownSnippet(typing.jsx));
   }
 
-  private showTab(tab: string): void {
+  private showTab(tab: TypingTab): void {
     this._refs.code.hidden = tab !== 'code';
     this._refs.jsx.hidden = tab !== 'jsx';
   }

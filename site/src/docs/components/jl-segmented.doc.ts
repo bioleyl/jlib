@@ -1,3 +1,6 @@
+import segmentedCode from '../typing/jl-segmented.code.ts?raw';
+import segmentedJsx from '../typing/jl-segmented.jsx.tsx?raw';
+
 import type { JlSegmented } from '@syware/jlib';
 import type { ComponentDoc } from '../../types/docs.types';
 
@@ -14,7 +17,7 @@ It is a radio group for assistive technology and takes part in forms like one: i
 data, and a reset brings back the value the page gave. The arrow keys move the choice; change fires with the value
 people pick.`,
   events: [
-    { description: 'People chose another option; the detail is its value.', detail: 'string', name: 'change' },
+    { description: 'People chose another option; the detail is its value.', detail: 'Value', name: 'change' },
   ],
   examples: [
     {
@@ -89,7 +92,7 @@ people pick.`,
       description:
         'The choices: { value, label?, icon?, badge?, disabled? }. badge is a count or a short word after the label.',
       name: 'options',
-      type: 'SegmentedOption[]',
+      type: 'SegmentedOption<Value>[]',
     },
     {
       attribute: 'value',
@@ -97,7 +100,7 @@ people pick.`,
       default: "''",
       description: 'The chosen option’s value; the first option that can be chosen when it names none.',
       name: 'value',
-      type: 'string',
+      type: "Value | ''",
     },
     {
       attribute: 'name',
@@ -143,4 +146,10 @@ people pick.`,
   styling: [{ description: 'The track that holds the options and the thumb.', name: 'base' }],
   summary: 'A few exclusive choices in a row, with a thumb that slides to the chosen one.',
   tag: 'jl-segmented',
+  typing: {
+    code: segmentedCode,
+    description:
+      "Typed by its values, JlSegmented<'list' | 'grid'> takes options of those values only, and gives change and value as one of them: the editor completes them and refuses another. In JSX, the type can also be read from the options.",
+    jsx: segmentedJsx,
+  },
 };

@@ -77,6 +77,9 @@ export type Playground = {
   width?: number | 'full';
 };
 
+/** The two ways the Typing section writes a component: in code, and in a view written in JSX. */
+export type TypingTab = 'code' | 'jsx';
+
 /**
  * A component typed by what it holds (its values, its rows): how a page writes it. The snippets are files that
  * TypeScript checks, shown without their lines marked `// (not shown)`.
