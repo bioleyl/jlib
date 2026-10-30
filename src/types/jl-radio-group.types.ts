@@ -1,6 +1,9 @@
-/** One choice of a radio group, with an optional line that explains it. */
-export type RadioOption = {
-  value: string;
+/**
+ * One choice of a radio group, with an optional line that explains it. Typed by its values
+ * (`RadioOption<'card' | 'invoice'>`), `value` is one of them.
+ */
+export type RadioOption<Value extends string = string> = {
+  value: Value;
   label: string;
   description?: string;
   disabled?: boolean;

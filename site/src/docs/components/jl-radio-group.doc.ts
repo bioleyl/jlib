@@ -1,3 +1,6 @@
+import radioGroupCode from '../typing/jl-radio-group.code.ts?raw';
+import radioGroupJsx from '../typing/jl-radio-group.jsx.tsx?raw';
+
 import type { JlRadioGroup } from '@syware/jlib';
 import type { ComponentDoc } from '../../types/docs.types';
 
@@ -23,7 +26,7 @@ It behaves as native radios: Tab reaches the chosen option (or the first one), t
 skip disabled options, Space chooses the focused option. The label names the group for screen readers; with legend
 it is also shown over the options. variant="cards" draws each option as a bordered card, for choices that deserve a
 line of explanation.`,
-  events: [{ description: 'Someone chose an option.', detail: 'string', name: 'change' }],
+  events: [{ description: 'Someone chose an option.', detail: 'Value', name: 'change' }],
   examples: [
     {
       html: `
@@ -115,7 +118,7 @@ line of explanation.`,
       default: '[]',
       description: 'The choices: value, label, and an optional description and disabled.',
       name: 'options',
-      type: 'RadioOption[]',
+      type: 'RadioOption<Value>[]',
     },
     {
       attribute: 'value',
@@ -123,7 +126,7 @@ line of explanation.`,
       default: "''",
       description: 'The chosen value; empty while nothing is chosen.',
       name: 'value',
-      type: 'string',
+      type: "Value | ''",
     },
     {
       attribute: 'label',
@@ -187,4 +190,10 @@ line of explanation.`,
   ],
   summary: 'One choice among a few, all in view, as radios or as cards.',
   tag: 'jl-radio-group',
+  typing: {
+    code: radioGroupCode,
+    description:
+      "Typed by its values, JlRadioGroup<'hobby' | 'pro' | 'team'> takes options of those values only, and gives change and value as one of them: the editor completes them and refuses another. In JSX, the type can also be read from the options.",
+    jsx: radioGroupJsx,
+  },
 };

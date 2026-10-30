@@ -1,7 +1,7 @@
 import { css } from '@jadis/core';
 
 import { JlFormControl } from '../base/jl-form-control';
-import { jsonOf, oneOf } from '../lib/attributes';
+import { jsonOf, oneOf, textOf } from '../lib/attributes';
 import { rovingIndex } from '../lib/roving-index';
 import { jlText } from '../lib/texts';
 import { BASE_STYLES } from '../styles/shared';
@@ -30,18 +30,22 @@ const SPACE = ' ';
 
 /**
  * One choice among a few, all in view. It behaves as native radios: Tab reaches the chosen option, the arrow keys
- * move the choice, Space chooses the focused option. `variant="cards"` draws each option as a card.
+ * move the choice, Space chooses the focused option. `variant="cards"` draws each option as a card. Typed by its
+ * values, `JlRadioGroup<'card' | 'invoice'>` takes options of those values and gives `change` one of them.
  */
-export class JlRadioGroup extends JlFormControl {
+export class JlRadioGroup<Value extends string = string> extends JlFormControl {
   static readonly selector = 'jl-radio-group';
 
-  readonly events = this.useEvents<{ change: string }>();
+  readonly events = this.useEvents<{ change: Value }>();
 
-  readonly options = this.useChange<RadioOption[]>([], () => this.renderOptions(), {
+  readonly options = this.useChange<RadioOption<Value>[]>([], () => this.renderOptions(), {
     attribute: 'options',
-    parse: jsonOf<RadioOption[]>([]),
+    parse: jsonOf<RadioOption<Value>[]>([]),
   });
-  readonly value = this.useChange(NO_VALUE, () => this.renderValue(), { attribute: 'value' });
+  readonly value = this.useChange<Value | typeof NO_VALUE>(NO_VALUE, () => this.renderValue(), {
+    attribute: 'value',
+    parse: textOf<Value | typeof NO_VALUE>(NO_VALUE),
+  });
   readonly orientation = this.useChange<RadioGroupOrientation>(
     'vertical',
     (value) => {
@@ -128,7 +132,7 @@ export class JlRadioGroup extends JlFormControl {
   }
 
   protected resetValue(): void {
-    this.value.set(this.getAttribute('value') ?? NO_VALUE);
+    this.value.set(textOf<Value | typeof NO_VALUE>(NO_VALUE)(this.getAttribute('value')));
   }
 
   /** The browser calls it for a disabled fieldset and for the element's own disabled attribute, even before render. */
@@ -167,8 +171,8 @@ export class JlRadioGroup extends JlFormControl {
 
   private choose(radio: HTMLElement): void {
     radio.focus();
-    const value = radio.dataset.value ?? NO_VALUE;
-    if (value === this.value.get()) {
+    const value = this.options.get().find((option) => option.value === radio.dataset.value)?.value;
+    if (value === undefined || value === this.value.get()) {
       return;
     }
     this.value.set(value);
@@ -194,7 +198,7 @@ export class JlRadioGroup extends JlFormControl {
     this.renderValue();
   }
 
-  private optionElement(option: RadioOption, index: number): HTMLElement {
+  private optionElement(option: RadioOption<Value>, index: number): HTMLElement {
     const labelId = `option-${index}-label`;
     const descriptionId = `option-${index}-description`;
     const hasDescription = option.description !== undefined && option.description !== '';

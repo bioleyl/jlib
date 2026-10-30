@@ -3,6 +3,7 @@
 import { describe, expectTypeOf, it } from 'vitest';
 
 import type { JlSelect } from '../src/atoms/jl-select';
+import type { JlRadioGroup } from '../src/molecules/jl-radio-group';
 import type { JlSegmented } from '../src/molecules/jl-segmented';
 import type { View } from './types/choices.types';
 
@@ -42,5 +43,17 @@ describe('a segmented control typed by its values', () => {
   it('stays a string without a type', () => {
     untyped.options.set([{ value: 'anything' }]);
     untyped.events.register('change', (value) => expectTypeOf(value).toEqualTypeOf<string>());
+  });
+});
+
+declare const radios: JlRadioGroup<View>;
+
+describe('a radio group typed by its values', () => {
+  it('takes options of those values only, and gives change one of them', () => {
+    radios.options.set([{ label: 'List', value: 'list' }]);
+    // @ts-expect-error: not one of the values
+    radios.options.set([{ label: 'Table', value: 'table' }]);
+    radios.events.register('change', (value) => expectTypeOf(value).toEqualTypeOf<View>());
+    expectTypeOf(radios.value.get()).toEqualTypeOf<View | ''>();
   });
 });
