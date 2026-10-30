@@ -3,10 +3,12 @@ import type {
   TableCellFormat,
   TableCellRenderer,
   TableColumn,
+  TableExpansion,
   TableRow,
   TableRowKey,
   TableSelectionState,
   TableSortDirection,
+  TableToggle,
 } from '../types/jl-table.types';
 
 /** What a header press does to a column's order: ascending, then descending, then as the rows came. */
@@ -178,6 +180,41 @@ export function toggleAll(keys: readonly TableRowKey[], selected: ReadonlySet<Ta
 export function toggleKey(selected: readonly TableRowKey[], key: TableRowKey, on: boolean): TableRowKey[] {
   const without = selected.filter((candidate) => candidate !== key);
   return on ? [...without, key] : without;
+}
+
+const OPEN_ROWS: Record<TableExpansion, (expanded: readonly TableRowKey[]) => TableRowKey[]> = {
+  multiple: (expanded) => [...expanded],
+  none: () => [],
+  single: (expanded) => expanded.slice(-1),
+};
+
+/** The rows shown open: none when rows do not open, the last one opened when they open one at a time. */
+export const openRows = (expanded: readonly TableRowKey[], expansion: TableExpansion): TableRowKey[] =>
+  OPEN_ROWS[expansion](expanded);
+
+const ROW_OPENERS: Record<
+  TableExpansion,
+  (expanded: readonly TableRowKey[], key: TableRowKey, open: boolean) => TableRowKey[]
+> = {
+  multiple: (expanded, key, open) => toggleKey(expanded, key, open),
+  none: (expanded) => [...expanded],
+  single: (expanded, key, open) =>
+    open ? [key] : openRows(expanded, 'single').filter((candidate) => candidate !== key),
+};
+
+/** The open rows after one opens or closes: one at a time, opening a row closes the one that was open. */
+export const withRowOpen = (
+  expanded: readonly TableRowKey[],
+  key: TableRowKey,
+  open: boolean,
+  expansion: TableExpansion
+): TableRowKey[] => ROW_OPENERS[expansion](expanded, key, open);
+
+/** What changed between two sets of open rows, as the `toggle` events to emit: the rows closed, then those opened. */
+export function rowToggles(before: readonly TableRowKey[], after: readonly TableRowKey[]): TableToggle[] {
+  const closed = before.filter((key) => !after.includes(key)).map((key) => ({ key, open: false }));
+  const opened = after.filter((key) => !before.includes(key)).map((key) => ({ key, open: true }));
+  return [...closed, ...opened];
 }
 
 /**

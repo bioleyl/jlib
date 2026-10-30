@@ -29,6 +29,8 @@ export const DEFAULT_TEXTS = {
   copied: 'Copied',
   copy: 'Copy',
   decrease: 'Decrease',
+  details: 'Details',
+  detailsOf: 'Details of {name}',
   dismiss: 'Dismiss',
   downloadCancel: 'Cancel',
   downloadFailed: 'Not downloaded: {error}',

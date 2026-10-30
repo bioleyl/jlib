@@ -1,5 +1,5 @@
 import { css } from '@jadis/core';
-import { ArrowDown, ArrowUp, ChevronsUpDown, Inbox } from 'lucide';
+import { ArrowDown, ArrowUp, ChevronRight, ChevronsUpDown, Inbox } from 'lucide';
 
 import { JlBadge } from '../atoms/jl-badge';
 import { JlIcon } from '../atoms/jl-icon';
@@ -7,16 +7,20 @@ import { JlElement } from '../base/jl-element';
 import { jsonOf, oneOf } from '../lib/attributes';
 import { setOrRemove } from '../lib/dom';
 import { registerIcons } from '../lib/icons';
+import { startedOnControl } from '../lib/surface';
 import {
   columnAlign,
   columnWidth,
   formatCell,
   nextSortDirection,
+  openRows,
   rowKeyOf,
+  rowToggles,
   selectionState,
   sortRows,
   toggleAll,
   toggleKey,
+  withRowOpen,
 } from '../lib/table';
 import { jlText } from '../lib/texts';
 import { BASE_STYLES } from '../styles/shared';
@@ -26,23 +30,37 @@ import type {
   TableCellFormat,
   TableCellRenderer,
   TableColumn,
+  TableDetailRenderer,
+  TableExpansion,
   TableRow,
   TableRowKey,
   TableSort,
   TableSortDirection,
+  TableToggle,
 } from '../types/jl-table.types';
 
 // The icons it draws itself: a page registers only the names it writes.
-registerIcons({ 'arrow-down': ArrowDown, 'arrow-up': ArrowUp, 'chevrons-up-down': ChevronsUpDown, inbox: Inbox });
+registerIcons({
+  'arrow-down': ArrowDown,
+  'arrow-up': ArrowUp,
+  'chevron-right': ChevronRight,
+  'chevrons-up-down': ChevronsUpDown,
+  inbox: Inbox,
+});
 
 export const TABLE_SORT_DIRECTIONS: readonly TableSortDirection[] = ['none', 'asc', 'desc'];
+export const TABLE_EXPANSIONS: readonly TableExpansion[] = ['none', 'single', 'multiple'];
 
 const MARKED_ATTRIBUTE = 'data-marked';
+const EXPANDED_ATTRIBUTE = 'data-expanded';
+const DETAIL_ID_PREFIX = 'detail-';
 const DEFAULT_ROW_KEY = 'id';
 const SKELETON_ROWS = 5;
 const SORT_ICON_SIZE = 14;
 const EMPTY_ICON_SIZE = 18;
+const CHEVRON_SIZE = 16;
 const NO_SORT: TableSortDirection = 'none';
+const NO_EXPANSION: TableExpansion = 'none';
 
 const ARIA_SORT: Record<TableSortDirection, string> = { asc: 'ascending', desc: 'descending', none: '' };
 const SORT_ICONS: Record<TableSortDirection, string> = {
@@ -72,6 +90,19 @@ function checkbox(label: string, index: number | null): Node {
   );
 }
 
+/** One of the table's own checkboxes, not an input a renderer drew. */
+const isTableCheckbox = (target: EventTarget | null): target is HTMLInputElement =>
+  target instanceof HTMLInputElement && target.matches('.select-cell > .check > .checkbox');
+
+/** The detail drawn under a row while it is open. */
+function detailOf(row: Element): Element | null {
+  const next = row.nextElementSibling;
+  return next?.classList.contains('detail') ? next : null;
+}
+
+/** Whether a press ends a drag that selected text, which leaves the row as it was. */
+const isSelectingText = (): boolean => (document.getSelection()?.toString() ?? '') !== '';
+
 type Part = 'head' | 'body';
 
 /**
@@ -79,12 +110,13 @@ type Part = 'head' | 'body';
  * badge, code); `rows` are plain objects. Sortable headings cycle ascending, descending and unsorted, and sort the
  * rows in place; `selectable` adds a checkbox column. The header stays on top while the rows scroll within
  * `max-height`, and the table scrolls sideways on narrow screens. Cells of a column can be drawn by code with
- * `renderers`.
+ * `renderers`. `expandable` rows open on a press to show their `detail` under them, the row staying as it is: one at
+ * a time (`single`) or any number (`multiple`).
  */
 export class JlTable extends JlElement {
   static readonly selector = 'jl-table';
 
-  readonly events = this.useEvents<{ sort: TableSort; selection: TableRowKey[] }>();
+  readonly events = this.useEvents<{ sort: TableSort; selection: TableRowKey[]; toggle: TableToggle }>();
 
   readonly columns = this.useChange<TableColumn[]>([], () => this.schedule('head', 'body'), {
     attribute: 'columns',
@@ -114,6 +146,20 @@ export class JlTable extends JlElement {
   /** The keys of the selected rows. */
   readonly selected = this.useChange<TableRowKey[]>([], () => this.renderSelection(), {
     attribute: 'selected',
+    parse: jsonOf<TableRowKey[]>([]),
+  });
+  /** Rows open on a press to show their `detail` under them: one at a time (`single`), any number (`multiple`). */
+  readonly expandable = this.useChange<TableExpansion>(
+    NO_EXPANSION,
+    (value) => {
+      this.reflect('expandable', value === NO_EXPANSION ? false : value);
+      this.schedule('head', 'body');
+    },
+    { attribute: 'expandable', parse: oneOf(TABLE_EXPANSIONS, NO_EXPANSION) }
+  );
+  /** The keys of the open rows. */
+  readonly expanded = this.useChange<TableRowKey[]>([], () => this.renderExpansion(), {
+    attribute: 'expanded',
     parse: jsonOf<TableRowKey[]>([]),
   });
   /** The keys of rows to draw attention to, such as a search's matches: a mark, not a selection. */
@@ -148,15 +194,41 @@ export class JlTable extends JlElement {
   /** Draws the cells of some columns by code, by column key: `{ name: (row) => <strong>{row.name}</strong> }`. */
   readonly renderers = this.useChange<Record<string, TableCellRenderer>>({}, () => this.schedule('body'));
 
+  // A function cannot be a useChange input: its set() would call it as an updater.
+  private readonly _source: { detail: TableDetailRenderer | null } = { detail: null };
   private readonly _pending = { body: false, head: false, queued: false };
-  /** The keys of the rows as drawn, by their place: the checkboxes carry the place. */
-  private readonly _view = { keys: [] as TableRowKey[] };
+  /** The rows as drawn and their keys, by their place: the rows and their checkboxes carry the place. */
+  private readonly _view = { keys: [] as TableRowKey[], rows: [] as TableRow[] };
 
   private readonly _refs = this.useRefs((ref) => ({
     body: ref('tbody'),
     head: ref('thead'),
     table: ref('table'),
   }));
+
+  /** Draws what an open row shows under it, from the row: `(row) => <JlFacts items={…} />`. */
+  get detail(): TableDetailRenderer | null {
+    return this._source.detail;
+  }
+
+  set detail(draw: TableDetailRenderer | null) {
+    this._source.detail = draw;
+    this.whenRendered(() => this.schedule('body'));
+  }
+
+  /** Opens or closes a row, as a press on it would; one at a time, opening a row closes the one that was open. */
+  toggle(key: TableRowKey, open: boolean): void {
+    const expansion = this.expandable.get();
+    if (expansion === NO_EXPANSION) {
+      return;
+    }
+    const before = openRows(this.expanded.get(), expansion);
+    const expanded = withRowOpen(this.expanded.get(), key, open, expansion);
+    this.expanded.set(expanded);
+    for (const change of rowToggles(before, openRows(expanded, expansion))) {
+      this.events.emit('toggle', change);
+    }
+  }
 
   templateHtml(): Node {
     return (
@@ -181,11 +253,11 @@ export class JlTable extends JlElement {
       }
     });
     this.on(this._refs.table, 'change', (event) => {
-      const input = event.target;
-      if (input instanceof HTMLInputElement && input.classList.contains('checkbox')) {
-        this.changeSelection(input);
+      if (isTableCheckbox(event.target)) {
+        this.changeSelection(event.target);
       }
     });
+    this.on(this._refs.body, 'click', (event) => this.pressRow(event));
   }
 
   /** Draws on the next microtask: the inputs set while connecting give one drawing, not one each. */
@@ -213,6 +285,7 @@ export class JlTable extends JlElement {
       this.renderBody();
     }
     this.renderSelection();
+    this.renderExpansion();
   }
 
   private sortBy(key: string): void {
@@ -234,10 +307,54 @@ export class JlTable extends JlElement {
     this.events.emit('selection', keys);
   }
 
+  /** A press on a row's chevron, or on the row anywhere but its controls and its checkbox, opens or closes it. */
+  private pressRow(event: MouseEvent): void {
+    const row = this.dataRowOf(event);
+    const key = row === undefined ? undefined : this.keyOf(row);
+    if (row === undefined || key === undefined || !this.opensOnPress(event, row)) {
+      return;
+    }
+    this.toggle(key, !row.hasAttribute(EXPANDED_ATTRIBUTE));
+  }
+
+  /** The row of data a press is on: one of the table's, not a row in the content of a detail. */
+  private dataRowOf(event: Event): HTMLElement | undefined {
+    const body = this._refs.body;
+    return event
+      .composedPath()
+      .find(
+        (target): target is HTMLElement =>
+          target instanceof HTMLTableRowElement
+          && target.parentElement === body
+          && target.dataset.index !== undefined
+      );
+  }
+
+  private opensOnPress(event: MouseEvent, row: HTMLElement): boolean {
+    const path = event.composedPath();
+    const chevron = row.querySelector('button.expand');
+    if (chevron === null) {
+      return false;
+    }
+    const select = row.querySelector('.select-cell');
+    const elsewhere =
+      startedOnControl(event, row) || (select !== null && path.includes(select)) || isSelectingText();
+    return path.includes(chevron) || !elsewhere;
+  }
+
   private renderMaxHeight(value: string): void {
     const height = /^\d+(\.\d+)?$/.test(value.trim()) ? `${value.trim()}px` : value;
     this.style.setProperty('--max-height', height === '' ? 'none' : height);
     this.reflect('scrolls', height !== '');
+  }
+
+  private isExpandable(): boolean {
+    return this.expandable.get() !== NO_EXPANSION;
+  }
+
+  /** The number of cells in a row: the columns, after the checkbox and the chevron when there are. */
+  private span(columns: TableColumn[]): number {
+    return columns.length + Number(this.selectable.get()) + Number(this.isExpandable());
   }
 
   private renderHead(): void {
@@ -246,9 +363,15 @@ export class JlTable extends JlElement {
         {checkbox('Select all rows', null)}
       </th>
     ) : null;
+    const details = this.isExpandable() ? (
+      <th class="expand-cell" scope="col">
+        <span class="sr-only">{jlText('details')}</span>
+      </th>
+    ) : null;
     this._refs.head.replaceChildren(
       <tr>
         {selectAll}
+        {details}
         {this.columns.get().map((column) => this.headerCell(column))}
       </tr>
     );
@@ -292,33 +415,48 @@ export class JlTable extends JlElement {
 
   private renderBody(): void {
     const columns = this.columns.get();
-    const span = columns.length + Number(this.selectable.get());
     if (this.loading.get()) {
-      this._view.keys = [];
+      this.setView([], []);
       this._refs.body.replaceChildren(...this.skeletonRows(columns));
       return;
     }
     const rows = this.rows.get();
     if (rows.length === 0) {
-      this._view.keys = [];
-      this._refs.body.replaceChildren(this.emptyRow(span));
+      this.setView([], []);
+      this._refs.body.replaceChildren(this.emptyRow(this.span(columns)));
       return;
     }
     const keyField = this.rowKey.get();
     const keys = new Map(rows.map((row, index) => [row, rowKeyOf(row, keyField, index)]));
     const sorted = this.sortedRows();
-    this._view.keys = sorted.map((row, index) => keys.get(row) ?? index);
+    this.setView(
+      sorted,
+      sorted.map((row, index) => keys.get(row) ?? index)
+    );
     this._refs.body.replaceChildren(...sorted.map((row, index) => this.bodyRow(row, index, columns)));
     this.renderMarks();
+  }
+
+  private setView(rows: TableRow[], keys: TableRowKey[]): void {
+    this._view.rows = rows;
+    this._view.keys = keys;
   }
 
   private bodyRow(row: TableRow, index: number, columns: TableColumn[]): Node {
     const first = columns[0];
     const name = first === undefined ? String(index + 1) : formatCell(row[first.key], first.format);
     const select = this.selectable.get() ? <td class="select-cell">{checkbox(`Select ${name}`, index)}</td> : null;
+    const chevron = this.isExpandable() ? (
+      <td class="expand-cell">
+        <button type="button" class="expand" aria-expanded="false" aria-label={jlText('detailsOf', { name })}>
+          <JlIcon class="chevron" name="chevron-right" size={CHEVRON_SIZE} />
+        </button>
+      </td>
+    ) : null;
     return (
-      <tr>
+      <tr data-index={index}>
         {select}
+        {chevron}
         {columns.map((column) => (
           <td
             class={`align-${columnAlign(column)} format-${column.format ?? 'text'}${column.wrap ? ' wrap' : ''}`}>
@@ -355,6 +493,7 @@ export class JlTable extends JlElement {
 
   private skeletonRows(columns: TableColumn[]): Node[] {
     const select = this.selectable.get();
+    const expand = this.isExpandable();
     return Array.from({ length: SKELETON_ROWS }, () => (
       <tr class="skeleton">
         {select ? (
@@ -362,6 +501,7 @@ export class JlTable extends JlElement {
             <span class="bone box" />
           </td>
         ) : null}
+        {expand ? <td class="expand-cell" /> : null}
         {columns.map((column) => (
           <td class={`align-${columnAlign(column)}`}>
             <span class="bone" />
@@ -384,20 +524,72 @@ export class JlTable extends JlElement {
     );
   }
 
-  /** The bar and the shade of marked rows, changed in place: one body row per key while there are rows. */
+  /** The rows of data, without the details under the open ones. */
+  private dataRows(): HTMLElement[] {
+    return [...this._refs.body.querySelectorAll<HTMLElement>(':scope > tr[data-index]')];
+  }
+
+  private keyOf(row: HTMLElement): TableRowKey | undefined {
+    return this._view.keys[Number(row.dataset.index)];
+  }
+
+  /** The bar and the shade of marked rows, changed in place. */
   private renderMarks(): void {
     const marked = new Set(this.marked.get());
-    const rows = this._view.keys.length === 0 ? [] : [...this._refs.body.children];
-    for (const [index, row] of rows.entries()) {
-      const key = this._view.keys[index];
+    for (const row of this.dataRows()) {
+      const key = this.keyOf(row);
       row.toggleAttribute(MARKED_ATTRIBUTE, key !== undefined && marked.has(key));
     }
+  }
+
+  /** The details of the open rows, added under them and taken away in place: one that stays open keeps its content. */
+  private renderExpansion(): void {
+    const open = new Set(openRows(this.expanded.get(), this.expandable.get()));
+    for (const row of this.dataRows()) {
+      const key = this.keyOf(row);
+      this.renderRowOpen(row, key !== undefined && open.has(key));
+    }
+  }
+
+  private renderRowOpen(row: HTMLElement, open: boolean): void {
+    const chevron = row.querySelector<HTMLButtonElement>('button.expand');
+    if (chevron === null) {
+      return;
+    }
+    row.toggleAttribute(EXPANDED_ATTRIBUTE, open);
+    chevron.setAttribute('aria-expanded', String(open));
+    const detail = detailOf(row);
+    if (!open) {
+      detail?.remove();
+      chevron.removeAttribute('aria-controls');
+      return;
+    }
+    if (detail !== null) {
+      return;
+    }
+    const id = `${DETAIL_ID_PREFIX}${row.dataset.index}`;
+    row.after(this.detailRow(row, id));
+    chevron.setAttribute('aria-controls', id);
+  }
+
+  private detailRow(row: HTMLElement, id: string): Node {
+    const data = this._view.rows[Number(row.dataset.index)];
+    const draw = this._source.detail;
+    return (
+      <tr class="detail" id={id}>
+        <td colSpan={this.span(this.columns.get())}>
+          <div class="detail-body">{data === undefined || draw === null ? '' : draw(data)}</div>
+        </td>
+      </tr>
+    );
   }
 
   /** The checkboxes and the shading of selected rows, changed in place. */
   private renderSelection(): void {
     const selected = new Set(this.selected.get());
-    for (const input of this._refs.body.querySelectorAll<HTMLInputElement>('input.checkbox')) {
+    for (const input of this._refs.body.querySelectorAll<HTMLInputElement>(
+      ':scope > tr > .select-cell .checkbox'
+    )) {
       const key = this._view.keys[Number(input.dataset.index)];
       const on = key !== undefined && selected.has(key);
       input.checked = on;

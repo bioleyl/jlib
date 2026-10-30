@@ -148,6 +148,7 @@ export const collections: PatternDoc = {
       'Rows and cards',
       list(
         'The whole row or card opens the item. It is a link (`href`), with a chevron at the end when it leads to a page.',
+        'A table row whose details take a few lines (the address and the items of an order) opens under itself rather than lead to a page: `expandable` on `jl-table`. One row at a time (`single`), unless people compare the details of several (`multiple`). The row stays as it is, its detail under it.',
         'The name first, in the text colour; a line under it in muted text; the status as a badge; the time at the end ("3 days ago").',
         'Two actions at most on a row, as icon buttons with a hint ("Edit Rita Keller"); the others in a **More** menu (`ellipsis`). The same action looks the same in every list.',
         'Actions are always shown: none appear only on hover, which phones do not have.',

@@ -7,11 +7,14 @@ import {
   compareCells,
   formatCell,
   nextSortDirection,
+  openRows,
   rowKeyOf,
+  rowToggles,
   selectionState,
   sortRows,
   toggleAll,
   toggleKey,
+  withRowOpen,
 } from '../src/lib/table';
 
 const LOCALE = 'en-US';
@@ -144,6 +147,38 @@ describe('selection', () => {
     expect(toggleKey([1], 2, true)).toEqual([1, 2]);
     expect(toggleKey([1, 2], 1, false)).toEqual([2]);
     expect(toggleKey([1], 1, true)).toEqual([1]);
+  });
+});
+
+describe('open rows', () => {
+  it('shows none when rows do not open, the last one opened when one at a time, all of them otherwise', () => {
+    expect(openRows([1, 2], 'none')).toEqual([]);
+    expect(openRows([1, 2], 'single')).toEqual([2]);
+    expect(openRows([], 'single')).toEqual([]);
+    expect(openRows([1, 2], 'multiple')).toEqual([1, 2]);
+  });
+
+  it('closes the open row when another opens, one at a time', () => {
+    expect(withRowOpen([1], 2, true, 'single')).toEqual([2]);
+    expect(withRowOpen([2], 2, false, 'single')).toEqual([]);
+    expect(withRowOpen([1, 2], 1, false, 'single')).toEqual([2]);
+  });
+
+  it('opens and closes rows on their own when any number can be open', () => {
+    expect(withRowOpen([1], 2, true, 'multiple')).toEqual([1, 2]);
+    expect(withRowOpen([1, 2], 1, false, 'multiple')).toEqual([2]);
+  });
+
+  it('leaves the open rows alone when rows do not open', () => {
+    expect(withRowOpen([1], 2, true, 'none')).toEqual([1]);
+  });
+
+  it('tells the rows closed, then those opened', () => {
+    expect(rowToggles([1], [2])).toEqual([
+      { key: 1, open: false },
+      { key: 2, open: true },
+    ]);
+    expect(rowToggles([1, 2], [1, 2])).toEqual([]);
   });
 });
 

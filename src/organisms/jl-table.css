@@ -5,6 +5,19 @@
   --max-height: none;
   --cell-y: 10px;
   --cell-x: 14px;
+  --select-width: 44px;
+  --expand-width: 36px;
+  /* The width of the checkbox and chevron cells, after which the details of open rows start. */
+  --lead: 0px;
+}
+
+:host([expandable]) {
+  --lead: var(--expand-width);
+}
+
+:host([expandable][selectable]) {
+  --expand-width: 28px;
+  --lead: calc(var(--select-width) + var(--expand-width));
 }
 
 :host([dense]) {
@@ -19,6 +32,11 @@
   border-radius: var(--jl-radius);
   background: var(--jl-surface);
   overscroll-behavior-x: contain;
+}
+
+/* The details of open rows take the width of the frame, not of the table. */
+:host([expandable]) .scroll {
+  container-type: inline-size;
 }
 
 table {
@@ -62,6 +80,21 @@ tbody tr.empty td {
   padding: 40px var(--cell-x);
   color: var(--jl-muted);
   text-align: center;
+}
+
+/* An open row's detail: joined to its row, no line between them, in line with its first column. */
+tbody tr.detail td {
+  padding: 0 var(--cell-x) calc(var(--cell-y) + 6px) calc(var(--lead) + var(--cell-x));
+  border-top: none;
+  white-space: normal;
+  cursor: auto;
+}
+
+/* It stays in the frame while the table scrolls sideways. */
+.detail-body {
+  position: sticky;
+  left: calc(var(--lead) + var(--cell-x));
+  max-width: calc(100cqi - var(--lead) - 2 * var(--cell-x));
 }
 
 .align-left {
@@ -121,16 +154,26 @@ tbody tr[data-marked] td:first-child {
   box-shadow: inset 3px 0 0 var(--jl-accent);
 }
 
-tbody tr:not(.empty, .skeleton, [data-selected]):hover td {
+tbody tr:not(.empty, .skeleton, .detail, [data-selected]):hover td {
   background: var(--jl-surface-2);
 }
 
-:host([striped]) tbody tr:nth-child(even):not(.empty, [data-selected], [data-marked]) td {
+/* The stripes count the rows of data, not the details of open rows. */
+:host([striped]) tbody tr:nth-child(even of :where(:not(.detail))):not(.empty, [data-selected], [data-marked]) td {
   background: var(--jl-surface-2);
 }
 
-:host([striped]) tbody tr:not(.empty, .skeleton, [data-selected]):hover td {
+:host([striped]) tbody tr:not(.empty, .skeleton, .detail, [data-selected]):hover td {
   background: var(--jl-surface-3);
+}
+
+/* An open row's detail takes the shade of its row. */
+:host([striped])
+  tbody
+  tr:nth-child(even of :where(:not(.detail))):not([data-selected], [data-marked])
+  + .detail
+  td {
+  background: var(--jl-surface-2);
 }
 
 .format-number {
@@ -157,9 +200,53 @@ code {
 }
 
 .select-cell {
-  width: 44px;
+  width: var(--select-width);
   padding-right: 0;
   line-height: 0;
+}
+
+/* The chevron's icon starts where the cells' text does, its button around it; after a checkbox, close to it. */
+.expand-cell {
+  width: var(--expand-width);
+  padding-right: 0;
+  padding-left: calc(var(--cell-x) - 4px);
+  line-height: 0;
+}
+
+.select-cell + .expand-cell {
+  padding-left: 0;
+}
+
+:host([expandable]) tbody tr[data-index] {
+  cursor: pointer;
+}
+
+/* Taller than a line of text, the button reaches into the cell's padding rather than heighten the row. */
+.expand {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  margin: -2px 0;
+  padding: 0;
+  border: none;
+  border-radius: var(--jl-radius-xs);
+  background: none;
+  color: var(--jl-muted);
+  cursor: pointer;
+}
+
+.expand:hover {
+  color: var(--jl-text);
+}
+
+.chevron {
+  transition: rotate var(--jl-fast) var(--jl-ease);
+}
+
+.expand[aria-expanded="true"] .chevron {
+  rotate: 90deg;
 }
 
 /* The checkbox: the native input keeps the keyboard and the states, the mark beside it draws the tick. */

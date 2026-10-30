@@ -1,4 +1,6 @@
-import type { JlButton, JlTable, TableColumn, TableRow, Tone } from '@syware/jlib';
+import { oneOf, TABLE_EXPANSIONS } from '@syware/jlib';
+
+import type { JlButton, JlFacts, JlSegmented, JlTable, TableColumn, TableRow, Tone } from '@syware/jlib';
 import type { ComponentDoc } from '../../types/docs.types';
 
 /** A badge tone per value; the values are labels people read, written as they show. */
@@ -135,6 +137,91 @@ const DEPLOYS: TableRow[] = Array.from({ length: DEPLOY_COUNT }, (_, index) => (
   state: STATES[index % STATES.length],
 }));
 
+const ORDER_COLUMNS: TableColumn[] = [
+  { format: 'code', key: 'number', label: 'Order', width: 100 },
+  { key: 'customer', label: 'Customer', sortable: true },
+  {
+    format: 'badge',
+    key: 'status',
+    label: 'Status',
+    tones: tonesOf([
+      ['Delivered', 'ok'],
+      ['Shipped', 'info'],
+      ['Waiting', 'warn'],
+    ]),
+  },
+  { format: 'number', key: 'total', label: 'Total', sortable: true },
+  { format: 'date', key: 'placed', label: 'Placed', sortable: true },
+];
+
+const ORDERS: TableRow[] = [
+  {
+    address: 'Rue du Lac 12, 1800 Vevey',
+    customer: 'Rita Keller',
+    id: 1041,
+    items: '3 × Bornes Wago 221-413, 1 × Câble TT 3×1,5 mm²',
+    note: 'Leave it at the reception.',
+    number: 'C-1041',
+    placed: '2025-05-26',
+    status: 'Delivered',
+    total: 184.5,
+  },
+  {
+    address: 'Chemin des Vignes 4, 1009 Pully',
+    customer: 'Marc Dubois',
+    id: 1042,
+    items: '2 × Chevilles 6 mm',
+    number: 'C-1042',
+    placed: '2025-05-28',
+    status: 'Shipped',
+    total: 23.9,
+  },
+  {
+    address: 'Avenue de la Gare 31, 1950 Sion',
+    customer: 'Sara Monnier',
+    id: 1043,
+    items: '1 × Câble TT 3×1,5 mm², 10 × Bornes Wago 221-413',
+    note: 'Call before delivering: the shop closes at noon.',
+    number: 'C-1043',
+    placed: '2025-05-30',
+    status: 'Waiting',
+    total: 412,
+  },
+];
+
+/** An order's detail: where it goes, what it holds and its note. */
+function orderDetail(row: TableRow): Node {
+  const facts = document.createElement('jl-facts') as JlFacts;
+  facts.items.set([
+    { label: 'Deliver to', value: String(row.address) },
+    { label: 'Items', value: String(row.items) },
+    { label: 'Note', value: typeof row.note === 'string' ? row.note : null },
+  ]);
+  return facts;
+}
+
+/** A member's detail in the playground: what the columns leave out. */
+function memberDetail(row: TableRow): Node {
+  const facts = document.createElement('jl-facts') as JlFacts;
+  facts.items.set([
+    { label: 'Email', value: String(row.email) },
+    { label: 'Joined', value: String(row.joined) },
+  ]);
+  return facts;
+}
+
+/** The orders table, its details, and the control that lets one or any number of rows open. */
+function wireOrders(root: HTMLElement): void {
+  const table = root.querySelector<JlTable>('jl-table.orders');
+  const mode = root.querySelector<JlSegmented>('.expansion');
+  if (table === null || mode === null) {
+    return;
+  }
+  table.detail = orderDetail;
+  table.rows.set(ORDERS);
+  mode.events.register('change', (value) => table.expandable.set(oneOf(TABLE_EXPANSIONS, 'single')(value)));
+}
+
 /** The users table and its toolbar: the selection count and a button that acts on it. */
 function wireUsers(root: HTMLElement): void {
   const table = root.querySelector<JlTable>('jl-table.users');
@@ -168,6 +255,10 @@ Numbers sort by value, dates by time, text in the language's order; empty values
 checkbox to each row and one in the header that selects them all (a dash when only some are), and emits selection
 with the keys of the selected rows, read from row-key.
 
+expandable lets rows open: a press on a row, or on its chevron, shows its detail under it, and the row stays as it
+is. single keeps one row open, opening another closes it; multiple opens any number. detail draws what an open row
+shows, from its row; expanded holds the keys of the open rows, and each opening and closing emits toggle.
+
 The header stays on top while the rows scroll within max-height, and the table scrolls sideways on narrow screens.
 For a cell that is more than a value (a person with an avatar, a link, a menu), give the column a renderer.`,
   events: [
@@ -180,6 +271,12 @@ For a cell that is more than a value (a person with an avatar, a link, a menu), 
       description: 'The selection changed: the keys of the selected rows.',
       detail: 'Array<string | number>',
       name: 'selection',
+    },
+    {
+      description:
+        'A row opened or closed: its key and whether it is open now. When rows open one at a time, opening a row emits the close of the other first.',
+      detail: '{ key: string | number; open: boolean }',
+      name: 'toggle',
     },
   ],
   examples: [
@@ -252,6 +349,31 @@ For a cell that is more than a value (a person with an avatar, a link, a menu), 
       title: 'Custom cells',
     },
     {
+      description:
+        "A press on a row, or on its chevron, opens it: its detail comes under it, the row staying as it is. One row at a time opens by default here; the other choice lets any number stay open. The detail lives in the table's shadow root: draw it with jl-* components, or style it inline.",
+      html: `
+        <div class="stack">
+          <jl-segmented class="expansion" label="Rows that open" value="single"
+            options='[{"value":"single","label":"One at a time"},{"value":"multiple","label":"Any number"}]'></jl-segmented>
+          <jl-table class="orders" expandable="single" label="Orders" columns='${JSON.stringify(ORDER_COLUMNS)}'></jl-table>
+        </div>`,
+      script: `
+        const table = root.querySelector('jl-table.orders');
+        table.detail = (order) => {
+          const facts = document.createElement('jl-facts');
+          facts.items.set([
+            { label: 'Deliver to', value: order.address },
+            { label: 'Items', value: order.items },
+            { label: 'Note', value: order.note ?? null },
+          ]);
+          return facts;
+        };
+        table.rows.set(orders);
+        root.querySelector('.expansion').events.register('change', (value) => table.expandable.set(value));`,
+      setup: wireOrders,
+      title: 'Row details',
+    },
+    {
       description: 'Dense and striped, the header held on top while the rows scroll within 260 pixels.',
       html: `
         <jl-table class="deploys" dense striped max-height="260" label="Deployments"
@@ -297,13 +419,25 @@ For a cell that is more than a value (a person with an avatar, a link, a menu), 
     },
   ],
   level: 'organism',
+  methods: [
+    {
+      description:
+        'Opens or closes a row, as a press on it would, and emits toggle. When rows open one at a time, opening one closes the other.',
+      name: 'toggle',
+      signature: 'toggle(key: string | number, open: boolean): void',
+    },
+  ],
   name: 'Table',
   playground: {
     attributes: {
       columns:
         '[{"key":"name","label":"Name","sortable":true},{"key":"status","label":"Status","format":"badge","tones":{"Active":"ok","Invited":"info"}},{"key":"projects","label":"Projects","format":"number","sortable":true}]',
-      rows: '[{"id":1,"name":"Ada Lovelace","status":"Active","projects":12},{"id":2,"name":"Ben Okafor","status":"Invited","projects":4},{"id":3,"name":"Chen Wei","status":"Active","projects":27}]',
+      expandable: 'single',
+      rows: '[{"id":1,"name":"Ada Lovelace","status":"Active","projects":12,"email":"ada@acme.dev","joined":"2023-02-14"},{"id":2,"name":"Ben Okafor","status":"Invited","projects":4,"email":"ben@acme.dev","joined":"2024-06-03"},{"id":3,"name":"Chen Wei","status":"Active","projects":27,"email":"chen@acme.dev","joined":"2024-11-21"}]',
       selectable: true,
+    },
+    setup: (element) => {
+      (element as JlTable).detail = memberDetail;
     },
     width: 'full',
   },
@@ -364,6 +498,30 @@ For a cell that is more than a value (a person with an avatar, a link, a menu), 
       description: 'The keys of the selected rows.',
       name: 'selected',
       type: 'Array<string | number>',
+    },
+    {
+      attribute: 'expandable',
+      control: { kind: 'select', options: ['none', 'single', 'multiple'] },
+      default: "'none'",
+      description:
+        'Rows open on a press, on the row or its chevron, to show their detail under them: single one at a time (opening a row closes the other), multiple any number.',
+      name: 'expandable',
+      type: "'none' | 'single' | 'multiple'",
+    },
+    {
+      attribute: 'expanded',
+      control: { kind: 'json' },
+      default: '[]',
+      description: 'The keys of the open rows. When they open one at a time, the last one is open.',
+      name: 'expanded',
+      type: 'Array<string | number>',
+    },
+    {
+      default: 'null',
+      description:
+        "Draws what an open row shows under it, from its row: (row) => Node. Drawn when the row opens; cellOf<Row>((row) => …) writes one for the page's own type of row.",
+      name: 'detail',
+      type: '((row: Record<string, unknown>) => Node) | null',
     },
     {
       attribute: 'marked',
@@ -431,6 +589,7 @@ For a cell that is more than a value (a person with an avatar, a link, a menu), 
     },
   ],
   styling: [{ description: 'The scrolling frame around the table.', name: 'base' }],
-  summary: 'Rows of records under column headings, with sorting, selection, formats and a sticky header.',
+  summary:
+    'Rows of records under column headings, with sorting, selection, rows that open on their details, formats and a sticky header.',
   tag: 'jl-table',
 };

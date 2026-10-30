@@ -41,3 +41,12 @@ export type TableCellRenderer = (row: TableRow) => Node;
 
 /** What the select-all box shows: no row selected, some, or all of them. */
 export type TableSelectionState = 'none' | 'some' | 'all';
+
+/** Whether rows open to show more under them: never, one at a time, or any number at once. */
+export type TableExpansion = 'none' | 'single' | 'multiple';
+
+/** Draws what an open row shows under it. */
+export type TableDetailRenderer = (row: TableRow) => Node;
+
+/** A row opened or closed: its key, and whether it is open now. */
+export type TableToggle = { key: TableRowKey; open: boolean };
