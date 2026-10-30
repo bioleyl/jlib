@@ -8,6 +8,7 @@ import type { JlMenu } from '../src/molecules/jl-menu';
 import type { JlRadioGroup } from '../src/molecules/jl-radio-group';
 import type { JlSegmented } from '../src/molecules/jl-segmented';
 import type { JlCommandPalette } from '../src/organisms/jl-command-palette';
+import type { JlSideNav } from '../src/organisms/jl-side-nav';
 import type { JlTabBar } from '../src/organisms/jl-tab-bar';
 import type { View } from './types/choices.types';
 
@@ -104,5 +105,16 @@ describe('a tab bar typed by its ids', () => {
     // @ts-expect-error: not a place of the tab bar
     tabs.items.set([{ icon: 'cog', id: 'settings', label: 'Settings' }]);
     tabs.events.register('select', (id) => expectTypeOf(id).toEqualTypeOf<'home' | 'jobs'>());
+  });
+});
+
+declare const nav: JlSideNav<'jobs' | 'people'>;
+
+describe('a side nav typed by its ids', () => {
+  it('takes items of those ids only, nested ones included, and gives select one of them', () => {
+    nav.sections.set([{ items: [{ children: [{ id: 'people', label: 'People' }], id: 'jobs', label: 'Jobs' }] }]);
+    // @ts-expect-error: a nested item is one of the ids too
+    nav.sections.set([{ items: [{ children: [{ id: 'billing', label: 'Billing' }], id: 'jobs', label: 'Jobs' }] }]);
+    nav.events.register('select', (id) => expectTypeOf(id).toEqualTypeOf<'jobs' | 'people'>());
   });
 });

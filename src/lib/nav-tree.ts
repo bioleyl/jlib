@@ -24,14 +24,17 @@ export const pathInSections = (sections: readonly SideNavSection[], id: string):
   );
 
 /** The item itself when it has no children, otherwise its first leaf: where a parent leads in the icon rail. */
-export function firstLeaf(item: SideNavItem): SideNavItem {
+export function firstLeaf<Id extends string>(item: SideNavItem<Id>): SideNavItem<Id> {
   const first = item.children?.[0];
   return hasChildren(item) && first !== undefined ? firstLeaf(first) : item;
 }
 
 /** Finds an item by id anywhere in the sections. */
-export function findItem(sections: readonly SideNavSection[], id: string): SideNavItem | null {
-  const search = (items: readonly SideNavItem[]): SideNavItem | null => {
+export function findItem<Id extends string>(
+  sections: readonly SideNavSection<Id>[],
+  id: string
+): SideNavItem<Id> | null {
+  const search = (items: readonly SideNavItem<Id>[]): SideNavItem<Id> | null => {
     for (const item of items) {
       const found = item.id === id ? item : search(item.children ?? []);
       if (found !== null) {

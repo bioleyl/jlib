@@ -1,6 +1,9 @@
-/** One entry of a side navigation; with `children`, it opens and closes to show them. */
-export type SideNavItem = {
-  id: string;
+/**
+ * One entry of a side navigation; with `children`, it opens and closes to show them. Typed by its ids
+ * (`SideNavItem<'jobs' | 'people'>`), `id` is one of them.
+ */
+export type SideNavItem<Id extends string = string> = {
+  id: Id;
   label: string;
   /** An icon name; the collapsed rail shows only the icons. */
   icon?: string;
@@ -10,11 +13,11 @@ export type SideNavItem = {
   target?: string;
   /** A count or a short word beside the label: `3`, `New`. */
   badge?: string | number;
-  children?: SideNavItem[];
+  children?: SideNavItem<Id>[];
 };
 
 /** A group of items under an optional heading. */
-export type SideNavSection = {
+export type SideNavSection<Id extends string = string> = {
   label?: string;
-  items: SideNavItem[];
+  items: SideNavItem<Id>[];
 };

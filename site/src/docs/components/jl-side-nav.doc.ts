@@ -1,3 +1,6 @@
+import sideNavCode from '../typing/jl-side-nav.code.ts?raw';
+import sideNavJsx from '../typing/jl-side-nav.jsx.tsx?raw';
+
 import type { JlSideNav } from '@syware/jlib';
 import type { ComponentDoc } from '../../types/docs.types';
 
@@ -53,7 +56,7 @@ Every item is a link (with an href) or a button, so the Tab key reaches it; Up a
 items, Right opens a parent and Left closes it. Items without an href fire select; put the side nav in the nav slot
 of jl-app-shell for the whole frame.`,
   events: [
-    { description: 'An item was chosen: its id.', detail: 'string', name: 'select' },
+    { description: 'An item was chosen: its id.', detail: 'Id', name: 'select' },
     {
       description: 'People folded the side nav into its rail (true) or unfolded it (false), with its button.',
       detail: 'boolean',
@@ -131,7 +134,7 @@ of jl-app-shell for the whole frame.`,
       description:
         'The sections: an optional label, and items with id, label, icon, href (and target: _blank for a new tab), badge and children.',
       name: 'sections',
-      type: 'SideNavSection[]',
+      type: 'SideNavSection<Id>[]',
     },
     {
       attribute: 'value',
@@ -139,7 +142,7 @@ of jl-app-shell for the whole frame.`,
       default: "''",
       description: 'The id of the active item.',
       name: 'value',
-      type: 'string',
+      type: "Id | ''",
     },
     {
       attribute: 'collapsed',
@@ -199,4 +202,10 @@ of jl-app-shell for the whole frame.`,
   ],
   summary: 'The navigation down the side of an app, with nested items and a collapsed rail.',
   tag: 'jl-side-nav',
+  typing: {
+    code: sideNavCode,
+    description:
+      "Typed by its ids, JlSideNav<'jobs' | 'people' | 'teams' | 'settings'> takes items of those ids only, nested ones included, and gives select and value as one of them: the editor completes them and refuses another.",
+    jsx: sideNavJsx,
+  },
 };

@@ -4,7 +4,7 @@ import { ChevronRight, PanelLeftClose, PanelLeftOpen } from 'lucide';
 import { JlButton } from '../atoms/jl-button';
 import { JlIcon } from '../atoms/jl-icon';
 import { JlElement } from '../base/jl-element';
-import { jsonOf } from '../lib/attributes';
+import { jsonOf, textOf } from '../lib/attributes';
 import { setOrRemove, uniqueId } from '../lib/dom';
 import { registerIcons } from '../lib/icons';
 import { findItem, firstLeaf, pathInSections } from '../lib/nav-tree';
@@ -29,11 +29,12 @@ const ROW_SELECTOR = '.item';
 const NEW_TAB = '_blank';
 // A page opened in a new tab gets no handle on this one.
 const SAFE_REL = 'noopener noreferrer';
+const NO_ITEM = '';
 
 /** A JSON attribute that should hold a list of sections; anything else gives none. */
-const parseSections = (value: string | null): SideNavSection[] => {
+const parseSections = <Id extends string>(value: string | null): SideNavSection<Id>[] => {
   const parsed = jsonOf<unknown>([])(value);
-  return Array.isArray(parsed) ? (parsed as SideNavSection[]) : [];
+  return Array.isArray(parsed) ? (parsed as SideNavSection<Id>[]) : [];
 };
 
 const hasChildren = (item: SideNavItem): boolean => (item.children?.length ?? 0) > 0;
@@ -45,20 +46,24 @@ const isReachable = (row: HTMLElement): boolean => row.closest('[hidden]') === n
  * The navigation of an app, down its side: sections of items with icons, badges and nested items that open with
  * a chevron. `value` is the active item (its parents open to show it); `collapsed` makes it a rail of icons, with
  * the labels as tooltips, and `collapsible` lets people fold and unfold it with a button at its bottom. Items with
- * an `href` are links; the others fire `select`.
+ * an `href` are links; the others fire `select`. Typed by its ids, `JlSideNav<'jobs' | 'people'>` takes items of
+ * those ids and gives `select` one of them.
  */
-export class JlSideNav extends JlElement {
+export class JlSideNav<Id extends string = string> extends JlElement {
   static readonly selector = 'jl-side-nav';
 
   /** `collapse`: people folded the side nav into its rail (true) or unfolded it (false), for the app to remember. */
-  readonly events = this.useEvents<{ select: string; collapse: boolean }>();
+  readonly events = this.useEvents<{ select: Id; collapse: boolean }>();
 
-  readonly sections = this.useChange<SideNavSection[]>([], () => this.render(), {
+  readonly sections = this.useChange<SideNavSection<Id>[]>([], () => this.render(), {
     attribute: 'sections',
-    parse: parseSections,
+    parse: parseSections<Id>,
   });
   /** The id of the active item. */
-  readonly value = this.useChange('', (value) => this.renderActive(value), { attribute: 'value' });
+  readonly value = this.useChange<Id | typeof NO_ITEM>(NO_ITEM, (value) => this.renderActive(value), {
+    attribute: 'value',
+    parse: textOf<Id | typeof NO_ITEM>(NO_ITEM),
+  });
   /** Shows only the icons, in a narrow rail; the labels become tooltips. */
   readonly collapsed = this.useChange(
     false,
@@ -153,7 +158,8 @@ export class JlSideNav extends JlElement {
       this.toggleItem(item.id);
       return;
     }
-    this.choose(row?.dataset.target ?? item.id);
+    // In the rail, a parent leads to its first leaf.
+    this.choose(findItem(this.sections.get(), row?.dataset.target ?? '')?.id ?? item.id);
   }
 
   /** Whether it shows as the rail now: folded, and not in a drawer. */
@@ -183,7 +189,7 @@ export class JlSideNav extends JlElement {
     fold.hint.set(rail ? this.expandLabel.get() : '');
   }
 
-  private choose(id: string): void {
+  private choose(id: Id): void {
     this.value.set(id);
     this.events.emit('select', id);
   }
@@ -242,7 +248,7 @@ export class JlSideNav extends JlElement {
     this.renderActive(this.value.get());
   }
 
-  private sectionNode(section: SideNavSection, index: number): Node {
+  private sectionNode(section: SideNavSection<Id>, index: number): Node {
     const headingId = `${this._prefix}-section-${index}`;
     const label = section.label ?? '';
     return (
@@ -260,7 +266,7 @@ export class JlSideNav extends JlElement {
     );
   }
 
-  private itemNode(item: SideNavItem, depth: number): Node {
+  private itemNode(item: SideNavItem<Id>, depth: number): Node {
     const parent = hasChildren(item);
     const childrenId = `${this._prefix}-${item.id}-children`;
     return (
@@ -290,7 +296,7 @@ export class JlSideNav extends JlElement {
    * The row of an item: a link when it has an `href`, otherwise a button. In the rail, a parent leads to its first
    * leaf, since its children cannot show there.
    */
-  private rowNode(item: SideNavItem, depth: number, childrenId: string): Node {
+  private rowNode(item: SideNavItem<Id>, depth: number, childrenId: string): Node {
     const collapsed = this.isRail();
     const parent = hasChildren(item);
     const target = collapsed ? firstLeaf(item) : item;
@@ -326,7 +332,7 @@ export class JlSideNav extends JlElement {
     );
   }
 
-  private rowContent(item: SideNavItem, toggles: boolean): Node[] {
+  private rowContent(item: SideNavItem<Id>, toggles: boolean): Node[] {
     const badge = item.badge === undefined ? '' : String(item.badge);
     return [
       item.icon === undefined ? (
