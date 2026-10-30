@@ -3,7 +3,7 @@ import { Ellipsis } from 'lucide';
 
 import { JlIcon } from '../atoms/jl-icon';
 import { JlElement } from '../base/jl-element';
-import { jsonOf } from '../lib/attributes';
+import { jsonOf, textOf } from '../lib/attributes';
 import { setOrRemove } from '../lib/dom';
 import { registerIcons } from '../lib/icons';
 import { jlText } from '../lib/texts';
@@ -18,11 +18,12 @@ registerIcons({ ellipsis: Ellipsis });
 const ICON_SIZE = 22;
 const MAX_COUNT = 99;
 const ITEM_SELECTOR = '.item';
+const NO_ITEM = '';
 
 /** A JSON attribute that should hold a list of items; anything else gives none. */
-const parseItems = (value: string | null): TabBarItem[] => {
+const parseItems = <Id extends string>(value: string | null): TabBarItem<Id>[] => {
   const parsed = jsonOf<unknown>([])(value);
-  return Array.isArray(parsed) ? (parsed as TabBarItem[]) : [];
+  return Array.isArray(parsed) ? (parsed as TabBarItem<Id>[]) : [];
 };
 
 /** What the badge shows: counts are capped so they fit over the icon. */
@@ -37,19 +38,23 @@ const badgeText = (badge: string | number | undefined): string => {
  * The bar along the bottom of a phone, under the thumb: the three to five main places of an app, an icon over a
  * label, one tap away. `value` is the current item. Items with an `href` are links; the others are buttons; both
  * fire `select`. `more` adds a last button for everything else, which fires `more`: in a `jl-app-shell`, it opens
- * the navigation drawer.
+ * the navigation drawer. Typed by its ids, `JlTabBar<'home' | 'jobs'>` takes items of those ids and gives `select`
+ * one of them.
  */
-export class JlTabBar extends JlElement {
+export class JlTabBar<Id extends string = string> extends JlElement {
   static readonly selector = 'jl-tab-bar';
 
-  readonly events = this.useEvents<{ select: string; more: undefined }>();
+  readonly events = this.useEvents<{ select: Id; more: undefined }>();
 
-  readonly items = this.useChange<TabBarItem[]>([], () => this.render(), {
+  readonly items = this.useChange<TabBarItem<Id>[]>([], () => this.render(), {
     attribute: 'items',
-    parse: parseItems,
+    parse: parseItems<Id>,
   });
   /** The id of the current item. */
-  readonly value = this.useChange('', (value) => this.renderCurrent(value), { attribute: 'value' });
+  readonly value = this.useChange<Id | typeof NO_ITEM>(NO_ITEM, (value) => this.renderCurrent(value), {
+    attribute: 'value',
+    parse: textOf<Id | typeof NO_ITEM>(NO_ITEM),
+  });
   /** The label of a last button for the other places (`More`); empty shows none. */
   readonly more = this.useChange(
     '',
@@ -97,7 +102,8 @@ export class JlTabBar extends JlElement {
   }
 
   private onClick(event: MouseEvent): void {
-    const id = (event.target as Element).closest<HTMLElement>(ITEM_SELECTOR)?.dataset.id;
+    const pressed = (event.target as Element).closest<HTMLElement>(ITEM_SELECTOR)?.dataset.id;
+    const id = this.items.get().find((item) => item.id === pressed)?.id;
     if (id === undefined) {
       return;
     }
@@ -110,7 +116,7 @@ export class JlTabBar extends JlElement {
     this.renderCurrent(this.value.get());
   }
 
-  private renderItem(item: TabBarItem): Node {
+  private renderItem(item: TabBarItem<Id>): Node {
     const badge = badgeText(item.badge);
     const content = (
       <>

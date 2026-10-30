@@ -1,3 +1,6 @@
+import tabBarCode from '../typing/jl-tab-bar.code.ts?raw';
+import tabBarJsx from '../typing/jl-tab-bar.jsx.tsx?raw';
+
 import type { JlTabBar } from '@syware/jlib';
 import type { ComponentDoc } from '../../types/docs.types';
 
@@ -37,7 +40,7 @@ there: numbers above 99 show as 99+.
 In a jl-app-shell, put it in slot="tabs": the shell shows it only when narrow, keeps it under its drawer, and
 opens the drawer on more.`,
   events: [
-    { description: 'An item was pressed: its id. It is now the value.', detail: 'string', name: 'select' },
+    { description: 'An item was pressed: its id. It is now the value.', detail: 'Id', name: 'select' },
     { description: 'The more button was pressed.', detail: 'undefined', name: 'more' },
   ],
   examples: [
@@ -109,7 +112,7 @@ opens the drawer on more.`,
       default: '[]',
       description: 'The places: id, label, icon, and an optional href and badge.',
       name: 'items',
-      type: 'TabBarItem[]',
+      type: 'TabBarItem<Id>[]',
     },
     {
       attribute: 'value',
@@ -117,7 +120,7 @@ opens the drawer on more.`,
       default: "''",
       description: 'The id of the current item.',
       name: 'value',
-      type: 'string',
+      type: "Id | ''",
     },
     {
       attribute: 'more',
@@ -142,4 +145,10 @@ opens the drawer on more.`,
   ],
   summary: 'The bar along the bottom of a phone: the main places of an app, one tap away.',
   tag: 'jl-tab-bar',
+  typing: {
+    code: tabBarCode,
+    description:
+      "Typed by its ids, JlTabBar<'home' | 'jobs' | 'inbox'> takes items of those ids only, and gives select and value as one of them: the editor completes them and refuses another.",
+    jsx: tabBarJsx,
+  },
 };
