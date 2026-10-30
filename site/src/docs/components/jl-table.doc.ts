@@ -1,12 +1,16 @@
 import { oneOf, TABLE_EXPANSIONS } from '@syware/jlib';
 
+import tableCode from '../typing/jl-table.code.ts?raw';
+import tableJsx from '../typing/jl-table.jsx.tsx?raw';
+
 import type { JlButton, JlFacts, JlSegmented, JlTable, TableColumn, TableRow, Tone } from '@syware/jlib';
 import type { ComponentDoc } from '../../types/docs.types';
+import type { Member, Order } from '../../types/jl-table.doc.types';
 
 /** A badge tone per value; the values are labels people read, written as they show. */
 const tonesOf = (entries: [string, Tone][]): Record<string, Tone> => Object.fromEntries(entries);
 
-const USER_COLUMNS: TableColumn[] = [
+const USER_COLUMNS: TableColumn<Member>[] = [
   { key: 'name', label: 'Name', sortable: true },
   { key: 'email', label: 'Email', sortable: true },
   { key: 'role', label: 'Role', sortable: true },
@@ -25,7 +29,7 @@ const USER_COLUMNS: TableColumn[] = [
   { format: 'date', key: 'joined', label: 'Joined', sortable: true },
 ];
 
-const USERS: TableRow[] = [
+const USERS: Member[] = [
   {
     email: 'ada@acme.dev',
     id: 1,
@@ -137,7 +141,7 @@ const DEPLOYS: TableRow[] = Array.from({ length: DEPLOY_COUNT }, (_, index) => (
   state: STATES[index % STATES.length],
 }));
 
-const ORDER_COLUMNS: TableColumn[] = [
+const ORDER_COLUMNS: TableColumn<Order>[] = [
   { format: 'code', key: 'number', label: 'Order', width: 100 },
   { key: 'customer', label: 'Customer', sortable: true },
   {
@@ -154,7 +158,7 @@ const ORDER_COLUMNS: TableColumn[] = [
   { format: 'date', key: 'placed', label: 'Placed', sortable: true },
 ];
 
-const ORDERS: TableRow[] = [
+const ORDERS: Order[] = [
   {
     address: 'Rue du Lac 12, 1800 Vevey',
     customer: 'Rita Keller',
@@ -190,29 +194,29 @@ const ORDERS: TableRow[] = [
 ];
 
 /** An order's detail: where it goes, what it holds and its note. */
-function orderDetail(row: TableRow): Node {
+function orderDetail(order: Order): Node {
   const facts = document.createElement('jl-facts') as JlFacts;
   facts.items.set([
-    { label: 'Deliver to', value: String(row.address) },
-    { label: 'Items', value: String(row.items) },
-    { label: 'Note', value: typeof row.note === 'string' ? row.note : null },
+    { label: 'Deliver to', value: order.address },
+    { label: 'Items', value: order.items },
+    { label: 'Note', value: order.note ?? null },
   ]);
   return facts;
 }
 
 /** A member's detail in the playground: what the columns leave out. */
-function memberDetail(row: TableRow): Node {
+function memberDetail(member: Member): Node {
   const facts = document.createElement('jl-facts') as JlFacts;
   facts.items.set([
-    { label: 'Email', value: String(row.email) },
-    { label: 'Joined', value: String(row.joined) },
+    { label: 'Email', value: member.email },
+    { label: 'Joined', value: member.joined },
   ]);
   return facts;
 }
 
 /** The orders table, its details, and the control that lets one or any number of rows open. */
 function wireOrders(root: HTMLElement): void {
-  const table = root.querySelector<JlTable>('jl-table.orders');
+  const table = root.querySelector<JlTable<Order>>('jl-table.orders');
   const mode = root.querySelector<JlSegmented>('.expansion');
   if (table === null || mode === null) {
     return;
@@ -224,7 +228,7 @@ function wireOrders(root: HTMLElement): void {
 
 /** The users table and its toolbar: the selection count and a button that acts on it. */
 function wireUsers(root: HTMLElement): void {
-  const table = root.querySelector<JlTable>('jl-table.users');
+  const table = root.querySelector<JlTable<Member>>('jl-table.users');
   const count = root.querySelector('.selection-count');
   const remove = root.querySelector<JlButton>('.remove-selected');
   if (table === null || count === null || remove === null) {
@@ -237,7 +241,7 @@ function wireUsers(root: HTMLElement): void {
   });
   remove.events.register('press', () => {
     const selected = new Set(table.selected.get());
-    table.rows.set(table.rows.get().filter((row) => !selected.has(row.id as number)));
+    table.rows.set(table.rows.get().filter((member) => !selected.has(member.id)));
     table.selected.set([]);
     count.textContent = 'No user selected';
     remove.disabled.set(true);
@@ -264,7 +268,7 @@ For a cell that is more than a value (a person with an avatar, a link, a menu), 
   events: [
     {
       description: 'A heading was pressed: the column and its new order.',
-      detail: '{ key: string; direction }',
+      detail: "{ key: keyof Row; direction: 'asc' | 'desc' | 'none' }",
       name: 'sort',
     },
     {
@@ -292,9 +296,11 @@ For a cell that is more than a value (a person with an avatar, a link, a menu), 
             columns='${JSON.stringify(USER_COLUMNS)}'></jl-table>
         </div>`,
       script: `
-        const table = root.querySelector('jl-table.users');
+        type Member = { id: number; name: string; email: string; role: string; status: string; projects: number; joined: string };
+
+        const table = root.querySelector<JlTable<Member>>('jl-table.users');
         const count = root.querySelector('.selection-count');
-        const remove = root.querySelector('.remove-selected');
+        const remove = root.querySelector<JlButton>('.remove-selected');
         table.rows.set([
           { id: 1, name: 'Ada Lovelace', email: 'ada@acme.dev', role: 'Owner', status: 'Active', projects: 12, joined: '2023-02-14' },
           // …
@@ -305,7 +311,7 @@ For a cell that is more than a value (a person with an avatar, a link, a menu), 
         });
         remove.events.register('press', () => {
           const selected = new Set(table.selected.get());
-          table.rows.set(table.rows.get().filter((row) => !selected.has(row.id)));
+          table.rows.set(table.rows.get().filter((member) => !selected.has(member.id)));
           table.selected.set([]);
         });`,
       setup: wireUsers,
@@ -317,29 +323,29 @@ For a cell that is more than a value (a person with an avatar, a link, a menu), 
       html: `
         <jl-table class="people" columns='[{"key":"name","label":"Person","sortable":true},{"key":"role","label":"Role"},{"key":"projects","label":"Projects","format":"number"}]'></jl-table>`,
       script: `
-        const table = root.querySelector('jl-table.people');
+        const table = root.querySelector<JlTable<Member>>('jl-table.people');
         table.renderers.set({
-          name: (row) => {
+          name: (member) => {
             const cell = document.createElement('div');
             cell.innerHTML = '<strong></strong><div class="email" style="color: var(--jl-muted); font-size: 13px"></div>';
-            cell.querySelector('strong').textContent = row.name;
-            cell.querySelector('.email').textContent = row.email;
+            cell.querySelector('strong').textContent = member.name;
+            cell.querySelector('.email').textContent = member.email;
             return cell;
           },
         });
-        table.rows.set(users.slice(0, 4));`,
+        table.rows.set(members.slice(0, 4));`,
       setup: (root) => {
-        const table = root.querySelector<JlTable>('jl-table.people');
+        const table = root.querySelector<JlTable<Member>>('jl-table.people');
         table?.renderers.set({
-          name: (row) => {
+          name: (member) => {
             const cell = document.createElement('div');
             cell.innerHTML =
               '<strong></strong><div class="email" style="color: var(--jl-muted); font-size: 13px"></div>';
             const name = cell.querySelector('strong');
             const email = cell.querySelector('.email');
             if (name !== null && email !== null) {
-              name.textContent = String(row.name);
-              email.textContent = String(row.email);
+              name.textContent = member.name;
+              email.textContent = member.email;
             }
             return cell;
           },
@@ -358,9 +364,11 @@ For a cell that is more than a value (a person with an avatar, a link, a menu), 
           <jl-table class="orders" expandable="single" label="Orders" columns='${JSON.stringify(ORDER_COLUMNS)}'></jl-table>
         </div>`,
       script: `
-        const table = root.querySelector('jl-table.orders');
+        type Order = { id: number; number: string; customer: string; address: string; items: string; note?: string; … };
+
+        const table = root.querySelector<JlTable<Order>>('jl-table.orders');
         table.detail = (order) => {
-          const facts = document.createElement('jl-facts');
+          const facts = new JlFacts();
           facts.items.set([
             { label: 'Deliver to', value: order.address },
             { label: 'Items', value: order.items },
@@ -369,7 +377,9 @@ For a cell that is more than a value (a person with an avatar, a link, a menu), 
           return facts;
         };
         table.rows.set(orders);
-        root.querySelector('.expansion').events.register('change', (value) => table.expandable.set(value));`,
+        root.querySelector<JlSegmented>('.expansion').events.register('change', (value) =>
+          table.expandable.set(oneOf(TABLE_EXPANSIONS, 'single')(value))
+        );`,
       setup: wireOrders,
       title: 'Row details',
     },
@@ -437,7 +447,7 @@ For a cell that is more than a value (a person with an avatar, a link, a menu), 
       selectable: true,
     },
     setup: (element) => {
-      (element as JlTable).detail = memberDetail;
+      (element as JlTable<Member>).detail = memberDetail;
     },
     width: 'full',
   },
@@ -447,17 +457,18 @@ For a cell that is more than a value (a person with an avatar, a link, a menu), 
       control: { kind: 'json' },
       default: '[]',
       description:
-        'The columns: key (the field shown), label, and optionally align, sortable, width, format (text, number, date, datetime, badge, code), tones (a badge tone per value), description (a field shown as a quieter line under the value) and wrap (long text breaks over lines instead of widening the table).',
+        'The columns: key (the field shown), label, and optionally align, sortable, width, format (text, number, date, datetime, badge, code), tones (a badge tone per value), description (a field shown as a quieter line under the value) and wrap (long text breaks over lines instead of widening the table). Typed by the rows, key and description are fields of a row.',
       name: 'columns',
-      type: 'TableColumn[]',
+      type: 'TableColumn<Row>[]',
     },
     {
       attribute: 'rows',
       control: { kind: 'json' },
       default: '[]',
-      description: 'The rows, as plain objects.',
+      description:
+        "The rows, as plain objects of the page's own type: JlTable<Order> takes orders. Untyped, any object.",
       name: 'rows',
-      type: 'Record<string, unknown>[]',
+      type: 'Row[]',
     },
     {
       attribute: 'row-key',
@@ -465,7 +476,7 @@ For a cell that is more than a value (a person with an avatar, a link, a menu), 
       default: "'id'",
       description: 'The field that tells rows apart, for the selection.',
       name: 'rowKey',
-      type: 'string',
+      type: "keyof Row | 'id'",
     },
     {
       attribute: 'sort-key',
@@ -473,7 +484,7 @@ For a cell that is more than a value (a person with an avatar, a link, a menu), 
       default: "''",
       description: 'The column the rows are sorted by.',
       name: 'sortKey',
-      type: 'string',
+      type: "keyof Row | ''",
     },
     {
       attribute: 'sort-direction',
@@ -519,9 +530,9 @@ For a cell that is more than a value (a person with an avatar, a link, a menu), 
     {
       default: 'null',
       description:
-        "Draws what an open row shows under it, from its row: (row) => Node. Drawn when the row opens; cellOf<Row>((row) => …) writes one for the page's own type of row.",
+        'Draws what an open row shows under it, from its row: (order) => Node, the order typed as the table is. Drawn when the row opens.',
       name: 'detail',
-      type: '((row: Record<string, unknown>) => Node) | null',
+      type: '((row: Row) => Node) | null',
     },
     {
       attribute: 'marked',
@@ -583,13 +594,19 @@ For a cell that is more than a value (a person with an avatar, a link, a menu), 
     {
       default: '{}',
       description:
-        "Draws the cells of some columns by code, by column key: (row) => Node. cellOf<Row>((row) => …) writes one for the page's own type of row.",
+        "Draws the cells of some columns by code, by column key: (row) => Node, the row typed as the table is. For a table that does not say its type of row, cellOf<Row>((row) => …) writes one for the page's own type.",
       name: 'renderers',
-      type: 'Record<string, (row: Record<string, unknown>) => Node>',
+      type: '{ [key in keyof Row]?: (row: Row) => Node }',
     },
   ],
   styling: [{ description: 'The scrolling frame around the table.', name: 'base' }],
   summary:
     'Rows of records under column headings, with sorting, selection, rows that open on their details, formats and a sticky header.',
   tag: 'jl-table',
+  typing: {
+    code: tableCode,
+    description:
+      "Typed by its rows, JlTable<Order> takes rows of the page's own type, an interface included. Its columns (TableColumn<Order>) name fields of an order, and so do rowKey and sortKey: the editor completes them and refuses a misspelt one. Its renderers, its detail and its sort event read an order. In JSX, <JlTable rows={orders} /> reads the type from the rows. A column that is not a field, such as one of actions a renderer draws, is named: JlTable<Order, 'actions'>. Rows and columns written as JSON in HTML are not checked.",
+    jsx: tableJsx,
+  },
 };

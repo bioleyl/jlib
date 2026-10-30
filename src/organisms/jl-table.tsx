@@ -4,13 +4,14 @@ import { ArrowDown, ArrowUp, ChevronRight, ChevronsUpDown, Inbox } from 'lucide'
 import { JlBadge } from '../atoms/jl-badge';
 import { JlIcon } from '../atoms/jl-icon';
 import { JlElement } from '../base/jl-element';
-import { jsonOf, oneOf } from '../lib/attributes';
+import { jsonOf, oneOf, textOf } from '../lib/attributes';
 import { setOrRemove } from '../lib/dom';
 import { registerIcons } from '../lib/icons';
 import { startedOnControl } from '../lib/surface';
 import {
   columnAlign,
   columnWidth,
+  fieldOf,
   formatCell,
   nextSortDirection,
   openRows,
@@ -28,10 +29,12 @@ import styles from './jl-table.css?raw';
 
 import type {
   TableCellFormat,
-  TableCellRenderer,
   TableColumn,
+  TableColumnKey,
   TableDetailRenderer,
   TableExpansion,
+  TableField,
+  TableRenderers,
   TableRow,
   TableRowKey,
   TableSort,
@@ -55,6 +58,7 @@ const MARKED_ATTRIBUTE = 'data-marked';
 const EXPANDED_ATTRIBUTE = 'data-expanded';
 const DETAIL_ID_PREFIX = 'detail-';
 const DEFAULT_ROW_KEY = 'id';
+const NO_SORT_KEY = '';
 const SKELETON_ROWS = 5;
 const SORT_ICON_SIZE = 14;
 const EMPTY_ICON_SIZE = 18;
@@ -69,7 +73,7 @@ const SORT_ICONS: Record<TableSortDirection, string> = {
   none: 'chevrons-up-down',
 };
 
-type CellMaker = (text: string, column: TableColumn) => Node | string;
+type CellMaker = (text: string, column: Pick<TableColumn, 'tones'>) => Node | string;
 
 const CELL_MAKERS: Record<TableCellFormat, CellMaker> = {
   badge: (text, column) => (text === '' ? '' : <JlBadge label={text} tone={column.tones?.[text] ?? 'neutral'} />),
@@ -112,24 +116,39 @@ type Part = 'head' | 'body';
  * `max-height`, and the table scrolls sideways on narrow screens. Cells of a column can be drawn by code with
  * `renderers`. `expandable` rows open on a press to show their `detail` under them, the row staying as it is: one at
  * a time (`single`) or any number (`multiple`).
+ *
+ * Typed by its rows, `JlTable<Order>` checks and completes the fields its columns name, and hands its renderers and
+ * `detail` an order; `JlTable<Order, 'actions'>` adds a column that is not a field, which a renderer draws.
  */
-export class JlTable extends JlElement {
+export class JlTable<Row extends object = TableRow, Extra extends string = never> extends JlElement {
   static readonly selector = 'jl-table';
 
-  readonly events = this.useEvents<{ sort: TableSort; selection: TableRowKey[]; toggle: TableToggle }>();
+  readonly events = this.useEvents<{
+    sort: TableSort<Row, Extra>;
+    selection: TableRowKey[];
+    toggle: TableToggle;
+  }>();
 
-  readonly columns = this.useChange<TableColumn[]>([], () => this.schedule('head', 'body'), {
+  readonly columns = this.useChange<TableColumn<Row, Extra>[]>([], () => this.schedule('head', 'body'), {
     attribute: 'columns',
-    parse: jsonOf<TableColumn[]>([]),
+    parse: jsonOf<TableColumn<Row, Extra>[]>([]),
   });
-  readonly rows = this.useChange<TableRow[]>([], () => this.schedule('body'), {
+  readonly rows = this.useChange<Row[]>([], () => this.schedule('body'), {
     attribute: 'rows',
-    parse: jsonOf<TableRow[]>([]),
+    parse: jsonOf<Row[]>([]),
   });
   /** The field that tells rows apart, for the selection. */
-  readonly rowKey = this.useChange(DEFAULT_ROW_KEY, () => this.schedule('body'), { attribute: 'row-key' });
+  readonly rowKey = this.useChange<TableField<Row> | typeof DEFAULT_ROW_KEY>(
+    DEFAULT_ROW_KEY,
+    () => this.schedule('body'),
+    { attribute: 'row-key', parse: textOf<TableField<Row> | typeof DEFAULT_ROW_KEY>(DEFAULT_ROW_KEY) }
+  );
   /** The column the rows are sorted by. */
-  readonly sortKey = this.useChange('', () => this.schedule('body'), { attribute: 'sort-key' });
+  readonly sortKey = this.useChange<TableColumnKey<Row, Extra> | typeof NO_SORT_KEY>(
+    NO_SORT_KEY,
+    () => this.schedule('body'),
+    { attribute: 'sort-key', parse: textOf<TableColumnKey<Row, Extra> | typeof NO_SORT_KEY>(NO_SORT_KEY) }
+  );
   readonly sortDirection = this.useChange<TableSortDirection>(NO_SORT, () => this.schedule('body'), {
     attribute: 'sort-direction',
     parse: oneOf(TABLE_SORT_DIRECTIONS, NO_SORT),
@@ -192,13 +211,13 @@ export class JlTable extends JlElement {
     attribute: 'label',
   });
   /** Draws the cells of some columns by code, by column key: `{ name: (row) => <strong>{row.name}</strong> }`. */
-  readonly renderers = this.useChange<Record<string, TableCellRenderer>>({}, () => this.schedule('body'));
+  readonly renderers = this.useChange<TableRenderers<Row, Extra>>({}, () => this.schedule('body'));
 
   // A function cannot be a useChange input: its set() would call it as an updater.
-  private readonly _source: { detail: TableDetailRenderer | null } = { detail: null };
+  private readonly _source: { detail: TableDetailRenderer<Row> | null } = { detail: null };
   private readonly _pending = { body: false, head: false, queued: false };
   /** The rows as drawn and their keys, by their place: the rows and their checkboxes carry the place. */
-  private readonly _view = { keys: [] as TableRowKey[], rows: [] as TableRow[] };
+  private readonly _view: { keys: TableRowKey[]; rows: Row[] } = { keys: [], rows: [] };
 
   private readonly _refs = this.useRefs((ref) => ({
     body: ref('tbody'),
@@ -207,11 +226,11 @@ export class JlTable extends JlElement {
   }));
 
   /** Draws what an open row shows under it, from the row: `(row) => <JlFacts items={…} />`. */
-  get detail(): TableDetailRenderer | null {
+  get detail(): TableDetailRenderer<Row> | null {
     return this._source.detail;
   }
 
-  set detail(draw: TableDetailRenderer | null) {
+  set detail(draw: TableDetailRenderer<Row> | null) {
     this._source.detail = draw;
     this.whenRendered(() => this.schedule('body'));
   }
@@ -288,7 +307,11 @@ export class JlTable extends JlElement {
     this.renderExpansion();
   }
 
-  private sortBy(key: string): void {
+  private sortBy(name: string): void {
+    const key = this.columns.get().find((column) => column.key === name)?.key;
+    if (key === undefined) {
+      return;
+    }
     const current = key === this.sortKey.get() ? this.sortDirection.get() : NO_SORT;
     const direction = nextSortDirection(current);
     this.sortKey.set(key);
@@ -353,7 +376,7 @@ export class JlTable extends JlElement {
   }
 
   /** The number of cells in a row: the columns, after the checkbox and the chevron when there are. */
-  private span(columns: TableColumn[]): number {
+  private span(columns: TableColumn<Row, Extra>[]): number {
     return columns.length + Number(this.selectable.get()) + Number(this.isExpandable());
   }
 
@@ -377,7 +400,7 @@ export class JlTable extends JlElement {
     );
   }
 
-  private headerCell(column: TableColumn): HTMLElement {
+  private headerCell(column: TableColumn<Row, Extra>): HTMLElement {
     const content = column.sortable ? (
       <button type="button" class="sort" data-key={column.key}>
         <span>{column.label}</span>
@@ -407,7 +430,7 @@ export class JlTable extends JlElement {
     }
   }
 
-  private sortedRows(): TableRow[] {
+  private sortedRows(): Row[] {
     const key = this.sortKey.get();
     const format = this.columns.get().find((column) => column.key === key)?.format;
     return sortRows(this.rows.get(), key, this.sortDirection.get(), format);
@@ -437,14 +460,14 @@ export class JlTable extends JlElement {
     this.renderMarks();
   }
 
-  private setView(rows: TableRow[], keys: TableRowKey[]): void {
+  private setView(rows: Row[], keys: TableRowKey[]): void {
     this._view.rows = rows;
     this._view.keys = keys;
   }
 
-  private bodyRow(row: TableRow, index: number, columns: TableColumn[]): Node {
+  private bodyRow(row: Row, index: number, columns: TableColumn<Row, Extra>[]): Node {
     const first = columns[0];
-    const name = first === undefined ? String(index + 1) : formatCell(row[first.key], first.format);
+    const name = first === undefined ? String(index + 1) : formatCell(fieldOf(row, first.key), first.format);
     const select = this.selectable.get() ? <td class="select-cell">{checkbox(`Select ${name}`, index)}</td> : null;
     const chevron = this.isExpandable() ? (
       <td class="expand-cell">
@@ -468,9 +491,9 @@ export class JlTable extends JlElement {
   }
 
   /** A cell's value, drawn by its renderer or in its format, with the row's description under it when it has one. */
-  private cell(row: TableRow, column: TableColumn): Node | string {
+  private cell(row: Row, column: TableColumn<Row, Extra>): Node | string {
     const value = this.cellValue(row, column);
-    const description = column.description === undefined ? '' : formatCell(row[column.description]);
+    const description = column.description === undefined ? '' : formatCell(fieldOf(row, column.description));
     if (description === '') {
       return value;
     }
@@ -482,16 +505,16 @@ export class JlTable extends JlElement {
     );
   }
 
-  private cellValue(row: TableRow, column: TableColumn): Node | string {
+  private cellValue(row: Row, column: TableColumn<Row, Extra>): Node | string {
     const renderer = this.renderers.get()[column.key];
     if (renderer !== undefined) {
       return renderer(row);
     }
     const format = column.format ?? 'text';
-    return CELL_MAKERS[format](formatCell(row[column.key], format), column);
+    return CELL_MAKERS[format](formatCell(fieldOf(row, column.key), format), column);
   }
 
-  private skeletonRows(columns: TableColumn[]): Node[] {
+  private skeletonRows(columns: TableColumn<Row, Extra>[]): Node[] {
     const select = this.selectable.get();
     const expand = this.isExpandable();
     return Array.from({ length: SKELETON_ROWS }, () => (

@@ -89,27 +89,35 @@ export function compareCells(a: unknown, b: unknown, format: TableCellFormat, lo
 }
 
 /**
+ * A row's field by its name, whatever the page's type of row: a column names its field as text, and the HTML that
+ * writes the rows is not checked against a type.
+ */
+export const fieldOf = (row: object, key: string): unknown => Reflect.get(row, key);
+
+/**
  * The rows ordered by one column; `none` gives them back as they came. The sort is stable, and empty values stay
  * at the end in both directions.
  */
-export function sortRows(
-  rows: readonly TableRow[],
+export function sortRows<Row extends object>(
+  rows: readonly Row[],
   key: string,
   direction: TableSortDirection,
   format: TableCellFormat = 'text',
   locale?: string
-): TableRow[] {
+): Row[] {
   const sign = DIRECTION_SIGN[direction];
   if (sign === 0 || key === '') {
     return [...rows];
   }
   return [...rows].sort((a, b) => {
-    const aMissing = isUnorderable(a[key], format);
-    const bMissing = isUnorderable(b[key], format);
+    const aValue = fieldOf(a, key);
+    const bValue = fieldOf(b, key);
+    const aMissing = isUnorderable(aValue, format);
+    const bMissing = isUnorderable(bValue, format);
     if (aMissing || bMissing) {
       return Number(aMissing) - Number(bMissing);
     }
-    return sign * COMPARERS[format](a[key], b[key], locale);
+    return sign * COMPARERS[format](aValue, bValue, locale);
   });
 }
 
@@ -140,7 +148,7 @@ export function formatCell(value: unknown, format: TableCellFormat = 'text', loc
 }
 
 /** Where a column's cells align: as asked, otherwise numbers right and the rest left. */
-export function columnAlign(column: TableColumn): TableAlign {
+export function columnAlign(column: Pick<TableColumn, 'align' | 'format'>): TableAlign {
   return column.align ?? (column.format === 'number' ? 'right' : 'left');
 }
 
@@ -153,8 +161,8 @@ export function columnWidth(width: string | number | undefined): string {
 }
 
 /** A row's identity, read from its key field; its position when the field is missing. */
-export function rowKeyOf(row: TableRow, keyField: string, index: number): TableRowKey {
-  const value = row[keyField];
+export function rowKeyOf(row: object, keyField: string, index: number): TableRowKey {
+  const value = fieldOf(row, keyField);
   return typeof value === 'string' || typeof value === 'number' ? value : index;
 }
 
@@ -218,8 +226,10 @@ export function rowToggles(before: readonly TableRowKey[], after: readonly Table
 }
 
 /**
- * A renderer of `renderers` written for the page's own type of row: the table hands each renderer back a row the
- * page gave it, so `cellOf<Order>((order) => <JlLink href={order.href} label={order.name} />)` reads it typed.
+ * A renderer of `renderers` written for the page's own type of row, for a table that does not say its type of row:
+ * the table hands each renderer back a row the page gave it, so
+ * `cellOf<Order>((order) => <JlLink href={order.href} label={order.name} />)` reads it typed. A table typed by its
+ * rows (`JlTable<Order>`) hands its renderers an order already.
  */
 export const cellOf =
   <Row>(draw: (row: Row) => Node): TableCellRenderer =>

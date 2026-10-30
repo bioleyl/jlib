@@ -112,9 +112,9 @@ describe('formatCell', () => {
 
 describe('columns', () => {
   it('aligns numbers right unless told otherwise', () => {
-    expect(columnAlign({ format: 'number', key: 'a', label: 'A' })).toBe('right');
-    expect(columnAlign({ key: 'a', label: 'A' })).toBe('left');
-    expect(columnAlign({ align: 'center', format: 'number', key: 'a', label: 'A' })).toBe('center');
+    expect(columnAlign({ format: 'number' })).toBe('right');
+    expect(columnAlign({})).toBe('left');
+    expect(columnAlign({ align: 'center', format: 'number' })).toBe('center');
   });
 
   it('reads widths as pixels when they are numbers', () => {
