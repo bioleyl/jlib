@@ -11,7 +11,8 @@ const ROOT = join(import.meta.dirname, '..');
 const DIST_INDEX = join(ROOT, 'dist', 'index.js');
 const OUTPUT = join(ROOT, 'site', 'src', 'generated', 'sizes.json');
 const ENTRY_ID = '\0size-entry';
-const COMPONENT_PATTERN = /export class (\w+) extends \w+ \{\s+static readonly selector = '([\w-]+)'/g;
+// A class can take type parameters: `export class JlTable<Row extends object = TableRow> extends JlElement {`.
+const COMPONENT_PATTERN = /export class (\w+)(?:<[^{]*>)? extends \w+ \{\s+static readonly selector = '([\w-]+)'/g;
 
 if (!existsSync(DIST_INDEX)) {
   console.error('dist/index.js is missing: run npm run build:lib first.');
