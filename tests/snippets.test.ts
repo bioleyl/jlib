@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { constSnippet, htmlSnippet, importSnippet, jsxSnippet } from '../site/src/lib/snippets';
+import { constSnippet, htmlSnippet, importSnippet, jsxSnippet, shownSnippet } from '../site/src/lib/snippets';
 
 import type { PropDoc } from '../site/src/types/docs.types';
 
@@ -121,5 +121,21 @@ describe('constSnippet', () => {
     },
   ],
 };`);
+  });
+});
+
+describe('shownSnippet', () => {
+  it('leaves out the lines that only set the snippet up, and the blank lines they leave', () => {
+    const source = [
+      "import type { JlMenu } from '@syware/jlib';",
+      '',
+      'declare function rename(): void; // (not shown)',
+      '',
+      "const menu = document.querySelector<JlMenu<'rename'>>('jl-menu');",
+      '',
+    ].join('\n');
+    expect(shownSnippet(source)).toBe(
+      "import type { JlMenu } from '@syware/jlib';\n\nconst menu = document.querySelector<JlMenu<'rename'>>('jl-menu');"
+    );
   });
 });

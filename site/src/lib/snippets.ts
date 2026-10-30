@@ -10,6 +10,10 @@ export type SnippetSource = {
   props: readonly PropDoc[];
 };
 
+// The end of a line of a snippet file that sets up what the snippet needs (data, a page's function): the file
+// type-checks with it, the page shows the snippet without it.
+const NOT_SHOWN = '// (not shown)';
+
 // Longer than this on one line, a tag puts each attribute on its own line.
 const MAX_INLINE = 72;
 const INDENT = '  ';
@@ -148,4 +152,14 @@ function literal(value: unknown, indent: string, used: number): string {
 export function constSnippet(name: string, value: unknown): string {
   const head = `const ${name} = `;
   return `${head}${literal(value, '', head.length)};`;
+}
+
+/** A snippet file as the page shows it: without the lines marked `// (not shown)`, nor the blank lines they leave. */
+export function shownSnippet(source: string): string {
+  return source
+    .split('\n')
+    .filter((line) => !line.trimEnd().endsWith(NOT_SHOWN))
+    .join('\n')
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
 }

@@ -5,6 +5,7 @@ import { BASE_STYLES } from '@syware/jlib/styles/shared';
 import { SiteApi } from '../components/site-api';
 import { SiteExample } from '../components/site-example';
 import { SitePlayground } from '../components/site-playground';
+import { SiteTyping } from '../components/site-typing';
 import { COMPONENT_DOCS, docBySlug, docRoute, LEVEL_SINGULAR } from '../docs/registry';
 import { importSnippet } from '../lib/snippets';
 import { pageHref } from '../services/navigation';
@@ -36,7 +37,10 @@ function pagerLink(doc: ComponentDoc | undefined, direction: 'previous' | 'next'
   );
 }
 
-/** The page of one component, made from its documentation: intro, playground, examples, then the API. */
+/**
+ * The page of one component, made from its documentation: intro, playground, examples, how it is typed for a
+ * component typed by what it holds, then the API.
+ */
 export class ComponentPage extends JlElement {
   static readonly selector = 'site-component-page';
 
@@ -92,6 +96,12 @@ export class ComponentPage extends JlElement {
             <SiteExample example={example} />
           ))}
         </section>
+        {doc.typing === undefined ? null : (
+          <section class="block">
+            <h2>Typing</h2>
+            <SiteTyping typing={doc.typing} />
+          </section>
+        )}
         <section class="block">
           <h2>API</h2>
           <SiteApi doc={doc} />

@@ -77,6 +77,19 @@ export type Playground = {
   width?: number | 'full';
 };
 
+/**
+ * A component typed by what it holds (its values, its rows): how a page writes it. The snippets are files that
+ * TypeScript checks, shown without their lines marked `// (not shown)`.
+ */
+export type TypingDoc = {
+  /** What the type parameter is, and what TypeScript then checks. */
+  description: string;
+  /** The typed form in code, without JSX: a query with the type, then its inputs and events. */
+  code: string;
+  /** The typed form in a view written in JSX. */
+  jsx: string;
+};
+
 export type ComponentDoc = {
   tag: `jl-${string}`;
   className: string;
@@ -95,4 +108,6 @@ export type ComponentDoc = {
   /** CSS custom properties read on the host, and the `part`s exposed for `::part()`. */
   styling?: StyleDoc[];
   examples: Example[];
+  /** For a component typed by what it holds: how a page writes it typed. */
+  typing?: TypingDoc;
 };
