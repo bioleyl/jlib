@@ -1,6 +1,6 @@
 # jlib: notes for working on the code
 
-jlib is a component library on Jadis (`@jadis/core` 1.3) and native Web Components, in atomic design, with a static
+jlib is a component library on Jadis (`@jadis/core` 1.4) and native Web Components, in atomic design, with a static
 documentation site that shows and tests every component. Load the project skills before writing code: `jadis`
 (the frontend library) and `coding-style` (named constants, guard clauses, exhaustive mappers, types in `types/`).
 
@@ -54,6 +54,11 @@ documentation site that shows and tests every component. Load the project skills
   are the page's to register, one by one or with `COMMON_ICONS` (`src/lib/icon-set.ts`, registered by `@syware/jlib/all`).
   An unregistered name draws a neutral mark and warns once; the e2e suite fails on that warning.
 - Shared enums: `TONES`, `CONTROL_SIZES`.
+- **A component that holds the page's values or records is typed by them**: a type parameter with the untyped form
+  as default, `JlSelect<Value extends string = string>`, `JlTable<Row extends object = TableRow>`. A field of that
+  type bound to an attribute brings its parser (`jsonOf`, `textOf`, `textListOf`: HTML is not checked against the
+  type); a value read back from the DOM (`dataset.value`) is looked up in the options, not cast. Its type tests go
+  in `tests/<name>.test-d.tsx` (checked by `npm run typecheck`, never run), and its doc gets a `typing`.
 
 ## Documenting a component
 
@@ -61,7 +66,10 @@ documentation site that shows and tests every component. Load the project skills
 `jl-button.doc.ts`): summary, description, playground (starting attributes; a control per prop worth trying), every
 prop (name, attribute, type, default as code, description), events, slots, methods, styling, and 3–6 examples. An
 example is HTML rendered in the page (helper classes `row`, `stack`, `narrow`, `muted`), plus an optional typed
-`setup(root)` and the `script` shown for it.
+`setup(root)` and the `script` shown for it. A component typed by what it holds adds `typing`: what its type checks,
+and two snippets, `site/src/docs/typing/<tag>.code.ts` and `.jsx.tsx`, imported with `?raw`. They are files that
+TypeScript and Biome check; the page shows them without their lines ending in `// (not shown)` (a snippet's data, the
+page's own functions), and a `// @ts-expect-error` line shows what the type refuses.
 
 ## UX patterns
 
