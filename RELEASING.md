@@ -37,10 +37,19 @@ tarball.
    npm run test:e2e
    ```
 
-2. Write the version's notes at the top of [CHANGELOG.md](CHANGELOG.md): what is new, what changed, and what pages
+2. Measure what each component weighs, for the site's **Tree-shaking** page. The script builds the library and
+   rewrites `site/src/generated/sizes.json`:
+
+   ```bash
+   npm run size
+   ```
+
+   Commit the file if it changed, so the site shows the sizes of the version being released.
+
+3. Write the version's notes at the top of [CHANGELOG.md](CHANGELOG.md): what is new, what changed, and what pages
    should look at when they update. Commit them.
 
-3. Bump the version. `npm version` updates `package.json` and the lockfile, commits, and tags `vX.Y.Z`:
+4. Bump the version. `npm version` updates `package.json` and the lockfile, commits, and tags `vX.Y.Z`:
 
    ```bash
    npm version patch
@@ -49,13 +58,13 @@ tarball.
    Use `patch` for fixes, `minor` for new components or options, `major` for changes that break existing pages.
    Before 1.0, a breaking change may go in a `minor`, but say so in the release notes.
 
-4. Push the commit and its tag. Nothing is published yet:
+5. Push the commit and its tag. Nothing is published yet:
 
    ```bash
    git push --follow-tags
    ```
 
-5. Start the publishing: in the repository's **Actions** tab, **Publish to npm**, **Run workflow**, with the tag
+6. Start the publishing: in the repository's **Actions** tab, **Publish to npm**, **Run workflow**, with the tag
    (`vX.Y.Z`). With the GitHub CLI:
 
    ```bash
@@ -64,7 +73,7 @@ tarball.
 
    Follow the run there. When it is done, its summary page shows what npm staged.
 
-6. Approve the staged version (or do it on npmjs.com, on the package's page):
+7. Approve the staged version (or do it on npmjs.com, on the package's page):
 
    ```bash
    npm stage list @syware/jlib
@@ -76,7 +85,7 @@ tarball.
 
    npm asks for your two-factor code, then the version is public.
 
-7. Check the result: the version on [npmjs.com](https://www.npmjs.com/package/@syware/jlib) with its provenance
+8. Check the result: the version on [npmjs.com](https://www.npmjs.com/package/@syware/jlib) with its provenance
    badge, and the release on the repository's **Releases** page. The release holds the install line and the change
    list: edit it (**Edit release**) and paste the version's section of CHANGELOG.md above them.
 
