@@ -1,8 +1,9 @@
 # jlib: notes for working on the code
 
 jlib is a component library on Jadis (`@jadis/core` 1.6) and native Web Components, in atomic design, with a static
-documentation site that shows and tests every component. Load the project skills before writing code: `jadis`
-(the frontend library) and `coding-style` (named constants, guard clauses, exhaustive mappers, types in `types/`).
+documentation site that shows and tests every component. Load the skills before writing code: `jadis` (the frontend
+library, from the `jadis` plugin: `/plugin marketplace add bioleyl/jadis`, `/plugin install jadis@jadis`) and
+`coding-style` (named constants, guard clauses, exhaustive mappers, types in `types/`).
 
 ## Layout
 
