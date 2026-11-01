@@ -60,7 +60,9 @@ the plugin of that name: an app that follows SyWare's UX loads both.
 - Pages show through a `jl-page-outlet`, where the installed jlib has it:
   `router.mountOn(outlet, { show: (page) => outlet.show(page) })`. The current page stays until the next one's
   `jl-load-state`s have their data (or `max-wait`, 3 seconds), so a page loads its data in load states, as it would
-  anyway. Without it, `router.mountOn(outlet)` swaps the pages at once.
+  anyway. Its loading line runs along its top edge: put the outlet flush with the top of the content area, the
+  padding in the pages, and give `--line-top` the height of a sticky bar above it, or the line crosses the page's
+  first lines and hides behind the bar once scrolled. Without it, `router.mountOn(outlet)` swaps the pages at once.
 - A large or rarely opened page loads on demand, in a chunk of its own. The router takes a page's class, not a
   loader: a small page of the app's stands for it in the routes, imports the module when it connects and draws the
   real page inside its own `jl-load-state`, which the outlet waits for. What only that page uses (its data, its

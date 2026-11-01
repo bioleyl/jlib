@@ -17,6 +17,17 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
+/* The room around each page, inside the page outlet, which runs along the top of the content (site-shell.css). */
+jl-page-outlet > * {
+  padding: 40px clamp(20px, 5vw, 56px) 0;
+}
+
+@media (max-width: 960px) {
+  jl-page-outlet > * {
+    padding-top: 28px;
+  }
+}
+
 ::selection {
   background: color-mix(in srgb, var(--jl-brand) 22%, transparent);
 }

@@ -103,9 +103,17 @@
   display: none;
 }
 
+/*
+ * The page outlet runs along the top of the content, under the bar: its loading line with it, kept under the bar once
+ * the page scrolls. The room around a page is the page's (global.css).
+ */
 main {
   min-width: 0;
-  padding: 40px clamp(20px, 5vw, 56px) 40px;
+  padding-bottom: 40px;
+}
+
+::slotted(jl-page-outlet) {
+  --line-top: var(--top);
 }
 
 /* Who makes jlib, at the foot of every page. */
@@ -114,8 +122,7 @@ main {
   flex-wrap: wrap;
   align-items: center;
   gap: 12px 20px;
-  max-width: 1120px;
-  margin: 96px auto 0;
+  margin: 96px max(clamp(20px, 5vw, 56px), (100% - 1120px) / 2) 0;
   padding-top: 24px;
   border-top: 1px solid var(--jl-line);
   color: var(--jl-muted);
@@ -169,10 +176,6 @@ main {
     z-index: 20;
     display: block;
     background: var(--jl-scrim);
-  }
-
-  main {
-    padding-top: 28px;
   }
 }
 

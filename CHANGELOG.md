@@ -3,6 +3,19 @@
 What changed in each version of [@syware/jlib](https://www.npmjs.com/package/@syware/jlib). Every component is shown
 and documented on [the documentation site](https://bioleyl.github.io/jlib/).
 
+## Unreleased
+
+### Added
+
+- **`jl-page-outlet`'s `--line-top`**: how far from the top of the window its line stays once the page scrolls, the
+  height of a sticky bar above the outlet. The line stuck to the very top, behind such a bar.
+
+### Fixed
+
+- **The documentation site's loading line** runs along the top of the content, under the header: it crossed the first
+  lines of the page, and hid behind the header once the page scrolled. The outlet sits flush with the top of the
+  content, the room around a page being the page's, as `jl-page-outlet`'s page now advises.
+
 ## 0.10.0 (2026-11-01)
 
 On Jadis 1.6: pages that show once they have their data (`jl-page-outlet`), a stack for a form's fields, smaller

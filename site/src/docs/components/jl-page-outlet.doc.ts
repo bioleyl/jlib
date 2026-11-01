@@ -37,7 +37,9 @@ flashing between two pages. A page that takes longer than max-wait shows as it i
 skeletons. The first page shows at once, as there is nothing to keep.
 
 With a Jadis router, it shows the router's pages: router.mountOn(outlet, { show: (page) => outlet.show(page) }). It
-goes where the pages go, in a jl-app-shell's main area for instance.`,
+goes where the pages go, in a jl-app-shell's main area for instance, flush with its top: the line runs along the top
+edge of the outlet, so the room around a page belongs to the page, not to the area that holds the outlet. Under a
+sticky bar, --line-top (the bar's height) keeps the line in sight once the page scrolls.`,
   events: [
     { description: 'A page took its place, at the top of the outlet.', detail: 'HTMLElement', name: 'show' },
   ],
@@ -108,7 +110,14 @@ goes where the pages go, in a jl-app-shell's main area for instance.`,
     { description: 'The page shown. show() puts the pages there itself.', name: '' },
     { description: 'The page loading, out of sight, until it takes its place.', name: 'next' },
   ],
-  styling: [{ description: 'The jl-loading-bar over the page: its --color and --height.', name: 'line' }],
+  styling: [
+    {
+      description:
+        'How far from the top of the window the line stays once the page scrolls: the height of a sticky bar above the outlet. 0 by default.',
+      name: '--line-top',
+    },
+    { description: 'The jl-loading-bar over the page: its --color and --height.', name: 'line' },
+  ],
   summary: 'Where the pages show: the next one loads out of sight, under a line, and shows once it has its data.',
   tag: 'jl-page-outlet',
 };

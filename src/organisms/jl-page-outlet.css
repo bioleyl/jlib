@@ -7,16 +7,20 @@
   position: relative;
   grid-template: 1fr / minmax(0, 1fr);
   min-height: 100%;
+  --line-top: 0px;
 }
 
 ::slotted(*) {
   grid-area: 1 / 1;
 }
 
-/* Over the top of the page, and of what shows of it once scrolled; it takes no room. */
+/*
+ * Over the top of the page, and of what shows of it once scrolled: at the top of the window, or under a sticky bar
+ * (`--line-top`). It takes no room.
+ */
 .line {
   position: sticky;
-  top: 0;
+  top: var(--line-top);
   z-index: 1;
   grid-area: 1 / 1;
   align-self: start;

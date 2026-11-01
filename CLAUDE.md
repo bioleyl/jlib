@@ -18,7 +18,8 @@ documentation site that shows and tests every component. Load the project skills
   (`links: true`, shadow roots included; navigate in code with `router.gotoPath`, follow changes on `router.bus`);
   `services/navigation` only holds the links to `#` (the examples' placeholders), which it would show again.
   The build writes a copy of `index.html` for every route and a `404.html`. Pages show through a `jl-page-outlet`
-  (`main.ts`): the current one stays until the next has its data. A component's page is made from
+  (`main.ts`): the current one stays until the next has its data. The outlet runs along the top of the content,
+  under the header (`--line-top`), so the room around a page is the page's (`jl-page-outlet > *` in global.css). A component's page is made from
   `site/src/docs/components/<tag>.doc.ts`, loaded when the page opens (`import.meta.glob`, no registry to edit);
   the navigation, the search and the lists read `site/src/generated/components.json`, which `npm run generate`
   writes from the doc pages, so run it after adding one or changing a name or summary. The same goes for the pattern
