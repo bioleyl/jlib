@@ -6,7 +6,7 @@ import { clampedNumber, oneOf } from '../lib/attributes';
 import { followAnchor, PLACEMENTS, placeFloating } from '../lib/floating';
 import { accessibleTarget, deepActiveElement } from '../lib/trigger';
 import { BASE_STYLES, FLOATING_STYLES } from '../styles/shared';
-import styles from './jl-tooltip.css?raw';
+import styles from './jl-tooltip.css?inline';
 
 import type { Placement, Side } from '../types/floating.types';
 

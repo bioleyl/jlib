@@ -5,7 +5,7 @@ import { oneOf } from '../lib/attributes';
 import { setOrRemove } from '../lib/dom';
 import { TONES } from '../lib/options';
 import { BASE_STYLES } from '../styles/shared';
-import styles from './jl-badge.css?raw';
+import styles from './jl-badge.css?inline';
 import { JlIcon } from './jl-icon';
 
 import type { StatusLook } from '../types/jl-badge.types';
@@ -49,7 +49,8 @@ export class JlBadge extends JlElement {
 
   /** Shows a state as an app's map of states describes it: its label, tone, icon and hint. */
   showStatus(look: StatusLook): void {
-    // As attributes too: a badge that moves in the page reads its attributes again, and must find this state.
+    // As attributes too: a badge taken out of the page and put back reads its attributes again, and must find this
+    // state. (A badge moved in the page stays connected since Jadis 1.6, and keeps it anyway.)
     const attributes: Record<string, string> = {
       hint: look.hint ?? '',
       icon: look.icon ?? '',

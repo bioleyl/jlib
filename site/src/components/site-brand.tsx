@@ -4,7 +4,7 @@ import { BASE_STYLES } from '@syware/jlib/styles/shared';
 
 import { LOGO_MIN_HEIGHT } from '../lib/syware-logo';
 import { pageHref } from '../services/navigation';
-import styles from './site-brand.css?raw';
+import styles from './site-brand.css?inline';
 import { SiteLogo } from './site-logo';
 
 /** The SyWare mark and the wordmark: "j" in ink, "lib" in the logo's blue. */

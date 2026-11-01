@@ -4,7 +4,7 @@ import { JlElement } from '../base/jl-element';
 import { oneOf } from '../lib/attributes';
 import { optionalNumber, percentLabel, percentOf, progressRatio } from '../lib/progress';
 import { BASE_STYLES } from '../styles/shared';
-import styles from './jl-progress.css?raw';
+import styles from './jl-progress.css?inline';
 
 import type { ProgressSize, ProgressTone } from '../types/jl-progress.types';
 

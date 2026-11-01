@@ -26,7 +26,7 @@ import { pageLocale } from '../lib/locale';
 import { CONTROL_SIZES } from '../lib/options';
 import { jlText } from '../lib/texts';
 import { BASE_STYLES } from '../styles/shared';
-import styles from './jl-calendar.css?raw';
+import styles from './jl-calendar.css?inline';
 
 import type { CalendarDate, Weekday } from '../types/calendar.types';
 import type { ControlSize } from '../types/options.types';

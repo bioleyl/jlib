@@ -1,14 +1,14 @@
 import { css } from '@jadis/core';
-import { JlElement, JlIcon } from '@syware/jlib';
+import { JlElement, JlIcon, JlLoadState } from '@syware/jlib';
 import { BASE_STYLES } from '@syware/jlib/styles/shared';
 
-import { PATTERNS, PATTERNS_OVERVIEW, PATTERNS_PATH, PATTERNS_SECTION, patternBySlug } from '../../docs/patterns';
-import { docBySlug, docRoute } from '../../docs/registry';
+import { loadPattern, PATTERNS, PATTERNS_OVERVIEW, PATTERNS_PATH, PATTERNS_SECTION } from '../../docs/patterns';
+import { componentBySlug, docRoute } from '../../docs/registry';
 import { sectionIntro } from '../../lib/design-blocks';
 import { patternBlock } from '../../lib/pattern-blocks';
 import { pageHref } from '../../services/navigation';
 import { DESIGN_STYLES, EXAMPLE_STYLES, PROSE_STYLES } from '../../styles/site-styles';
-import styles from './pattern-page.css?raw';
+import styles from './pattern-page.css?inline';
 
 import type { PatternDoc } from '../../types/patterns.types';
 import type { GuideLink } from '../../types/site.types';
@@ -38,7 +38,7 @@ function pagerLink(page: GuideLink | undefined, direction: Direction): Node {
 
 /** The components a pattern names, linked to their pages; a tag without a page is left out. */
 function componentLinks(tags: readonly string[]): Node | null {
-  const docs = tags.flatMap((tag) => docBySlug(tag.replace(TAG_PREFIX, '')) ?? []);
+  const docs = tags.flatMap((tag) => componentBySlug(tag.replace(TAG_PREFIX, '')) ?? []);
   if (docs.length === 0) {
     return null;
   }
@@ -57,17 +57,24 @@ function componentLinks(tags: readonly string[]): Node | null {
   );
 }
 
-/** A page of the UX patterns, drawn from its doc: the intro, its sections, the components, and the pager. */
+/**
+ * A page of the UX patterns, drawn from its doc: the intro, its sections, the components, and the pager. The doc loads
+ * when the page opens, in a load state the page outlet waits for.
+ */
 export class PatternPage extends JlElement {
   static readonly selector = 'site-pattern-page';
 
   /** The pattern's slug, from the route: `forms` for `/patterns/forms`. */
   readonly name = this.useChange('', (slug) => this.render(slug), { attribute: 'name' });
 
-  private readonly _refs = this.useRefs((ref) => ({ page: ref('.page') }));
+  private readonly _refs = this.useRefs((ref) => ({ page: ref('.page'), state: ref(JlLoadState) }));
 
   templateHtml(): Node {
-    return <div class="page" />;
+    return (
+      <JlLoadState skeleton="lines">
+        <div class="page" />
+      </JlLoadState>
+    );
   }
 
   templateCss(): string {
@@ -75,7 +82,10 @@ export class PatternPage extends JlElement {
   }
 
   private render(slug: string): void {
-    const pattern = patternBySlug(slug);
+    void this._refs.state.load({ draw: (pattern) => this.draw(slug, pattern), fetch: () => loadPattern(slug) });
+  }
+
+  private draw(slug: string, pattern: PatternDoc | undefined): void {
     if (pattern === undefined) {
       this._refs.page.replaceChildren(this.missing(slug));
       return;
@@ -85,7 +95,7 @@ export class PatternPage extends JlElement {
   }
 
   private article(pattern: PatternDoc): Node {
-    const index = PATTERNS.indexOf(pattern);
+    const index = PATTERNS.findIndex((entry) => entry.path === pattern.path);
     return (
       <article>
         {sectionIntro(PATTERNS_SECTION, pattern.title, pattern.lead)}

@@ -1,0 +1,100 @@
+[
+  {
+    "icon": "panel-left",
+    "label": "Navigation",
+    "path": "/patterns/navigation",
+    "summary": "The frame of an app, page titles and addresses, back links and roles.",
+    "title": "Navigation"
+  },
+  {
+    "icon": "panels-top-left",
+    "label": "Page layout",
+    "path": "/patterns/page-layout",
+    "summary": "The page header, the widths, sections and cards, home pages and work surfaces.",
+    "title": "Page layout"
+  },
+  {
+    "icon": "list",
+    "label": "Lists and tables",
+    "path": "/patterns/collections",
+    "summary": "Tables, rows or cards; search, filters, sort and long lists.",
+    "title": "Lists and tables"
+  },
+  {
+    "icon": "mouse-pointer-click",
+    "label": "Actions",
+    "path": "/patterns/actions",
+    "summary": "One primary action, the shared verbs, where actions go, and when they are disabled.",
+    "title": "Actions"
+  },
+  {
+    "icon": "text-cursor-input",
+    "label": "Forms",
+    "path": "/patterns/forms",
+    "summary": "The four ways a form saves, layout, checking answers and leaving a form.",
+    "title": "Forms"
+  },
+  {
+    "icon": "loader",
+    "label": "Loading, empty, errors",
+    "path": "/patterns/states",
+    "summary": "What a page shows before, without and instead of its content.",
+    "title": "Loading, empty and errors"
+  },
+  {
+    "icon": "bell",
+    "label": "Feedback",
+    "path": "/patterns/feedback",
+    "summary": "The result on the page first, toasts, progress and live updates.",
+    "title": "Feedback"
+  },
+  {
+    "icon": "undo-2",
+    "label": "Confirm and undo",
+    "path": "/patterns/confirmations",
+    "summary": "Which actions ask first, which offer Undo, and how they say it.",
+    "title": "Confirm and undo"
+  },
+  {
+    "icon": "app-window",
+    "label": "Dialogs and panels",
+    "path": "/patterns/overlays",
+    "summary": "When to use a page, a dialog, a drawer, a popover or a split view.",
+    "title": "Dialogs and panels"
+  },
+  {
+    "icon": "circle-dot",
+    "label": "Status",
+    "path": "/patterns/status",
+    "summary": "The names, colours and icons of states, the same in every view and every app.",
+    "title": "Status"
+  },
+  {
+    "icon": "command",
+    "label": "Search and shortcuts",
+    "path": "/patterns/search",
+    "summary": "The command palette on Ctrl K, and the keys every app shares.",
+    "title": "Search and shortcuts"
+  },
+  {
+    "icon": "smartphone",
+    "label": "Phones and touch",
+    "path": "/patterns/phones",
+    "summary": "Phone tasks, thumbs, layouts that fold, cameras.",
+    "title": "Phones and touch"
+  },
+  {
+    "icon": "user",
+    "label": "Accounts and settings",
+    "path": "/patterns/accounts",
+    "summary": "Signing in, the session, My account apart from Settings, theme and language.",
+    "title": "Accounts and settings"
+  },
+  {
+    "icon": "list-checks",
+    "label": "Checklist",
+    "path": "/patterns/checklist",
+    "summary": "What to check before a screen ships.",
+    "title": "Checklist"
+  }
+]

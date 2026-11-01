@@ -6,7 +6,7 @@ import { cssLength } from '../lib/css-length';
 import { highlightedNodes } from '../lib/highlight';
 import { dedent } from '../lib/text';
 import { BASE_STYLES } from '../styles/shared';
-import styles from './jl-code-block.css?raw';
+import styles from './jl-code-block.css?inline';
 import { JlCopyButton } from './jl-copy-button';
 
 import type { CodeLanguage } from '../types/highlight.types';

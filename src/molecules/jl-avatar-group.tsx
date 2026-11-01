@@ -5,7 +5,7 @@ import { JlElement } from '../base/jl-element';
 import { jsonOf, oneOf } from '../lib/attributes';
 import { splitVisible } from '../lib/avatar';
 import { BASE_STYLES } from '../styles/shared';
-import styles from './jl-avatar-group.css?raw';
+import styles from './jl-avatar-group.css?inline';
 
 import type { AvatarItem, AvatarSize } from '../types/jl-avatar.types';
 

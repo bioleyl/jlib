@@ -5,7 +5,7 @@ import { BASE_STYLES } from '@syware/jlib/styles/shared';
 import { LOGO_MIN_HEIGHT } from '../lib/syware-logo';
 import { assetHref } from '../services/navigation';
 import { isDarkNow, onDarkChange } from '../services/theme';
-import styles from './site-logo.css?raw';
+import styles from './site-logo.css?inline';
 
 import type { LogoVariant } from '../types/site.types';
 

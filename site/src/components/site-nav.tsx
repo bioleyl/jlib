@@ -2,11 +2,12 @@ import { css } from '@jadis/core';
 import { JlElement, JlIcon, JlInput } from '@syware/jlib';
 import { BASE_STYLES } from '@syware/jlib/styles/shared';
 
-import { DESIGN_PAGES } from '../docs/design';
+import { DESIGN_PAGES } from '../docs/design-pages';
 import { PATTERN_PAGES, PATTERNS_SECTION } from '../docs/patterns';
 import { docRoute, docsOfLevel, GUIDES, LEVEL_LABELS, LEVELS } from '../docs/registry';
-import { currentRoute, onRouteChange, pageHref } from '../services/navigation';
-import styles from './site-nav.css?raw';
+import { router } from '../router';
+import { currentRoute, pageHref } from '../services/navigation';
+import styles from './site-nav.css?inline';
 
 const ICON_SIZE = 15;
 
@@ -68,7 +69,7 @@ export class SiteNav extends JlElement {
 
   onConnect(): void {
     this.markCurrent();
-    onRouteChange(() => this.markCurrent(), this.killSignal);
+    this.onBus(router.bus, 'change', () => this.markCurrent());
     this._refs.filter.events.register('input', (text) => this.filter(text));
   }
 

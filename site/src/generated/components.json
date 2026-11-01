@@ -1,0 +1,534 @@
+[
+  {
+    "className": "JlAppIcon",
+    "level": "atom",
+    "name": "App icon",
+    "summary": "An app's own icon: its glyph in white on the brand's blue, one family for every SyWare app.",
+    "tag": "jl-app-icon"
+  },
+  {
+    "className": "JlAvatar",
+    "level": "atom",
+    "name": "Avatar",
+    "summary": "A person, a team or a bot: a picture, or initials on a colour their name picks.",
+    "tag": "jl-avatar"
+  },
+  {
+    "className": "JlBadge",
+    "level": "atom",
+    "name": "Badge",
+    "summary": "A short status, coloured by its tone.",
+    "tag": "jl-badge"
+  },
+  {
+    "className": "JlButton",
+    "level": "atom",
+    "name": "Button",
+    "summary": "A button for actions, from the main one of a page to quiet ones in a toolbar.",
+    "tag": "jl-button"
+  },
+  {
+    "className": "JlCheckbox",
+    "level": "atom",
+    "name": "Checkbox",
+    "summary": "A box to tick, with its label beside it.",
+    "tag": "jl-checkbox"
+  },
+  {
+    "className": "JlChip",
+    "level": "atom",
+    "name": "Chip",
+    "summary": "A compact token: a filter to turn on and off, a tag to take away, or a label.",
+    "tag": "jl-chip"
+  },
+  {
+    "className": "JlDivider",
+    "level": "atom",
+    "name": "Divider",
+    "summary": "A line between groups of content, across or up and down, with an optional label.",
+    "tag": "jl-divider"
+  },
+  {
+    "className": "JlIcon",
+    "level": "atom",
+    "name": "Icon",
+    "summary": "A lucide icon by name, sized in pixels and coloured by its text.",
+    "tag": "jl-icon"
+  },
+  {
+    "className": "JlInput",
+    "level": "atom",
+    "name": "Input",
+    "summary": "A single-line text field that takes part in forms.",
+    "tag": "jl-input"
+  },
+  {
+    "className": "JlKbd",
+    "level": "atom",
+    "name": "Kbd",
+    "summary": "A keyboard shortcut, one keycap per key, written the way the platform does.",
+    "tag": "jl-kbd"
+  },
+  {
+    "className": "JlLink",
+    "level": "atom",
+    "name": "Link",
+    "summary": "A link in text, a list or a footer, with safe external links.",
+    "tag": "jl-link"
+  },
+  {
+    "className": "JlLoadingBar",
+    "level": "atom",
+    "name": "Loading bar",
+    "summary": "A thin line that says something is on its way: nothing for a moment, then growing, never at the end.",
+    "tag": "jl-loading-bar"
+  },
+  {
+    "className": "JlProgress",
+    "level": "atom",
+    "name": "Progress",
+    "summary": "A bar that shows how much of a task is done, or that work goes on.",
+    "tag": "jl-progress"
+  },
+  {
+    "className": "JlProgressRing",
+    "level": "atom",
+    "name": "Progress ring",
+    "summary": "A ring that shows how much of a task is done, for small places.",
+    "tag": "jl-progress-ring"
+  },
+  {
+    "className": "JlRating",
+    "level": "atom",
+    "name": "Rating",
+    "summary": "A row of stars to give a score, or to show one.",
+    "tag": "jl-rating"
+  },
+  {
+    "className": "JlSelect",
+    "level": "atom",
+    "name": "Select",
+    "summary": "A choice among a list, on the browser's own select.",
+    "tag": "jl-select"
+  },
+  {
+    "className": "JlSkeleton",
+    "level": "atom",
+    "name": "Skeleton",
+    "summary": "A shimmering placeholder in the shape of content that is loading.",
+    "tag": "jl-skeleton"
+  },
+  {
+    "className": "JlSlider",
+    "level": "atom",
+    "name": "Slider",
+    "summary": "A number picked by dragging along a track that fills in the accent colour.",
+    "tag": "jl-slider"
+  },
+  {
+    "className": "JlSpinner",
+    "level": "atom",
+    "name": "Spinner",
+    "summary": "A turning ring for work in progress.",
+    "tag": "jl-spinner"
+  },
+  {
+    "className": "JlSwitch",
+    "level": "atom",
+    "name": "Switch",
+    "summary": "An on/off setting that applies at once.",
+    "tag": "jl-switch"
+  },
+  {
+    "className": "JlTextarea",
+    "level": "atom",
+    "name": "Textarea",
+    "summary": "A text field of several lines that can grow with its text and count its characters.",
+    "tag": "jl-textarea"
+  },
+  {
+    "className": "JlAccordion",
+    "level": "molecule",
+    "name": "Accordion",
+    "summary": "A list of sections that open under their headings, one at a time or several.",
+    "tag": "jl-accordion"
+  },
+  {
+    "className": "JlAccordionItem",
+    "level": "molecule",
+    "name": "Accordion item",
+    "summary": "A section that opens and closes under its heading: a disclosure, or one item of an accordion.",
+    "tag": "jl-accordion-item"
+  },
+  {
+    "className": "JlAccountButton",
+    "level": "molecule",
+    "name": "Account button",
+    "summary": "The person signed in, in the frame of an app: avatar, name and role, opening their account.",
+    "tag": "jl-account-button"
+  },
+  {
+    "className": "JlAlert",
+    "level": "molecule",
+    "name": "Alert",
+    "summary": "A message in the page, coloured by its tone: a tip, a success, a warning, a failure.",
+    "tag": "jl-alert"
+  },
+  {
+    "className": "JlAvatarGroup",
+    "level": "molecule",
+    "name": "Avatar group",
+    "summary": "A few people at a glance: overlapping avatars, and a count for the others.",
+    "tag": "jl-avatar-group"
+  },
+  {
+    "className": "JlBreadcrumb",
+    "level": "molecule",
+    "name": "Breadcrumb",
+    "summary": "Where a page sits in a hierarchy: a trail of links that ends with the current page.",
+    "tag": "jl-breadcrumb"
+  },
+  {
+    "className": "JlCalendar",
+    "level": "molecule",
+    "name": "Calendar",
+    "summary": "A month grid to pick a day, in any locale, from the pointer or the keyboard.",
+    "tag": "jl-calendar"
+  },
+  {
+    "className": "JlCard",
+    "level": "molecule",
+    "name": "Card",
+    "summary": "A flat surface for one subject: heading, content, media, actions and a footer.",
+    "tag": "jl-card"
+  },
+  {
+    "className": "JlChipGroup",
+    "level": "molecule",
+    "name": "Chip group",
+    "summary": "A row of chips to choose from: one, as radios, or several, each turned on and off.",
+    "tag": "jl-chip-group"
+  },
+  {
+    "className": "JlCodeBlock",
+    "level": "molecule",
+    "name": "Code block",
+    "summary": "Source code, coloured, with a button to copy it.",
+    "tag": "jl-code-block"
+  },
+  {
+    "className": "JlCombobox",
+    "level": "molecule",
+    "name": "Combobox",
+    "summary": "A text field with a list of options that narrows as people type.",
+    "tag": "jl-combobox"
+  },
+  {
+    "className": "JlCopyButton",
+    "level": "molecule",
+    "name": "Copy button",
+    "summary": "Copies a text to the clipboard, and says so.",
+    "tag": "jl-copy-button"
+  },
+  {
+    "className": "JlDatePicker",
+    "level": "molecule",
+    "name": "Date picker",
+    "summary": "A date field that shows the date for people and opens a calendar to pick it.",
+    "tag": "jl-date-picker"
+  },
+  {
+    "className": "JlEmpty",
+    "level": "molecule",
+    "name": "Empty state",
+    "summary": "What a list, a table or a page shows when it has nothing yet, and the way to fill it.",
+    "tag": "jl-empty"
+  },
+  {
+    "className": "JlFacts",
+    "level": "molecule",
+    "name": "Facts",
+    "summary": "The facts about one thing, label and value, the ones without a value left out.",
+    "tag": "jl-facts"
+  },
+  {
+    "className": "JlField",
+    "level": "molecule",
+    "name": "Field",
+    "summary": "A control with its label, a hint and an error message.",
+    "tag": "jl-field"
+  },
+  {
+    "className": "JlFileDrop",
+    "level": "molecule",
+    "name": "File drop",
+    "summary": "A zone to drop files on or browse for them, with the chosen files listed under it.",
+    "tag": "jl-file-drop"
+  },
+  {
+    "className": "JlInputList",
+    "level": "molecule",
+    "name": "Input list",
+    "summary": "A field with several values, each in its own row, added and removed.",
+    "tag": "jl-input-list"
+  },
+  {
+    "className": "JlListItem",
+    "level": "molecule",
+    "name": "List item",
+    "summary": "A row of a list: icon or avatar, heading, description, a note and trailing controls.",
+    "tag": "jl-list-item"
+  },
+  {
+    "className": "JlLoadMore",
+    "level": "molecule",
+    "name": "Load more",
+    "summary": "The end of a long list: how much shows, and a button for the next page.",
+    "tag": "jl-load-more"
+  },
+  {
+    "className": "JlLoadState",
+    "level": "molecule",
+    "name": "Load state",
+    "summary": "What a list shows while its data comes, when there is none, and when it failed to come.",
+    "tag": "jl-load-state"
+  },
+  {
+    "className": "JlMenu",
+    "level": "molecule",
+    "name": "Menu",
+    "summary": "A list of actions that opens from a button, driven by the pointer or entirely by the keyboard.",
+    "tag": "jl-menu"
+  },
+  {
+    "className": "JlNumberInput",
+    "level": "molecule",
+    "name": "Number input",
+    "summary": "A number field with − and + buttons, arrow keys and bounds.",
+    "tag": "jl-number-input"
+  },
+  {
+    "className": "JlPagination",
+    "level": "molecule",
+    "name": "Pagination",
+    "summary": "Moves through pages of results, with the current page, its neighbours and the ends a click away.",
+    "tag": "jl-pagination"
+  },
+  {
+    "className": "JlPopover",
+    "level": "molecule",
+    "name": "Popover",
+    "summary": "A floating panel that opens from a button: a small form, settings or details, closed by a click outside.",
+    "tag": "jl-popover"
+  },
+  {
+    "className": "JlRadioGroup",
+    "level": "molecule",
+    "name": "Radio group",
+    "summary": "One choice among a few, all in view, as radios or as cards.",
+    "tag": "jl-radio-group"
+  },
+  {
+    "className": "JlSearch",
+    "level": "molecule",
+    "name": "Search",
+    "summary": "A search field that waits for a pause in the typing, with a keyboard shortcut.",
+    "tag": "jl-search"
+  },
+  {
+    "className": "JlSearchButton",
+    "level": "molecule",
+    "name": "Search button",
+    "summary": "What opens the command palette: a search field to press, with its keys.",
+    "tag": "jl-search-button"
+  },
+  {
+    "className": "JlSegmented",
+    "level": "molecule",
+    "name": "Segmented control",
+    "summary": "A few exclusive choices in a row, with a thumb that slides to the chosen one.",
+    "tag": "jl-segmented"
+  },
+  {
+    "className": "JlStat",
+    "level": "molecule",
+    "name": "Stat",
+    "summary": "A key figure with its label, its change and a sparkline of recent values.",
+    "tag": "jl-stat"
+  },
+  {
+    "className": "JlSteps",
+    "level": "molecule",
+    "name": "Steps",
+    "summary": "The steps of a process and where people are: done, current, and still to come.",
+    "tag": "jl-steps"
+  },
+  {
+    "className": "JlTabPanel",
+    "level": "molecule",
+    "name": "Tab panel",
+    "summary": "One panel of a jl-tabs: its content, and the label, icon and badge of its tab.",
+    "tag": "jl-tab-panel"
+  },
+  {
+    "className": "JlTabs",
+    "level": "molecule",
+    "name": "Tabs",
+    "summary": "Tabs over panels of content: one panel shows at a time, the others a click or an arrow key away.",
+    "tag": "jl-tabs"
+  },
+  {
+    "className": "JlTagInput",
+    "level": "molecule",
+    "name": "Tag input",
+    "summary": "A field that collects short texts as removable chips.",
+    "tag": "jl-tag-input"
+  },
+  {
+    "className": "JlTimeline",
+    "level": "molecule",
+    "name": "Timeline",
+    "summary": "What happened, in order, along a vertical line with markers coloured by tone.",
+    "tag": "jl-timeline"
+  },
+  {
+    "className": "JlToast",
+    "level": "molecule",
+    "name": "Toast",
+    "summary": "A short notification that something happened, with an optional action, that can close by itself.",
+    "tag": "jl-toast"
+  },
+  {
+    "className": "JlTooltip",
+    "level": "molecule",
+    "name": "Tooltip",
+    "summary": "A short hint in a dark bubble, shown when the pointer rests on its trigger or the keyboard reaches it.",
+    "tag": "jl-tooltip"
+  },
+  {
+    "className": "JlCommandPalette",
+    "level": "organism",
+    "name": "Command palette",
+    "summary": "A search box over every command of an app, opened by ⌘K or Ctrl+K, with fuzzy matching, and the app's own results for what was typed.",
+    "tag": "jl-command-palette"
+  },
+  {
+    "className": "JlConfirm",
+    "level": "organism",
+    "name": "Confirm",
+    "summary": "A yes-or-no question in a small modal, and confirmDialog() to ask it with await.",
+    "tag": "jl-confirm"
+  },
+  {
+    "className": "JlDialog",
+    "level": "organism",
+    "name": "Dialog",
+    "summary": "A modal window over the page, for a task or a decision that needs full attention.",
+    "tag": "jl-dialog"
+  },
+  {
+    "className": "JlDrawer",
+    "level": "organism",
+    "name": "Drawer",
+    "summary": "A panel that slides over the page from an edge, for a task beside the page rather than in place of it.",
+    "tag": "jl-drawer"
+  },
+  {
+    "className": "JlFlow",
+    "level": "organism",
+    "name": "Flow",
+    "summary": "Nodes joined by edges, to move, connect and extend: a workflow editor.",
+    "tag": "jl-flow"
+  },
+  {
+    "className": "JlNavbar",
+    "level": "organism",
+    "name": "Navbar",
+    "summary": "The bar at the top of an app: brand, main links and actions, folding its links on a narrow width.",
+    "tag": "jl-navbar"
+  },
+  {
+    "className": "JlPageHeader",
+    "level": "organism",
+    "name": "Page header",
+    "summary": "The top of a page: breadcrumb, heading, description, actions and a row of badges.",
+    "tag": "jl-page-header"
+  },
+  {
+    "className": "JlPageOutlet",
+    "level": "organism",
+    "name": "Page outlet",
+    "summary": "Where the pages show: the next one loads out of sight, under a line, and shows once it has its data.",
+    "tag": "jl-page-outlet"
+  },
+  {
+    "className": "JlSideNav",
+    "level": "organism",
+    "name": "Side nav",
+    "summary": "The navigation down the side of an app, with nested items and a collapsed rail.",
+    "tag": "jl-side-nav"
+  },
+  {
+    "className": "JlTabBar",
+    "level": "organism",
+    "name": "Tab bar",
+    "summary": "The bar along the bottom of a phone: the main places of an app, one tap away.",
+    "tag": "jl-tab-bar"
+  },
+  {
+    "className": "JlTable",
+    "level": "organism",
+    "name": "Table",
+    "summary": "Rows of records under column headings, with sorting, selection, rows that open on their details, formats and a sticky header.",
+    "tag": "jl-table"
+  },
+  {
+    "className": "JlToaster",
+    "level": "organism",
+    "name": "Toaster",
+    "summary": "The corner of the window where toasts stack, and toast() to show one from anywhere.",
+    "tag": "jl-toaster"
+  },
+  {
+    "className": "JlTree",
+    "level": "organism",
+    "name": "Tree",
+    "summary": "Nested items that open and close, as files in folders, with the keyboard of a tree; loaded a page at a time for large ones.",
+    "tag": "jl-tree"
+  },
+  {
+    "className": "JlAppShell",
+    "level": "template",
+    "name": "App shell",
+    "summary": "The frame of an app: top bar, sidebar, scrolling main area and side panel, with a drawer and a tab bar when narrow.",
+    "tag": "jl-app-shell"
+  },
+  {
+    "className": "JlAuthLayout",
+    "level": "template",
+    "name": "Auth layout",
+    "summary": "The sign-in screen every SyWare app shares: the brand on a dark panel, the form beside it.",
+    "tag": "jl-auth-layout"
+  },
+  {
+    "className": "JlPage",
+    "level": "template",
+    "name": "Page",
+    "summary": "A page of an app: its header with a named back link, then its content at one of four widths.",
+    "tag": "jl-page"
+  },
+  {
+    "className": "JlSplitView",
+    "level": "template",
+    "name": "Split view",
+    "summary": "Two panes with a divider to drag between them, side by side or stacked.",
+    "tag": "jl-split-view"
+  },
+  {
+    "className": "JlStack",
+    "level": "template",
+    "name": "Stack",
+    "summary": "Its children one under the other, with one space between them: the layout of a form.",
+    "tag": "jl-stack"
+  }
+]

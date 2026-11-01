@@ -26,18 +26,12 @@ const ACTIONS: Record<FileAction, () => void> = {
 export class FileRow extends Jadis {
   static readonly selector = 'file-row';
 
-  private readonly _refs = this.useRefs((ref) => ({ menu: ref<JlMenu<FileAction>>('.file') }));
-
   templateHtml(): Node {
     return (
-      <JlMenu<FileAction> class="file" label="File actions" items={FILE_ACTIONS}>
+      <JlMenu<FileAction> label="File actions" items={FILE_ACTIONS} onSelect={(action) => ACTIONS[action]()}>
         <JlButton slot="trigger" variant="ghost" size="sm" icon="ellipsis" hint="More" />
       </JlMenu>
     );
-  }
-
-  onConnect(): void {
-    this._refs.menu.events.register('select', (action) => ACTIONS[action]());
   }
 }
 

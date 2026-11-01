@@ -37,5 +37,8 @@ export type PatternDoc = GuideLink & {
   components: readonly string[];
 };
 
+/** What the lists and the pager show of a pattern page, from the generated index: its page loads on demand. */
+export type PatternEntry = Pick<PatternDoc, 'icon' | 'label' | 'path' | 'summary' | 'title'>;
+
 /** A rule shared by every pattern, on the overview. */
 export type UxPrinciple = { title: string; text: string };

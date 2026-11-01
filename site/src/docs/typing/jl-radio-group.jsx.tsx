@@ -16,15 +16,17 @@ const PLANS: RadioOption<Plan>[] = [
 export class PlanStep extends Jadis {
   static readonly selector = 'plan-step';
 
-  private readonly _refs = this.useRefs((ref) => ({ plan: ref<JlRadioGroup<Plan>>('.plan') }));
-
   templateHtml(): Node {
     // value="free" does not compile. Without <Plan>, the type is read from the options.
-    return <JlRadioGroup<Plan> class="plan" label="Plan" options={PLANS} value="pro" variant="cards" />;
-  }
-
-  onConnect(): void {
-    this._refs.plan.events.register('change', (value) => choosePlan(value));
+    return (
+      <JlRadioGroup<Plan>
+        label="Plan"
+        options={PLANS}
+        value="pro"
+        variant="cards"
+        onChange={(value) => choosePlan(value)}
+      />
+    );
   }
 }
 

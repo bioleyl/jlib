@@ -81,6 +81,21 @@ part of the page.
 }
 ```
 
+## Vibe coding
+
+The repository is also a Claude Code plugin marketplace, with two plugins: `jlib` teaches Claude the components,
+where their API is and the way an app is written on them; `syware-ux` adds how SyWare's apps behave, from the UX
+patterns. In Claude Code:
+
+```
+/plugin marketplace add bioleyl/jlib
+/plugin install jlib@jlib
+/plugin install syware-ux@jlib
+```
+
+How an app's repository gives them to everyone working on it, and how to ask Claude well: the site's
+[Vibe coding](https://bioleyl.github.io/jlib/vibe-coding) page. The plugins are in [plugins/](plugins).
+
 ## Development
 
 ```bash
@@ -92,8 +107,8 @@ npm run build      # the library (dist/), the size report, the site (site/dist/)
 npm run size       # what each component adds to a bundle
 ```
 
-`src/index.ts` and `src/all.ts` are generated from the component folders: run `npm run generate` after adding a
-component. Conventions for contributors are in [CLAUDE.md](CLAUDE.md).
+`src/index.ts` and `src/all.ts` are generated from the component folders, and the plugins' lists of components and
+patterns from their documentation pages: run `npm run generate` after adding a component or a pattern. Conventions for contributors are in [CLAUDE.md](CLAUDE.md).
 
 ## Releasing
 

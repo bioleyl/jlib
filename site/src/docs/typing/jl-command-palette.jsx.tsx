@@ -21,15 +21,13 @@ const isRecord = (id: Command): id is `open:${string}` => id.startsWith(OPEN);
 export class AppPalette extends Jadis {
   static readonly selector = 'app-palette';
 
-  private readonly _refs = this.useRefs((ref) => ({ palette: ref<JlCommandPalette<Command>>('.palette') }));
-
   templateHtml(): Node {
-    return <JlCommandPalette<Command> class="palette" commands={COMMANDS} hotkey="mod+k" />;
-  }
-
-  onConnect(): void {
-    this._refs.palette.events.register('select', (id) =>
-      isRecord(id) ? openRecord(id.slice(OPEN.length)) : run(id)
+    return (
+      <JlCommandPalette<Command>
+        commands={COMMANDS}
+        hotkey="mod+k"
+        onSelect={(id) => (isRecord(id) ? openRecord(id.slice(OPEN.length)) : run(id))}
+      />
     );
   }
 }

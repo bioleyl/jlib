@@ -3,7 +3,7 @@ import { JlCodeBlock, JlElement, JlSegmented } from '@syware/jlib';
 import { BASE_STYLES } from '@syware/jlib/styles/shared';
 
 import { shownSnippet } from '../lib/snippets';
-import styles from './site-typing.css?raw';
+import styles from './site-typing.css?inline';
 
 import type { SegmentedOption } from '@syware/jlib';
 import type { TypingDoc, TypingTab } from '../types/docs.types';

@@ -11,7 +11,7 @@ import { pageLocale } from '../lib/locale';
 import { jlTemplate, jlText } from '../lib/texts';
 import { allItems, childrenOf, isFolder, treeKeyAction, withExpanded, withExtraRows, withPage } from '../lib/tree';
 import { BASE_STYLES } from '../styles/shared';
-import styles from './jl-tree.css?raw';
+import styles from './jl-tree.css?inline';
 
 import type { TreeAction, TreeItem, TreeLevel, TreeLevelEnd, TreeLoader, TreePage } from '../types/jl-tree.types';
 

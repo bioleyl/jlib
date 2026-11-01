@@ -1,0 +1,33 @@
+.release {
+  gap: 12px;
+  margin-top: 16px;
+  padding-top: 24px;
+  border-top: 1px solid var(--jl-line);
+}
+
+.release-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 14px;
+}
+
+.release-head h2 {
+  margin-top: 0;
+  padding-top: 0;
+}
+
+.date {
+  color: var(--jl-muted);
+  font-size: var(--jl-font-sm);
+}
+
+.release h3 {
+  margin-top: 12px;
+}
+
+/* The changelog names long things in code (a command, a signature): they wrap on a phone. */
+.release code {
+  white-space: normal;
+  overflow-wrap: anywhere;
+}

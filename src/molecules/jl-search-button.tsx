@@ -9,7 +9,7 @@ import { registerIcons } from '../lib/icons';
 import { parseShortcut, shortcutAria } from '../lib/key-shortcut';
 import { jlText } from '../lib/texts';
 import { BASE_STYLES } from '../styles/shared';
-import styles from './jl-search-button.css?raw';
+import styles from './jl-search-button.css?inline';
 
 // The icons it draws itself: a page registers only the names it writes.
 registerIcons({ search: Search });

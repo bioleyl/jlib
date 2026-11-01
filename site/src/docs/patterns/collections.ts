@@ -63,7 +63,7 @@ const ROW_BAD = `
     </jl-list-item>
   </div>`;
 
-export const collections: PatternDoc = {
+export const pattern: PatternDoc = {
   components: [
     'jl-table',
     'jl-list-item',

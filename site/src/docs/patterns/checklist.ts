@@ -2,7 +2,7 @@ import { list, section, text } from '../pattern-kit';
 
 import type { PatternDoc } from '../../types/patterns.types';
 
-export const checklist: PatternDoc = {
+export const pattern: PatternDoc = {
   components: [],
   icon: 'list-checks',
   label: 'Checklist',
@@ -55,6 +55,7 @@ export const checklist: PatternDoc = {
       ),
       list(
         'A skeleton while loading, never a blank page: a `jl-load-state`.',
+        'The pages show through a `jl-page-outlet`: the page shown stays until the next one has its data.',
         'The right empty state (nothing yet, nothing matches, all done), with its action.',
         'A failed load shows in place of the content, with **Try again**.',
         'Every action shows its result; a toast names what happened.',

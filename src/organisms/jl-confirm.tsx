@@ -6,7 +6,7 @@ import { oneOf } from '../lib/attributes';
 import { define } from '../lib/define';
 import { jlText } from '../lib/texts';
 import { BASE_STYLES } from '../styles/shared';
-import styles from './jl-confirm.css?raw';
+import styles from './jl-confirm.css?inline';
 import { JlDialog } from './jl-dialog';
 
 import type { ButtonVariant } from '../types/jl-button.types';

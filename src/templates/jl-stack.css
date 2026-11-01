@@ -1,0 +1,19 @@
+:host {
+  display: block;
+  --gap: var(--jl-space-4);
+}
+
+:host([gap="sm"]) {
+  --gap: var(--jl-space-2);
+}
+
+:host([gap="lg"]) {
+  --gap: var(--jl-space-6);
+}
+
+/* Each slotted node is an item, as wide as the stack however wide its content. */
+.stack {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: var(--gap);
+}

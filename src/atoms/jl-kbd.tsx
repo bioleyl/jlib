@@ -3,7 +3,7 @@ import { css } from '@jadis/core';
 import { JlElement } from '../base/jl-element';
 import { keycapsOf, spokenKeys } from '../lib/keycaps';
 import { BASE_STYLES } from '../styles/shared';
-import styles from './jl-kbd.css?raw';
+import styles from './jl-kbd.css?inline';
 
 import type { KeyPlatform } from '../types/keycaps.types';
 

@@ -11,7 +11,7 @@ import { jlTemplate, jlText } from '../lib/texts';
 import { formatDuration } from '../lib/time';
 import { JlToast } from '../molecules/jl-toast';
 import { BASE_STYLES } from '../styles/shared';
-import styles from './jl-toaster.css?raw';
+import styles from './jl-toaster.css?inline';
 
 import type {
   DownloadOptions,

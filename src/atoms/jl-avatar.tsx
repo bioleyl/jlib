@@ -8,7 +8,7 @@ import { setOrRemove } from '../lib/dom';
 import { registerIcons } from '../lib/icons';
 import { hasSlotted } from '../lib/slots';
 import { BASE_STYLES } from '../styles/shared';
-import styles from './jl-avatar.css?raw';
+import styles from './jl-avatar.css?inline';
 import { JlIcon } from './jl-icon';
 
 import type { AvatarShape, AvatarSize, AvatarStatus } from '../types/jl-avatar.types';

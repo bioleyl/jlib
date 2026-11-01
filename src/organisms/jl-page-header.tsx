@@ -3,7 +3,7 @@ import { css } from '@jadis/core';
 import { JlElement } from '../base/jl-element';
 import { hasSlotted } from '../lib/slots';
 import { BASE_STYLES } from '../styles/shared';
-import styles from './jl-page-header.css?raw';
+import styles from './jl-page-header.css?inline';
 
 /**
  * The top of a page: its heading and what it is for, a breadcrumb above, the page's actions beside the heading

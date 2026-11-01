@@ -1,0 +1,33 @@
+{
+  "name": "jlib",
+  "description": "SyWare's component library for Claude Code: jlib, to build apps with its components, and syware-ux, to make them behave like SyWare's apps.",
+  "owner": {
+    "name": "SyWare",
+    "url": "https://bioleyl.github.io/jlib/"
+  },
+  "plugins": [
+    {
+      "name": "jlib",
+      "source": "./plugins/jlib",
+      "description": "Build apps with jlib: its components and where their API is, an app's setup, Jadis in brief, theming, texts and tests.",
+      "category": "development",
+      "tags": [
+        "web-components",
+        "jadis",
+        "design-system",
+        "syware"
+      ]
+    },
+    {
+      "name": "syware-ux",
+      "source": "./plugins/syware-ux",
+      "description": "How SyWare apps behave, from jlib's UX patterns: the frame, pages, lists, forms, states, feedback, confirmations, search, and the review checklist. Goes with the jlib plugin.",
+      "category": "development",
+      "tags": [
+        "syware",
+        "ux",
+        "patterns"
+      ]
+    }
+  ]
+}

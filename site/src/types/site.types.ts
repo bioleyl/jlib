@@ -12,3 +12,6 @@ export type GuideLink = { path: `/${string}`; label: string; icon: string; summa
 
 /** The whole SyWare logo, or its mark alone. */
 export type LogoVariant = 'mark' | 'logo';
+
+/** Loads a page's module, and gives its class: `() => import('./colour-page').then((module) => module.ColourPage)`. */
+export type PageLoader = () => Promise<CustomElementConstructor>;

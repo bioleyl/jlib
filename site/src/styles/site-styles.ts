@@ -1,6 +1,6 @@
-import design from './design.css?raw';
-import examples from './examples.css?raw';
-import prose from './prose.css?raw';
+import design from './design.css?inline';
+import examples from './examples.css?inline';
+import prose from './prose.css?inline';
 
 /** The reading style shared by the site's pages, after the library's base styles. */
 export const PROSE_STYLES = prose;

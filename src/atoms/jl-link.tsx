@@ -7,7 +7,7 @@ import { setOrRemove } from '../lib/dom';
 import { registerIcons } from '../lib/icons';
 import { BASE_STYLES } from '../styles/shared';
 import { JlIcon } from './jl-icon';
-import styles from './jl-link.css?raw';
+import styles from './jl-link.css?inline';
 
 import type { LinkVariant } from '../types/jl-link.types';
 

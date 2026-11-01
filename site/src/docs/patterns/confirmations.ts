@@ -10,7 +10,7 @@ const confirmation = (heading: string, body: string, buttons: string): string =>
     <div class="row" style="justify-content: flex-end; margin-top: 6px">${buttons}</div>
   </div>`;
 
-export const confirmations: PatternDoc = {
+export const pattern: PatternDoc = {
   components: ['jl-confirm', 'jl-toast', 'jl-dialog'],
   icon: 'undo-2',
   label: 'Confirm and undo',

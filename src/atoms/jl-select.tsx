@@ -9,7 +9,7 @@ import { groupOptions } from '../lib/option-groups';
 import { CONTROL_SIZES } from '../lib/options';
 import { BASE_STYLES, CONTROL_STYLES, FLOATING_STYLES } from '../styles/shared';
 import { JlIcon } from './jl-icon';
-import styles from './jl-select.css?raw';
+import styles from './jl-select.css?inline';
 
 import type { SelectOption, SelectOptionGroup } from '../types/jl-select.types';
 import type { ControlSize } from '../types/options.types';

@@ -3,7 +3,7 @@ import { JlElement, JlSegmented } from '@syware/jlib';
 import { BASE_STYLES } from '@syware/jlib/styles/shared';
 
 import { setTheme, storedTheme, themeBus } from '../services/theme';
-import styles from './site-theme-switch.css?raw';
+import styles from './site-theme-switch.css?inline';
 
 import type { SegmentedOption } from '@syware/jlib';
 import type { ThemeMode } from '../types/site.types';

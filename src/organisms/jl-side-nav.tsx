@@ -10,7 +10,7 @@ import { registerIcons } from '../lib/icons';
 import { findItem, firstLeaf, pathInSections } from '../lib/nav-tree';
 import { jlText } from '../lib/texts';
 import { BASE_STYLES } from '../styles/shared';
-import styles from './jl-side-nav.css?raw';
+import styles from './jl-side-nav.css?inline';
 
 import type { SideNavItem, SideNavSection } from '../types/jl-side-nav.types';
 

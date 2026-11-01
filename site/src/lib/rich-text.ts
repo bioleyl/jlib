@@ -5,14 +5,17 @@ export type TextRun =
   | { kind: 'strong'; text: string }
   | { kind: 'link'; text: string; href: string };
 
-// `code`, then **strong**, then [label](address): the first that starts earliest wins.
-const MARKUP = /`([^`]+)`|\*\*([^*]+)\*\*|\[([^\]]+)\]\(([^)\s]+)\)/g;
+// `code` (between as many backticks as it needs: `` `a` ``), then **strong**, then [label](address): the first that
+// starts earliest wins.
+const MARKUP = /(`+)(.+?)\1(?!`)|\*\*([^*]+)\*\*|\[([^\]]+)\]\(([^)\s]+)\)/g;
+// The spaces that keep a backtick in the code off the backticks around it: `` `a` `` is `a`.
+const PADDED_CODE = /^ (.+) $/;
 
 /** The run one match of MARKUP stands for. */
 function runOf(match: RegExpMatchArray): TextRun {
-  const [, code, strong, label, href] = match;
+  const [, , code, strong, label, href] = match;
   if (code !== undefined) {
-    return { kind: 'code', text: code };
+    return { kind: 'code', text: code.replace(PADDED_CODE, '$1') };
   }
   if (strong !== undefined) {
     return { kind: 'strong', text: strong };

@@ -8,7 +8,7 @@ import { CONTROL_SIZES } from '../lib/options';
 import { ratingAfterChoice, ratingAfterKey } from '../lib/rating';
 import { jlText } from '../lib/texts';
 import { BASE_STYLES } from '../styles/shared';
-import styles from './jl-rating.css?raw';
+import styles from './jl-rating.css?inline';
 
 import type { ControlSize } from '../types/options.types';
 

@@ -7,7 +7,7 @@ import { oneOf } from '../lib/attributes';
 import { registerIcons } from '../lib/icons';
 import { jlText } from '../lib/texts';
 import { BASE_STYLES } from '../styles/shared';
-import styles from './jl-dialog.css?raw';
+import styles from './jl-dialog.css?inline';
 
 import type { DialogSize } from '../types/jl-dialog.types';
 

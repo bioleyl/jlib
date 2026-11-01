@@ -7,7 +7,7 @@ import { registerIcons } from '../lib/icons';
 import { watchSizes } from '../lib/resize';
 import { jlText } from '../lib/texts';
 import { BASE_STYLES } from '../styles/shared';
-import styles from './jl-app-shell.css?raw';
+import styles from './jl-app-shell.css?inline';
 
 // The icons it draws itself: a page registers only the names it writes.
 registerIcons({ menu: Menu });

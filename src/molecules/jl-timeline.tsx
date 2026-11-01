@@ -5,7 +5,7 @@ import { JlElement } from '../base/jl-element';
 import { jsonOf } from '../lib/attributes';
 import { setOrRemove } from '../lib/dom';
 import { BASE_STYLES } from '../styles/shared';
-import styles from './jl-timeline.css?raw';
+import styles from './jl-timeline.css?inline';
 
 import type { TimelineItem } from '../types/jl-timeline.types';
 

@@ -7,7 +7,7 @@ import { oneOf } from '../lib/attributes';
 import { registerIcons } from '../lib/icons';
 import { hasSlotted } from '../lib/slots';
 import { BASE_STYLES } from '../styles/shared';
-import styles from './jl-empty.css?raw';
+import styles from './jl-empty.css?inline';
 
 import type { EmptySize } from '../types/jl-empty.types';
 

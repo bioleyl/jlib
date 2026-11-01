@@ -1,20 +1,23 @@
 import '@fontsource-variable/manrope';
 import '@fontsource-variable/jetbrains-mono';
 import './styles/global.css';
-// Every component, defined: the examples write their tags in HTML.
-import '@syware/jlib/all';
+import { COMMON_ICONS, JlPageOutlet, registerIcons } from '@syware/jlib';
 
 import { SiteShell } from './components/site-shell';
 import { mountRouter } from './router';
-import { interceptLinks } from './services/navigation';
+import { holdHashLinks } from './services/navigation';
 import { applyTheme } from './services/theme';
 
+// The icons the examples name. Each component comes with the page that shows it (scripts/define-written-tags.ts).
+registerIcons(COMMON_ICONS);
 applyTheme();
-// The page lives as long as the tab: its link handling never needs to stop.
-interceptLinks(new AbortController().signal);
+// The page lives as long as the tab: its link handling never needs to stop. The router follows the other links.
+holdHashLinks(new AbortController().signal);
 
 const shell = new SiteShell();
-const outlet = document.createElement('div');
+const outlet = new JlPageOutlet();
 shell.append(outlet);
 document.body.append(shell);
+// A new page starts at the top, once it shows: until then the current one stays as it was.
+outlet.events.register('show', () => window.scrollTo({ top: 0 }));
 mountRouter(outlet);

@@ -6,7 +6,7 @@ import { watchSizes } from '../lib/resize';
 import { clampMin, clampSplit, positionAfterKey, positionAt } from '../lib/split';
 import { jlText } from '../lib/texts';
 import { BASE_STYLES } from '../styles/shared';
-import styles from './jl-split-view.css?raw';
+import styles from './jl-split-view.css?inline';
 
 import type { SplitOrientation, SplitPane } from '../types/jl-split-view.types';
 

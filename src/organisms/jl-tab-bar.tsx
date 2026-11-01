@@ -8,7 +8,7 @@ import { setOrRemove } from '../lib/dom';
 import { registerIcons } from '../lib/icons';
 import { jlText } from '../lib/texts';
 import { BASE_STYLES } from '../styles/shared';
-import styles from './jl-tab-bar.css?raw';
+import styles from './jl-tab-bar.css?inline';
 
 import type { TabBarItem } from '../types/jl-tab-bar.types';
 

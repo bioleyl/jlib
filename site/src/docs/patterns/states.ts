@@ -13,8 +13,16 @@ const SKELETON_ROW = `
 
 const SKELETON = `<div class="stack" style="width: 100%; max-width: 360px; gap: 16px">${SKELETON_ROW.repeat(3)}</div>`;
 
-export const states: PatternDoc = {
-  components: ['jl-load-state', 'jl-skeleton', 'jl-empty', 'jl-alert', 'jl-spinner'],
+export const pattern: PatternDoc = {
+  components: [
+    'jl-load-state',
+    'jl-page-outlet',
+    'jl-loading-bar',
+    'jl-skeleton',
+    'jl-empty',
+    'jl-alert',
+    'jl-spinner',
+  ],
   icon: 'loader',
   label: 'Loading, empty, errors',
   lead: 'A page is never blank and never silent. While it loads, it shows its shape; when it has nothing, it says why and what comes next; when something fails, it says what and offers a way on.',
@@ -47,6 +55,24 @@ export const states: PatternDoc = {
           preview: '<jl-spinner size="32" label="Loading"></jl-spinner>',
           text: 'A spinner in an empty page says that something happens, not what.',
         }
+      )
+    ),
+    section(
+      'From page to page',
+      list(
+        'The page shown stays, usable, until the next one has its data; then the next one takes its place in one go, never half drawn.',
+        'Meanwhile a thin line over the top of the page says the next one is on its way: nothing in the first 150 milliseconds, then growing, fast then slower, never at the end; it runs to the end when the page comes.',
+        'A page whose data takes more than 3 seconds shows anyway, its skeletons in place: people see that it came.',
+        'The first page of a visit shows at once, with its skeletons: there is nothing to keep.'
+      ),
+      text(
+        '`jl-page-outlet` does it: the router shows its pages through it, and each page loads its data in its `jl-load-state`s as it would anyway. For another wait that replaces what is shown, a `jl-loading-bar` alone.'
+      ),
+      code(
+        'ts',
+        `
+        const outlet = document.querySelector('jl-page-outlet'); // where the pages go, in the app shell's main area
+        router.mountOn(outlet, { show: (page) => outlet.show(page) });`
       )
     ),
     section(

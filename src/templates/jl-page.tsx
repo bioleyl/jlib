@@ -10,7 +10,7 @@ import { registerIcons } from '../lib/icons';
 import { jlText } from '../lib/texts';
 import { JlPageHeader } from '../organisms/jl-page-header';
 import { BASE_STYLES } from '../styles/shared';
-import styles from './jl-page.css?raw';
+import styles from './jl-page.css?inline';
 
 import type { PageWidth } from '../types/jl-page.types';
 

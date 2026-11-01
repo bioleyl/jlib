@@ -5,7 +5,7 @@ import { oneOf } from '../lib/attributes';
 import { setOrRemove } from '../lib/dom';
 import { CONTROL_SIZES } from '../lib/options';
 import { BASE_STYLES } from '../styles/shared';
-import styles from './jl-button.css?raw';
+import styles from './jl-button.css?inline';
 import { JlIcon } from './jl-icon';
 import { JlSpinner } from './jl-spinner';
 

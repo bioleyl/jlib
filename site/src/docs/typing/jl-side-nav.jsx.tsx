@@ -20,15 +20,17 @@ const SECTIONS: SideNavSection<Place>[] = [
 export class AppNav extends Jadis {
   static readonly selector = 'app-nav';
 
-  private readonly _refs = this.useRefs((ref) => ({ nav: ref<JlSideNav<Place>>('.nav') }));
-
   templateHtml(): Node {
     // value="billing" does not compile.
-    return <JlSideNav<Place> slot="nav" class="nav" sections={SECTIONS} value="jobs" collapsible />;
-  }
-
-  onConnect(): void {
-    this._refs.nav.events.register('select', (place) => goTo(place));
+    return (
+      <JlSideNav<Place>
+        slot="nav"
+        sections={SECTIONS}
+        value="jobs"
+        collapsible
+        onSelect={(place) => goTo(place)}
+      />
+    );
   }
 }
 

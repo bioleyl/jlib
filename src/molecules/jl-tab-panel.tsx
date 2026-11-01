@@ -2,7 +2,7 @@ import { css } from '@jadis/core';
 
 import { JlElement } from '../base/jl-element';
 import { BASE_STYLES } from '../styles/shared';
-import styles from './jl-tab-panel.css?raw';
+import styles from './jl-tab-panel.css?inline';
 
 const ROLE = 'tabpanel';
 

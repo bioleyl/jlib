@@ -5,7 +5,7 @@ import { JlIcon } from '../atoms/jl-icon';
 import { JlElement } from '../base/jl-element';
 import { registerIcons } from '../lib/icons';
 import { BASE_STYLES } from '../styles/shared';
-import styles from './jl-accordion-item.css?raw';
+import styles from './jl-accordion-item.css?inline';
 
 // The icons it draws itself: a page registers only the names it writes.
 registerIcons({ 'chevron-down': ChevronDown });

@@ -15,15 +15,9 @@ const VIEWS: SegmentedOption<View>[] = [
 export class OrdersToolbar extends Jadis {
   static readonly selector = 'orders-toolbar';
 
-  private readonly _refs = this.useRefs((ref) => ({ view: ref<JlSegmented<View>>('.view') }));
-
   templateHtml(): Node {
     // value="table" does not compile. Without <View>, the type is read from the options.
-    return <JlSegmented<View> class="view" label="View" options={VIEWS} value="list" />;
-  }
-
-  onConnect(): void {
-    this._refs.view.events.register('change', (value) => showView(value));
+    return <JlSegmented<View> label="View" options={VIEWS} value="list" onChange={(value) => showView(value)} />;
   }
 }
 

@@ -1,7 +1,7 @@
-import base from './base.css?raw';
-import control from './control.css?raw';
-import floating from './floating.css?raw';
-import tokens from './tokens.css?raw';
+import base from './base.css?inline';
+import control from './control.css?inline';
+import floating from './floating.css?inline';
+import tokens from './tokens.css?inline';
 
 /** First in every shadow root. */
 export const BASE_STYLES = base;

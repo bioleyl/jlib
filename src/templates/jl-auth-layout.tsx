@@ -8,7 +8,7 @@ import { registerIcons } from '../lib/icons';
 import { starredParts } from '../lib/text';
 import { jlText } from '../lib/texts';
 import { BASE_STYLES, TOKEN_STYLES } from '../styles/shared';
-import styles from './jl-auth-layout.css?raw';
+import styles from './jl-auth-layout.css?inline';
 
 // The icons it draws itself: a page registers only the names it writes.
 registerIcons({ check: Check });

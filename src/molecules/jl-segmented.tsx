@@ -9,7 +9,7 @@ import { CONTROL_SIZES } from '../lib/options';
 import { watchSizes } from '../lib/resize';
 import { firstIndex, lastIndex, stepIndex } from '../lib/roving';
 import { BASE_STYLES } from '../styles/shared';
-import styles from './jl-segmented.css?raw';
+import styles from './jl-segmented.css?inline';
 
 import type { SegmentedOption } from '../types/jl-segmented.types';
 import type { ControlSize } from '../types/options.types';

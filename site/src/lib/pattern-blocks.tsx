@@ -19,7 +19,8 @@ const RUNS: RunRenderers = {
       </a>
     ),
   plain: (run) => run.text,
-  strong: (run) => <strong>{run.text}</strong>,
+  // Its own markup too: **`jl-stack`**.
+  strong: (run) => <strong>{richText(run.text)}</strong>,
 };
 
 const renderRun = <K extends TextRun['kind']>(run: Extract<TextRun, { kind: K }>): Node | string =>

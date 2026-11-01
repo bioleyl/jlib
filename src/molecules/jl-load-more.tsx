@@ -6,7 +6,7 @@ import { pageLocale } from '../lib/locale';
 import { fillText } from '../lib/text';
 import { jlTemplate, jlText } from '../lib/texts';
 import { BASE_STYLES } from '../styles/shared';
-import styles from './jl-load-more.css?raw';
+import styles from './jl-load-more.css?inline';
 
 /**
  * The end of a long list read a page at a time: how much of it shows ("30 of 120") and a button that asks for the

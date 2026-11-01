@@ -23,6 +23,14 @@ describe('parseRichText', () => {
     expect(parseRichText('`**not bold**`')).toEqual([{ kind: 'code', text: '**not bold**' }]);
   });
 
+  it('reads code holding a backtick between more backticks, as Markdown writes it', () => {
+    expect(parseRichText('ids like `` `open:42` ``.')).toEqual([
+      { kind: 'plain', text: 'ids like ' },
+      { kind: 'code', text: '`open:42`' },
+      { kind: 'plain', text: '.' },
+    ]);
+  });
+
   it('leaves unclosed markup as plain text', () => {
     expect(parseRichText('A lone ` and ** stay.')).toEqual([{ kind: 'plain', text: 'A lone ` and ** stay.' }]);
   });

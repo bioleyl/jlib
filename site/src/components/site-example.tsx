@@ -3,7 +3,7 @@ import { JlButton, JlCodeBlock, JlElement } from '@syware/jlib';
 import { dedent } from '@syware/jlib/lib/text';
 import { BASE_STYLES } from '@syware/jlib/styles/shared';
 
-import styles from './site-example.css?raw';
+import styles from './site-example.css?inline';
 
 import type { Example } from '../types/docs.types';
 

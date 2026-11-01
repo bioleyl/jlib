@@ -3,7 +3,7 @@ import { css } from '@jadis/core';
 import { JlElement } from '../base/jl-element';
 import { jlText } from '../lib/texts';
 import { BASE_STYLES } from '../styles/shared';
-import styles from './jl-spinner.css?raw';
+import styles from './jl-spinner.css?inline';
 
 const DEFAULT_SIZE = 16;
 

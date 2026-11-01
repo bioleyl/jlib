@@ -15,7 +15,7 @@ import {
 } from '../../lib/syware-logo';
 import { assetHref, pageHref } from '../../services/navigation';
 import { DESIGN_STYLES, PROSE_STYLES } from '../../styles/site-styles';
-import styles from './logo-page.css?raw';
+import styles from './logo-page.css?inline';
 
 const LOGO_FILE = assetHref('syware-logo');
 const DARK_FILE = assetHref('syware-logo-dark');

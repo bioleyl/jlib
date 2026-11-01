@@ -4,7 +4,7 @@ import { JlElement } from '../base/jl-element';
 import { jsonOf, oneOf } from '../lib/attributes';
 import { setOrRemove } from '../lib/dom';
 import { BASE_STYLES } from '../styles/shared';
-import styles from './jl-facts.css?raw';
+import styles from './jl-facts.css?inline';
 
 import type { Fact, FactRenderer, FactsOrientation } from '../types/jl-facts.types';
 

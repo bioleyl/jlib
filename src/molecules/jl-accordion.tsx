@@ -4,7 +4,7 @@ import { JlElement } from '../base/jl-element';
 import { oneOf } from '../lib/attributes';
 import { define } from '../lib/define';
 import { BASE_STYLES } from '../styles/shared';
-import styles from './jl-accordion.css?raw';
+import styles from './jl-accordion.css?inline';
 import { JlAccordionItem } from './jl-accordion-item';
 
 import type { AccordionVariant } from '../types/jl-accordion.types';

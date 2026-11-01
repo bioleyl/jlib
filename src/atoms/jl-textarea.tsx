@@ -3,7 +3,7 @@ import { css } from '@jadis/core';
 import { JlFormControl } from '../base/jl-form-control';
 import { setOrRemove } from '../lib/dom';
 import { BASE_STYLES, CONTROL_STYLES } from '../styles/shared';
-import styles from './jl-textarea.css?raw';
+import styles from './jl-textarea.css?inline';
 
 const DEFAULT_ROWS = 3;
 // Without a max-rows, an autosized area grows as far as its text goes.

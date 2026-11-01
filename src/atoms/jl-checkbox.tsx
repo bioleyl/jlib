@@ -4,7 +4,7 @@ import { Check, Minus } from 'lucide';
 import { JlFormControl } from '../base/jl-form-control';
 import { registerIcons } from '../lib/icons';
 import { BASE_STYLES } from '../styles/shared';
-import styles from './jl-checkbox.css?raw';
+import styles from './jl-checkbox.css?inline';
 import { JlIcon } from './jl-icon';
 
 // The icons it draws itself: a page registers only the names it writes.

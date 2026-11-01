@@ -6,7 +6,7 @@ import { JlElement } from '../base/jl-element';
 import { oneOf } from '../lib/attributes';
 import { registerIcons } from '../lib/icons';
 import { BASE_STYLES } from '../styles/shared';
-import styles from './jl-field.css?raw';
+import styles from './jl-field.css?inline';
 
 import type { FieldOrientation } from '../types/jl-field.types';
 

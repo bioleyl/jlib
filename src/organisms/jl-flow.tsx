@@ -34,7 +34,7 @@ import {
 import { registerIcons } from '../lib/icons';
 import { jlText } from '../lib/texts';
 import { BASE_STYLES } from '../styles/shared';
-import styles from './jl-flow.css?raw';
+import styles from './jl-flow.css?inline';
 
 import type {
   FlowAddRequest,

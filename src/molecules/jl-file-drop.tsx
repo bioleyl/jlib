@@ -11,7 +11,7 @@ import { pageLocale } from '../lib/locale';
 import { CONTROL_SIZES } from '../lib/options';
 import { jlText } from '../lib/texts';
 import { BASE_STYLES } from '../styles/shared';
-import styles from './jl-file-drop.css?raw';
+import styles from './jl-file-drop.css?inline';
 
 import type { FileRefusal, FileRules, RefusedFile } from '../types/files.types';
 import type { ControlSize } from '../types/options.types';

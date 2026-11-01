@@ -4,7 +4,7 @@ import { BASE_STYLES } from '@syware/jlib/styles/shared';
 
 import { codeSample } from '../lib/blocks';
 import { PROSE_STYLES } from '../styles/site-styles';
-import styles from './icons-page.css?raw';
+import styles from './icons-page.css?inline';
 
 const ICON_SIZE = 22;
 // How long a tile says "Copied".

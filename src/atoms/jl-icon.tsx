@@ -3,7 +3,7 @@ import { css } from '@jadis/core';
 import { JlElement } from '../base/jl-element';
 import { iconElement } from '../lib/icons';
 import { BASE_STYLES } from '../styles/shared';
-import styles from './jl-icon.css?raw';
+import styles from './jl-icon.css?inline';
 
 const DEFAULT_SIZE = 16;
 

@@ -3,7 +3,7 @@ import { css } from '@jadis/core';
 import { JlFormControl } from '../base/jl-form-control';
 import { oneOf } from '../lib/attributes';
 import { BASE_STYLES } from '../styles/shared';
-import styles from './jl-switch.css?raw';
+import styles from './jl-switch.css?inline';
 
 import type { SwitchSize } from '../types/jl-switch.types';
 

@@ -1,0 +1,32 @@
+/*
+ * One cell holds the page and the line over its top. A grid lets a page that fills its place (`height: 100%`) fill
+ * the outlet, which fills its own.
+ */
+:host {
+  display: grid;
+  position: relative;
+  grid-template: 1fr / minmax(0, 1fr);
+  min-height: 100%;
+}
+
+::slotted(*) {
+  grid-area: 1 / 1;
+}
+
+/* Over the top of the page, and of what shows of it once scrolled; it takes no room. */
+.line {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  grid-area: 1 / 1;
+  align-self: start;
+}
+
+/* The next page lays out at the outlet's width, out of sight, and adds nothing to the page's height. */
+.next {
+  position: absolute;
+  inset: 0 0 auto;
+  height: 0;
+  overflow: hidden;
+  visibility: hidden;
+}

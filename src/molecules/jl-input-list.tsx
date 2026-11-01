@@ -11,7 +11,7 @@ import { registerIcons } from '../lib/icons';
 import { canAddRow, filledValues, rowsOf, sameValues, withoutRowAt, withRowAt } from '../lib/input-list';
 import { jlText } from '../lib/texts';
 import { BASE_STYLES } from '../styles/shared';
-import styles from './jl-input-list.css?raw';
+import styles from './jl-input-list.css?inline';
 
 import type { InputType } from '../types/jl-input.types';
 import type { SelectOption } from '../types/jl-select.types';

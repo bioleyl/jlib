@@ -26,6 +26,11 @@ it resolves false, for the page to say so in a toast. Or set state yourself. See
 pattern.`,
   events: [
     { description: 'Try again was pressed; the last load runs again.', detail: 'undefined', name: 'retry' },
+    {
+      description: 'The state changed: the data came, there was none, or it failed.',
+      detail: "'loading' | 'ready' | 'empty' | 'error'",
+      name: 'state',
+    },
   ],
   examples: [
     {
@@ -87,6 +92,12 @@ pattern.`,
       name: 'load',
       signature:
         'load<Value>(task: { fetch(): Promise<Value>; draw(value: Value): void; isEmpty?(value: Value): boolean }): Promise<boolean>',
+    },
+    {
+      description:
+        'Static: resolves once every load state under the root that can be seen, in shadow roots too, has left loading, those drawn meanwhile included; or once the signal aborts. A page that shows only once it has its data waits for it, as jl-page-outlet does.',
+      name: 'whenSettled',
+      signature: 'JlLoadState.whenSettled(root: ParentNode, signal?: AbortSignal): Promise<void>',
     },
   ],
   name: 'Load state',

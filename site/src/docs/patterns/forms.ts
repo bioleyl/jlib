@@ -4,8 +4,17 @@ import type { PatternDoc } from '../../types/patterns.types';
 
 const WIDTH = 'width: 100%; max-width: 340px';
 
-export const forms: PatternDoc = {
-  components: ['jl-field', 'jl-input', 'jl-select', 'jl-number-input', 'jl-file-drop', 'jl-alert', 'jl-confirm'],
+export const pattern: PatternDoc = {
+  components: [
+    'jl-field',
+    'jl-stack',
+    'jl-input',
+    'jl-select',
+    'jl-number-input',
+    'jl-file-drop',
+    'jl-alert',
+    'jl-confirm',
+  ],
   icon: 'text-cursor-input',
   label: 'Forms',
   lead: 'A form asks only what it needs, keeps what people typed, saves in a way they can tell, and shows what is wrong where it is wrong.',
@@ -45,6 +54,7 @@ export const forms: PatternDoc = {
       'Layout',
       list(
         'One column; each field in a `jl-field`, its label above, its hint under the label, its error under the field.',
+        'The fields in a `jl-stack`, which spaces them evenly, on a page as in a dialog: a `jl-dialog` frames its content and lays out nothing.',
         'Fields as wide as their answer: a quantity or a postcode is short, a description takes the column.',
         'Two fields side by side only when they belong together and are short: a reference and its category.',
         'Groups of fields under `h3` headings, in the order people think of them; the optional groups last.',

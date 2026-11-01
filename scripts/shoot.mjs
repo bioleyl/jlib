@@ -5,7 +5,7 @@
 //        [--full] [--eval "<JS run in the page before the shot>"] [--wait 400]
 //
 // --eval takes an expression; what it returns (awaited) is printed. The page's own elements sit in shadow roots:
-// `document.querySelector('site-shell > div > *').shadowRoot` is the current page.
+// `document.querySelector('site-shell > jl-page-outlet > *').shadowRoot` is the current page.
 //
 // Exits with 1 when a page logged an error.
 import { mkdirSync } from 'node:fs';

@@ -3,6 +3,8 @@ import { dirname, join, resolve } from 'node:path';
 
 import { defineConfig } from 'vite';
 
+import { defineWrittenTags } from '../scripts/define-written-tags.ts';
+
 import type { Plugin } from 'vite';
 
 const SITE = import.meta.dirname;
@@ -21,7 +23,7 @@ const routesIn = (file: string): string[] =>
 /** Every route of the site: the guide, design and pattern pages, and a page per documented component. */
 function routes(): string[] {
   const patterns = readdirSync(join(SITE, 'src', 'docs', 'patterns')).map((file) => `docs/patterns/${file}`);
-  const listed = ['docs/registry.ts', 'docs/design.ts', 'docs/patterns.ts', ...patterns].flatMap(routesIn);
+  const listed = ['docs/registry.ts', 'docs/design-pages.ts', 'docs/patterns.ts', ...patterns].flatMap(routesIn);
   const components = readdirSync(join(SITE, 'src', 'docs', 'components'))
     .map((file) => DOC_FILE.exec(file)?.[1])
     .filter((slug): slug is string => slug !== undefined)
@@ -53,10 +55,12 @@ function staticRoutes(): Plugin {
 export default defineConfig(({ command, isPreview }) => ({
   // The build, and its preview, under the Pages base; the development server at the root.
   base: command === 'build' || isPreview === true ? PAGES_BASE : DEV_BASE,
-  // One bundle: the site shows every component and every doc on any page, so splitting would not save a load.
-  build: { chunkSizeWarningLimit: 800, emptyOutDir: true, outDir: OUT, target: 'es2024' },
+  // Each component's doc, each pattern page and each design page in a chunk of its own, loaded when it opens, with
+  // the components it shows (defineWrittenTags); the main bundle holds the shell and the pages that load at once. The
+  // limit warns when the main bundle grows past it.
+  build: { chunkSizeWarningLimit: 600, emptyOutDir: true, outDir: OUT, target: 'es2024' },
   oxc: { jsx: { importSource: '@jadis/core', runtime: 'automatic' } },
-  plugins: [staticRoutes()],
+  plugins: [defineWrittenTags(join(SITE, 'src', 'generated', 'components.json')), staticRoutes()],
   resolve: {
     alias: [
       { find: /^@syware\/jlib$/, replacement: resolve(SRC, 'index.ts') },

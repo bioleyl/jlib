@@ -6,7 +6,7 @@ import { setOrRemove } from '../lib/dom';
 import { hasSlotted } from '../lib/slots';
 import { isActivationKey, startedOnControl } from '../lib/surface';
 import { BASE_STYLES } from '../styles/shared';
-import styles from './jl-card.css?raw';
+import styles from './jl-card.css?inline';
 
 import type { CardPadding } from '../types/jl-card.types';
 

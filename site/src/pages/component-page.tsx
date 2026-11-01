@@ -1,18 +1,18 @@
 import { css } from '@jadis/core';
-import { JlBadge, JlCodeBlock, JlElement, JlIcon } from '@syware/jlib';
+import { JlBadge, JlCodeBlock, JlElement, JlIcon, JlLoadState } from '@syware/jlib';
 import { BASE_STYLES } from '@syware/jlib/styles/shared';
 
 import { SiteApi } from '../components/site-api';
 import { SiteExample } from '../components/site-example';
 import { SitePlayground } from '../components/site-playground';
 import { SiteTyping } from '../components/site-typing';
-import { COMPONENT_DOCS, docBySlug, docRoute, LEVEL_SINGULAR } from '../docs/registry';
+import { COMPONENTS, docRoute, LEVEL_SINGULAR, loadDoc } from '../docs/registry';
 import { importSnippet } from '../lib/snippets';
 import { pageHref } from '../services/navigation';
 import { EXAMPLE_STYLES, PROSE_STYLES } from '../styles/site-styles';
-import styles from './component-page.css?raw';
+import styles from './component-page.css?inline';
 
-import type { ComponentDoc } from '../types/docs.types';
+import type { ComponentDoc, ComponentEntry } from '../types/docs.types';
 
 const paragraphs = (text: string | undefined): Node[] =>
   (text ?? '')
@@ -21,7 +21,7 @@ const paragraphs = (text: string | undefined): Node[] =>
     .filter((paragraph) => paragraph !== '')
     .map((paragraph) => <p>{paragraph}</p>);
 
-function pagerLink(doc: ComponentDoc | undefined, direction: 'previous' | 'next'): Node {
+function pagerLink(doc: ComponentEntry | undefined, direction: 'previous' | 'next'): Node {
   if (doc === undefined) {
     return <span />;
   }
@@ -39,7 +39,8 @@ function pagerLink(doc: ComponentDoc | undefined, direction: 'previous' | 'next'
 
 /**
  * The page of one component, made from its documentation: intro, playground, examples, how it is typed for a
- * component typed by what it holds, then the API.
+ * component typed by what it holds, then the API. The doc loads when the page opens, in a load state the page outlet
+ * waits for.
  */
 export class ComponentPage extends JlElement {
   static readonly selector = 'site-component-page';
@@ -47,10 +48,14 @@ export class ComponentPage extends JlElement {
   /** The component's slug, from the route: `button` for `jl-button`. */
   readonly name = this.useChange('', (slug) => this.render(slug), { attribute: 'name' });
 
-  private readonly _refs = this.useRefs((ref) => ({ page: ref('.page') }));
+  private readonly _refs = this.useRefs((ref) => ({ page: ref('.page'), state: ref(JlLoadState) }));
 
   templateHtml(): Node {
-    return <div class="page" />;
+    return (
+      <JlLoadState skeleton="lines">
+        <div class="page" />
+      </JlLoadState>
+    );
   }
 
   templateCss(): string {
@@ -58,7 +63,10 @@ export class ComponentPage extends JlElement {
   }
 
   private render(slug: string): void {
-    const doc = docBySlug(slug);
+    void this._refs.state.load({ draw: (doc) => this.draw(slug, doc), fetch: () => loadDoc(slug) });
+  }
+
+  private draw(slug: string, doc: ComponentDoc | undefined): void {
     if (doc === undefined) {
       this._refs.page.replaceChildren(this.missing(slug));
       return;
@@ -68,7 +76,7 @@ export class ComponentPage extends JlElement {
   }
 
   private article(doc: ComponentDoc): Node {
-    const index = COMPONENT_DOCS.indexOf(doc);
+    const index = COMPONENTS.findIndex((component) => component.tag === doc.tag);
     return (
       <article>
         <header class="intro">
@@ -107,8 +115,8 @@ export class ComponentPage extends JlElement {
           <SiteApi doc={doc} />
         </section>
         <nav class="pager" aria-label="Components">
-          {pagerLink(COMPONENT_DOCS[index - 1], 'previous')}
-          {pagerLink(COMPONENT_DOCS[index + 1], 'next')}
+          {pagerLink(COMPONENTS[index - 1], 'previous')}
+          {pagerLink(COMPONENTS[index + 1], 'next')}
         </nav>
       </article>
     );

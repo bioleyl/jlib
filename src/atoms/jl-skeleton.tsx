@@ -4,7 +4,7 @@ import { JlElement } from '../base/jl-element';
 import { clampedNumber, oneOf } from '../lib/attributes';
 import { cssLength } from '../lib/css-length';
 import { BASE_STYLES } from '../styles/shared';
-import styles from './jl-skeleton.css?raw';
+import styles from './jl-skeleton.css?inline';
 
 import type { SkeletonShape } from '../types/jl-skeleton.types';
 

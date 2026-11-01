@@ -12,7 +12,7 @@ import { registerIcons } from '../lib/icons';
 import { groupMatches, matchCommands } from '../lib/palette';
 import { jlText } from '../lib/texts';
 import { BASE_STYLES } from '../styles/shared';
-import styles from './jl-command-palette.css?raw';
+import styles from './jl-command-palette.css?inline';
 
 import type { PaletteCommand, PaletteGroup, PaletteMatch } from '../types/jl-command-palette.types';
 
@@ -90,12 +90,15 @@ export class JlCommandPalette<Id extends string = string> extends JlElement {
   };
 
   private readonly _refs = this.useRefs((ref) => ({
+    closeText: ref('.close-text'),
     dialog: ref('dialog'),
     empty: ref('.empty'),
     hotkeyHint: ref('.hotkey-hint'),
     hotkeyKeys: ref('.hotkey-keys'),
     input: ref<HTMLInputElement>('input'),
+    moveText: ref('.move-text'),
     results: ref('.results'),
+    runText: ref('.run-text'),
     searchIcon: ref<JlIcon>('.search-icon'),
     spinner: ref(JlSpinner),
   }));
@@ -131,15 +134,15 @@ export class JlCommandPalette<Id extends string = string> extends JlElement {
           <span class="hint">
             <kbd>↑</kbd>
             <kbd>↓</kbd>
-            to move
+            <span class="move-text" />
           </span>
           <span class="hint">
             <kbd>↵</kbd>
-            to run
+            <span class="run-text" />
           </span>
           <span class="hint hotkey-hint">
             <span class="hotkey-keys" />
-            to close
+            <span class="close-text" />
           </span>
         </footer>
       </dialog>
@@ -155,6 +158,9 @@ export class JlCommandPalette<Id extends string = string> extends JlElement {
     this._refs.empty.textContent = this.emptyText.get() || jlText('noCommands');
     this._refs.dialog.setAttribute('aria-label', this.label.get() || jlText('commandPalette'));
     this._refs.results.setAttribute('aria-label', jlText('commands'));
+    this._refs.moveText.textContent = jlText('commandMove');
+    this._refs.runText.textContent = jlText('commandRun');
+    this._refs.closeText.textContent = jlText('commandClose');
   }
 
   onConnect(): void {

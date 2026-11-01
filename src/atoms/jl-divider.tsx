@@ -4,7 +4,7 @@ import { JlElement } from '../base/jl-element';
 import { oneOf } from '../lib/attributes';
 import { setOrRemove } from '../lib/dom';
 import { BASE_STYLES } from '../styles/shared';
-import styles from './jl-divider.css?raw';
+import styles from './jl-divider.css?inline';
 
 import type { DividerAlign } from '../types/jl-divider.types';
 

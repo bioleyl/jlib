@@ -47,9 +47,12 @@ tarball.
    Commit the file if it changed, so the site shows the sizes of the version being released.
 
 3. Write the version's notes at the top of [CHANGELOG.md](CHANGELOG.md): what is new, what changed, and what pages
-   should look at when they update. Commit them.
+   should look at when they update. Check that the Claude plugins' skills
+   ([jlib](plugins/jlib/skills/jlib/SKILL.md), [syware-ux](plugins/syware-ux/skills/syware-ux/SKILL.md)) say how
+   apps use what the version brings. Commit them.
 
-4. Bump the version. `npm version` updates `package.json` and the lockfile, commits, and tags `vX.Y.Z`:
+4. Bump the version. `npm version` updates `package.json` and the lockfile, writes the version into the Claude
+   plugins' manifests (`plugins/*/.claude-plugin/plugin.json`, the `version` script), commits, and tags `vX.Y.Z`:
 
    ```bash
    npm version patch
@@ -99,6 +102,13 @@ npm version preminor --preid beta
 ```
 
 People try it with `npm install @syware/jlib@next`.
+
+## The Claude plugins
+
+The repository is the marketplace (`.claude-plugin/marketplace.json`) of two plugins, `jlib` and `syware-ux`, and
+Claude Code reads it from `main`. Their users get a new copy when a plugin's version changes, which `npm version`
+does: what is merged into a skill between two versions reaches them with the next one (and anyone installing it
+meanwhile). A unit test keeps each plugin's version that of the package.
 
 ## The documentation site
 

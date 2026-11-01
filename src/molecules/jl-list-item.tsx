@@ -8,7 +8,7 @@ import { registerIcons } from '../lib/icons';
 import { hasSlotted } from '../lib/slots';
 import { isActivationKey, startedOnControl } from '../lib/surface';
 import { BASE_STYLES } from '../styles/shared';
-import styles from './jl-list-item.css?raw';
+import styles from './jl-list-item.css?inline';
 
 // The icons it draws itself: a page registers only the names it writes.
 registerIcons({ 'chevron-right': ChevronRight });

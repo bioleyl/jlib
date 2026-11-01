@@ -9,7 +9,7 @@ import { TONES } from '../lib/options';
 import { areaAttribute, pointsAttribute, sparklinePoints } from '../lib/sparkline';
 import { trendOfDelta } from '../lib/trend';
 import { BASE_STYLES } from '../styles/shared';
-import styles from './jl-stat.css?raw';
+import styles from './jl-stat.css?inline';
 
 import type { StatTrend } from '../types/jl-stat.types';
 import type { Tone } from '../types/options.types';

@@ -2,8 +2,6 @@
 // Pages, `/` in development).
 
 const TRAILING_SLASH = /\/+$/;
-// A last segment with a dot names a file (`syware-logo.svg`), not a route.
-const FILE_SEGMENT = /\/[^/]+\.[a-z0-9]+$/i;
 
 /** The base without its trailing slash: `/jlib/` gives `/jlib`, `/` gives ``. */
 const trimmed = (base: string): string => base.replace(TRAILING_SLASH, '');
@@ -20,14 +18,4 @@ export function routeOf(base: string, pathname: string): string {
   const rest = pathname.startsWith(prefix) ? pathname.slice(prefix.length) : pathname;
   const route = rest.replace(TRAILING_SLASH, '');
   return route === '' ? '/' : route;
-}
-
-/** Whether a link goes to one of the site's own routes: same origin, under the base, and not a file. */
-export function isSiteRoute(base: string, url: URL, origin: string): boolean {
-  if (url.origin !== origin) {
-    return false;
-  }
-  const prefix = trimmed(base);
-  const underBase = url.pathname === prefix || url.pathname.startsWith(`${prefix}/`);
-  return underBase && !FILE_SEGMENT.test(url.pathname);
 }

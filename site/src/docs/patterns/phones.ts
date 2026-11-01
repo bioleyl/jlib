@@ -2,7 +2,7 @@ import { list, section, text } from '../pattern-kit';
 
 import type { PatternDoc } from '../../types/patterns.types';
 
-export const phones: PatternDoc = {
+export const pattern: PatternDoc = {
   components: ['jl-app-shell', 'jl-tab-bar', 'jl-number-input', 'jl-input'],
   icon: 'smartphone',
   label: 'Phones and touch',

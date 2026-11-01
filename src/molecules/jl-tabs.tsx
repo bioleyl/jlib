@@ -10,7 +10,7 @@ import { watchSizes } from '../lib/resize';
 import { firstIndex, lastIndex, stepIndex } from '../lib/roving';
 import { BASE_STYLES } from '../styles/shared';
 import { JlTabPanel } from './jl-tab-panel';
-import styles from './jl-tabs.css?raw';
+import styles from './jl-tabs.css?inline';
 
 import type { TabsVariant } from '../types/jl-tabs.types';
 

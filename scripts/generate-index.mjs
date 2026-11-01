@@ -1,9 +1,19 @@
 // Writes src/index.ts (every export of the library) and src/all.ts (defines every component), from the files in
-// src/atoms, src/molecules, src/organisms and src/templates. `--check` fails instead of writing when they are stale.
+// src/atoms, src/molecules, src/organisms and src/templates; and, from the documentation pages, the site's indexes of
+// components and patterns (site/src/generated) and the references of the Claude plugins' skills. `--check` fails
+// instead of writing when they are stale.
 import { readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
-const SRC = join(import.meta.dirname, '..', 'src');
+import { componentCatalogue, componentPages, patternCatalogue, patternPages } from './doc-pages.mjs';
+
+const ROOT = join(import.meta.dirname, '..');
+const SRC = join(ROOT, 'src');
+const DOCS = join(ROOT, 'site', 'src', 'docs');
+const COMPONENT_LIST = join(ROOT, 'plugins', 'jlib', 'skills', 'jlib', 'references', 'components.md');
+const PATTERN_LIST = join(ROOT, 'plugins', 'syware-ux', 'skills', 'syware-ux', 'references', 'patterns.md');
+const GENERATED = join(ROOT, 'site', 'src', 'generated');
+const JSON_INDENT = 2;
 const LEVELS = ['atoms', 'molecules', 'organisms', 'templates'];
 const MODULE_PATTERN = /\.tsx?$/;
 // A class can take type parameters: `export class JlTable<Row extends object = TableRow> extends JlElement {`.
@@ -69,9 +79,22 @@ const all = [
   '',
 ].join('\n');
 
+const json = (value) => `${JSON.stringify(value, null, JSON_INDENT)}\n`;
+const componentIndex = componentPages(join(DOCS, 'components'));
+const patternIndex = patternPages(join(DOCS, 'patterns'), join(DOCS, 'patterns.ts'));
+
 const outputs = [
   { content: index, path: join(SRC, 'index.ts') },
   { content: all, path: join(SRC, 'all.ts') },
+  { content: json(componentIndex), path: join(GENERATED, 'components.json') },
+  {
+    content: json(
+      patternIndex.map(({ icon, label, path, summary, title }) => ({ icon, label, path, summary, title }))
+    ),
+    path: join(GENERATED, 'patterns.json'),
+  },
+  { content: componentCatalogue(componentIndex), path: COMPONENT_LIST },
+  { content: patternCatalogue(patternIndex, join(DOCS, 'patterns.ts')), path: PATTERN_LIST },
 ];
 
 const stale = outputs.filter((output) => tryRead(output.path) !== output.content);

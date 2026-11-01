@@ -114,3 +114,6 @@ export type ComponentDoc = {
   /** For a component typed by what it holds: how a page writes it typed. */
   typing?: TypingDoc;
 };
+
+/** What the lists, the search and the pager show of a component, from the generated index: its doc loads on demand. */
+export type ComponentEntry = Pick<ComponentDoc, 'className' | 'level' | 'name' | 'summary' | 'tag'>;

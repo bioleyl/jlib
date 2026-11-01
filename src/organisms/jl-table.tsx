@@ -25,7 +25,7 @@ import {
 } from '../lib/table';
 import { jlText } from '../lib/texts';
 import { BASE_STYLES } from '../styles/shared';
-import styles from './jl-table.css?raw';
+import styles from './jl-table.css?inline';
 
 import type {
   TableCellFormat,

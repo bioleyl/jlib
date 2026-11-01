@@ -16,15 +16,17 @@ const STATUSES: ChipGroupOption<Status>[] = [
 export class JobFilters extends Jadis {
   static readonly selector = 'job-filters';
 
-  private readonly _refs = this.useRefs((ref) => ({ status: ref<JlChipGroup<Status>>('.status') }));
-
   templateHtml(): Node {
     // value={['closed']} does not compile. Without <Status>, the type is read from the options.
-    return <JlChipGroup<Status> class="status" label="Status" multiple options={STATUSES} value={['open']} />;
-  }
-
-  onConnect(): void {
-    this._refs.status.events.register('change', (values) => filterBy(values));
+    return (
+      <JlChipGroup<Status>
+        label="Status"
+        multiple
+        options={STATUSES}
+        value={['open']}
+        onChange={(values) => filterBy(values)}
+      />
+    );
   }
 }
 

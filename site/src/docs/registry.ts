@@ -1,8 +1,17 @@
-import type { ComponentDoc, Level } from '../types/docs.types';
+import { registerIcons } from '@syware/jlib';
+import { ScrollText } from 'lucide';
+
+import componentIndex from '../generated/components.json';
+
+import type { ComponentDoc, ComponentEntry, Level } from '../types/docs.types';
 import type { GuideLink } from '../types/site.types';
 
-// Every file in ./components that exports `doc` becomes a page: adding a component's docs needs no other change.
-const modules = import.meta.glob<ComponentDoc>('./components/*.doc.ts', { eager: true, import: 'doc' });
+// The icon of the guide's pages that the common set lacks.
+registerIcons({ 'scroll-text': ScrollText });
+
+// Every file in ./components that exports `doc` becomes a page (`npm run generate` adds it to the index). A page's doc
+// loads when the page opens: the lists, the search and the pager need only what the generated index holds.
+const loaders = import.meta.glob<ComponentDoc>('./components/*.doc.ts', { import: 'doc' });
 
 export const LEVELS: readonly Level[] = ['atom', 'molecule', 'organism', 'template'];
 
@@ -27,20 +36,23 @@ export const LEVEL_DESCRIPTIONS: Record<Level, string> = {
   template: 'Layouts with slots that place the rest: an app shell, a split view.',
 };
 
-const byLevelThenName = (a: ComponentDoc, b: ComponentDoc): number =>
-  LEVELS.indexOf(a.level) - LEVELS.indexOf(b.level) || a.name.localeCompare(b.name);
+/** Every documented component, by level then by name. */
+export const COMPONENTS = componentIndex as readonly ComponentEntry[];
 
-export const COMPONENT_DOCS: readonly ComponentDoc[] = Object.values(modules).sort(byLevelThenName);
-
-export const slugOf = (doc: ComponentDoc): string => doc.tag.replace(/^jl-/, '');
+export const slugOf = (component: ComponentEntry): string => component.tag.replace(/^jl-/, '');
 
 /** The route of a component's page: `/components/button`. */
-export const docRoute = (doc: ComponentDoc): string => `/components/${slugOf(doc)}`;
+export const docRoute = (component: ComponentEntry): string => `/components/${slugOf(component)}`;
 
-export const docBySlug = (slug: string): ComponentDoc | undefined =>
-  COMPONENT_DOCS.find((doc) => slugOf(doc) === slug);
+export const componentBySlug = (slug: string): ComponentEntry | undefined =>
+  COMPONENTS.find((component) => slugOf(component) === slug);
 
-export const docsOfLevel = (level: Level): ComponentDoc[] => COMPONENT_DOCS.filter((doc) => doc.level === level);
+/** A component's whole doc, loaded on demand; none for a slug that is no component's. */
+export const loadDoc = (slug: string): Promise<ComponentDoc | undefined> =>
+  loaders[`./components/jl-${slug}.doc.ts`]?.() ?? Promise.resolve(undefined);
+
+export const docsOfLevel = (level: Level): ComponentEntry[] =>
+  COMPONENTS.filter((component) => component.level === level);
 
 export const GUIDES: readonly GuideLink[] = [
   { icon: 'house', label: 'Introduction', path: '/', summary: 'What jlib is and the ideas behind it.' },
@@ -64,9 +76,21 @@ export const GUIDES: readonly GuideLink[] = [
   },
   { icon: 'list', label: 'Forms', path: '/forms', summary: 'Fields that submit with a form like native ones.' },
   {
+    icon: 'sparkles',
+    label: 'Vibe coding',
+    path: '/vibe-coding',
+    summary: 'Build apps on jlib with Claude Code and its plugins.',
+  },
+  {
     icon: 'layout-grid',
     label: 'All components',
     path: '/components',
     summary: 'Every component, by atomic level.',
+  },
+  {
+    icon: 'scroll-text',
+    label: 'Changelog',
+    path: '/changelog',
+    summary: 'What changed in each version, and what to look at when you update.',
   },
 ];

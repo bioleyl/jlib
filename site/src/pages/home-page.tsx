@@ -3,12 +3,12 @@ import { JlButton, JlCodeBlock, JlElement, JlIcon } from '@syware/jlib';
 import { BASE_STYLES } from '@syware/jlib/styles/shared';
 
 import { SiteLogo } from '../components/site-logo';
-import { COMPONENT_DOCS, docsOfLevel, LEVEL_DESCRIPTIONS, LEVEL_LABELS, LEVELS } from '../docs/registry';
+import { COMPONENTS, docsOfLevel, LEVEL_DESCRIPTIONS, LEVEL_LABELS, LEVELS } from '../docs/registry';
 import { codeSample } from '../lib/blocks';
 import { githubMark, REPOSITORY_URL } from '../lib/project';
-import { assetHref, navigate, pageHref } from '../services/navigation';
+import { assetHref, pageHref } from '../services/navigation';
 import { PROSE_STYLES } from '../styles/site-styles';
-import styles from './home-page.css?raw';
+import styles from './home-page.css?inline';
 
 const MAKER_LOGO_HEIGHT = 56;
 const REPO_MARK_SIZE = 18;
@@ -80,25 +80,26 @@ const showcase = (): HTMLElement => {
 export class HomePage extends JlElement {
   static readonly selector = 'site-home-page';
 
-  private readonly _refs = this.useRefs((ref) => ({
-    browse: ref<JlButton>('.browse'),
-    start: ref<JlButton>('.start'),
-  }));
-
   templateHtml(): Node {
     return (
       <article class="page">
         <section class="hero">
           <div class="hero-text">
-            <p class="label">{`Jadis · Web Components · ${COMPONENT_DOCS.length} components`}</p>
+            <p class="label">{`Jadis · Web Components · ${COMPONENTS.length} components`}</p>
             <h1>Components that are just the platform.</h1>
             <p class="lead">
               jlib is a component library on Jadis and native Web Components. Tags that work in any page, typed
               classes for JSX, form fields that submit like native ones, and a bundle that holds only what you use.
             </p>
             <div class="cta">
-              <JlButton class="start" variant="primary" size="lg" iconEnd="arrow-right" label="Get started" />
-              <JlButton class="browse" size="lg" label="Browse components" />
+              <JlButton
+                href={pageHref('/getting-started')}
+                variant="primary"
+                size="lg"
+                iconEnd="arrow-right"
+                label="Get started"
+              />
+              <JlButton href={pageHref('/components')} size="lg" label="Browse components" />
               <a class="repo" href={REPOSITORY_URL} target="_blank" rel="noopener">
                 {githubMark(REPO_MARK_SIZE)}
                 <span>GitHub</span>
@@ -196,12 +197,6 @@ export class HomePage extends JlElement {
 
   onConnect(): void {
     document.title = 'jlib · Web Components on Jadis';
-    this._refs.start.events.register('press', () => {
-      navigate('/getting-started');
-    });
-    this._refs.browse.events.register('press', () => {
-      navigate('/components');
-    });
   }
 }
 

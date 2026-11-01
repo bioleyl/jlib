@@ -5,7 +5,7 @@ import { BASE_STYLES } from '@syware/jlib/styles/shared';
 import { bundlerCase, codeSample, registrationTable } from '../lib/blocks';
 import { pageHref } from '../services/navigation';
 import { PROSE_STYLES } from '../styles/site-styles';
-import styles from './guide-page.css?raw';
+import styles from './guide-page.css?inline';
 
 /** Installing jlib and using it from HTML, from JSX and from TypeScript. */
 export class GettingStartedPage extends JlElement {
@@ -268,6 +268,12 @@ export class GettingStartedPage extends JlElement {
           <p>
             <code>DEFAULT_TEXTS</code> lists every name with its English text; <code>JL_LANGUAGES</code> the
             languages jlib translates.
+          </p>
+          <p>
+            Your own components can extend <code>JlElement</code>. Its method <code>drawTexts()</code> is jlib's:
+            once a subclass defines it, jlib calls it at every connection and at each change of jlib's language.
+            Give the method that writes your app's texts another name (<code>writeTexts</code>), with its own{' '}
+            <code>useTranslation</code>.
           </p>
         </section>
 

@@ -9,7 +9,7 @@ const SHORTCUTS = `
     <div class="row"><jl-kbd keys="escape"></jl-kbd><span class="muted">Close what floats</span></div>
   </div>`;
 
-export const search: PatternDoc = {
+export const pattern: PatternDoc = {
   components: ['jl-command-palette', 'jl-search-button', 'jl-kbd', 'jl-search'],
   icon: 'command',
   label: 'Search and shortcuts',

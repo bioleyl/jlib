@@ -7,7 +7,7 @@ import { clampedNumber, jsonOf, oneOf } from '../lib/attributes';
 import { registerIcons } from '../lib/icons';
 import { jlText } from '../lib/texts';
 import { BASE_STYLES } from '../styles/shared';
-import styles from './jl-steps.css?raw';
+import styles from './jl-steps.css?inline';
 
 import type { StepItem, StepStatus, StepsOrientation } from '../types/jl-steps.types';
 

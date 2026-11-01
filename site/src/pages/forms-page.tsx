@@ -4,7 +4,7 @@ import { BASE_STYLES } from '@syware/jlib/styles/shared';
 
 import { codeSample } from '../lib/blocks';
 import { PROSE_STYLES } from '../styles/site-styles';
-import styles from './forms-page.css?raw';
+import styles from './forms-page.css?inline';
 
 const NOTHING_SENT = '// Submit the form: its data shows here.';
 

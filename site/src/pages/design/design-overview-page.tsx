@@ -3,11 +3,12 @@ import { JlElement, JlIcon } from '@syware/jlib';
 import { BASE_STYLES } from '@syware/jlib/styles/shared';
 
 import { SiteLogo } from '../../components/site-logo';
-import { DESIGN_PAGES, PRINCIPLES } from '../../docs/design';
+import { PRINCIPLES } from '../../docs/design';
+import { DESIGN_PAGES } from '../../docs/design-pages';
 import { designIntro } from '../../lib/design-blocks';
 import { pageHref } from '../../services/navigation';
 import { DESIGN_STYLES, PROSE_STYLES } from '../../styles/site-styles';
-import styles from './design-overview-page.css?raw';
+import styles from './design-overview-page.css?inline';
 
 const PREVIEW_SWATCHES = [
   '--jl-text',

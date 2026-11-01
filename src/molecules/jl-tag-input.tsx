@@ -13,7 +13,7 @@ import { CONTROL_SIZES } from '../lib/options';
 import { addTags, hasTag, hasTagSeparator, splitTags } from '../lib/tags';
 import { jlText } from '../lib/texts';
 import { BASE_STYLES, CONTROL_STYLES, FLOATING_STYLES } from '../styles/shared';
-import styles from './jl-tag-input.css?raw';
+import styles from './jl-tag-input.css?inline';
 
 import type { Placement } from '../types/floating.types';
 import type { ControlSize } from '../types/options.types';

@@ -14,7 +14,7 @@ import { BASE_STYLES } from '@syware/jlib/styles/shared';
 import { applyAttribute, defaultValue, formatDetail, isValidJson, prettyJson } from '../lib/playground';
 import { htmlSnippet, jsxSnippet } from '../lib/snippets';
 import { EXAMPLE_STYLES } from '../styles/site-styles';
-import styles from './site-playground.css?raw';
+import styles from './site-playground.css?inline';
 
 import type { ComponentDoc, Control, PropDoc } from '../types/docs.types';
 

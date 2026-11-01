@@ -6,7 +6,7 @@ import { PATTERNS, PATTERNS_SECTION, UX_PRINCIPLES } from '../../docs/patterns';
 import { sectionIntro } from '../../lib/design-blocks';
 import { pageHref } from '../../services/navigation';
 import { DESIGN_STYLES, PROSE_STYLES } from '../../styles/site-styles';
-import styles from './patterns-overview-page.css?raw';
+import styles from './patterns-overview-page.css?inline';
 
 const CARD_ICON_SIZE = 18;
 const NUMBER_DIGITS = 2;

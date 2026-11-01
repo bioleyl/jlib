@@ -8,7 +8,7 @@ import { followAnchor, PLACEMENTS } from '../lib/floating';
 import { firstIndex, lastIndex, letterIndex, stepIndex } from '../lib/roving';
 import { setTriggerAria } from '../lib/trigger';
 import { BASE_STYLES, FLOATING_STYLES } from '../styles/shared';
-import styles from './jl-menu.css?raw';
+import styles from './jl-menu.css?inline';
 
 import type { Placement } from '../types/floating.types';
 import type { MenuAction, MenuDivider, MenuItem } from '../types/jl-menu.types';

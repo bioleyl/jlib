@@ -16,15 +16,9 @@ const PLACES: TabBarItem<Place>[] = [
 export class AppTabs extends Jadis {
   static readonly selector = 'app-tabs';
 
-  private readonly _refs = this.useRefs((ref) => ({ tabs: ref<JlTabBar<Place>>('.tabs') }));
-
   templateHtml(): Node {
     // value="settings" does not compile.
-    return <JlTabBar<Place> class="tabs" items={PLACES} value="home" more="More" />;
-  }
-
-  onConnect(): void {
-    this._refs.tabs.events.register('select', (place) => goTo(place));
+    return <JlTabBar<Place> items={PLACES} value="home" more="More" onSelect={(place) => goTo(place)} />;
   }
 }
 

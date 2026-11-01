@@ -10,7 +10,7 @@ import { CONTROL_SIZES } from '../lib/options';
 import { rovingIndex } from '../lib/roving-index';
 import { jlText } from '../lib/texts';
 import { BASE_STYLES } from '../styles/shared';
-import styles from './jl-chip-group.css?raw';
+import styles from './jl-chip-group.css?inline';
 
 import type { ChipGroupOption } from '../types/jl-chip-group.types';
 import type { ControlSize } from '../types/options.types';

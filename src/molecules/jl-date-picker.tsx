@@ -23,7 +23,7 @@ import { CONTROL_SIZES } from '../lib/options';
 import { jlText } from '../lib/texts';
 import { BASE_STYLES, CONTROL_STYLES, FLOATING_STYLES } from '../styles/shared';
 import { JlCalendar } from './jl-calendar';
-import styles from './jl-date-picker.css?raw';
+import styles from './jl-date-picker.css?inline';
 
 import type { Weekday } from '../types/calendar.types';
 import type { Placement } from '../types/floating.types';

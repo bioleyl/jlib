@@ -5,7 +5,7 @@ import { oneOf } from '../lib/attributes';
 import { followAnchor, PLACEMENTS } from '../lib/floating';
 import { firstFocusable, setTriggerAria } from '../lib/trigger';
 import { BASE_STYLES, FLOATING_STYLES } from '../styles/shared';
-import styles from './jl-popover.css?raw';
+import styles from './jl-popover.css?inline';
 
 import type { Placement } from '../types/floating.types';
 

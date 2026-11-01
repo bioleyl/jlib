@@ -8,13 +8,28 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import type { Browser, Page } from 'playwright-core';
 import type { PreviewServer } from 'vite';
 import type { JlBadge } from '../src/atoms/jl-badge';
+import type { JlLoadingBar } from '../src/atoms/jl-loading-bar';
 import type { JlDatePicker } from '../src/molecules/jl-date-picker';
 import type { JlLoadState } from '../src/molecules/jl-load-state';
 import type { JlFlow } from '../src/organisms/jl-flow';
+import type { JlPageOutlet } from '../src/organisms/jl-page-outlet';
 
 const ROOT = join(import.meta.dirname, '..');
 const DOCS = join(ROOT, 'site', 'src', 'docs', 'components');
-const GUIDES = ['/', '/getting-started', '/tree-shaking', '/theming', '/forms', '/components'];
+const GUIDES = [
+  '/',
+  '/getting-started',
+  '/tree-shaking',
+  '/theming',
+  '/forms',
+  '/vibe-coding',
+  '/components',
+  '/changelog',
+];
+// The versions CHANGELOG.md lists, as its `## ` headings name them: `Unreleased`, `0.9.0`…
+const CHANGELOG_VERSIONS = [...readFileSync(join(ROOT, 'CHANGELOG.md'), 'utf8').matchAll(/^## (\S+)/gm)].map(
+  (match) => match[1]
+);
 const DESIGN = [
   '',
   '/logo',
@@ -125,7 +140,7 @@ describe('the forms page', () => {
   it('submits the fields as FormData, like native ones', async () => {
     const page = await open('/forms');
     const data = await page.evaluate(`(async () => {
-      const root = document.querySelector('site-shell > div > *').shadowRoot;
+      const root = document.querySelector('site-shell > jl-page-outlet > *').shadowRoot;
       const form = root.querySelector('form');
       const email = root.querySelector('jl-input[name="email"]');
       email.value.set('ada@example.com');
@@ -272,6 +287,116 @@ describe('the load state', () => {
       return outcome;
     });
     expect(result).toEqual({ drawn: ['new'], state: 'ready' });
+  });
+
+  it('tells when its data came, which whenSettled waits for under a root', async () => {
+    const page = await open('/components/load-state');
+    const result = await page.evaluate(async () => {
+      const wait = (milliseconds: number) => new Promise((resolve) => setTimeout(resolve, milliseconds));
+      const holder = document.createElement('div');
+      const loadState = document.createElement('jl-load-state') as JlLoadState;
+      holder.append(loadState);
+      document.body.append(holder);
+      const states: string[] = [];
+      loadState.events.register('state', (value) => states.push(value));
+      const LoadState = customElements.get('jl-load-state') as typeof JlLoadState;
+      const settled = LoadState.whenSettled(holder).then(() => [...states]);
+      await loadState.load({ draw: () => undefined, fetch: () => wait(100) });
+      const whenSettled = await settled;
+      holder.remove();
+      return { states, whenSettled };
+    });
+    expect(result).toEqual({ states: ['ready'], whenSettled: ['ready'] });
+  });
+});
+
+describe('the loading bar', () => {
+  it('shows nothing for a quick wait, and a longer one until it ends', async () => {
+    const page = await open('/components/loading-bar');
+    const result = await page.evaluate(async () => {
+      const wait = (milliseconds: number) => new Promise((resolve) => setTimeout(resolve, milliseconds));
+      const bar = document.createElement('jl-loading-bar') as JlLoadingBar;
+      document.body.append(bar);
+      await wait(50);
+      const shown = () => bar.shadowRoot?.querySelector<HTMLElement>('.track')?.hidden === false;
+      bar.active.set(true);
+      await wait(60);
+      bar.active.set(false);
+      await wait(200);
+      const quick = shown();
+      bar.active.set(true);
+      await wait(300);
+      const during = shown();
+      bar.active.set(false);
+      await wait(700);
+      const after = shown();
+      bar.remove();
+      return { after, during, quick };
+    });
+    expect(result).toEqual({ after: false, during: true, quick: false });
+  });
+});
+
+describe('the page outlet', () => {
+  it('keeps the page shown until the next one has its data, and drops a page another overtook', async () => {
+    const page = await open('/components/page-outlet');
+    const result = await page.evaluate(async () => {
+      const wait = (milliseconds: number) => new Promise((resolve) => setTimeout(resolve, milliseconds));
+      const outlet = document.createElement('jl-page-outlet') as JlPageOutlet;
+      document.body.append(outlet);
+      const pageLoadingFor = (id: string, milliseconds: number) => {
+        const section = document.createElement('section');
+        section.id = id;
+        const loadState = document.createElement('jl-load-state') as JlLoadState;
+        section.append(loadState);
+        void loadState.load({ draw: () => undefined, fetch: () => wait(milliseconds) });
+        return section;
+      };
+      const look = () => ({
+        busy: outlet.getAttribute('aria-busy'),
+        children: outlet.children.length,
+        shown: [...outlet.children].filter((child) => child.slot === '').map((child) => child.id),
+      });
+      outlet.show(pageLoadingFor('first', 0));
+      await wait(50);
+      const first = look();
+      outlet.show(pageLoadingFor('slow', 400));
+      await wait(100);
+      outlet.show(pageLoadingFor('next', 300));
+      await wait(100);
+      const meanwhile = look();
+      await wait(500);
+      const after = look();
+      outlet.remove();
+      return { after, first, meanwhile };
+    });
+    expect(result).toEqual({
+      after: { busy: null, children: 1, shown: ['next'] },
+      first: { busy: null, children: 1, shown: ['first'] },
+      meanwhile: { busy: 'true', children: 2, shown: ['first'] },
+    });
+  });
+
+  it('shows the next page as it is once max-wait has passed', async () => {
+    const page = await open('/components/page-outlet');
+    const shown = await page.evaluate(async () => {
+      const wait = (milliseconds: number) => new Promise((resolve) => setTimeout(resolve, milliseconds));
+      const outlet = document.createElement('jl-page-outlet') as JlPageOutlet;
+      outlet.setAttribute('max-wait', '200');
+      document.body.append(outlet);
+      const first = document.createElement('section');
+      first.id = 'first';
+      outlet.show(first);
+      const stuck = document.createElement('section');
+      stuck.id = 'stuck';
+      stuck.append(document.createElement('jl-load-state')); // never loaded: loading for ever
+      outlet.show(stuck);
+      await wait(400);
+      const ids = [...outlet.children].map((child) => `${child.id}${child.slot ? `:${child.slot}` : ''}`);
+      outlet.remove();
+      return ids;
+    });
+    expect(shown).toEqual(['stuck']);
   });
 });
 
@@ -425,6 +550,26 @@ describe('the tooltip', () => {
   });
 });
 
+describe('the changelog page', () => {
+  it('shows each version of CHANGELOG.md, its markup drawn', async () => {
+    const page = await open('/changelog');
+    const shown = await page.evaluate(`(() => {
+      const root = document.querySelector('site-shell > jl-page-outlet > *').shadowRoot;
+      // Outside code, where a backtick can be written: \`\` \`open:\${string}\` \`\`.
+      const prose = root.querySelector('article').cloneNode(true);
+      for (const code of prose.querySelectorAll('code')) {
+        code.remove();
+      }
+      return {
+        markup: prose.textContent.includes('**') || prose.textContent.includes('\`'),
+        strongCode: root.querySelector('.release strong code') !== null,
+        versions: [...root.querySelectorAll('.release h2')].map((heading) => heading.textContent),
+      };
+    })()`);
+    expect(shown).toEqual({ markup: false, strongCode: true, versions: CHANGELOG_VERSIONS });
+  });
+});
+
 describe('the theme switch', () => {
   it('puts the whole page in dark mode', async () => {
     const page = await open('/');
@@ -442,7 +587,7 @@ describe('the theme switch', () => {
 describe('the routes', () => {
   it('open a page from its own address, as a link from elsewhere does', async () => {
     const page = await open('/components/button');
-    expect(await page.evaluate("document.querySelector('site-shell > div > *').localName")).toBe(
+    expect(await page.evaluate("document.querySelector('site-shell > jl-page-outlet > *').localName")).toBe(
       'site-component-page'
     );
     expect(await page.evaluate('document.title')).toBe('Button · jlib');
@@ -452,7 +597,7 @@ describe('the routes', () => {
     const page = await open('/components');
     await page.evaluate('window.stillTheSamePage = true');
     await page.evaluate(`(() => {
-      const list = document.querySelector('site-shell > div > *').shadowRoot;
+      const list = document.querySelector('site-shell > jl-page-outlet > *').shadowRoot;
       list.querySelector('a.tile[href$="/components/badge"]').click();
     })()`);
     await page.waitForTimeout(SETTLE_MS);
@@ -463,7 +608,7 @@ describe('the routes', () => {
 
   it('show the not-found page for an address the site does not have', async () => {
     const page = await open('/no-such-page');
-    expect(await page.evaluate("document.querySelector('site-shell > div > *').localName")).toBe(
+    expect(await page.evaluate("document.querySelector('site-shell > jl-page-outlet > *').localName")).toBe(
       'site-not-found-page'
     );
   });

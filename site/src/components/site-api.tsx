@@ -3,7 +3,7 @@ import { JlElement } from '@syware/jlib';
 import { BASE_STYLES } from '@syware/jlib/styles/shared';
 
 import { PROSE_STYLES } from '../styles/site-styles';
-import styles from './site-api.css?raw';
+import styles from './site-api.css?inline';
 
 import type { ComponentDoc } from '../types/docs.types';
 

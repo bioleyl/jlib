@@ -1,0 +1,29 @@
+.prompts {
+  gap: 10px;
+  padding: 0;
+  list-style: none;
+}
+
+.prompts li {
+  padding: 14px 16px;
+  border: 1px solid var(--jl-line);
+  border-left: 3px solid var(--jl-accent);
+  border-radius: var(--jl-radius);
+  background: var(--jl-surface);
+  color: var(--jl-text);
+}
+
+/* The two plugins side by side, filling the width; one under the other on a phone. */
+.plugins {
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+}
+
+.plugins .card {
+  display: grid;
+  align-content: start;
+  gap: 8px;
+}
+
+.plugins h3 {
+  margin-top: 0;
+}

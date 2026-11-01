@@ -2,7 +2,7 @@ import { list, section, table } from '../pattern-kit';
 
 import type { PatternDoc } from '../../types/patterns.types';
 
-export const overlays: PatternDoc = {
+export const pattern: PatternDoc = {
   components: ['jl-dialog', 'jl-drawer', 'jl-popover', 'jl-menu', 'jl-split-view'],
   icon: 'app-window',
   label: 'Dialogs and panels',

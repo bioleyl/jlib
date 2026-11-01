@@ -6,7 +6,7 @@ import { svgElement } from '../lib/dom';
 import { optionalNumber, percentLabel, percentOf, progressRatio, ringGeometry } from '../lib/progress';
 import { BASE_STYLES } from '../styles/shared';
 import { PROGRESS_TONES } from './jl-progress';
-import styles from './jl-progress-ring.css?raw';
+import styles from './jl-progress-ring.css?inline';
 
 import type { ProgressTone } from '../types/jl-progress.types';
 

@@ -13,22 +13,9 @@ import {
   Workflow,
 } from 'lucide';
 
-import { accounts } from './patterns/accounts';
-import { actions } from './patterns/actions';
-import { checklist } from './patterns/checklist';
-import { collections } from './patterns/collections';
-import { confirmations } from './patterns/confirmations';
-import { feedback } from './patterns/feedback';
-import { forms } from './patterns/forms';
-import { navigation } from './patterns/navigation';
-import { overlays } from './patterns/overlays';
-import { pageLayout } from './patterns/page-layout';
-import { phones } from './patterns/phones';
-import { search } from './patterns/search';
-import { states } from './patterns/states';
-import { status } from './patterns/status';
+import patternIndex from '../generated/patterns.json';
 
-import type { PatternDoc, UxPrinciple } from '../types/patterns.types';
+import type { PatternDoc, PatternEntry, UxPrinciple } from '../types/patterns.types';
 import type { GuideLink } from '../types/site.types';
 
 // The icons of the patterns' navigation and previews that the common set lacks.
@@ -59,23 +46,33 @@ export const PATTERNS_PATH = PATTERNS_OVERVIEW.path;
 /** The name of the section, over its pages, in the side navigation and in the search. */
 export const PATTERNS_SECTION = 'UX patterns';
 
-/** The pattern pages, in reading order: the frame, the page, what is on it, then how it answers, then the checks. */
-export const PATTERNS: readonly PatternDoc[] = [
-  navigation,
-  pageLayout,
-  collections,
-  actions,
-  forms,
-  states,
-  feedback,
-  confirmations,
-  overlays,
-  status,
-  search,
-  phones,
-  accounts,
-  checklist,
-];
+/**
+ * The pattern pages in reading order (the frame, the page, what is on it, then how it answers, then the checks), by
+ * their file: `forms` is `patterns/forms.ts`, at `/patterns/forms`. `npm run generate` lists them from here
+ * (site/src/generated/patterns.json, and the syware-ux plugin's list).
+ */
+export const PATTERN_SLUGS = [
+  'navigation',
+  'page-layout',
+  'collections',
+  'actions',
+  'forms',
+  'states',
+  'feedback',
+  'confirmations',
+  'overlays',
+  'status',
+  'search',
+  'phones',
+  'accounts',
+  'checklist',
+] as const;
+
+// Each page's module loads when the page opens; the lists above need only what the generated index holds.
+const loaders = import.meta.glob<PatternDoc>('./patterns/*.ts', { import: 'pattern' });
+
+/** The pattern pages, in reading order: what the lists and the pager show of them. */
+export const PATTERNS = patternIndex as readonly PatternEntry[];
 
 /** The pages of the UX patterns, in the side navigation and the search. */
 export const PATTERN_PAGES: readonly GuideLink[] = [
@@ -83,9 +80,13 @@ export const PATTERN_PAGES: readonly GuideLink[] = [
   ...PATTERNS.map(({ icon, label, path, summary }) => ({ icon, label, path, summary })),
 ];
 
-/** The pattern a route shows: `forms` for `/patterns/forms`. */
-export const patternBySlug = (slug: string): PatternDoc | undefined =>
+/** What the lists say of the pattern at a route: `forms` for `/patterns/forms`. */
+export const patternBySlug = (slug: string): PatternEntry | undefined =>
   PATTERNS.find((pattern) => pattern.path === `${PATTERNS_PATH}/${slug}`);
+
+/** The whole page of a pattern, loaded on demand; none for a slug that is no pattern's. */
+export const loadPattern = (slug: string): Promise<PatternDoc | undefined> =>
+  loaders[`./patterns/${slug}.ts`]?.() ?? Promise.resolve(undefined);
 
 export const UX_PRINCIPLES: readonly UxPrinciple[] = [
   {

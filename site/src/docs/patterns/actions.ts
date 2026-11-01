@@ -4,7 +4,7 @@ import type { PatternDoc } from '../../types/patterns.types';
 
 const FIELD_STYLE = 'width: 100%; max-width: 300px';
 
-export const actions: PatternDoc = {
+export const pattern: PatternDoc = {
   components: ['jl-button', 'jl-menu', 'jl-tooltip', 'jl-kbd'],
   icon: 'mouse-pointer-click',
   label: 'Actions',

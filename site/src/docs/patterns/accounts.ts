@@ -2,7 +2,7 @@ import { list, section, table, text } from '../pattern-kit';
 
 import type { PatternDoc } from '../../types/patterns.types';
 
-export const accounts: PatternDoc = {
+export const pattern: PatternDoc = {
   components: ['jl-auth-layout', 'jl-account-button', 'jl-input', 'jl-alert', 'jl-select', 'jl-chip-group'],
   icon: 'user',
   label: 'Accounts and settings',

@@ -6,7 +6,7 @@ import report from '../generated/sizes.json';
 import { codeSample, registrationTable } from '../lib/blocks';
 import { pageHref } from '../services/navigation';
 import { PROSE_STYLES } from '../styles/site-styles';
-import styles from './guide-page.css?raw';
+import styles from './guide-page.css?inline';
 
 import type { SizeReport } from '../types/sizes.types';
 

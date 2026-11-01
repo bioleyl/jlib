@@ -7,8 +7,8 @@ import { accentCss, accentTokens } from '../lib/accent';
 import { codeSample } from '../lib/blocks';
 import { themeBus } from '../services/theme';
 import { PROSE_STYLES } from '../styles/site-styles';
-import guideStyles from './guide-page.css?raw';
-import styles from './theming-page.css?raw';
+import guideStyles from './guide-page.css?inline';
+import styles from './theming-page.css?inline';
 
 import type { TokenDoc, TokenKind } from '../types/site.types';
 
@@ -180,7 +180,7 @@ export class ThemingPage extends JlElement {
             import { css } from '@jadis/core';
             import { BASE_STYLES, JlElement } from '@syware/jlib';
 
-            import styles from './order-card.css?raw';
+            import styles from './order-card.css?inline';
 
             export class OrderCard extends JlElement {
               static readonly selector = 'order-card';

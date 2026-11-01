@@ -7,7 +7,7 @@ import { registerIcons } from '../lib/icons';
 import { isActivationKey } from '../lib/surface';
 import { jlText } from '../lib/texts';
 import { BASE_STYLES } from '../styles/shared';
-import styles from './jl-chip.css?raw';
+import styles from './jl-chip.css?inline';
 import { JlIcon } from './jl-icon';
 
 import type { ChipSize } from '../types/jl-chip.types';

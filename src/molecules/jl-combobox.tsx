@@ -12,7 +12,7 @@ import { edgeEnabledIndex, filterOptions, foldText, matchParts, nextEnabledIndex
 import { CONTROL_SIZES } from '../lib/options';
 import { jlText } from '../lib/texts';
 import { BASE_STYLES, CONTROL_STYLES, FLOATING_STYLES } from '../styles/shared';
-import styles from './jl-combobox.css?raw';
+import styles from './jl-combobox.css?inline';
 
 import type { Placement } from '../types/floating.types';
 import type { ComboboxOption } from '../types/jl-combobox.types';

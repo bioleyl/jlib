@@ -5,7 +5,7 @@ import { jsonOf, oneOf, textOf } from '../lib/attributes';
 import { rovingIndex } from '../lib/roving-index';
 import { jlText } from '../lib/texts';
 import { BASE_STYLES } from '../styles/shared';
-import styles from './jl-radio-group.css?raw';
+import styles from './jl-radio-group.css?inline';
 
 import type { RadioGroupOrientation, RadioGroupVariant, RadioOption } from '../types/jl-radio-group.types';
 import type { RovingMove } from '../types/roving-index.types';

@@ -2,7 +2,7 @@ import { list, rules, section, table, text } from '../pattern-kit';
 
 import type { PatternDoc } from '../../types/patterns.types';
 
-export const feedback: PatternDoc = {
+export const pattern: PatternDoc = {
   components: ['jl-toaster', 'jl-toast', 'jl-progress', 'jl-steps', 'jl-badge'],
   icon: 'bell',
   label: 'Feedback',

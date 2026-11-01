@@ -1,6 +1,6 @@
-import { DESIGN_PAGES } from '../docs/design';
+import { DESIGN_PAGES } from '../docs/design-pages';
 import { PATTERN_PAGES, PATTERNS_SECTION } from '../docs/patterns';
-import { COMPONENT_DOCS, GUIDES, LEVEL_LABELS, slugOf } from '../docs/registry';
+import { COMPONENTS, GUIDES, LEVEL_LABELS, slugOf } from '../docs/registry';
 import { REPOSITORY_URL } from './project';
 
 import type { PaletteCommand } from '@syware/jlib';
@@ -37,7 +37,7 @@ export function searchCommands(): PaletteCommand[] {
     keywords: ['ux', 'pattern'],
     label: page.label,
   }));
-  const components = COMPONENT_DOCS.map((doc) => ({
+  const components = COMPONENTS.map((doc) => ({
     group: LEVEL_LABELS[doc.level],
     id: `${GO_PREFIX}/components/${slugOf(doc)}`,
     keywords: [doc.tag, doc.className],

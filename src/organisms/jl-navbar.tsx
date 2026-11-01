@@ -7,7 +7,7 @@ import { jsonOf } from '../lib/attributes';
 import { registerIcons } from '../lib/icons';
 import { jlText } from '../lib/texts';
 import { BASE_STYLES } from '../styles/shared';
-import styles from './jl-navbar.css?raw';
+import styles from './jl-navbar.css?inline';
 
 import type { NavbarLink } from '../types/jl-navbar.types';
 

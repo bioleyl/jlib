@@ -10,7 +10,7 @@ import { registerIcons } from '../lib/icons';
 import { jlText } from '../lib/texts';
 import { BASE_STYLES } from '../styles/shared';
 import { JlEmpty } from './jl-empty';
-import styles from './jl-load-state.css?raw';
+import styles from './jl-load-state.css?inline';
 
 import type { LoadSkeleton, LoadState, LoadTask } from '../types/jl-load-state.types';
 
@@ -30,6 +30,7 @@ const DEFAULT_COUNT = 3;
 const MAX_COUNT = 24;
 // The widths of a paragraph's lines, so the skeleton reads as text.
 const LINE_WIDTHS = ['100%', '92%', '96%', '70%'];
+const STATE_EVENT = 'state';
 
 /** The skeleton of each shape, `count` times. */
 const SKELETONS: Record<LoadSkeleton, (count: number) => Node[]> = {
@@ -55,6 +56,42 @@ const SKELETONS: Record<LoadSkeleton, (count: number) => Node[]> = {
     )),
 };
 
+/** The load states under a node and in the shadow roots there, its own included: a page draws them in its own. */
+function loadStatesIn(root: ParentNode): JlLoadState[] {
+  const nodes = [root, ...root.querySelectorAll('*')];
+  const own = nodes.filter((node): node is JlLoadState => node instanceof JlLoadState);
+  const shadows = nodes.flatMap((node) => (node instanceof Element && node.shadowRoot ? [node.shadowRoot] : []));
+  return [...own, ...shadows.flatMap(loadStatesIn)];
+}
+
+/** Whether a load state still waits for its data where it can be seen: one in a hidden tab may never load. */
+const isWaiting = (state: JlLoadState): boolean => state.state.get() === 'loading' && state.checkVisibility();
+
+/** Resolves once a load state leaves `loading`, or once the signal aborts. */
+function leftLoading(state: JlLoadState, signal: AbortSignal): Promise<void> {
+  return new Promise((resolve) => {
+    const listening = new AbortController();
+    const stop = () => {
+      listening.abort();
+      resolve();
+    };
+    signal.addEventListener('abort', stop, { signal: listening.signal });
+    state.addEventListener(
+      STATE_EVENT,
+      () => {
+        if (isWaiting(state)) {
+          return;
+        }
+        stop();
+      },
+      { signal: listening.signal }
+    );
+  });
+}
+
+/** Waits for the components connected meanwhile to run their `onConnect`, a task after connecting. */
+const nextTask = (): Promise<void> => new Promise((resolve) => setTimeout(resolve));
+
 /**
  * What a list or a page shows while its data comes: nothing for a moment, then a skeleton shaped like it; then the
  * data (the default slot), what to say when there is none (slot `empty`, a `jl-empty`), or, when it failed, what
@@ -64,12 +101,31 @@ const SKELETONS: Record<LoadSkeleton, (count: number) => Node[]> = {
 export class JlLoadState extends JlElement {
   static readonly selector = 'jl-load-state';
 
-  readonly events = this.useEvents<{ retry: undefined }>();
+  /**
+   * Resolves once every load state under `root` that can be seen, in shadow roots too, has left `loading`: those drawn
+   * meanwhile included, as a page's data draws more of the page. Or once `signal` aborts. A page that shows only once
+   * it has its data waits for it (see `jl-page-outlet`).
+   */
+  static async whenSettled(root: ParentNode, signal: AbortSignal = new AbortController().signal): Promise<void> {
+    await nextTask();
+    const waiting = loadStatesIn(root).filter(isWaiting);
+    if (waiting.length === 0 || signal.aborted) {
+      return;
+    }
+    await Promise.all(waiting.map((state) => leftLoading(state, signal)));
+    return JlLoadState.whenSettled(root, signal);
+  }
 
-  readonly state = this.useChange<LoadState>('loading', (value) => this.renderState(value), {
-    attribute: 'state',
-    parse: oneOf(LOAD_STATES, 'loading'),
-  });
+  readonly events = this.useEvents<{ retry: undefined; [STATE_EVENT]: LoadState }>();
+
+  readonly state = this.useChange<LoadState>(
+    'loading',
+    (value, previous) => {
+      this.renderState(value);
+      this.announceState(value, previous);
+    },
+    { attribute: 'state', parse: oneOf(LOAD_STATES, 'loading') }
+  );
   /** The shape of the skeleton; slot `loading` takes one of the page's own instead. */
   readonly skeleton = this.useChange<LoadSkeleton>('rows', () => this.renderSkeleton(), {
     attribute: 'skeleton',
@@ -92,7 +148,6 @@ export class JlLoadState extends JlElement {
   /** The button that runs the load again; jlib's own text when empty. */
   readonly retryLabel = this.useChange('', () => this.drawTexts(), { attribute: 'retry-label' });
 
-  // The last load, which Try again runs again, and the timer that shows the skeleton.
   // The last load, which Try again runs again; the number of the latest load, which alone may draw; and the timer
   // that shows the skeleton.
   private readonly _work: {
@@ -140,6 +195,14 @@ export class JlLoadState extends JlElement {
       }
       return false;
     }
+  }
+
+  /** Tells the page the state changed: `state`, with the new one. */
+  private announceState(value: LoadState, previous: LoadState | undefined): void {
+    if (value === previous) {
+      return;
+    }
+    this.events.emit(STATE_EVENT, value);
   }
 
   /** Whether data is shown (the content or the empty state), which a refresh keeps. */

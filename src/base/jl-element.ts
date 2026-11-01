@@ -18,6 +18,8 @@ export abstract class JlElement extends Jadis {
   /**
    * Writes jlib's texts the component shows, with `jlText`. A component that has some defines it: it is called at
    * every connection, once the template exists and before the browser paints, then at each change of jlib's language.
+   * An app's component extending `JlElement` writes its own texts in a method of another name (`writeTexts`): one it
+   * calls `drawTexts` would also be called by jlib, on jlib's language changes.
    */
   protected drawTexts?(): void;
 

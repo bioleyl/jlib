@@ -10,7 +10,7 @@ import { TONE_ICON_FILLED, TONE_ICONS, TONES } from '../lib/options';
 import { hasSlotted } from '../lib/slots';
 import { jlText } from '../lib/texts';
 import { BASE_STYLES } from '../styles/shared';
-import styles from './jl-alert.css?raw';
+import styles from './jl-alert.css?inline';
 
 import type { Tone } from '../types/options.types';
 

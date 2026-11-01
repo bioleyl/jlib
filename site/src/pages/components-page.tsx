@@ -2,10 +2,10 @@ import { css } from '@jadis/core';
 import { JlElement } from '@syware/jlib';
 import { BASE_STYLES } from '@syware/jlib/styles/shared';
 
-import { COMPONENT_DOCS, docRoute, docsOfLevel, LEVEL_DESCRIPTIONS, LEVEL_LABELS, LEVELS } from '../docs/registry';
+import { COMPONENTS, docRoute, docsOfLevel, LEVEL_DESCRIPTIONS, LEVEL_LABELS, LEVELS } from '../docs/registry';
 import { pageHref } from '../services/navigation';
 import { PROSE_STYLES } from '../styles/site-styles';
-import styles from './components-page.css?raw';
+import styles from './components-page.css?inline';
 
 /** Every component, by atomic level, each a card that opens its page. */
 export class ComponentsPage extends JlElement {
@@ -15,7 +15,7 @@ export class ComponentsPage extends JlElement {
     return (
       <article class="page">
         <header class="intro">
-          <p class="label">{`${COMPONENT_DOCS.length} components`}</p>
+          <p class="label">{`${COMPONENTS.length} components`}</p>
           <h1>Components</h1>
           <p class="lead">
             Organised in atomic design: atoms are single elements, molecules combine a few atoms for one job,

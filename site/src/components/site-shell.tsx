@@ -6,12 +6,13 @@ import { version } from '../../../package.json';
 import { githubMark, REPOSITORY_URL } from '../lib/project';
 import { actionOf, searchCommands } from '../lib/search-commands';
 import { LOGO_MIN_HEIGHT } from '../lib/syware-logo';
-import { navigate, onRouteChange, pageHref } from '../services/navigation';
+import { router } from '../router';
+import { pageHref } from '../services/navigation';
 import { setTheme } from '../services/theme';
 import { SiteBrand } from './site-brand';
 import { SiteLogo } from './site-logo';
 import { SiteNav } from './site-nav';
-import styles from './site-shell.css?raw';
+import styles from './site-shell.css?inline';
 import { SiteThemeSwitch } from './site-theme-switch';
 
 // The published version, read from package.json when the site is built: it follows every release.
@@ -94,17 +95,14 @@ export class SiteShell extends JlElement {
     this.on(this._refs.scrim, 'click', () => this.toggleNav(false));
     this.on(this._refs.search, 'click', () => this._refs.palette.show());
     this._refs.palette.events.register('select', (id) => this.run(id));
-    onRouteChange(() => {
-      this.toggleNav(false);
-      window.scrollTo({ top: 0 });
-    }, this.killSignal);
+    this.onBus(router.bus, 'change', () => this.toggleNav(false));
   }
 
   /** Does what a search result says: open a page, or switch the theme. */
   private run(id: string): void {
     const action = actionOf(id);
     if (action.kind === 'go') {
-      navigate(action.path);
+      router.gotoPath(action.path);
       return;
     }
     if (action.kind === 'open') {

@@ -22,7 +22,7 @@ const CARD_BAD = `
     <jl-card heading="Refund request from Léa Dubois" description="Answer support emails"></jl-card>
   </jl-card>`;
 
-export const pageLayout: PatternDoc = {
+export const pattern: PatternDoc = {
   components: ['jl-page', 'jl-page-header', 'jl-card', 'jl-stat', 'jl-split-view'],
   icon: 'panels-top-left',
   label: 'Page layout',

@@ -6,7 +6,7 @@ import { clampedNumber } from '../lib/attributes';
 import { iconNode } from '../lib/icons';
 import { adoptTokens } from '../lib/tokens';
 import { BASE_STYLES } from '../styles/shared';
-import styles from './jl-app-icon.css?raw';
+import styles from './jl-app-icon.css?inline';
 import { JlIcon } from './jl-icon';
 
 const DEFAULT_SIZE = 28;

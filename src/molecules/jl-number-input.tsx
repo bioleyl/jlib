@@ -10,7 +10,7 @@ import { clamp, parseNumber, stepValue } from '../lib/numeric';
 import { CONTROL_SIZES } from '../lib/options';
 import { jlText } from '../lib/texts';
 import { BASE_STYLES, CONTROL_STYLES } from '../styles/shared';
-import styles from './jl-number-input.css?raw';
+import styles from './jl-number-input.css?inline';
 
 import type { ControlSize } from '../types/options.types';
 

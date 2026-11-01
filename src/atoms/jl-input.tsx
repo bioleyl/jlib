@@ -9,7 +9,7 @@ import { CONTROL_SIZES } from '../lib/options';
 import { jlText } from '../lib/texts';
 import { BASE_STYLES, CONTROL_STYLES } from '../styles/shared';
 import { JlIcon } from './jl-icon';
-import styles from './jl-input.css?raw';
+import styles from './jl-input.css?inline';
 
 import type { InputType } from '../types/jl-input.types';
 import type { ControlSize } from '../types/options.types';

@@ -35,7 +35,7 @@ const SIDE_NAV = `
     </jl-side-nav>
   </div>`;
 
-export const navigation: PatternDoc = {
+export const pattern: PatternDoc = {
   components: [
     'jl-app-icon',
     'jl-app-shell',

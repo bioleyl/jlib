@@ -17,7 +17,7 @@ import {
 import { CONTROL_SIZES } from '../lib/options';
 import { jlText } from '../lib/texts';
 import { BASE_STYLES, CONTROL_STYLES } from '../styles/shared';
-import styles from './jl-search.css?raw';
+import styles from './jl-search.css?inline';
 
 import type { ControlSize } from '../types/options.types';
 

@@ -20,7 +20,8 @@ export const doc: ComponentDoc = {
   className: 'JlDialog',
   description: `A modal on the browser's own dialog element: the page behind is inert, focus stays inside, Escape and a
 click on the backdrop close it (unless persistent). Put the content in the default slot and the buttons in the
-actions slot; the footer only shows when there are some.
+actions slot; the footer only shows when there are some. The body frames its content and lays out nothing: put a
+form's fields in a jl-stack, which spaces them.
 
 Open it with the open attribute, or show() from code; it emits close however it closed.`,
   events: [

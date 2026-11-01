@@ -5,7 +5,7 @@ import { jsonOf } from '../lib/attributes';
 import { setOrRemove } from '../lib/dom';
 import { fractionOf, marksOf, parseNumber } from '../lib/numeric';
 import { BASE_STYLES } from '../styles/shared';
-import styles from './jl-slider.css?raw';
+import styles from './jl-slider.css?inline';
 
 import type { SliderMark } from '../types/jl-slider.types';
 

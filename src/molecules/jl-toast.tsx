@@ -11,7 +11,7 @@ import { TONE_ICON_FILLED, TONE_ICONS } from '../lib/options';
 import { optionalNumber } from '../lib/progress';
 import { jlText } from '../lib/texts';
 import { BASE_STYLES } from '../styles/shared';
-import styles from './jl-toast.css?raw';
+import styles from './jl-toast.css?inline';
 
 import type { ToastTone } from '../types/jl-toast.types';
 

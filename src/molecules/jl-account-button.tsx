@@ -4,7 +4,7 @@ import { JlAvatar } from '../atoms/jl-avatar';
 import { JlElement } from '../base/jl-element';
 import { setOrRemove } from '../lib/dom';
 import { BASE_STYLES } from '../styles/shared';
-import styles from './jl-account-button.css?raw';
+import styles from './jl-account-button.css?inline';
 
 /**
  * The person signed in, where the frame of an app shows them (the foot of the side nav, a phone's top bar): their
