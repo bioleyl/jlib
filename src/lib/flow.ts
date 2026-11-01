@@ -214,14 +214,35 @@ const COLUMN = FLOW_NODE.width + COLUMN_GAP;
 const rowOfFlow = (graph: FlowGraph): number =>
   Math.max(FLOW_NODE.height, ...graph.nodes.map(nodeHeight)) + ROW_GAP;
 
-/** How far across a node hangs from its parent's exit: the exits share the row out, side by side, around it. */
-function portShift(node: FlowNode, portId: string): number {
-  const ports = portsOf(node);
+/**
+ * The place each of a node's exits hangs its nodes from, in the order of the exits: an exit leading to a node an
+ * earlier exit leads to shares that exit's place, so many exits leading to a few nodes take a few places, not one each.
+ */
+function exitPlaces(node: FlowNode, edges: readonly FlowEdge[]): number[] {
+  const placeOf = new Map<string, number>();
+  const places: number[] = [];
+  for (const port of portsOf(node)) {
+    const ends = edges
+      .filter((edge) => edge.from === node.id && portOfEdge(node, edge) === port.id)
+      .map((edge) => edge.to);
+    const place = ends.map((id) => placeOf.get(id)).find((known) => known !== undefined) ?? new Set(places).size;
+    for (const id of ends.filter((end) => !placeOf.has(end))) {
+      placeOf.set(id, place);
+    }
+    places.push(place);
+  }
+  return places;
+}
+
+/** How far across a node hangs from its parent's exit: the exits' places share the row out, side by side, around it. */
+function portShift(node: FlowNode, edges: readonly FlowEdge[], portId: string): number {
+  const places = exitPlaces(node, edges);
   const index = Math.max(
     0,
-    ports.findIndex((port) => port.id === portId)
+    portsOf(node).findIndex((port) => port.id === portId)
   );
-  return (index - (ports.length - 1) / 2) * COLUMN;
+  const count = new Set(places).size;
+  return ((places[index] ?? 0) - (count - 1) / 2) * COLUMN;
 }
 
 /** Where a node added after an exit goes: a row below, under its exit, clear of the nodes after the other exits. */
@@ -231,7 +252,7 @@ export function positionAfter(graph: FlowGraph, from: string, portId: string): F
     return { x: 0, y: 0 };
   }
   return snap({
-    x: source.position.x + portShift(source, portId),
+    x: source.position.x + portShift(source, graph.edges, portId),
     y: source.position.y + nodeHeight(source) + ROW_GAP,
   });
 }
@@ -290,7 +311,9 @@ function wantedX(
   const parents = edges.flatMap((edge) => {
     const source = nodeById(graph, edge.from);
     const x = placed.get(edge.from);
-    return edge.to === id && source && x !== undefined ? [x + portShift(source, portOfEdge(source, edge))] : [];
+    return edge.to === id && source && x !== undefined
+      ? [x + portShift(source, edges, portOfEdge(source, edge))]
+      : [];
   });
   return parents.length === 0 ? 0 : parents.reduce((sum, x) => sum + x, 0) / parents.length;
 }

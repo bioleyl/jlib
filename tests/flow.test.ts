@@ -250,6 +250,28 @@ describe('layoutFlow', () => {
     expect(branches.mail?.y).toBe(rowStep * 2);
   });
 
+  it('gives the exits that lead to one node one place, so a node with many exits keeps its row narrow', () => {
+    const exits = ['a', 'b', 'c', 'd', 'unsure'];
+    const sort: FlowNode = { id: 'sort', label: 'Sort', ports: exits.map((id) => ({ id })), position: at(0, 0) };
+    const sorted: FlowGraph = {
+      edges: [
+        { from: 'start', id: 'e0', to: 'sort' },
+        ...exits.map((port) => ({ from: 'sort', id: `e-${port}`, port, to: port === 'unsure' ? 'ask' : 'move' })),
+      ],
+      nodes: [
+        start,
+        sort,
+        { id: 'move', label: 'Move', position: at(0, 0) },
+        { id: 'ask', label: 'Ask', position: at(0, 0) },
+      ],
+    };
+    const laid = positions(layoutFlow(sorted));
+    const column = FLOW_NODE.width + 32;
+    expect((laid.move?.x ?? 0) - (laid.sort?.x ?? 0)).toBe(-column / 2);
+    expect((laid.ask?.x ?? 0) - (laid.sort?.x ?? 0)).toBe(column / 2);
+    expect(positionAfter(sorted, 'sort', 'unsure').x - (laid.sort?.x ?? 0)).toBe(column / 2);
+  });
+
   it('leaves out the edge that loops back up: the loop does not push rows down', () => {
     const loop: FlowGraph = {
       edges: [
