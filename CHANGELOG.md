@@ -3,6 +3,75 @@
 What changed in each version of [@syware/jlib](https://www.npmjs.com/package/@syware/jlib). Every component is shown
 and documented on [the documentation site](https://bioleyl.github.io/jlib/).
 
+## 0.10.0 (2026-11-01)
+
+On Jadis 1.6: pages that show once they have their data (`jl-page-outlet`), a stack for a form's fields, smaller
+stylesheets, and Claude Code plugins that teach Claude to build apps on jlib.
+
+### Added
+
+- **`jl-page-outlet`**: where an app's pages show. A new page loads out of sight while the current one stays, usable,
+  under a line that says the next one is on its way; it takes the current one's place once its load states have
+  their data (or after `max-wait`, 3 seconds), so a page never shows half drawn. It is the router's way to show its
+  pages: `router.mountOn(outlet, { show: (page) => outlet.show(page) })` (Jadis 1.6). Its `show` event says when a
+  page took its place.
+- **`jl-loading-bar`**: the line alone, for the other waits. Nothing for 150 milliseconds (`delay`), then growing
+  from the start, fast then slower, never at the end while `active`; it runs to the end and fades when the wait
+  ends. Still with reduced motion.
+- **`jl-stack`**: its children one under the other with one space between them (`gap`: `sm`, `md`, `lg`), the layout
+  of a form's fields, on a page as in a dialog: `jl-dialog` frames its body and lays out nothing.
+- **`jl-load-state`'s `state` event**, with the new state, and **`JlLoadState.whenSettled(root, signal?)`**, which
+  resolves once every load state under a root that can be seen, in shadow roots too, has left `loading`.
+- **The changelog on the documentation site**: its Changelog page, in the guide, shows this file, every version as it
+  is written here.
+- **Claude Code plugins**: the repository is a plugin marketplace with two plugins. `jlib` teaches Claude how apps
+  are built on jlib: the components and where their API is (the declarations of the installed version, its
+  documentation at that version), an app's setup, Jadis in brief, theming, texts and tests, and what jlib gets wrong
+  or lacks reported as an issue. `syware-ux` adds how SyWare's apps behave: the principles, the UX patterns applied
+  with jlib's components, and the checklist. `/plugin marketplace add bioleyl/jlib`, then
+  `/plugin install jlib@jlib` (and `syware-ux@jlib`); the site's new **Vibe coding** page says how a team gets them
+  and how to ask. The plugins' version is the package's.
+
+### Changed
+
+- **Smaller stylesheets**: a component's CSS, imported as raw text, went into the package as the source has it,
+  comments and indentation included, and no bundler minifies what is inside a string. It is imported with `?inline`
+  now, as Jadis's template does, and the build minifies it: about a quarter less CSS in every app, for the same
+  rules.
+- **The documentation site loads a third as much**: each component's doc, each UX pattern and each design system
+  page loads when its page opens, with the components it shows (the first load went from 306 to 102 kB,
+  compressed), and a page shows through a `jl-page-outlet`, once its doc is there.
+- **Requires Jadis 1.6** (`@jadis/core` `^1.6.0`, a peer dependency). In JSX, a component's events are now `on…`
+  props, typed by their detail: `<JlButton onPress={() => this.save()} />`, `<JlSelect<Currency> onChange={(value) =>
+  …} />`. A component moved in the page keeps its state, its listeners and its open popovers. The typing examples of
+  the documentation listen that way.
+
+### Fixed
+
+- **`jl-flow`'s tidy layout and `positionAfter`**: exits that lead to the same node share one place under their node,
+  instead of a column each. A node with many exits leading to a few nodes (a sort into twenty categories, each moving
+  the item the same way) no longer throws the node after its last exit thousands of pixels aside.
+- **`jl-command-palette`'s footer** ("to move", "to run", "to close") was in English whatever the language: it comes
+  from jlib's texts now (`commandMove`, `commandRun`, `commandClose`), in French and German too.
+- **`JlElement`'s `drawTexts()`** is jlib's hook, called at every connection and at each change of jlib's language:
+  its documentation and the getting-started page say so, for the apps whose components extend `JlElement`.
+
+### Worth a look when you update
+
+- An app whose components import their CSS with `?raw` ships it as written: `?inline` (as Jadis's template and
+  docs do) has Vite minify it in the build, with nothing else to change.
+- Update Jadis with jlib: `npm install @jadis/core@^1.6.0 @syware/jlib@^0.10.0`, and read Jadis 1.6's own
+  changes: an `on…` prop on a component listens to its name with only the first letter lowered (`onKeyDown` hears
+  `keyDown`: write `onkeydown`), removal finishes a microtask later, and a move no longer runs `onDisconnect` and
+  `onConnect`.
+- An app that kept the current page until the next had its data (a page outlet of its own, polling the load states
+  for `state="loading"`) can use `jl-page-outlet`, or `JlLoadState.whenSettled` with the router's `show`.
+- An app that put each dialog's fields in a wrapper of its own (`<div class="form">` with a grid and a gap) can use
+  `jl-stack`.
+- A page that translated the command palette's footer itself (or hid it) can leave it to jlib's texts.
+- A component of the app that extends `JlElement` and names its own method `drawTexts` gets it called by jlib too:
+  rename it (`writeTexts`).
+
 ## 0.9.0 (2026-10-30)
 
 jlib's texts in English, French and German: an app chooses its language in one line, or has jlib follow its Jadis
