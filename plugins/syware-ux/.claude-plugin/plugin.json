@@ -1,6 +1,6 @@
 {
   "name": "syware-ux",
-  "version": "0.9.0",
+  "version": "0.10.0",
   "description": "How SyWare apps behave, from jlib's UX patterns: the principles, the frame, pages, lists, forms, states, feedback, confirmations, search, and the checklist a page is reviewed against. Goes with the jlib plugin.",
   "author": {
     "name": "SyWare"

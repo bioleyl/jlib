@@ -1,6 +1,6 @@
 {
   "name": "jlib",
-  "version": "0.9.0",
+  "version": "0.10.0",
   "description": "Build apps with jlib: its components and where their API is, an app's setup, Jadis in brief, theming, texts and tests.",
   "author": {
     "name": "SyWare"
