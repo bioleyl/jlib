@@ -9,6 +9,14 @@ and documented on [the documentation site](https://bioleyl.github.io/jlib/).
 
 - **`jl-page-outlet`'s `--line-top`**: how far from the top of the window its line stays once the page scrolls, the
   height of a sticky bar above the outlet. The line stuck to the very top, behind such a bar.
+- **Pages rendered on a server**: jlib's components render in happy-dom, the server-side DOM of Jadis 1.7's server
+  rendering. Where the DOM has no `attachInternals`, they get inert internals. The `jlib` skill tells an app what
+  rendering on a server asks of it.
+
+### Changed
+
+- **`jl-icon`** draws an icon registered after it upgraded, at the end of the task, before the browser paints: icons a
+  server wrote in the page upgrade with the components, often before the page registers them.
 
 ### Fixed
 

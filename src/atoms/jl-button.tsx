@@ -3,6 +3,7 @@ import { css } from '@jadis/core';
 import { JlElement } from '../base/jl-element';
 import { oneOf } from '../lib/attributes';
 import { setOrRemove } from '../lib/dom';
+import { elementInternals } from '../lib/internals';
 import { CONTROL_SIZES } from '../lib/options';
 import { BASE_STYLES } from '../styles/shared';
 import styles from './jl-button.css?inline';
@@ -80,7 +81,7 @@ export class JlButton extends JlElement {
   /** With an `href`, saves what it points to as a file of this name instead of opening it. */
   readonly download = this.useChange('', () => this.renderLink(), { attribute: 'download' });
 
-  private readonly _internals = this.attachInternals();
+  private readonly _internals = elementInternals(this);
 
   private readonly _refs = this.useRefs((ref) => ({
     button: ref('button'),

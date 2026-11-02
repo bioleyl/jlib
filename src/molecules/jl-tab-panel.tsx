@@ -1,6 +1,7 @@
 import { css } from '@jadis/core';
 
 import { JlElement } from '../base/jl-element';
+import { elementInternals } from '../lib/internals';
 import { BASE_STYLES } from '../styles/shared';
 import styles from './jl-tab-panel.css?inline';
 
@@ -30,7 +31,7 @@ export class JlTabPanel extends JlElement {
   readonly badge = this.useChange('', (value) => this.reflect('badge', value), { attribute: 'badge' });
   readonly disabled = this.useChange(false, (value) => this.reflect('disabled', value), { attribute: 'disabled' });
 
-  private readonly _internals = Object.assign(this.attachInternals(), { role: ROLE });
+  private readonly _internals = Object.assign(elementInternals(this), { role: ROLE });
 
   templateHtml(): Node {
     return <slot />;

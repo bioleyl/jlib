@@ -67,6 +67,8 @@ library, from the `jadis` plugin: `/plugin marketplace add bioleyl/jadis`, `/plu
 - `useRefs` finds a child component by its class when it is the one with that tag: `icon: ref(JlIcon)` (Jadis 1.4);
   among several, by its own selector: `close: ref<JlButton>('.close')`.
 - Methods callable before the element connects use `this.whenRendered(() => …)`.
+- Internals come from `elementInternals(this)` (`lib/internals.ts`; `JlFormControl` has its own), never
+  `this.attachInternals()`: happy-dom, which renders pages on a server, has none, and gets inert ones.
 - **Texts a component shows on its own** (a close button's hint, an aria-label, a validity message) are jlib's, in
   `src/lib/texts.ts`: `DEFAULT_TEXTS` in English, `texts-fr.ts` and `texts-de.ts` beside it. A component writes them
   with `jlText(key, params)` in its `protected drawTexts()`, which `JlElement` calls at every connection (template

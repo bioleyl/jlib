@@ -1,6 +1,6 @@
 ---
 name: jlib
-description: How apps are built with jlib (`@syware/jlib`, SyWare's `jl-*` web components on Jadis) — finding a component and its API, an app's setup, Jadis in brief, icons, theming through `--jl-*` tokens, jlib's texts in the app's language, writing views with jl-* components, testing views in jsdom, and reporting what jlib lacks or gets wrong as an issue. Load before writing or changing code that imports `@syware/jlib`, before starting an app on jlib, or when a page needs a component or an option it cannot find.
+description: How apps are built with jlib (`@syware/jlib`, SyWare's `jl-*` web components on Jadis) — finding a component and its API, an app's setup, Jadis in brief, icons, theming through `--jl-*` tokens, jlib's texts in the app's language, writing views with jl-* components, testing views in jsdom, rendering pages on a server (SSR), and reporting what jlib lacks or gets wrong as an issue. Load before writing or changing code that imports `@syware/jlib`, before starting an app on jlib, or when a page needs a component or an option it cannot find.
 ---
 
 # Apps on jlib
@@ -162,6 +162,30 @@ it('shows a file found from its address alone', async () => {
 jsdom has no layout: components that watch sizes watch nothing, `scrollIntoView` is skipped, and form controls keep
 no form value. Toasts animate and use the popover API, which jsdom lacks: keep them out of a test's path or stub
 `toast`.
+
+## Rendering pages on a server
+
+Jadis renders an app's pages on a server from 1.7 (`@jadis/core/server`, and `@jadis/fastify` on Fastify): each page
+arrives as HTML, every shadow root as declarative shadow DOM, and the components take it over once their code has
+loaded. Read Jadis's [Server Rendering](https://bioleyl.github.io/jadis/server-rendering/overview.html) section
+first (history routes, a page's data in its `load`, what code gives back). What jlib adds:
+
+- jlib runs in the server's DOM (happy-dom) as it is: where the DOM has no `attachInternals`, its components get
+  inert internals.
+- The page's own stylesheet imports jlib's tokens, `@import '@syware/jlib/tokens.css';`: jlib gives the document its
+  tokens when a component registers, which comes after the first paint.
+- Inputs bound to an attribute travel in the markup: a table's `rows` and `columns`, set in the page's `load` on the
+  server, are there when it upgrades. A function (a table's `renderers`, a tree's `loader`) does not travel: set it
+  in the page's own template, which runs again in the browser.
+- Icons registered after the components' imports still draw: a `jl-icon` whose name is not registered yet looks
+  again at the end of the task, before the browser paints.
+- An element of the page's shell that the server does not render (a `jl-page-outlet` around the body) is styled
+  only until its code loads: `jl-page-outlet:not(:defined) { display: block; }`. A page's rule on a jl-* host beats
+  the component's own `display`, and keeps beating it after the upgrade: the outlet's line then pushes the page down.
+- The server measures nothing: what a component measures (jl-flow's edges, the indicator of `jl-tabs` and
+  `jl-segmented`) settles once its code runs.
+- Module state is shared by every render of a server: jlib's language too. An app in several languages chooses it
+  in each render, from the request.
 
 ## Problems, improvements and missing components: an issue
 

@@ -1,7 +1,7 @@
 import { css } from '@jadis/core';
 
 import { JlElement } from '../base/jl-element';
-import { iconElement } from '../lib/icons';
+import { hasIcon, iconElement } from '../lib/icons';
 import { BASE_STYLES } from '../styles/shared';
 import styles from './jl-icon.css?inline';
 
@@ -32,6 +32,18 @@ export class JlIcon extends JlElement {
   }
 
   private draw(): void {
+    const name = this.name.get();
+    if (name !== '' && !hasIcon(name)) {
+      // A page registers its icons after its imports, which define the components: icons a server wrote in the page
+      // upgrade before that. One not known yet is drawn at the end of the task, before the browser paints.
+      this._refs.icon.replaceChildren();
+      queueMicrotask(() => this.drawNow());
+      return;
+    }
+    this.drawNow();
+  }
+
+  private drawNow(): void {
     const name = this.name.get();
     this._refs.icon.replaceChildren(...(name === '' ? [] : [iconElement(name, this.size.get())]));
   }
