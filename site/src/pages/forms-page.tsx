@@ -1,10 +1,12 @@
 import { css } from '@jadis/core';
-import { JlButton, JlCodeBlock, JlElement } from '@syware/jlib';
+import { guardLeave, JlButton, JlCodeBlock, JlElement } from '@syware/jlib';
 import { BASE_STYLES } from '@syware/jlib/styles/shared';
 
 import { codeSample } from '../lib/blocks';
 import { PROSE_STYLES } from '../styles/site-styles';
 import styles from './forms-page.css?inline';
+
+import type { RoutedPage } from '@jadis/core';
 
 const NOTHING_SENT = '// Submit the form: its data shows here.';
 
@@ -47,9 +49,19 @@ function formDataAsJson(data: FormData): string {
   return JSON.stringify(Object.fromEntries(entries), null, 2);
 }
 
-/** jlib's fields in a real form: their names and values in FormData, required, reset, disabled fieldsets. */
-export class FormsPage extends JlElement {
+/**
+ * jlib's fields in a real form: their names and values in FormData, required, reset, disabled fieldsets, and a page
+ * that asks before it is left with changes not submitted.
+ */
+export class FormsPage extends JlElement implements RoutedPage {
   static readonly selector = 'site-forms-page';
+
+  /** Asked by the router before it leaves the page; guarded once connected. */
+  canLeave = (): Promise<boolean> => Promise.resolve(true);
+
+  // The data last submitted, and whether the fields held changes when the fieldset was disabled: a disabled
+  // fieldset leaves its fields out of the data, and they cannot change meanwhile.
+  private readonly _saved = { data: '', dirtyWhenDisabled: false };
 
   private readonly _refs = this.useRefs((ref) => ({
     fieldset: ref<HTMLFieldSetElement>('fieldset'),
@@ -87,6 +99,31 @@ export class FormsPage extends JlElement {
             </div>
           </form>
           <JlCodeBlock class="output" language="ts" heading="FormData" code={NOTHING_SENT} />
+        </section>
+
+        <section>
+          <h2>Leaving with changes not saved</h2>
+          <p>
+            This page guards its form. Change a field, then follow a link or press Back: the router waits for{' '}
+            <em>Leave without saving?</em>, and <strong>Keep editing</strong> leaves the page and its address as
+            they were. Reloading or closing the tab asks the browser's own question. Once the form is submitted,
+            nothing asks.
+          </p>
+          <p>
+            <code>guardLeave()</code> does both: what it returns is the page's <code>canLeave</code>, which the
+            Jadis router calls before it moves on and waits for.
+          </p>
+          {codeSample(
+            'ts',
+            `
+            import { guardLeave } from '@syware/jlib';
+
+            // In the page's onConnect. saved: the data as loaded, then as last submitted.
+            this.canLeave = guardLeave({
+              isDirty: () => formDataAsJson(new FormData(form)) !== saved,
+              signal: this.killSignal,
+            });`
+          )}
         </section>
 
         <section>
@@ -145,16 +182,28 @@ export class FormsPage extends JlElement {
   onConnect(): void {
     document.title = 'Forms · jlib';
     const form = this._refs.form;
+    this._saved.data = this.formData();
+    this.canLeave = guardLeave({ isDirty: () => this.isDirty(), signal: this.killSignal });
     this.on(form, 'submit', (event) => {
       event.preventDefault();
-      this._refs.output.code.set(formDataAsJson(new FormData(form)));
+      this._saved.data = this.formData();
+      this._refs.output.code.set(this._saved.data);
     });
     this.on(form, 'reset', () => this._refs.output.code.set(NOTHING_SENT));
     this._refs.toggle.events.register('press', () => {
       const fieldset = this._refs.fieldset;
+      this._saved.dirtyWhenDisabled = this.isDirty();
       fieldset.disabled = !fieldset.disabled;
       this._refs.toggle.label.set(fieldset.disabled ? 'Enable the fieldset' : 'Disable the fieldset');
     });
+  }
+
+  private formData(): string {
+    return formDataAsJson(new FormData(this._refs.form));
+  }
+
+  private isDirty(): boolean {
+    return this._refs.fieldset.disabled ? this._saved.dirtyWhenDisabled : this.formData() !== this._saved.data;
   }
 }
 

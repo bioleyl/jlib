@@ -112,7 +112,8 @@ export const pattern: PatternDoc = {
           signal: this.killSignal,
           text: \`Your changes to \${article.name} are lost.\`,
         });`
-      )
+      ),
+      text('Try it on the [Forms](/forms) guide: change a field, then leave the page.')
     ),
     section(
       'Passwords',

@@ -22,6 +22,7 @@ export function searchCommands(): PaletteCommand[] {
     group: 'Guide',
     icon: guide.icon,
     id: `${GO_PREFIX}${guide.path}`,
+    keywords: guide.keywords,
     label: guide.label,
   }));
   const design = DESIGN_PAGES.map((page) => ({

@@ -1,6 +1,6 @@
 ---
 name: jlib
-description: How apps are built with jlib (`@syware/jlib`, SyWare's `jl-*` web components on Jadis) — finding a component and its API, an app's setup, Jadis in brief, icons, theming through `--jl-*` tokens, jlib's texts in the app's language, writing views with jl-* components, testing views in jsdom, rendering pages on a server (SSR), and reporting what jlib lacks or gets wrong as an issue. Load before writing or changing code that imports `@syware/jlib`, before starting an app on jlib, or when a page needs a component or an option it cannot find.
+description: How apps are built with jlib (`@syware/jlib`, SyWare's `jl-*` web components on Jadis) — finding a component and its API, an app's setup, Jadis in brief, icons, theming through `--jl-*` tokens, jlib's texts in the app's language, writing views with jl-* components, guarding a form against leaving, testing views in jsdom, rendering pages on a server (SSR), and reporting what jlib lacks or gets wrong as an issue. Load before writing or changing code that imports `@syware/jlib`, before starting an app on jlib, or when a page needs a component or an option it cannot find.
 ---
 
 # Apps on jlib
@@ -137,6 +137,12 @@ shows English until the app chooses.
   root, so draw them with jl-* components (`JlLink`, `JlBadge`) rather than classes of the view.
 - A view's `display: grid` on an element beats `[hidden]`: each view's CSS ends with `[hidden] { display: none; }`.
 - `jl-select`'s empty value means "nothing chosen": give a real choice a value of its own (`head`).
+- A page with a form guards it against leaving with changes not saved: it declares
+  `canLeave = (): Promise<boolean> => Promise.resolve(true);` (`implements RoutedPage`), and sets it in `onConnect`:
+  `this.canLeave = guardLeave({ isDirty: () => …, signal: this.killSignal })`. The router calls it before it leaves
+  the page, for a link or Back, and waits: "Leave without saving?", in jlib's texts. Closing or reloading the tab
+  asks the browser's own question. Back reaches the router only within the app: a page loaded directly is left by
+  the browser. The documentation's Forms guide does it with its own form.
 - Tables: columns are `TableColumn[]` (`format`: `badge` with `tones`, `date`, `datetime`, `number`, `code`;
   `description` names a field shown as a quieter line under the value; `wrap` lets long text break over lines
   instead of widening the table), `rowKey` names a row's id, and `renderers` draw cells by code, typed with

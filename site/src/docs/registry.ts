@@ -74,7 +74,13 @@ export const GUIDES: readonly GuideLink[] = [
     path: '/theming',
     summary: 'Design tokens, dark mode and your own colours.',
   },
-  { icon: 'list', label: 'Forms', path: '/forms', summary: 'Fields that submit with a form like native ones.' },
+  {
+    icon: 'list',
+    keywords: ['FormData', 'leave', 'unsaved', 'canLeave', 'guardLeave'],
+    label: 'Forms',
+    path: '/forms',
+    summary: 'Fields that submit with a form like native ones.',
+  },
   {
     icon: 'sparkles',
     label: 'Vibe coding',

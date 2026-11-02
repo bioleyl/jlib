@@ -9,6 +9,8 @@ and documented on [the documentation site](https://bioleyl.github.io/jlib/).
 
 - **`jl-page-outlet`'s `--line-top`**: how far from the top of the window its line stays once the page scrolls, the
   height of a sticky bar above the outlet. The line stuck to the very top, behind such a bar.
+- **A live example of `guardLeave()`**: the documentation site's Forms guide guards its form, which the forms pattern
+  points to. Change a field, then follow a link or press Back, and the router waits for "Leave without saving?".
 - **Pages rendered on a server**: jlib's components render in happy-dom, the server-side DOM of Jadis 1.7's server
   rendering. Where the DOM has no `attachInternals`, they get inert internals. The `jlib` skill tells an app what
   rendering on a server asks of it.
