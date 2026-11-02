@@ -3,20 +3,27 @@
 What changed in each version of [@syware/jlib](https://www.npmjs.com/package/@syware/jlib). Every component is shown
 and documented on [the documentation site](https://bioleyl.github.io/jlib/).
 
-## Unreleased
+## 0.11.0 (2026-11-02)
+
+Pages rendered on a server, with Jadis 1.7's server rendering; a Forms guide whose form asks before it is left; and
+checked on Jadis 1.8, where the instances of a component share one stylesheet.
 
 ### Added
 
+- **Pages rendered on a server**: jlib's components render in happy-dom, the server-side DOM of Jadis 1.7's server
+  rendering (`@jadis/core/server`, `@jadis/fastify`), and the browser takes the page over. Where the DOM has no
+  `attachInternals`, they get inert internals. The `jlib` skill tells an app what rendering on a server asks of it.
+- **A live example of `guardLeave()`**: the documentation site's Forms guide guards its form, which the forms pattern
+  points to. Change a field, then follow a link or press Back, and the router waits for "Leave without saving?". The
+  `jlib` skill tells an app's pages to guard their forms the same way.
 - **`jl-page-outlet`'s `--line-top`**: how far from the top of the window its line stays once the page scrolls, the
   height of a sticky bar above the outlet. The line stuck to the very top, behind such a bar.
-- **A live example of `guardLeave()`**: the documentation site's Forms guide guards its form, which the forms pattern
-  points to. Change a field, then follow a link or press Back, and the router waits for "Leave without saving?".
-- **Pages rendered on a server**: jlib's components render in happy-dom, the server-side DOM of Jadis 1.7's server
-  rendering. Where the DOM has no `attachInternals`, they get inert internals. The `jlib` skill tells an app what
-  rendering on a server asks of it.
 
 ### Changed
 
+- **Checked on Jadis 1.8**: the tests and the documentation site run on `@jadis/core` 1.8, where a component's
+  instances share one stylesheet instead of a `<style>` each. Every page of the site looks as it did on 1.6. jlib
+  still asks for `^1.6.0`: it uses nothing newer.
 - **`jl-icon`** draws an icon registered after it upgraded, at the end of the task, before the browser paints: icons a
   server wrote in the page upgrade with the components, often before the page registers them.
 
@@ -25,6 +32,16 @@ and documented on [the documentation site](https://bioleyl.github.io/jlib/).
 - **The documentation site's loading line** runs along the top of the content, under the header: it crossed the first
   lines of the page, and hid behind the header once the page scrolled. The outlet sits flush with the top of the
   content, the room around a page being the page's, as `jl-page-outlet`'s page now advises.
+
+### Worth a look when you update
+
+- Nothing to change for an app on Jadis 1.6: `npm install @syware/jlib@^0.11.0`.
+- Rendering pages on a server needs Jadis 1.7 or later: read the `jlib` skill's "Rendering pages on a server", and
+  Jadis's Server Rendering section. The page's stylesheet imports jlib's tokens (`@import '@syware/jlib/tokens.css'`),
+  and an element of the page's shell gets a `display` only while `:not(:defined)`.
+- On Jadis 1.8, a component's CSS is one stylesheet that every instance's shadow root adopts: a `<style>` that an app
+  puts in a jl-* component's shadow root after it has rendered now comes before the component's CSS, and loses to it
+  at equal specificity. Style jlib through the `--jl-*` tokens and `::part()`, as before.
 
 ## 0.10.0 (2026-11-01)
 
