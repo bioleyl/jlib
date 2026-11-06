@@ -3,9 +3,11 @@
 What changed in each version of [@syware/jlib](https://www.npmjs.com/package/@syware/jlib). Every component is shown
 and documented on [the documentation site](https://bioleyl.github.io/jlib/).
 
-## Unreleased
+## 0.11.1 (2026-11-06)
 
-Links an app follows itself, for an app whose router navigates in code (Jadis's `goto`) rather than by addresses.
+Links an app follows itself, for an app whose router navigates in code (Jadis's `goto`) rather than by addresses; a
+side nav whose long labels and fold button keep to its width; and no more reports in Chrome's Issues panel about
+jlib's fields.
 
 ### Added
 
@@ -29,6 +31,15 @@ Links an app follows itself, for an app whose router navigates in code (Jadis's 
   as "The `<option>` element allows only non-interactive phrasing content" in its Issues panel.
 - **The native fields inside the components** have an id: each one a page showed (a search, a select, a checkbox…)
   was reported in Chrome's Issues panel as "A form field element has neither an `id` nor a `name` attribute".
+
+### Worth a look when you update
+
+- Nothing to change: `npm install @syware/jlib@^0.11.1`.
+- An app whose router navigates in code can give its links no `href` and follow their events instead: an
+  `interactive` `jl-link` fires `press`, a `jl-breadcrumb` item or a `jl-facts` fact with an `id` fires `select`, and
+  a `backable` `jl-page` fires `back`. The `jlib` skill lists them.
+- A collapsible `jl-side-nav`'s fold button spans the nav now, a medium button in the rows' text size: an app that
+  turned `collapsible` off to fold the nav with a button of its own, in the `footer` slot, can turn it back on.
 
 ## 0.11.0 (2026-11-02)
 
