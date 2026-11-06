@@ -127,6 +127,7 @@ export class JlCombobox extends JlFormControl {
         <div class="control" attrs={{ part: 'base' }}>
           <input
             class="native"
+            id="field"
             role="combobox"
             aria-autocomplete="list"
             aria-expanded="false"

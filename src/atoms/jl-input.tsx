@@ -126,7 +126,7 @@ export class JlInput extends JlFormControl {
       <div class="control" attrs={{ part: 'base' }}>
         <JlIcon class="adornment icon" size={ICON_SIZE} hidden />
         <slot name="start" />
-        <input class="native" />
+        <input class="native" id="field" />
         <button class="action clear" type="button" tabIndex={-1} hidden>
           <JlIcon name="x" size={ACTION_ICON_SIZE} />
         </button>

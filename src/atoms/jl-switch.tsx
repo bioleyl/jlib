@@ -90,6 +90,7 @@ export class JlSwitch extends JlFormControl {
             type="checkbox"
             role="switch"
             class="native"
+            id="field"
             aria-checked="false"
             aria-describedby="description"
           />

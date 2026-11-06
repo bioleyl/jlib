@@ -161,7 +161,7 @@ export class JlFileDrop extends JlFormControl {
           <p class="hint" id={this._ids.hint} hidden />
           <button class="browse" type="button" aria-describedby={this._ids.hint} />
         </div>
-        <input class="picker" type="file" tabIndex={-1} hidden />
+        <input class="picker" id="picker" type="file" tabIndex={-1} hidden />
         <ul class="refused" aria-live="polite" hidden />
         <ul class="files" hidden />
       </>

@@ -106,7 +106,7 @@ export class JlNumberInput extends JlFormControl {
         <button class="action step down" type="button" tabIndex={-1}>
           <JlIcon name="minus" size={ICON_SIZE} />
         </button>
-        <input class="native" type="text" inputMode="decimal" role="spinbutton" autocomplete="off" />
+        <input class="native" id="field" type="text" inputMode="decimal" role="spinbutton" autocomplete="off" />
         <button class="action step up" type="button" tabIndex={-1}>
           <JlIcon name="plus" size={ICON_SIZE} />
         </button>

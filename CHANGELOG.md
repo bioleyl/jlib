@@ -13,6 +13,8 @@ and documented on [the documentation site](https://bioleyl.github.io/jlib/).
 - **`jl-side-nav`'s fold button** spans the nav like its rows, its icon and label where theirs are, the icon centred
   in the rail: it was as narrow as its label, and an app could not widen it. It is a medium button now, in the
   rows' text size, no longer a small one ([#2](https://github.com/bioleyl/jlib/issues/2)).
+- **The native fields inside the components** have an id: each one a page showed (a search, a select, a checkbox…)
+  was reported in Chrome's Issues panel as "A form field element has neither an `id` nor a `name` attribute".
 
 ## 0.11.0 (2026-11-02)
 

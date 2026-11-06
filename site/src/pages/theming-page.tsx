@@ -107,7 +107,7 @@ export class ThemingPage extends JlElement {
               ))}
             </fieldset>
             <label class="picker-label">
-              <input class="picker" type="color" value={DEFAULT_ACCENT} />
+              <input class="picker" id="accent" type="color" value={DEFAULT_ACCENT} />
               <span>Any colour</span>
             </label>
           </div>

@@ -89,7 +89,7 @@ export class JlTextarea extends JlFormControl {
     return (
       <div class="field">
         <div class="control" attrs={{ part: 'base' }}>
-          <textarea class="native" aria-describedby="counter" />
+          <textarea class="native" id="field" aria-describedby="counter" />
         </div>
         <div id="counter" class="counter" hidden />
       </div>

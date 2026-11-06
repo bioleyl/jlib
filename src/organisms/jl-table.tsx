@@ -88,7 +88,13 @@ const CELL_MAKERS: Record<TableCellFormat, CellMaker> = {
 function checkbox(label: string, index: number | null): Node {
   return (
     <span class="check">
-      <input type="checkbox" class="checkbox" aria-label={label} data-index={index ?? undefined} />
+      <input
+        type="checkbox"
+        class="checkbox"
+        id={index === null ? 'select-all' : `select-${index}`}
+        aria-label={label}
+        data-index={index ?? undefined}
+      />
       <span class="mark" aria-hidden="true" />
     </span>
   );

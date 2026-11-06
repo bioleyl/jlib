@@ -90,7 +90,7 @@ export class JlCheckbox extends JlFormControl {
     return (
       <label class="wrap" attrs={{ part: 'base' }}>
         <span class="box">
-          <input type="checkbox" class="native" aria-describedby="description" />
+          <input type="checkbox" class="native" id="field" aria-describedby="description" />
           <JlIcon class="mark check" name="check" size={ICON_SIZE} />
           <JlIcon class="mark dash" name="minus" size={ICON_SIZE} />
         </span>

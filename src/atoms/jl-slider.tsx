@@ -76,7 +76,7 @@ export class JlSlider extends JlFormControl {
     return (
       <div class="slider" attrs={{ part: 'base' }}>
         <div class="track-area">
-          <input type="range" class="native" />
+          <input type="range" class="native" id="field" />
           <div class="marks" aria-hidden="true" hidden />
         </div>
         <span class="output" aria-hidden="true" hidden />

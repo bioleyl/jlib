@@ -119,6 +119,7 @@ export class JlCommandPalette<Id extends string = string> extends JlElement {
           <JlSpinner class="search-spinner" size={SEARCH_ICON_SIZE} hidden />
           <input
             type="text"
+            id="query"
             role="combobox"
             aria-expanded="true"
             aria-controls="results"

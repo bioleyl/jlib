@@ -125,7 +125,7 @@ export class JlTagInput extends JlFormControl {
         <div class="control" attrs={{ part: 'base' }}>
           {/* biome-ignore lint/a11y/noRedundantRoles: a list drawn without bullets loses its role in Safari */}
           <ul class="tags" role="list" />
-          <input class="native" autocomplete="off" />
+          <input class="native" id="field" autocomplete="off" />
         </div>
         <div class="floating panel popup" popover="manual" attrs={{ part: 'list' }}>
           <div class="listbox" role="listbox" id={this._listId} />

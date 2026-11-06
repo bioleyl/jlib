@@ -83,6 +83,25 @@ const UNDEFINED_TAGS = `(() => {
   return [...missing];
 })()`;
 
+/**
+ * Every native field of the page, through every shadow root, with neither an id nor a name: Chrome's Issues panel
+ * reports each one it shows ("A form field element has neither an id nor a name attribute").
+ */
+const UNNAMED_FIELDS = `(() => {
+  const unnamed = [];
+  const visit = (root, host) => {
+    for (const element of root.querySelectorAll('*')) {
+      if (element.matches('input, select, textarea') && !element.id && !element.name) {
+        unnamed.push(host + ' ' + element.localName);
+      }
+      if (element.shadowRoot) visit(element.shadowRoot, element.localName);
+      if (element.localName === 'template') visit(element.content, host);
+    }
+  };
+  visit(document, 'document');
+  return unnamed;
+})()`;
+
 const state = {
   base: '',
   browser: null as Browser | null,
@@ -127,11 +146,12 @@ afterAll(async () => {
 
 describe('every page of the site', () => {
   it.each([...GUIDES, ...DESIGN, ...patternPaths, ...componentPaths])(
-    '%s renders without errors and with every tag defined',
+    '%s renders without errors, with every tag defined and every field named',
     async (path) => {
       const page = await open(path);
       expect(state.errors).toEqual([]);
       expect(await page.evaluate(UNDEFINED_TAGS)).toEqual([]);
+      expect(await page.evaluate(UNNAMED_FIELDS)).toEqual([]);
     }
   );
 });

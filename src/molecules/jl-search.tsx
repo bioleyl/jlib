@@ -118,7 +118,7 @@ export class JlSearch extends JlFormControl {
           <JlIcon class="icon" name="search" size={ICON_SIZE} />
           <JlSpinner size={ICON_SIZE} hidden />
         </span>
-        <input class="native" type="search" autocomplete="off" />
+        <input class="native" id="field" type="search" autocomplete="off" />
         <button class="action clear" type="button" tabIndex={-1} hidden>
           <JlIcon name="x" size={ACTION_ICON_SIZE} />
         </button>

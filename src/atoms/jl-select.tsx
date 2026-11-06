@@ -105,7 +105,7 @@ export class JlSelect<Value extends string = string> extends JlFormControl {
   templateHtml(): Node {
     return (
       <div class="control" attrs={{ part: 'base' }}>
-        <select class="native" />
+        <select class="native" id="field" />
         <JlIcon class="chevron" name="chevron-down" size={CHEVRON_SIZE} />
       </div>
     );

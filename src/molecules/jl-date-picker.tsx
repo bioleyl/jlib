@@ -143,6 +143,7 @@ export class JlDatePicker extends JlFormControl {
         <div class="control" attrs={{ part: 'base' }}>
           <input
             class="native"
+            id="field"
             role="combobox"
             autocomplete="off"
             spellcheck={false}
