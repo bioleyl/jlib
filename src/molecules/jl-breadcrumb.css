@@ -35,7 +35,15 @@ li {
   text-decoration: none;
 }
 
-a.crumb:hover {
+button.crumb {
+  border: 0;
+  background: none;
+  font: inherit;
+  cursor: pointer;
+}
+
+a.crumb:hover,
+button.crumb:hover {
   color: var(--jl-text);
   text-decoration: underline;
   text-underline-offset: 3px;

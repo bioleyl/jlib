@@ -20,7 +20,13 @@ narrow screen.
 
 With app-name, the page names the browser tab after its heading, the most specific first: "Order #3 · swstock". Set
 the heading once the subject has loaded, and the tab follows. See the Page layout and Navigation patterns.`,
-  events: [{ description: 'The back link was followed.', detail: 'undefined', name: 'back' }],
+  events: [
+    {
+      description: 'The back link was followed: the app goes there itself when it is backable without an address.',
+      detail: 'undefined',
+      name: 'back',
+    },
+  ],
   examples: [
     {
       description: 'A collection: the heading, what it is for, and the one primary action.',
@@ -100,9 +106,18 @@ the heading once the subject has loaded, and the tab follows. See the Page layou
       attribute: 'back',
       control: { kind: 'text' },
       default: "''",
-      description: 'Where the back link leads; no back link without it.',
+      description: 'Where the back link leads; no back link without it, unless backable.',
       name: 'back',
       type: 'string',
+    },
+    {
+      attribute: 'backable',
+      control: { kind: 'boolean' },
+      default: 'false',
+      description:
+        'Shows the back link without an address: pressed, it fires back, which the app follows (a router’s goto).',
+      name: 'backable',
+      type: 'boolean',
     },
     {
       attribute: 'back-label',

@@ -20,17 +20,20 @@ const NEW_TAB = '_blank';
 // A page opened in a new tab gets no handle on this one, and no referrer.
 const SAFE_REL = 'noopener noreferrer';
 const ICON_SIZE = 13;
+// A link is followed with Enter (Space scrolls the page, as on a link).
+const ENTER = 'Enter';
 
 /**
  * A link in text or in a list: the browser's own `<a>`, styled. `external` opens it in a new tab, safely, with an
- * icon that says so. Its text is the `label` or the slotted content.
+ * icon that says so. Its text is the `label` or the slotted content. `interactive` without an `href`, it fires
+ * `press` instead: the app follows it itself (a router's `goto`).
  */
 export class JlLink extends JlElement {
   static readonly selector = 'jl-link';
 
-  readonly href = this.useChange('', (value) => setOrRemove(this._refs.anchor, 'href', value), {
-    attribute: 'href',
-  });
+  readonly events = this.useEvents<{ press: undefined }>();
+
+  readonly href = this.useChange('', () => this.renderInteraction(), { attribute: 'href' });
   readonly label = this.useChange(
     '',
     (value) => {
@@ -47,6 +50,15 @@ export class JlLink extends JlElement {
     attribute: 'variant',
     parse: oneOf(LINK_VARIANTS, 'default'),
   });
+  /** Without an `href`, it fires `press` when followed, by a click or Enter, for the app to go there itself. */
+  readonly interactive = this.useChange(
+    false,
+    (value) => {
+      this.reflect('interactive', value);
+      this.renderInteraction();
+    },
+    { attribute: 'interactive' }
+  );
 
   private readonly _refs = this.useRefs((ref) => ({
     anchor: ref('a'),
@@ -75,6 +87,35 @@ export class JlLink extends JlElement {
 
   templateCss(): string {
     return css`${BASE_STYLES}${styles}`;
+  }
+
+  onConnect(): void {
+    const anchor = this._refs.anchor;
+    this.on(anchor, 'click', () => {
+      if (this.pressable()) {
+        this.events.emit('press');
+      }
+    });
+    this.on(anchor, 'keydown', (event) => {
+      if (this.pressable() && event.key === ENTER) {
+        event.preventDefault();
+        this.events.emit('press');
+      }
+    });
+  }
+
+  /** An interactive link without an address fires `press`; one with an address leaves it to the browser. */
+  private pressable(): boolean {
+    return this.interactive.get() && this.href.get() === '';
+  }
+
+  /** Followed by the app, the link is still a link to the keyboard and to screen readers. */
+  private renderInteraction(): void {
+    const anchor = this._refs.anchor;
+    setOrRemove(anchor, 'href', this.href.get());
+    const pressable = this.pressable();
+    setOrRemove(anchor, 'role', pressable ? 'link' : '');
+    setOrRemove(anchor, 'tabindex', pressable ? '0' : '');
   }
 
   private renderTarget(): void {

@@ -1,3 +1,4 @@
+import type { JlLink } from '../../../../src/atoms/jl-link';
 import type { ComponentDoc } from '../../types/docs.types';
 
 export const doc: ComponentDoc = {
@@ -7,7 +8,13 @@ text, keep the default variant: its underline tells it apart without colour. qui
 the context says it is a link; muted suits footers and secondary navigation.
 
 external opens the page in a new tab, without giving it a handle on this one (rel="noopener noreferrer"), and says
-so with an icon and, for screen readers, with words.`,
+so with an icon and, for screen readers, with words.
+
+An app that navigates in code (a router's goto) makes the link interactive and gives it no href: followed by a click
+or Enter, it fires press, and the app goes there. It stays a link to the keyboard and to screen readers.`,
+  events: [
+    { description: 'An interactive link without an href was followed.', detail: 'undefined', name: 'press' },
+  ],
   examples: [
     {
       html: `
@@ -44,6 +51,29 @@ so with an icon and, for screen readers, with words.`,
           <jl-link href="#/" label="Status" variant="muted"></jl-link>
         </div>`,
       title: 'In a footer',
+    },
+    {
+      description: 'No href: the app follows the link itself, as a router would with goto.',
+      html: `
+        <div class="row">
+          <jl-link class="demo-followed" label="Open order #3" interactive></jl-link>
+          <span class="muted demo-followed-note">Not followed yet</span>
+        </div>`,
+      script: `
+        const link = root.querySelector('.demo-followed');
+        link.events.register('press', () => {
+          root.querySelector('.demo-followed-note').textContent = 'Followed: the app goes to order #3';
+        });`,
+      setup: (root) => {
+        const link = root.querySelector<JlLink>('.demo-followed');
+        link?.events.register('press', () => {
+          const note = root.querySelector('.demo-followed-note');
+          if (note) {
+            note.textContent = 'Followed: the app goes to order #3';
+          }
+        });
+      },
+      title: 'Followed by the app',
     },
   ],
   level: 'atom',
@@ -89,6 +119,14 @@ so with an icon and, for screen readers, with words.`,
       description: 'Where it opens, as the target of an <a>; external links default to _blank.',
       name: 'target',
       type: 'string',
+    },
+    {
+      attribute: 'interactive',
+      control: { kind: 'boolean' },
+      default: 'false',
+      description: 'Without an href, fires press when followed, for the app to go there itself.',
+      name: 'interactive',
+      type: 'boolean',
     },
   ],
   slots: [{ description: 'The text, with markup if needed.', name: '' }],

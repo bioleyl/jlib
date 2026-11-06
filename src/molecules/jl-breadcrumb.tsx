@@ -19,10 +19,14 @@ const SEPARATOR_SIZE = 14;
 // Collapsed, the trail keeps its first item and the last `max - 1`: below 2 there is nothing to keep.
 const MIN_MAX = 2;
 
-type Crumb = { item: BreadcrumbItem; index: number } | { hidden: number };
+type Crumb<Id extends string> = { item: BreadcrumbItem<Id>; index: number } | { hidden: number };
 
 /** The crumbs shown: all of them, or the first, a gap for the middle, and the last `max - 1`. */
-function visibleCrumbs(items: readonly BreadcrumbItem[], max: number, expanded: boolean): Crumb[] {
+function visibleCrumbs<Id extends string>(
+  items: readonly BreadcrumbItem<Id>[],
+  max: number,
+  expanded: boolean
+): Crumb<Id>[] {
   const all = items.map((item, index) => ({ index, item }));
   if (expanded || max < MIN_MAX || items.length <= max) {
     return all;
@@ -33,12 +37,15 @@ function visibleCrumbs(items: readonly BreadcrumbItem[], max: number, expanded: 
 
 /**
  * Where the page sits in a hierarchy: a trail of links, the last one being the current page. With `max`, a long
- * trail folds its middle into a button that unfolds it.
+ * trail folds its middle into a button that unfolds it. An item with an `id` instead of an `href` is followed by the
+ * app: the breadcrumb fires `select` with its id. Typed by its ids, `JlBreadcrumb<'orders' | 'order'>`.
  */
-export class JlBreadcrumb extends JlElement {
+export class JlBreadcrumb<Id extends string = string> extends JlElement {
   static readonly selector = 'jl-breadcrumb';
 
-  readonly items = this.useChange<BreadcrumbItem[]>([], () => this.renderTrail(), {
+  readonly events = this.useEvents<{ select: Id }>();
+
+  readonly items = this.useChange<BreadcrumbItem<Id>[]>([], () => this.renderTrail(), {
     attribute: 'items',
     parse: jsonOf([]),
   });
@@ -68,9 +75,12 @@ export class JlBreadcrumb extends JlElement {
 
   onConnect(): void {
     this.on(this._refs.list, 'click', (event) => {
-      if ((event.target as Element).closest('.more') !== null) {
+      const target = event.target as Element;
+      if (target.closest('.more') !== null) {
         this.expand();
+        return;
       }
+      this.follow(target.closest<HTMLElement>('button.crumb')?.dataset.id);
     });
   }
 
@@ -103,12 +113,27 @@ export class JlBreadcrumb extends JlElement {
     );
   }
 
-  private crumb(item: BreadcrumbItem, current: boolean): Node {
+  /** An item the app follows, found among the items by the id its button carries. */
+  private follow(id: string | undefined): void {
+    const item = this.items.get().find((candidate) => candidate.id !== undefined && candidate.id === id);
+    if (item?.id !== undefined) {
+      this.events.emit('select', item.id);
+    }
+  }
+
+  private crumb(item: BreadcrumbItem<Id>, current: boolean): Node {
     const ariaCurrent = current ? 'page' : undefined;
     const content = [
       item.icon === undefined ? '' : <JlIcon name={item.icon} size={ICON_SIZE} />,
       <span class="label">{item.label}</span>,
     ];
+    if (item.href === undefined && item.id !== undefined) {
+      return (
+        <button type="button" class="crumb" data-id={item.id} title={item.label} aria-current={ariaCurrent}>
+          {content}
+        </button>
+      );
+    }
     if (item.href === undefined) {
       return (
         <span class="crumb" title={item.label} aria-current={ariaCurrent}>

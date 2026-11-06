@@ -1,3 +1,4 @@
+import type { JlBreadcrumb } from '../../../../src/molecules/jl-breadcrumb';
 import type { ComponentDoc } from '../../types/docs.types';
 
 const TRAIL =
@@ -15,7 +16,35 @@ readers.
 With max, a trail longer than that keeps its first item and its last ones, and folds the middle into a … button;
 pressing it unfolds the trail and moves the focus to the first item it showed. Long labels are cut with an ellipsis and
 show whole on hover.`,
+  events: [
+    {
+      description: 'An item with an id and no href was followed: the app goes there itself (a router’s goto).',
+      detail: 'Id',
+      name: 'select',
+    },
+  ],
   examples: [
+    {
+      description: 'Items with an id instead of an href: the app follows them, as a router would with goto.',
+      html: `
+        <div class="stack">
+          <jl-breadcrumb class="demo-routed" items='[{"label":"Orders","id":"orders"},{"label":"Order #3","id":"order"},{"label":"Lines"}]'></jl-breadcrumb>
+          <span class="muted demo-routed-note">Nothing followed yet</span>
+        </div>`,
+      script: `
+        root.querySelector('.demo-routed').events.register('select', (id) => {
+          root.querySelector('.demo-routed-note').textContent = 'Followed: ' + id;
+        });`,
+      setup: (root) => {
+        root.querySelector<JlBreadcrumb>('.demo-routed')?.events.register('select', (id) => {
+          const note = root.querySelector('.demo-routed-note');
+          if (note) {
+            note.textContent = `Followed: ${id}`;
+          }
+        });
+      },
+      title: 'Followed by the app',
+    },
     {
       html: `<jl-breadcrumb items='${TRAIL}'></jl-breadcrumb>`,
       title: 'A trail',
@@ -48,7 +77,8 @@ show whole on hover.`,
       attribute: 'items',
       control: { kind: 'json' },
       default: '[]',
-      description: 'The trail, from the top: { label, href?, icon? }. The last item is the current page.',
+      description:
+        'The trail, from the top: { label, href?, id?, icon? }. An item with an id and no href fires select. The last item is the current page.',
       name: 'items',
       type: 'BreadcrumbItem[]',
     },

@@ -6,6 +6,8 @@ export type Fact = {
   code?: boolean;
   /** An address: the value is a link to it. */
   href?: string;
+  /** Without an `href`, the value is a link the app follows itself: the facts fire `select` with this id. */
+  id?: string;
   /** The value's tooltip. */
   hint?: string;
   /** Names the fact for a renderer of `renderers`, which then draws its value. */

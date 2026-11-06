@@ -16,10 +16,12 @@ const hasValue = (fact: Fact): boolean => fact.value !== null && fact.value !== 
  * The facts about one thing, label and value: an object's size and digest, an order's customer and date. Facts
  * without a value are left out, and an element with none takes no room. Values can be code (monospace, broken
  * anywhere), links, or drawn by code (`renderers`, by a fact's `key`). Narrower than 420 pixels, labels go over
- * their values.
+ * their values. A fact with an `id` instead of an `href` is a link the app follows: the facts fire `select` with it.
  */
 export class JlFacts extends JlElement {
   static readonly selector = 'jl-facts';
+
+  readonly events = this.useEvents<{ select: string }>();
 
   readonly items = this.useChange<Fact[]>([], () => this.render(), {
     attribute: 'items',
@@ -47,6 +49,16 @@ export class JlFacts extends JlElement {
     return css`${BASE_STYLES}${styles}`;
   }
 
+  onConnect(): void {
+    this.on(this._refs.list, 'click', (event) => {
+      const id = (event.target as Element).closest<HTMLElement>('button.link')?.dataset.id;
+      const fact = this.items.get().find((candidate) => candidate.id !== undefined && candidate.id === id);
+      if (fact?.id !== undefined) {
+        this.events.emit('select', fact.id);
+      }
+    });
+  }
+
   private render(): void {
     const shown = this.items.get().filter(hasValue);
     this._refs.list.replaceChildren(
@@ -67,7 +79,16 @@ export class JlFacts extends JlElement {
     }
     const text = String(fact.value);
     const content = fact.code ? <code>{text}</code> : document.createTextNode(text);
-    return fact.href === undefined ? content : <a href={fact.href}>{content}</a>;
+    if (fact.href !== undefined) {
+      return <a href={fact.href}>{content}</a>;
+    }
+    return fact.id === undefined ? (
+      content
+    ) : (
+      <button type="button" class="link" data-id={fact.id}>
+        {content}
+      </button>
+    );
   }
 }
 

@@ -34,7 +34,45 @@ A value can be code (monospace, broken anywhere, for identifiers and digests), a
 fact with a key is drawn by the renderer of that key in renderers (a badge, links, a list). Labels sit beside
 their values and line up in one column; vertical puts each label over its value, the facts side by side, for a
 summary under a heading. Narrower than 420 pixels, the labels go over their values either way.`,
+  events: [
+    {
+      description: 'A fact with an id and no href was followed: the app goes there itself (a router’s goto).',
+      detail: 'string',
+      name: 'select',
+    },
+  ],
   examples: [
+    {
+      description: 'A fact with an id instead of an href: the app follows it, as a router would with goto.',
+      html: `
+        <div class="stack narrow">
+          <jl-facts class="demo-followed-facts"></jl-facts>
+          <span class="muted demo-followed-facts-note">Nothing followed yet</span>
+        </div>`,
+      script: `
+        const facts = root.querySelector('.demo-followed-facts');
+        facts.items.set([
+          { label: 'Order', value: '#3' },
+          { id: 'customer', label: 'Customer', value: 'Sara Monnier' },
+        ]);
+        facts.events.register('select', (id) => {
+          root.querySelector('.demo-followed-facts-note').textContent = 'Followed: ' + id;
+        });`,
+      setup: (root) => {
+        const facts = root.querySelector<JlFacts>('.demo-followed-facts');
+        facts?.items.set([
+          { label: 'Order', value: '#3' },
+          { id: 'customer', label: 'Customer', value: 'Sara Monnier' },
+        ]);
+        facts?.events.register('select', (id) => {
+          const note = root.querySelector('.demo-followed-facts-note');
+          if (note) {
+            note.textContent = `Followed: ${id}`;
+          }
+        });
+      },
+      title: 'Followed by the app',
+    },
     {
       description: 'An object of an archive: the deleted fact has no value, so it is left out.',
       html: `<jl-facts class="narrow" label="Object" items='${OBJECT}'></jl-facts>`,
@@ -85,7 +123,7 @@ summary under a heading. Narrower than 420 pixels, the labels go over their valu
       control: { kind: 'json' },
       default: '[]',
       description:
-        'The facts: label and value, and optionally code (monospace), href (a link), hint (a tooltip) and key (for a renderer). A fact whose value is null or empty is left out.',
+        'The facts: label and value, and optionally code (monospace), href (a link), id (a link the app follows: select fires with it), hint (a tooltip) and key (for a renderer). A fact whose value is null or empty is left out.',
       name: 'items',
       type: 'Fact[]',
     },

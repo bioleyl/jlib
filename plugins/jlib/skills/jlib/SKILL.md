@@ -63,6 +63,10 @@ the plugin of that name: an app that follows SyWare's UX loads both.
   anyway. Its loading line runs along its top edge: put the outlet flush with the top of the content area, the
   padding in the pages, and give `--line-top` the height of a sticky bar above it, or the line crosses the page's
   first lines and hides behind the bar once scrolled. Without it, `router.mountOn(outlet)` swaps the pages at once.
+- An app that navigates in code (`router.goto`) rather than by addresses gives its links no `href` and follows their
+  events: a side nav's, tab bar's or tree's items fire `select`, an `interactive` `jl-list-item` or `jl-link` fires
+  `press`, a `jl-breadcrumb` item or a `jl-facts` fact with an `id` fires `select`, and a `backable` `jl-page` fires
+  `back`.
 - A large or rarely opened page loads on demand, in a chunk of its own. The router takes a page's class, not a
   loader: a small page of the app's stands for it in the routes, imports the module when it connects and draws the
   real page inside its own `jl-load-state`, which the outlet waits for. What only that page uses (its data, its

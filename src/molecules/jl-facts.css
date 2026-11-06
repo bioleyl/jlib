@@ -37,12 +37,23 @@ code {
   word-break: break-all;
 }
 
-a {
+a,
+button.link {
   color: var(--jl-accent);
   text-decoration: none;
 }
 
-a:hover {
+button.link {
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+}
+
+a:hover,
+button.link:hover {
   color: var(--jl-accent-strong);
   text-decoration: underline;
 }

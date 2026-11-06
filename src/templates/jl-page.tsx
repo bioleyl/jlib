@@ -51,8 +51,10 @@ export class JlPage extends JlElement {
     attribute: 'width',
     parse: oneOf(PAGE_WIDTHS, 'standard'),
   });
-  /** Where the back link leads; no back link without it. */
+  /** Where the back link leads; no back link without it, unless `backable`. */
   readonly back = this.useChange('', () => this.renderBack(), { attribute: 'back' });
+  /** Shows the back link without an address: pressed, it fires `back`, which the app follows (a router's `goto`). */
+  readonly backable = this.useChange(false, () => this.renderBack(), { attribute: 'backable' });
   /** The name of the page the back link leads to: "Orders". */
   readonly backLabel = this.useChange('', () => this.renderBack(), { attribute: 'back-label' });
   /** The app's name, after the heading in the browser tab. Without it, the page leaves the tab's title alone. */
@@ -90,13 +92,13 @@ export class JlPage extends JlElement {
     this.renderBack();
   }
 
-  /** The back link stays out of the header's breadcrumb slot without an address, so the header takes no room for it. */
+  /** The back link stays out of the header's breadcrumb slot without an address (and not backable), so the header takes no room for it. */
   private renderBack(): void {
     const back = this._refs.back;
     const href = this.back.get();
     back.href.set(href);
     back.label.set(this.backLabel.get() || jlText('back'));
-    setOrRemove(back, 'slot', href === '' ? '' : BREADCRUMB_SLOT);
+    setOrRemove(back, 'slot', href === '' && !this.backable.get() ? '' : BREADCRUMB_SLOT);
   }
 
   private renderTitle(): void {

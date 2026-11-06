@@ -5,6 +5,17 @@ and documented on [the documentation site](https://bioleyl.github.io/jlib/).
 
 ## Unreleased
 
+Links an app follows itself, for an app whose router navigates in code (Jadis's `goto`) rather than by addresses.
+
+### Added
+
+- **`jl-link`'s `interactive`**: without an `href`, the link fires `press` when it is followed, by a click or Enter,
+  and the app goes there itself. It stays a link to the keyboard and to screen readers.
+- **`jl-breadcrumb`'s `select`**: an item with an `id` instead of an `href` is followed by the app; the breadcrumb is
+  typed by those ids (`JlBreadcrumb<'orders' | 'order'>`).
+- **`jl-page`'s `backable`**: the back link shows without an address, and pressing it fires `back`.
+- **`jl-facts`' `select`**: a fact with an `id` instead of an `href` is a link the app follows.
+
 ### Fixed
 
 - **`jl-side-nav`'s long labels** end in "…" inside the nav: a label longer than the nav widened its section past
