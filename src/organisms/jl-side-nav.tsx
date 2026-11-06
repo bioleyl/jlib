@@ -105,7 +105,7 @@ export class JlSideNav<Id extends string = string> extends JlElement {
         <div class="sections" />
         <div class="bottom">
           <slot name="footer" />
-          <JlButton class="fold" variant="ghost" size="sm" hidden />
+          <JlButton class="fold" variant="ghost" block hidden />
         </div>
       </nav>
     );

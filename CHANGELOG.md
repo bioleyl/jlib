@@ -3,6 +3,17 @@
 What changed in each version of [@syware/jlib](https://www.npmjs.com/package/@syware/jlib). Every component is shown
 and documented on [the documentation site](https://bioleyl.github.io/jlib/).
 
+## Unreleased
+
+### Fixed
+
+- **`jl-side-nav`'s long labels** end in "…" inside the nav: a label longer than the nav widened its section past
+  the nav's edge, where the row was cut off, in the drawer of a phone too
+  ([#1](https://github.com/bioleyl/jlib/issues/1)).
+- **`jl-side-nav`'s fold button** spans the nav like its rows, its icon and label where theirs are, the icon centred
+  in the rail: it was as narrow as its label, and an app could not widen it. It is a medium button now, in the
+  rows' text size, no longer a small one ([#2](https://github.com/bioleyl/jlib/issues/2)).
+
 ## 0.11.0 (2026-11-02)
 
 Pages rendered on a server, with Jadis 1.7's server rendering; a Forms guide whose form asks before it is left; and

@@ -18,7 +18,7 @@ const SECTIONS = JSON.stringify([
         children: [
           { id: 'website', label: 'Website' },
           { badge: 'New', id: 'mobile-app', label: 'Mobile app' },
-          { id: 'design-system', label: 'Design system' },
+          { id: 'design-system', label: 'Design system and its documentation site' },
         ],
         icon: 'folder',
         id: 'projects',
@@ -65,7 +65,8 @@ of jl-app-shell for the whole frame.`,
   ],
   examples: [
     {
-      description: 'Badges, a nested group, and the active item inside it.',
+      description:
+        'Badges, a nested group, and the active item inside it; a label too long for the nav ends in “…”.',
       html: `
         <div style="${FRAME}; width: 260px">
           <jl-side-nav value="mobile-app" sections='${SECTIONS}'></jl-side-nav>

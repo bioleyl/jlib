@@ -22,7 +22,7 @@ nav {
   font-size: var(--jl-font-md);
 }
 
-/* The footer and the fold button keep to the bottom; the button is centred in the rail. */
+/* The footer and the fold button keep to the bottom. */
 .bottom {
   display: flex;
   flex-direction: column;
@@ -30,12 +30,17 @@ nav {
   margin-top: auto;
 }
 
-.fold {
-  align-self: flex-start;
+/* The fold button spans the nav like a row, its icon and label where the rows have theirs; centred in the rail. */
+.fold::part(base) {
+  justify-content: flex-start;
+  gap: 10px;
+  /* With the button's 1px border, the rows' 10px. */
+  padding: 0 9px;
 }
 
-:host([rail]) .fold {
-  align-self: center;
+:host([rail]) .fold::part(base) {
+  justify-content: center;
+  padding: 0;
 }
 
 .sections {
@@ -48,12 +53,22 @@ nav {
   gap: 2px;
 }
 
+/* A column as wide as the nav: an implicit one grows to the longest label, which then never ellipsizes. */
+.sections,
+.section,
+.items,
+.children {
+  grid-template-columns: minmax(0, 1fr);
+}
+
 .section-label {
   padding: 4px 10px 6px;
+  overflow: hidden;
   color: var(--jl-muted);
   font-size: 11px;
   font-weight: 650;
   letter-spacing: 0.08em;
+  text-overflow: ellipsis;
   text-transform: uppercase;
   white-space: nowrap;
 }
