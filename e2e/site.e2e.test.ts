@@ -9,6 +9,7 @@ import type { Browser, Page } from 'playwright-core';
 import type { PreviewServer } from 'vite';
 import type { JlBadge } from '../src/atoms/jl-badge';
 import type { JlLoadingBar } from '../src/atoms/jl-loading-bar';
+import type { JlSelect } from '../src/atoms/jl-select';
 import type { JlDatePicker } from '../src/molecules/jl-date-picker';
 import type { JlLoadState } from '../src/molecules/jl-load-state';
 import type { JlFlow } from '../src/organisms/jl-flow';
@@ -438,6 +439,69 @@ describe('the badge', () => {
       return shown;
     });
     expect(label).toBe('Shipped');
+  });
+});
+
+describe('the select', () => {
+  it('draws its options again only when they change, not for another value or placeholder', async () => {
+    const page = await open('/components/select');
+    const result = await page.evaluate(async () => {
+      const wait = (milliseconds: number) => new Promise((resolve) => setTimeout(resolve, milliseconds));
+      const select = document.createElement('jl-select') as JlSelect;
+      document.body.append(select);
+      await wait(50);
+      const native = select.shadowRoot?.querySelector('select');
+      if (!native) {
+        throw new Error('The select drew no native select');
+      }
+      // What Chrome's customizable select checks: a node added that no longer has a parent when it looks.
+      const detached: string[] = [];
+      new MutationObserver((records) => {
+        for (const node of records.flatMap((record) => [...record.addedNodes])) {
+          if (node.parentNode === null) {
+            detached.push(node.nodeName);
+          }
+        }
+      }).observe(native, { childList: true, subtree: true });
+      const values = () => [...native.options].map((option) => option.value);
+      select.options.set([
+        { label: 'A', value: 'a' },
+        { label: 'B', value: 'b' },
+      ]);
+      select.value.set('b');
+      const [first] = native.options;
+      // Each change after in a task of its own, as a person makes them.
+      await wait(0);
+      select.value.set('gone');
+      const kept = values();
+      await wait(0);
+      select.value.set('a');
+      const known = values();
+      await wait(0);
+      select.placeholder.set('Pick');
+      select.placeholder.set('Choose one');
+      const placeholder = native.options[0]?.text;
+      select.value.set('');
+      await wait(50);
+      const outcome = {
+        detached,
+        kept,
+        known,
+        placeholder,
+        sameOption: native.options[1] === first,
+        shown: native.value,
+      };
+      select.remove();
+      return outcome;
+    });
+    expect(result).toEqual({
+      detached: [],
+      kept: ['gone', 'a', 'b'],
+      known: ['a', 'b'],
+      placeholder: 'Choose one',
+      sameOption: true,
+      shown: '',
+    });
   });
 });
 

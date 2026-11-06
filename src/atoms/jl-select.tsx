@@ -51,12 +51,12 @@ export class JlSelect<Value extends string = string> extends JlFormControl {
     parse: jsonOf<SelectOption<Value>[]>([]),
   });
   /** The chosen value. One that no option has is kept, as an option of its own, rather than replaced. */
-  readonly value = this.useChange<Value | typeof NO_VALUE>(NO_VALUE, () => this.renderOptions(), {
+  readonly value = this.useChange<Value | typeof NO_VALUE>(NO_VALUE, () => this.renderChosen(), {
     attribute: 'value',
     parse: textOf<Value | typeof NO_VALUE>(NO_VALUE),
   });
   /** Shown while nothing is chosen; it cannot be picked back from the list. */
-  readonly placeholder = this.useChange('', () => this.renderOptions(), { attribute: 'placeholder' });
+  readonly placeholder = this.useChange('', () => this.renderPlaceholder(), { attribute: 'placeholder' });
   readonly size = this.useChange<ControlSize>('md', (value) => this.reflect('size', value), {
     attribute: 'size',
     parse: oneOf(CONTROL_SIZES, 'md'),
@@ -93,6 +93,8 @@ export class JlSelect<Value extends string = string> extends JlFormControl {
   );
 
   private readonly _form = { disabled: false };
+  // The option kept for a value no option has, while there is one.
+  private _kept: HTMLOptionElement | undefined;
 
   private readonly _refs = this.useRefs((ref) => ({
     native: ref<HTMLSelectElement>('select'),
@@ -122,6 +124,9 @@ export class JlSelect<Value extends string = string> extends JlFormControl {
       this.value.set(value);
       this.events.emit('change', value);
     });
+    if (this.options.get().length > 0) {
+      return;
+    }
     // Children the parser added after the element connected are there now.
     this.renderOptions();
   }
@@ -161,10 +166,56 @@ export class JlSelect<Value extends string = string> extends JlFormControl {
     ];
   }
 
+  /**
+   * Draws every option again: only when the options change. Chrome's customizable select reports, as an option
+   * inside an option, an option the page added and removed before its check ran.
+   */
   private renderOptions(): void {
     this._refs.native.replaceChildren(...this.placeholderNodes(), ...this.optionNodes());
+    this._kept = undefined;
     this.keepUnknownValue();
     this.renderValue();
+  }
+
+  /** Another value among the options drawn: only the option kept for an unknown value comes or goes. */
+  private renderChosen(): void {
+    this.dropKept();
+    this.keepUnknownValue();
+    this.renderValue();
+  }
+
+  /** Another placeholder: its own option is written, added or removed, the others left as they are. */
+  private renderPlaceholder(): void {
+    this.writePlaceholder();
+    this.renderValue();
+  }
+
+  private writePlaceholder(): void {
+    const native = this._refs.native;
+    const shown = native.querySelector<HTMLOptionElement>(`:scope > option.${PLACEHOLDER_CLASS}`);
+    const placeholder = this.placeholder.get();
+    if (shown === null) {
+      native.prepend(...this.placeholderNodes());
+      return;
+    }
+    if (placeholder === '') {
+      shown.remove();
+      return;
+    }
+    if (shown.text === placeholder) {
+      return;
+    }
+    shown.text = placeholder;
+  }
+
+  /** The option kept for a value no option has goes once another value is chosen. */
+  private dropKept(): void {
+    const kept = this._kept;
+    if (kept === undefined || kept.value === this.value.get()) {
+      return;
+    }
+    kept.remove();
+    this._kept = undefined;
   }
 
   /**
@@ -179,7 +230,9 @@ export class JlSelect<Value extends string = string> extends JlFormControl {
       return;
     }
     const afterPlaceholder = this.placeholder.get() === '' ? 0 : 1;
-    native.add(<option value={value}>{value}</option>, afterPlaceholder);
+    const kept: HTMLOptionElement = <option value={value}>{value}</option>;
+    native.add(kept, afterPlaceholder);
+    this._kept = kept;
   }
 
   /** Shows the chosen option; the form gets what is shown. */
