@@ -147,7 +147,13 @@ export class JlNumberInput extends JlFormControl {
       ['ArrowDown', () => this.stepBy(-1)],
       ['ArrowUp', () => this.stepBy(1)],
       ['End', () => this.goToBound(this.max.get())],
-      ['Enter', () => this.commitText()],
+      [
+        'Enter',
+        () => {
+          this.commitText();
+          this.submitImplicitly(event);
+        },
+      ],
       ['Home', () => this.goToBound(this.min.get())],
       ['PageDown', () => this.stepBy(-PAGE_STEPS)],
       ['PageUp', () => this.stepBy(PAGE_STEPS)],

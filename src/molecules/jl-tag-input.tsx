@@ -203,8 +203,17 @@ export class JlTagInput extends JlFormControl {
       ['Enter', () => this.onEnter()],
       ['Escape', () => this.closeList()],
     ]);
-    if (handlers.get(event.key)?.() === true) {
+    const handler = handlers.get(event.key);
+    if (handler === undefined) {
+      return;
+    }
+    if (handler()) {
       event.preventDefault();
+      return;
+    }
+    // An Enter that added nothing (an empty field) submits the form, as from a native field.
+    if (event.key === 'Enter') {
+      this.submitImplicitly(event);
     }
   }
 

@@ -178,6 +178,7 @@ export class JlSearch extends JlFormControl {
       event.preventDefault();
       this.search(this.value.get());
       this.events.emit('enter', this.value.get());
+      this.submitImplicitly(event);
       return;
     }
     // Escape empties a field with text, as native search fields do; an empty one lets Escape through (a dialog).

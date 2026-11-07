@@ -34,7 +34,8 @@ field. Escape empties the field; loading shows a spinner in place of the search 
     },
     { description: 'Each change as people type.', detail: 'string', name: 'input' },
     {
-      description: 'Enter was pressed: to act on the first result, where search would only filter.',
+      description:
+        'Enter was pressed: to act on the first result, where search would only filter. In a form, the form then submits.',
       detail: 'string',
       name: 'enter',
     },

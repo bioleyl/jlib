@@ -61,6 +61,10 @@ library, from the `jadis` plugin: `/plugin marketplace add bioleyl/jadis`, `/plu
   only for its side effect is dropped by tree-shaking (`sideEffects` in package.json): when a template needs a tag
   with children (`<jl-popover>…</jl-popover>`) or attributes (`attrs`, such as a `part`, which a class reference
   refuses), also write `define(JlPopover)` at module level.
+- A form control of one line (`JlInput`, `JlNumberInput`, `JlDatePicker`, `JlSearch`; `JlCombobox` and `JlTagInput`
+  when Enter chose or added nothing) calls `submitImplicitly(event)` of `JlFormControl` for an Enter it does not use:
+  its native field, in the shadow root, belongs to no form, so the browser's implicit submission never reaches the
+  page's.
 - `onConnect` wires listeners with `this.on`, `events.register`, `onBus`; it can run several times (an element taken
   out and put back; since Jadis 1.6, one moved in the page stays connected and keeps its state). The first
   `slotchange` can fire before `onConnect`: draw slot-dependent state there too (see `jl-dialog`).

@@ -240,6 +240,12 @@ export class JlDatePicker extends JlFormControl {
     if (event.key === 'ArrowDown') {
       event.preventDefault();
       this.openPopup();
+      return;
+    }
+    // Enter takes the typed date (the native change comes after the key), then submits the form.
+    if (event.key === 'Enter') {
+      this.commitText();
+      this.submitImplicitly(event);
     }
   }
 

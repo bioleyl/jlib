@@ -177,6 +177,25 @@ describe('the forms page', () => {
   });
 });
 
+describe('Enter in a field', () => {
+  it('submits its form once, as from a native field, with what was typed', async () => {
+    const page = await open('/forms');
+    await page.evaluate(`(() => {
+      const root = document.querySelector('site-shell > jl-page-outlet > *').shadowRoot;
+      window.submits = 0;
+      root.querySelector('form').addEventListener('submit', () => { window.submits += 1; });
+      root.querySelector('jl-checkbox[name="terms"]').checked.set(true);
+    })()`);
+    await page.locator('jl-input[name="email"] input').fill('ada@example.com');
+    await page.locator('jl-input[name="name"] input').press('Enter');
+    expect(await page.evaluate('window.submits')).toBe(1);
+    const output = await page.evaluate(`document.querySelector('site-shell > jl-page-outlet > *').shadowRoot
+      .querySelector('jl-code-block.output').code.get()`);
+    expect(output).toContain('ada@example.com');
+    expect(state.errors).toEqual([]);
+  });
+});
+
 describe('the date picker', () => {
   it('refuses letters, and reads a date typed in digits, the number keys up on phones', async () => {
     const page = await open('/components/date-picker');

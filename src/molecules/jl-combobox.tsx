@@ -221,8 +221,17 @@ export class JlCombobox extends JlFormControl {
       ['Escape', () => this.onEscape()],
       ['Tab', () => this.onTab()],
     ]);
-    if (handlers.get(event.key)?.() === true) {
+    const handler = handlers.get(event.key);
+    if (handler === undefined) {
+      return;
+    }
+    if (handler()) {
       event.preventDefault();
+      return;
+    }
+    // An Enter the list did not use submits the form, as from a native field.
+    if (event.key === 'Enter') {
+      this.submitImplicitly(event);
     }
   }
 

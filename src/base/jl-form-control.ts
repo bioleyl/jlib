@@ -49,6 +49,19 @@ export abstract class JlFormControl extends JlElement {
 
   protected abstract setDisabledByForm(disabled: boolean): void;
 
+  /**
+   * Submits the form the field belongs to, as Enter in a native field of one line does. The native field inside the
+   * shadow root belongs to no form, so the browser's own implicit submission never reaches the page's: each field of
+   * one line calls this for an Enter it did not use itself. Nothing during a composition (an IME choosing a word), or
+   * outside a form; `requestSubmit` checks the form's fields first, as a submit button does.
+   */
+  protected submitImplicitly(event: KeyboardEvent): void {
+    if (event.isComposing) {
+      return;
+    }
+    this.internals.form?.requestSubmit();
+  }
+
   /** Copies the native field's validity, so the form sees the same errors the browser would show. */
   protected mirrorValidity(native: ValidatedElement): void {
     if (native.validity.valid) {

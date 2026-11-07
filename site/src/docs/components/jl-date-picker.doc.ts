@@ -40,8 +40,8 @@ export const doc: ComponentDoc = {
   description: `A field for a date. It shows the date in digits, in the locale's order ("25.10.2026" in Swiss
 German, "10/25/2026" in American English), and its button opens a jl-calendar in a popover; Down (or Alt + Down) in
 the field opens it too, Escape or a click outside closes it. People who know the date may type it: as it shows, with
-any separators or none ("25102026"), or year first ("2026-10-25"). Leaving the field or Enter takes it, and
-unreadable text goes back to the date there was. Phones show their number keys, and letters are refused. Without a
+any separators or none ("25102026"), or year first ("2026-10-25"). Leaving the field or Enter takes it (Enter then
+submits the form it is in, as from a native field), and unreadable text goes back to the date there was. Phones show their number keys, and letters are refused. Without a
 placeholder, the field shows the pattern the locale types dates in ("dd.mm.yyyy").
 
 value and the form hold the ISO date. min and max limit the calendar; a typed date outside them makes the field

@@ -20,7 +20,8 @@ const SKILLS = JSON.stringify([
 export const doc: ComponentDoc = {
   className: 'JlTagInput',
   description: `A field that collects short texts as chips: topics, labels, skills, email addresses. Enter or a comma
-adds what was typed, and so does leaving the field; Backspace in the empty field takes the last chip back, and a
+adds what was typed, and so does leaving the field; Enter in the empty field submits the form, as from a native
+field. Backspace in the empty field takes the last chip back, and a
 pasted list ("design, research, writing" or one per line) adds each of its items. The same tag twice, whatever its
 case, is not added: the chip already there flashes instead.
 

@@ -63,7 +63,8 @@ export const doc: ComponentDoc = {
   className: 'JlCombobox',
   description: `A text field with a list under it: typing narrows the list (case and accents do not matter, and
 labels that start with the text come first), the arrows move through it, Enter or a click chooses. The field then
-shows the option's label, while value and the form hold its value.
+shows the option's label, while value and the form hold its value. An Enter that chooses nothing (the list closed,
+nothing typed) submits the form, as from a native field.
 
 Without allow-custom, leaving the field with text no option has brings the chosen label back; with it, that text
 becomes the value. Listen to input to load options from a server as people type, and set them with options.set().`,

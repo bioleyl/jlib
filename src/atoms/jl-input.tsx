@@ -151,9 +151,18 @@ export class JlInput extends JlFormControl {
       this.events.emit('input', native.value);
     });
     this.on(native, 'change', () => this.events.emit('change', native.value));
-    this.on(native, 'keydown', (event) => event.key === ENTER && this.events.emit('enter', native.value));
+    this.on(native, 'keydown', (event) => this.onKey(event));
     this.on(this._refs.clear, 'click', () => this.clearValue());
     this.on(this._refs.reveal, 'click', () => this.toggleReveal());
+  }
+
+  /** Enter: `enter` for the page, then the form submits, as from a native field. */
+  private onKey(event: KeyboardEvent): void {
+    if (event.key !== ENTER) {
+      return;
+    }
+    this.events.emit('enter', this._refs.native.value);
+    this.submitImplicitly(event);
   }
 
   protected resetValue(): void {

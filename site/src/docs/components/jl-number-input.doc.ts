@@ -6,8 +6,8 @@ export const doc: ComponentDoc = {
   description: `A number field with − and + buttons: a quantity, a count of seats, a percentage. The arrow keys step
 it, Page Up and Page Down by ten steps, Home and End go to min and max when they are set.
 
-People can also type: the text is read when they leave the field (or press Enter), kept between min and max, and
-put back as it was when it is not a number. An empty field is null; with required, the form cannot be submitted
+People can also type: the text is read when they leave the field or press Enter (which then submits the form it is
+in, as from a native field), kept between min and max, and put back as it was when it is not a number. An empty field is null; with required, the form cannot be submitted
 while it is empty. Decimal steps (0.1, 0.25) add up without float noise.`,
   events: [
     {

@@ -6,14 +6,15 @@ const TYPE_OPTIONS = ['text', 'email', 'password', 'number', 'search', 'tel', 'u
 export const doc: ComponentDoc = {
   className: 'JlInput',
   description: `A text field that takes part in forms like a native one: give it a name and its value is in the form's
-data, required stops the submission, a reset brings back the value written in the HTML.
+data, required stops the submission, a reset brings back the value written in the HTML, and Enter in it submits the
+form, as from a native field (enter fires first).
 
 Pair it with jl-field for a visible label, a hint and an error. Its value is a Jadis change handler: read it with
 value.get(), write it with value.set().`,
   events: [
     { description: 'Each change as people type.', detail: 'string', name: 'input' },
     {
-      description: 'Enter was pressed in the field: to submit, or to pick a first result.',
+      description: 'Enter was pressed in the field: to pick a first result; in a form, the form then submits.',
       detail: 'string',
       name: 'enter',
     },
