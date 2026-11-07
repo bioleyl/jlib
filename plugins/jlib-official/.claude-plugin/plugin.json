@@ -1,6 +1,6 @@
 {
   "name": "jlib-official",
-  "version": "0.11.1",
+  "version": "0.12.0",
   "description": "The official jlib skill: build apps with SyWare's jl-* components on Jadis, from the frame to tests and server rendering, with each component's whole API, the mistakes to avoid and a self-check before delivering.",
   "author": {
     "name": "SyWare"
