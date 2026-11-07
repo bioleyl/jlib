@@ -8,3 +8,4 @@ site/dist
 !.vscode/extensions.json
 .idea
 TODO.md
+.agents

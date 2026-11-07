@@ -128,7 +128,7 @@ npm run size       # what each component adds to a bundle
 ```
 
 `src/index.ts` and `src/all.ts` are generated from the component folders, and the plugins' lists of components and
-patterns from their documentation pages: run `npm run generate` after adding a component or a pattern. Conventions for contributors are in [CLAUDE.md](CLAUDE.md).
+patterns from their documentation pages: run `npm run generate` after adding a component or a pattern. Conventions for contributors are in [AGENTS.md](AGENTS.md).
 
 ## Releasing
 
