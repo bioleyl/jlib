@@ -1,19 +1,23 @@
 {
   "name": "jlib",
-  "description": "SyWare's component library for Claude Code: jlib, to build apps with its components, and syware-ux, to make them behave like SyWare's apps.",
+  "description": "SyWare's component library for coding agents: jlib-official, to build apps with jlib's components, and syware-ux, to make them behave like SyWare's apps.",
   "owner": {
     "name": "SyWare",
     "url": "https://bioleyl.github.io/jlib/"
   },
+  "allowCrossMarketplaceDependenciesOn": [
+    "jadis"
+  ],
   "plugins": [
     {
-      "name": "jlib",
-      "source": "./plugins/jlib",
-      "description": "Build apps with jlib: its components and where their API is, an app's setup, Jadis in brief, theming, texts and tests.",
+      "name": "jlib-official",
+      "source": "./plugins/jlib-official",
+      "description": "The official jlib skill: every component and its whole API, an app's frame and pages, lists, forms, states and feedback, theming, texts, tests, server rendering, the mistakes agents make with jlib, and a self-check. Installs jadis-official with it.",
       "category": "development",
       "tags": [
         "web-components",
         "jadis",
+        "jlib",
         "design-system",
         "syware"
       ]
@@ -21,12 +25,13 @@
     {
       "name": "syware-ux",
       "source": "./plugins/syware-ux",
-      "description": "How SyWare apps behave, from jlib's UX patterns: the frame, pages, lists, forms, states, feedback, confirmations, search, and the review checklist. Goes with the jlib plugin.",
+      "description": "How SyWare apps behave, from jlib's UX patterns: the frame, pages, lists, actions and their words, forms, states, feedback, confirmations, statuses, phones, every pattern page in full, and the checklist a page is reviewed against. Installs jlib-official with it.",
       "category": "development",
       "tags": [
         "syware",
         "ux",
-        "patterns"
+        "patterns",
+        "jlib"
       ]
     }
   ]

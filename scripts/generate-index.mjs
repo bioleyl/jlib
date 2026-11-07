@@ -1,17 +1,28 @@
 // Writes src/index.ts (every export of the library) and src/all.ts (defines every component), from the files in
 // src/atoms, src/molecules, src/organisms and src/templates; and, from the documentation pages, the site's indexes of
-// components and patterns (site/src/generated) and the references of the Claude plugins' skills. `--check` fails
-// instead of writing when they are stale.
-import { readdirSync, readFileSync, writeFileSync } from 'node:fs';
+// components and patterns (site/src/generated) and the references of the skills (plugins/): a list and a page per
+// component, a list and a page per pattern. `--check` fails instead of writing when they are stale.
+import { mkdirSync, readdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
-import { componentCatalogue, componentPages, patternCatalogue, patternPages } from './doc-pages.mjs';
+import { componentDocs, patternDocs, siteModule } from './doc-modules.mjs';
+import { componentPages, patternPages } from './doc-pages.mjs';
+import {
+  componentCatalogue,
+  componentReference,
+  patternCatalogue,
+  patternReference,
+  sortedComponents,
+} from './skill-references.mjs';
 
 const ROOT = join(import.meta.dirname, '..');
 const SRC = join(ROOT, 'src');
 const DOCS = join(ROOT, 'site', 'src', 'docs');
-const COMPONENT_LIST = join(ROOT, 'plugins', 'jlib', 'skills', 'jlib', 'references', 'components.md');
-const PATTERN_LIST = join(ROOT, 'plugins', 'syware-ux', 'skills', 'syware-ux', 'references', 'patterns.md');
+const JLIB_REFERENCES = join(ROOT, 'plugins', 'jlib-official', 'skills', 'jlib-official', 'references');
+const UX_REFERENCES = join(ROOT, 'plugins', 'syware-ux', 'skills', 'syware-ux', 'references');
+const COMPONENT_REFERENCES = join(JLIB_REFERENCES, 'components');
+const PATTERN_REFERENCES = join(UX_REFERENCES, 'patterns');
+const MARKDOWN_FILE = /\.md$/;
 const GENERATED = join(ROOT, 'site', 'src', 'generated');
 const JSON_INDENT = 2;
 const LEVELS = ['atoms', 'molecules', 'organisms', 'templates'];
@@ -36,6 +47,14 @@ const componentsOf = (modulePath) => {
 function tryRead(path) {
   try {
     return readFileSync(path, 'utf8');
+  } catch {
+    return null;
+  }
+}
+
+function tryList(folder) {
+  try {
+    return readdirSync(folder);
   } catch {
     return null;
   }
@@ -82,6 +101,11 @@ const all = [
 const json = (value) => `${JSON.stringify(value, null, JSON_INDENT)}\n`;
 const componentIndex = componentPages(join(DOCS, 'components'));
 const patternIndex = patternPages(join(DOCS, 'patterns'), join(DOCS, 'patterns.ts'));
+const docs = sortedComponents(await componentDocs(join(DOCS, 'components')));
+const patterns = await patternDocs(join(DOCS, 'patterns'));
+const snippets = await siteModule('lib/snippets.ts');
+const propsByTag = new Map(docs.map((doc) => [doc.tag, doc.props]));
+const propsOf = (tag) => propsByTag.get(tag);
 
 const outputs = [
   { content: index, path: join(SRC, 'index.ts') },
@@ -93,19 +117,43 @@ const outputs = [
     ),
     path: join(GENERATED, 'patterns.json'),
   },
-  { content: componentCatalogue(componentIndex), path: COMPONENT_LIST },
-  { content: patternCatalogue(patternIndex, join(DOCS, 'patterns.ts')), path: PATTERN_LIST },
+  { content: componentCatalogue(docs), path: join(JLIB_REFERENCES, 'components.md') },
+  ...docs.map((doc) => ({
+    content: componentReference(doc, snippets, propsOf),
+    path: join(COMPONENT_REFERENCES, `${doc.tag}.md`),
+  })),
+  { content: patternCatalogue(patternIndex, join(DOCS, 'patterns.ts')), path: join(UX_REFERENCES, 'patterns.md') },
+  ...patternIndex.map((page) => ({
+    content: patternReference(patterns.get(page.slug)),
+    path: join(PATTERN_REFERENCES, `${page.slug}.md`),
+  })),
 ];
+
+/** The references of a folder that nothing writes any more: a component or a pattern gone or renamed. */
+const leftovers = [COMPONENT_REFERENCES, PATTERN_REFERENCES].flatMap((folder) =>
+  (tryList(folder) ?? [])
+    .filter((file) => MARKDOWN_FILE.test(file))
+    .map((file) => join(folder, file))
+    .filter((path) => !outputs.some((output) => output.path === path))
+);
 
 const stale = outputs.filter((output) => tryRead(output.path) !== output.content);
 
-if (CHECK && stale.length > 0) {
-  console.error(`Stale: ${stale.map((output) => output.path).join(', ')}. Run npm run generate.`);
+if (CHECK && stale.length + leftovers.length > 0) {
+  console.error(
+    `Stale: ${[...stale.map((output) => output.path), ...leftovers].join(', ')}. Run npm run generate.`
+  );
   process.exit(1);
 }
 
+for (const folder of [COMPONENT_REFERENCES, PATTERN_REFERENCES]) {
+  mkdirSync(folder, { recursive: true });
+}
 for (const output of stale) {
   writeFileSync(output.path, output.content);
+}
+for (const path of leftovers) {
+  rmSync(path);
 }
 
 console.log(`${components.length} components: ${components.map((component) => component.selector).join(', ')}`);

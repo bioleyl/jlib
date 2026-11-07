@@ -1,0 +1,24 @@
+{
+  "name": "jlib-official",
+  "version": "0.11.1",
+  "description": "The official jlib skill: build apps with SyWare's jl-* components on Jadis, from the frame to tests and server rendering, with each component's whole API, the mistakes to avoid and a self-check before delivering.",
+  "author": {
+    "name": "SyWare"
+  },
+  "homepage": "https://bioleyl.github.io/jlib/vibe-coding",
+  "repository": "https://github.com/bioleyl/jlib",
+  "license": "MIT",
+  "keywords": [
+    "jlib",
+    "jadis",
+    "web-components",
+    "design-system",
+    "syware"
+  ],
+  "dependencies": [
+    {
+      "name": "jadis-official",
+      "marketplace": "jadis"
+    }
+  ]
+}
