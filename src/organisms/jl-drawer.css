@@ -155,6 +155,9 @@ h2 {
 }
 
 .body {
+  /* Positioned, so it contains what it scrolls: an absolute descendant (jl-kbd's spoken text, any .sr-only) would
+     else take the drawer as its box, and stretch its scroll area too: a second scrollbar. */
+  position: relative;
   flex: 1;
   min-height: 0;
   padding: 20px 24px;

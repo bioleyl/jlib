@@ -16,6 +16,9 @@
 }
 
 .pane {
+  /* Positioned, so it contains what it scrolls: an absolute descendant (jl-kbd's spoken text, any .sr-only) would
+     else take a box around the split view, the page at worst as its box, and stretch that box's scroll area too: a second scrollbar. */
+  position: relative;
   min-width: 0;
   min-height: 0;
   overflow: auto;

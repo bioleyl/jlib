@@ -75,6 +75,9 @@ h2 {
 }
 
 .body {
+  /* Positioned, so it contains what it scrolls: an absolute descendant (jl-kbd's spoken text, any .sr-only) would
+     else take the dialog as its box, and stretch its scroll area too: a second scrollbar. */
+  position: relative;
   flex: 1;
   padding: 16px 24px;
   overflow: auto;

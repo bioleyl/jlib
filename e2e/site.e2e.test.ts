@@ -196,6 +196,67 @@ describe('Enter in a field', () => {
   });
 });
 
+// Rows with an absolutely positioned part, as jl-kbd's spoken text is: it must stay in the area that scrolls it.
+const ABSOLUTE_ROWS = `Array.from({ length: 60 }, (_, index) =>
+  '<div>Row ' + index + ' <span style="position: absolute">spoken</span></div>').join('')`;
+
+describe('the scrolling areas', () => {
+  it.each([
+    ['/components/dialog', 'jl-dialog'],
+    ['/components/drawer', 'jl-drawer'],
+  ])('%s scrolls its body alone, absolutely positioned content included (#3)', async (path, tag) => {
+    const page = await open(path);
+    const outerScroll = await page.evaluate(`(async () => {
+      const element = document.createElement('${tag}');
+      element.setAttribute('heading', 'Keys');
+      element.innerHTML = ${ABSOLUTE_ROWS};
+      document.body.append(element);
+      await new Promise((resolve) => setTimeout(resolve, ${SETTLE_MS}));
+      element.show();
+      await new Promise((resolve) => setTimeout(resolve, ${SETTLE_MS}));
+      const panel = element.shadowRoot.querySelector('dialog');
+      const scrolled = panel.scrollHeight - panel.clientHeight;
+      element.close();
+      element.remove();
+      return scrolled;
+    })()`);
+    expect(outerScroll).toBe(0);
+  });
+
+  it.each([
+    ['/components/split-view', 'jl-split-view'],
+    ['/components/table', 'jl-table'],
+  ])('%s keeps absolutely positioned content in its own scrolling (#3)', async (path, tag) => {
+    const page = await open(path);
+    const outerScroll = await page.evaluate(`(async () => {
+      const box = document.createElement('div');
+      box.style.cssText = 'position: relative; overflow: auto; height: 400px';
+      const element = document.createElement('${tag}');
+      box.append(element);
+      document.body.append(box);
+      if ('${tag}' === 'jl-table') {
+        element.setAttribute('max-height', '200px');
+        await new Promise((resolve) => setTimeout(resolve, ${SETTLE_MS}));
+        element.columns.set([{ key: 'name', label: 'Name' }]);
+        element.renderers.set({ name: (row) => {
+          const cell = document.createElement('div');
+          cell.innerHTML = row.name + ' <span style="position: absolute">spoken</span>';
+          return cell;
+        } });
+        element.rows.set(Array.from({ length: 60 }, (_, id) => ({ id, name: 'Row ' + id })));
+      } else {
+        element.style.height = '300px';
+        element.innerHTML = '<div slot="start">' + ${ABSOLUTE_ROWS} + '</div><div slot="end">' + ${ABSOLUTE_ROWS} + '</div>';
+      }
+      await new Promise((resolve) => setTimeout(resolve, ${SETTLE_MS}));
+      const scrolled = box.scrollHeight - box.clientHeight;
+      box.remove();
+      return scrolled;
+    })()`);
+    expect(outerScroll).toBe(0);
+  });
+});
+
 describe('the date picker', () => {
   it('refuses letters, and reads a date typed in digits, the number keys up on phones', async () => {
     const page = await open('/components/date-picker');

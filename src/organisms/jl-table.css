@@ -26,6 +26,9 @@
 }
 
 .scroll {
+  /* Positioned, so it contains what it scrolls: an absolute descendant (jl-kbd's spoken text, any .sr-only) would
+     else take a box around the table, the page at worst as its box, and stretch that box's scroll area too: a second scrollbar. */
+  position: relative;
   max-height: var(--max-height);
   overflow: auto;
   border: 1px solid var(--jl-line);
