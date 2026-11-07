@@ -16,7 +16,7 @@ const PROMPTS: readonly string[] = [
   'Go through the checklist for the Customers page and fix what it misses.',
 ];
 
-/** Building apps on jlib with Claude Code, and the two plugins that teach it jlib and SyWare's UX. */
+/** Building apps on jlib with a coding agent, and the two skills that teach it jlib and SyWare's UX. */
 export class VibeCodingPage extends JlElement {
   static readonly selector = 'site-vibe-coding-page';
 
@@ -27,56 +27,64 @@ export class VibeCodingPage extends JlElement {
           <p class="label">Guide</p>
           <h1>Vibe coding</h1>
           <p class="lead">
-            Build an app on jlib by asking Claude Code for it. Two plugins teach Claude: <code>jlib</code>, the
-            components and the way an app is written on them, and <code>syware-ux</code>, how SyWare's apps behave.
+            Build an app on jlib by asking a coding agent for it. Two skills teach the agent:{' '}
+            <code>jlib-official</code>, the components and the way an app is written on them, and{' '}
+            <code>syware-ux</code>, how SyWare's apps behave. They work with Claude Code, Codex, Cursor, Gemini
+            CLI, GitHub Copilot, OpenCode, and any agent that reads{' '}
+            <a href="https://agentskills.io" target="_blank" rel="noopener">
+              Agent Skills
+            </a>
+            .
           </p>
         </header>
 
         <section>
-          <h2>Two plugins</h2>
+          <h2>Two skills</h2>
           <div class="grid plugins">
             <div class="card">
-              <h3>jlib</h3>
+              <h3>jlib-official</h3>
               <p>For any app on jlib.</p>
               <ul>
                 <li>
-                  <strong>Every component</strong>, what it is for, and where its API is: the declarations of the
-                  version the app installed, and its documentation and examples at that version.
+                  <strong>Every component</strong>, what it is for, and its whole API: properties, events, slots,
+                  methods, parts and examples, written from this site's pages, so the agent reads them offline.
                 </li>
                 <li>
-                  <strong>An app's setup</strong> and the Jadis essentials: views drawn once and changed in place,
-                  inputs, events, refs, the router.
+                  <strong>An app, file by file</strong>: the frame and its router, a list that searches and
+                  creates, a detail page, a settings form; checked by TypeScript, run in jsdom and in a browser.
                 </li>
                 <li>
-                  <strong>The look</strong>: icons registered by name, colours from the <code>--jl-*</code> tokens
-                  only, light and dark, jlib's texts in the app's language.
+                  <strong>Views the jlib way</strong>: components by class in JSX, inputs and events, typed by the
+                  page's data, data in load states, real forms, the look from the <code>--jl-*</code> tokens,
+                  jlib's texts in the app's language.
                 </li>
                 <li>
-                  <strong>Tests</strong> of views in jsdom, and what jsdom cannot show.
+                  <strong>The mistakes agents make</strong> with jlib, each with what to write instead, and a{' '}
+                  <strong>self-check</strong> the agent runs on its own code before it shows it to you.
                 </li>
                 <li>
                   <strong>What to report</strong>: a bug in jlib, an improvement or a missing component becomes an
-                  issue on jlib's repository, which Claude writes for you to file.
+                  issue on jlib's repository, which the agent writes for you to file.
                 </li>
               </ul>
             </div>
             <div class="card">
               <h3>syware-ux</h3>
-              <p>For SyWare's apps, and those that want to behave like them. It goes with jlib.</p>
+              <p>For SyWare's apps, and those that want to behave like them. It goes with jlib-official.</p>
               <ul>
                 <li>
-                  <strong>The principles</strong> every SyWare app follows.
+                  <strong>The principles</strong> every SyWare app follows, and the rules a page is built by.
                 </li>
                 <li>
                   <strong>
-                    The <a href={pageHref('/patterns')}>UX patterns</a>
-                  </strong>{' '}
-                  applied with jlib's components: the frame, pages, lists, forms, states, feedback, confirmations
-                  and search.
+                    Each of the <a href={pageHref('/patterns')}>UX patterns</a> in full
+                  </strong>
+                  , offline: the frame, pages, lists, actions and their words, forms, states, feedback,
+                  confirmations, statuses, search, phones and accounts, with the components that do them.
                 </li>
                 <li>
-                  <strong>Each pattern page in full</strong>, read at the version of jlib the app installed, before
-                  Claude builds what it covers.
+                  <strong>What generic web habits do</strong> to a SyWare page: a spinner page, a toast for
+                  everything, "Are you sure?", a red button in the header.
                 </li>
                 <li>
                   <strong>The checklist</strong> a finished page is reviewed with.
@@ -84,53 +92,117 @@ export class VibeCodingPage extends JlElement {
               </ul>
             </div>
           </div>
+          <p>
+            Each skill is a short <code>SKILL.md</code>, which every session reads, and references the agent opens
+            when the task needs them. jlib's skills build on Jadis's, <code>jadis-official</code>, which the three
+            ways below install with them.
+          </p>
         </section>
 
         <section>
-          <h2>Install the plugins</h2>
+          <h2>Install them</h2>
+
+          <h3>Claude Code: the plugins</h3>
           <p>
-            jlib's repository is also a plugin marketplace. In Claude Code, add it once, then install the plugins:
+            jlib's repository is a plugin marketplace, and so is Jadis's. Add both once, then install the plugins:{' '}
+            <code>jlib-official</code> brings <code>jadis-official</code> along, and <code>syware-ux</code> brings{' '}
+            <code>jlib-official</code>.
           </p>
           {codeSample(
             'text',
             `
+            /plugin marketplace add bioleyl/jadis
             /plugin marketplace add bioleyl/jlib
-            /plugin install jlib@jlib
             /plugin install syware-ux@jlib`,
             'In Claude Code'
           )}
           <p>
-            Leave out the last line for an app that does not follow SyWare's UX. Each install opens the plugin's
-            page in <code>/plugin</code>, where you choose for whom: you, in every project, or the project, for
-            everyone working on it. From a terminal, the same with{' '}
-            <code>claude plugin marketplace add bioleyl/jlib</code> and{' '}
-            <code>claude plugin install jlib@jlib</code>.
+            For an app that does not follow SyWare's UX, install <code>jlib-official@jlib</code> instead. Each
+            install opens the plugin's page in <code>/plugin</code>, where you choose for whom: you, in every
+            project, or the project, for everyone working on it. From a terminal, the same with{' '}
+            <code>claude plugin marketplace add</code> and <code>claude plugin install</code>. Without Jadis's
+            marketplace, Claude Code cannot fetch <code>jadis-official</code>, and the plugin does not load until
+            it is added (then <code>/reload-plugins</code>).
           </p>
           <p>
-            Each plugin holds one skill of its name. Claude loads <code>jlib</code> on its own when the code it
-            works on imports <code>@syware/jlib</code>, and <code>syware-ux</code> when it builds or reviews the
-            views of a SyWare app; <code>/jlib:jlib</code> and <code>/syware-ux:syware-ux</code> load them by hand.
+            Claude loads <code>jlib-official</code> on its own when the code it works on imports{' '}
+            <code>@syware/jlib</code>, and <code>syware-ux</code> when it builds or reviews the views of a SyWare
+            app; <code>/jlib-official:jlib-official</code> and <code>/syware-ux:syware-ux</code> load them by hand.
+          </p>
+
+          <h3>Any agent: skills.sh</h3>
+          {codeSample(
+            'bash',
+            `
+            npx skills add bioleyl/jlib
+            npx skills add bioleyl/jadis`
+          )}
+          <p>
+            <a href="https://skills.sh" target="_blank" rel="noopener">
+              skills.sh
+            </a>{' '}
+            finds the agents installed on the machine and asks which skills go to which, for the project or for you
+            (<code>-g</code>). It installs one repository at a time: the second line brings Jadis's skill.{' '}
+            <code>npx skills update</code> brings them up to date.
+          </p>
+
+          <h3>Any agent: the install script</h3>
+          {codeSample(
+            'bash',
+            'curl -fsSL https://raw.githubusercontent.com/bioleyl/jlib/main/install-skill.sh | sh'
+          )}
+          <p>
+            It asks whether to add <code>syware-ux</code> and <code>jadis-official</code>, and where the skills go,
+            one or several places: <code>~/.agents/skills</code> (Codex and the agents that read the shared
+            folder), <code>~/.claude/skills</code> (Claude Code), the project's <code>.agents/skills</code> or{' '}
+            <code>.claude/skills</code>, or another folder (<code>~/.cursor/skills</code>…). Run from a clone of
+            the repository (<code>sh install-skill.sh</code>), it can link jlib's skills to the clone, so that{' '}
+            <code>git pull</code> updates them. Without questions, for a script or a CI:
+          </p>
+          {codeSample(
+            'bash',
+            `
+            curl -fsSL https://raw.githubusercontent.com/bioleyl/jlib/main/install-skill.sh \\
+              | sh -s -- --skill syware-ux --target project-agents --target project-claude --yes`
+          )}
+          <p>
+            <code>--no-jadis</code> leaves Jadis's skill out, <code>--ref v&lt;version&gt;</code> installs the
+            skills of a release, <code>--help</code> lists the options. To remove a skill, delete its folder.
           </p>
         </section>
 
         <section>
           <h2>For a whole team</h2>
           <p>
-            An app's repository can give the plugins to everyone who opens it in Claude Code, kept up to date:
-            commit this file (without <code>syware-ux@jlib</code> for an app that does not follow SyWare's UX). It
-            works in the folders people trust, which Claude Code asks about the first time.
+            Commit the skills with the app: install them in the project's <code>.agents/skills</code> and{' '}
+            <code>.claude/skills</code> (with skills.sh or the script) and commit those folders. Everyone who
+            clones the app gets them, whatever their agent.
+          </p>
+          <p>
+            For Claude Code alone, an app's repository can instead give the plugins to everyone who opens it, kept
+            up to date: commit this file (with <code>jlib-official@jlib</code> in place of{' '}
+            <code>syware-ux@jlib</code> for an app that does not follow SyWare's UX). It works in the folders
+            people trust, which Claude Code asks about the first time.
           </p>
           {codeSample(
             'ts',
             `
             {
               "extraKnownMarketplaces": {
+                "jadis": {
+                  "source": { "source": "github", "repo": "bioleyl/jadis" },
+                  "autoUpdate": true
+                },
                 "jlib": {
                   "source": { "source": "github", "repo": "bioleyl/jlib" },
                   "autoUpdate": true
                 }
               },
-              "enabledPlugins": { "jlib@jlib": true, "syware-ux@jlib": true }
+              "enabledPlugins": {
+                "jadis-official@jadis": true,
+                "jlib-official@jlib": true,
+                "syware-ux@jlib": true
+              }
             }`,
             '.claude/settings.json'
           )}
@@ -139,7 +211,7 @@ export class VibeCodingPage extends JlElement {
         <section>
           <h2>Asking well</h2>
           <p>
-            Say what the page is for and where its data comes from; the plugins bring how it is built. For a SyWare
+            Say what the page is for and where its data comes from; the skills bring how it is built. For a SyWare
             app, with both:
           </p>
           <ul class="prompts">
@@ -150,12 +222,12 @@ export class VibeCodingPage extends JlElement {
           <ul>
             <li>
               Name the component or the pattern when you know it (<code>jl-split-view</code>, "the way the patterns
-              confirm"): Claude reads its documentation before it writes.
+              confirm"): the agent reads its reference before it writes.
             </li>
             <li>Ask for the tests and the typecheck to pass, and look at the page in the browser.</li>
             <li>
-              When Claude meets a problem in jlib or something it lacks, let it write the issue, and keep the app's
-              way around it small until jlib has the fix.
+              When the agent meets a problem in jlib or something it lacks, let it write the issue, and keep the
+              app's way around it small until jlib has the fix.
             </li>
           </ul>
         </section>
@@ -163,41 +235,41 @@ export class VibeCodingPage extends JlElement {
         <section>
           <h2>Keeping them current</h2>
           <p>
-            The plugins are released with jlib, under its version, and Claude Code gives you a new copy when that
-            version changes. In <code>/plugin</code>, under <strong>Marketplaces</strong>, choose jlib, then{' '}
-            <strong>Update marketplace</strong>, which updates its plugins too, or{' '}
-            <strong>Enable auto-update</strong> to have it done at start. From a terminal:
+            The skills are released with jlib, under its version. In Claude Code, the plugins update with their
+            marketplace: in <code>/plugin</code>, under <strong>Marketplaces</strong>, choose jlib, then{' '}
+            <strong>Update marketplace</strong>, or <strong>Enable auto-update</strong> to have it done at start.
+            From a terminal:
           </p>
           {codeSample(
             'bash',
             `
             claude plugin marketplace update jlib
-            claude plugin update jlib@jlib
+            claude plugin update jlib-official@jlib
             claude plugin update syware-ux@jlib`
           )}
           <p>
-            A session keeps the plugins it started with: <code>/reload-plugins</code> takes the new ones. Whatever
-            their version, Claude reads each component's API and each pattern in the version of jlib your app
-            installed.
+            A session keeps the plugins it started with: <code>/reload-plugins</code> takes the new ones. With
+            skills.sh, <code>npx skills update</code>; with the script, run it again. Each skill says which version
+            of jlib it describes, and has the agent check the API in the version your app installed.
           </p>
         </section>
 
         <section>
-          <h2>Other assistants</h2>
+          <h2>The files</h2>
           <p>
-            The skills are Markdown files: give them to another assistant as its instructions,{' '}
-            <a href={JLIB_SKILL_URL} target="_blank" rel="noopener">
-              jlib's
-            </a>{' '}
-            with its list of components and{' '}
-            <a href={UX_SKILL_URL} target="_blank" rel="noopener">
-              syware-ux's
-            </a>{' '}
-            with its list of patterns, in the{' '}
+            The skills are Markdown, in the{' '}
             <a href={PLUGINS_URL} target="_blank" rel="noopener">
               plugins' folder
             </a>
-            .
+            :{' '}
+            <a href={JLIB_SKILL_URL} target="_blank" rel="noopener">
+              jlib-official
+            </a>{' '}
+            and{' '}
+            <a href={UX_SKILL_URL} target="_blank" rel="noopener">
+              syware-ux
+            </a>
+            , each with its references.
           </p>
         </section>
       </article>

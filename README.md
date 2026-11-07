@@ -83,18 +83,38 @@ part of the page.
 
 ## Vibe coding
 
-The repository is also a Claude Code plugin marketplace, with two plugins: `jlib` teaches Claude the components,
-where their API is and the way an app is written on them; `syware-ux` adds how SyWare's apps behave, from the UX
-patterns. In Claude Code:
+Two skills teach coding agents to build on jlib: `jlib-official`, the components (each one's whole API, offline),
+the way an app is written on them, the mistakes agents make and a self-check; and `syware-ux`, how SyWare's apps
+behave, every UX pattern in full and the checklist a page is reviewed against. They build on Jadis's skill,
+`jadis-official`. Install them in one of three ways:
 
-```
-/plugin marketplace add bioleyl/jlib
-/plugin install jlib@jlib
-/plugin install syware-ux@jlib
-```
+- **Claude Code**, as plugins that update with each release; `syware-ux` brings `jlib-official`, which brings
+  `jadis-official` (for an app that does not follow SyWare's UX, install `jlib-official@jlib`):
 
-How an app's repository gives them to everyone working on it, and how to ask Claude well: the site's
-[Vibe coding](https://bioleyl.github.io/jlib/vibe-coding) page. The plugins are in [plugins/](plugins).
+  ```
+  /plugin marketplace add bioleyl/jadis
+  /plugin marketplace add bioleyl/jlib
+  /plugin install syware-ux@jlib
+  ```
+
+- **Any agent**, with [skills.sh](https://skills.sh) (Claude Code, Codex, Cursor, Gemini CLI, GitHub Copilot,
+  OpenCode…):
+
+  ```bash
+  npx skills add bioleyl/jlib
+  npx skills add bioleyl/jadis
+  ```
+
+- **Any agent**, with the install script, which asks which skills and where: `~/.agents/skills`, `~/.claude/skills`,
+  the project's `.agents/skills` or `.claude/skills`, or another folder (`--help` for the options):
+
+  ```bash
+  curl -fsSL https://raw.githubusercontent.com/bioleyl/jlib/main/install-skill.sh | sh
+  ```
+
+The skills are in [plugins/](plugins): [jlib-official](plugins/jlib-official/skills/jlib-official/SKILL.md) and
+[syware-ux](plugins/syware-ux/skills/syware-ux/SKILL.md). How a team shares them and how to ask well: the site's
+[Vibe coding](https://bioleyl.github.io/jlib/vibe-coding) page.
 
 ## Development
 

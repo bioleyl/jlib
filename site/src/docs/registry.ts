@@ -85,7 +85,7 @@ export const GUIDES: readonly GuideLink[] = [
     icon: 'sparkles',
     label: 'Vibe coding',
     path: '/vibe-coding',
-    summary: 'Build apps on jlib with Claude Code and its plugins.',
+    summary: "Build apps on jlib with a coding agent and jlib's skills.",
   },
   {
     icon: 'layout-grid',

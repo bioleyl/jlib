@@ -7,9 +7,9 @@ export const CHANGELOG_URL = `${REPOSITORY_URL}/blob/main/CHANGELOG.md`;
 /** The package on npm. */
 export const PACKAGE_URL = 'https://www.npmjs.com/package/@syware/jlib';
 
-/** The Claude Code plugins in the repository, and the skill each one holds. */
+/** The plugins of the repository, and the skill each one holds. */
 export const PLUGINS_URL = `${REPOSITORY_URL}/tree/main/plugins`;
-export const JLIB_SKILL_URL = `${REPOSITORY_URL}/blob/main/plugins/jlib/skills/jlib/SKILL.md`;
+export const JLIB_SKILL_URL = `${REPOSITORY_URL}/blob/main/plugins/jlib-official/skills/jlib-official/SKILL.md`;
 export const UX_SKILL_URL = `${REPOSITORY_URL}/blob/main/plugins/syware-ux/skills/syware-ux/SKILL.md`;
 
 const SVG_NAMESPACE = 'http://www.w3.org/2000/svg';
