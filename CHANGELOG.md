@@ -3,6 +3,63 @@
 What changed in each version of [@syware/jlib](https://www.npmjs.com/package/@syware/jlib). Every component is shown
 and documented on [the documentation site](https://bioleyl.github.io/jlib/).
 
+## 0.12.0 (2026-11-07)
+
+The skills for coding agents, rewritten for an agent that has never seen jlib, and installable in any agent; Enter in
+a field submits its form, as in a native one; and dialogs, drawers, split views and tables scroll with one scrollbar.
+Two changes ask for a look before updating (a minor version, as jlib is before 1.0): the Claude Code plugin is now
+`jlib-official`, and a form that submitted on Enter by hand now submits twice.
+
+### Changed
+
+- **Enter in a field submits its form**, as in a native field: `jl-input` (after its `enter` event),
+  `jl-number-input` and `jl-date-picker` (once the typed text is taken), `jl-search`, and `jl-combobox` and
+  `jl-tag-input` when Enter chose or added nothing. Their native field, in a shadow root, belongs to no form, so the
+  browser's own submission never reached the page's form, and apps wired it by hand. A textarea keeps Enter for a new
+  line.
+- **The `jlib` plugin is now `jlib-official`**, and its skill is written for an agent that has never seen jlib:
+  `SKILL.md` holds the model (what other UI kits' habits become in jlib), a complete view, fifteen named rules, where
+  to look and a self-check to run before delivering; its references cover setup, views, the frame and its pages,
+  lists, forms, states and feedback, theming, texts, tests, server rendering, the API beside the components, the
+  mistakes agents make with jlib (several found in apps built on it), and a whole app in recipes. Every example
+  type-checks, and the recipes' app runs on the published package, its tests passing.
+- **`syware-ux`** is rewritten the same way: the principles, twenty-six named rules, the mistakes generic web habits
+  cause, the patterns applied with jlib's components, and the checklist as its self-check.
+- **The plugins bring what they need**: `jlib-official` installs Jadis's `jadis-official`, and `syware-ux` installs
+  `jlib-official`. Claude Code needs Jadis's marketplace for it: `/plugin marketplace add bioleyl/jadis`.
+
+### Added
+
+- **A reference per component in the skill**, written from its documentation page by `npm run generate`: its
+  properties, events, slots, methods, styling, typing and examples, with its JSX typed, read offline. And **every
+  pattern page in full** in `syware-ux`.
+- **skills.sh**: `npx skills add bioleyl/jlib` finds both skills.
+- **`install-skill.sh`**, which asks which skills (with `jadis-official`) and where (`~/.agents/skills`,
+  `~/.claude/skills`, the project's `.agents/skills` or `.claude/skills`, another folder), copies them or links them
+  to a clone, and takes options to run without questions. It works piped from curl, in dash, bash and busybox sh.
+
+### Fixed
+
+- **`jl-dialog`, `jl-drawer`, `jl-split-view` and `jl-table`** contain what they scroll: an absolutely positioned
+  part of their content (`jl-kbd`'s spoken keys, anything `.sr-only`) took the dialog, or a box around the component,
+  as its box, and stretched its scroll area too, a second scrollbar beside the body's
+  ([#3](https://github.com/bioleyl/jlib/issues/3)).
+- **The site's JSX snippets** write every component by its class, children included, with values typed by each
+  component's props (a number, a list); the **Getting started** guide no longer says that a class cannot take
+  children in JSX: it can.
+
+### Worth a look when you update
+
+- A form that submitted on Enter by hand (`onEnter={() => form.requestSubmit()}` on its fields, a listener for
+  `enter` or `keydown` that calls `requestSubmit()`) now submits twice: remove that code, then
+  `npm install @syware/jlib@^0.12.0`.
+- In Claude Code, replace the plugin: `/plugin uninstall jlib@jlib`, `/plugin marketplace add bioleyl/jadis`, then
+  `/plugin install jlib-official@jlib` (or `syware-ux@jlib`, which brings it). A project's `.claude/settings.json`
+  that enables `jlib@jlib` enables `jlib-official@jlib` instead, with Jadis's marketplace beside jlib's.
+- Instructions that load the skill by name (`CLAUDE.md`, `AGENTS.md`) name `jlib-official`.
+- A wrapper positioned around a dialog's content to keep a second scrollbar away (`position: relative`, as #3
+  suggested) can go.
+
 ## 0.11.1 (2026-11-06)
 
 Links an app follows itself, for an app whose router navigates in code (Jadis's `goto`) rather than by addresses; a
