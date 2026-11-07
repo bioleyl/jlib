@@ -18,7 +18,7 @@ const REGISTRATION_CASES: readonly { you: string; example: string; todo: string;
   },
   {
     code: true,
-    example: '<jl-button> in index.html, in an innerHTML string, or <jl-card>…</jl-card> in JSX',
+    example: '<jl-button> in index.html, in an innerHTML string, or <jl-card>…</jl-card> written as a tag in JSX',
     todo: 'define(JlButton, JlCard)',
     you: 'only write the tag',
   },

@@ -57,10 +57,10 @@ library, from the `jadis` plugin: `/plugin marketplace add bioleyl/jadis`, `/plu
   not be re-emitted under the same name without `event.stopPropagation()` on the native one (see `jl-input`). In
   JSX, an `on…` prop listens to them, typed by the detail (`<JlButton onPress={…} />`, Jadis 1.6): name events in
   lower case, a single word, so the prop reads well.
-- Child components are used **by class** in JSX (`<JlIcon name="x" />`) so bundlers keep them. A component imported
-  only for its side effect is dropped by tree-shaking (`sideEffects` in package.json): when a template needs a tag
-  with children (`<jl-popover>…</jl-popover>`) or attributes (`attrs`, such as a `part`, which a class reference
-  refuses), also write `define(JlPopover)` at module level.
+- Child components are used **by class** in JSX (`<JlIcon name="x" />`, `<JlPopover>…</JlPopover>`: a class takes
+  children) so bundlers keep them. A component imported only for its side effect is dropped by tree-shaking
+  (`sideEffects` in package.json): when a template needs the tag for an attribute no input names (`attrs`, such as a
+  `part`, which a class reference refuses), also write `define(JlPopover)` at module level.
 - A form control of one line (`JlInput`, `JlNumberInput`, `JlDatePicker`, `JlSearch`; `JlCombobox` and `JlTagInput`
   when Enter chose or added nothing) calls `submitImplicitly(event)` of `JlFormControl` for an Enter it does not use:
   its native field, in the shadow root, belongs to no form, so the browser's implicit submission never reaches the

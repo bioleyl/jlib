@@ -98,8 +98,9 @@ export class GettingStartedPage extends JlElement {
           )}
           {registrationTable()}
           <div class="note">
-            JSX written with the tag (<code>{'<jl-card>…</jl-card>'}</code>, needed for children) counts as a tag:
-            the code names a string, not the class. Add <code>define(JlCard)</code> next to it.
+            JSX written with the tag counts as a tag: the code names a string, not the class. Write the class
+            instead, children included: <code>{'<JlCard>…</JlCard>'}</code>, not{' '}
+            <code>{'<jl-card>…</jl-card>'}</code>.
           </div>
         </section>
 
@@ -129,9 +130,9 @@ export class GettingStartedPage extends JlElement {
         <section>
           <h2>In JSX, with Jadis</h2>
           <p>
-            With Jadis's JSX runtime, use the classes: their inputs are typed props, and the bundler keeps exactly
-            the components you reference. A component that takes children is written with its tag, since a class
-            cannot take children in Jadis JSX.
+            With Jadis's JSX runtime, use the classes, children included: their inputs are typed props, and the
+            bundler keeps exactly the components you reference. A class takes no <code>attrs</code>: an attribute
+            no input names (a <code>part</code>) needs the tag, and <code>define()</code> beside it.
           </p>
           {codeSample(
             'ts',
@@ -148,10 +149,7 @@ export class GettingStartedPage extends JlElement {
             'ts',
             `
             import { Jadis } from '@jadis/core';
-            import { define, JlButton, JlCard } from '@syware/jlib';
-
-            // jl-card takes children, so it is written with its tag: define keeps it in the bundle.
-            define(JlCard);
+            import { JlButton, JlCard } from '@syware/jlib';
 
             export class SignUp extends Jadis {
               static readonly selector = 'app-sign-up';
@@ -160,9 +158,9 @@ export class GettingStartedPage extends JlElement {
 
               templateHtml(): Node {
                 return (
-                  <jl-card heading="Create your account">
+                  <JlCard heading="Create your account">
                     <JlButton variant="primary" label="Sign up" block />
-                  </jl-card>
+                  </JlCard>
                 );
               }
 

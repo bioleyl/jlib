@@ -1,6 +1,13 @@
 import { describe, expect, it } from 'vitest';
 
-import { constSnippet, htmlSnippet, importSnippet, jsxSnippet, shownSnippet } from '../site/src/lib/snippets';
+import {
+  childClasses,
+  constSnippet,
+  htmlSnippet,
+  importSnippet,
+  jsxSnippet,
+  shownSnippet,
+} from '../site/src/lib/snippets';
 
 import type { PropDoc } from '../site/src/types/docs.types';
 
@@ -80,14 +87,37 @@ describe('jsxSnippet', () => {
     );
   });
 
-  it('uses the tag when the element has children', () => {
-    expect(jsxSnippet(source({ label: 'Go' }, 'Hello'))).toBe('<jl-thing label="Go">Hello</jl-thing>');
+  it('keeps the class when the element has children', () => {
+    expect(jsxSnippet(source({ label: 'Go' }, 'Hello'))).toBe('<JlThing label="Go">Hello</JlThing>');
+  });
+
+  it('writes jl-* children by their class, their attributes as props guessed from their text', () => {
+    const children = '<jl-button slot="actions" icon-end="x" size="18" block></jl-button>';
+    expect(jsxSnippet(source({}, children))).toBe(
+      '<JlThing>\n  <JlButton slot="actions" iconEnd="x" size={18} block />\n</JlThing>'
+    );
+  });
+
+  it('keeps other elements, and writes JSON as an expression', () => {
+    const children = `<jl-tab-panel name="a" items='[{"a":1}]'><p class="muted">Text</p></jl-tab-panel>`;
+    expect(jsxSnippet(source({}, children))).toBe(
+      '<JlThing>\n  <JlTabPanel name="a" items={[{"a":1}]}><p class="muted">Text</p></JlTabPanel>\n</JlThing>'
+    );
   });
 });
 
 describe('importSnippet', () => {
   it('imports the class from the package', () => {
     expect(importSnippet('JlButton')).toBe("import { JlButton } from '@syware/jlib';");
+  });
+
+  it('imports several classes once each, in order, as children name them', () => {
+    const classes = childClasses(
+      '<jl-tab-panel name="a"></jl-tab-panel><jl-button></jl-button><jl-button></jl-button>'
+    );
+    expect(importSnippet('JlTabs', ...classes)).toBe(
+      "import { JlButton, JlTabPanel, JlTabs } from '@syware/jlib';"
+    );
   });
 });
 
