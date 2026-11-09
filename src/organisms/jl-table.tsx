@@ -18,7 +18,7 @@ import {
   rowKeyOf,
   rowToggles,
   selectionState,
-  sortRows,
+  sortBy,
   toggleAll,
   toggleKey,
   withRowOpen,
@@ -55,7 +55,6 @@ export const TABLE_SORT_DIRECTIONS: readonly TableSortDirection[] = ['none', 'as
 export const TABLE_EXPANSIONS: readonly TableExpansion[] = ['none', 'single', 'multiple'];
 
 const MARKED_ATTRIBUTE = 'data-marked';
-const EXPANDED_ATTRIBUTE = 'data-expanded';
 const DETAIL_ID_PREFIX = 'detail-';
 const DEFAULT_ROW_KEY = 'id';
 const NO_SORT_KEY = '';
@@ -113,7 +112,31 @@ function detailOf(row: Element): Element | null {
 /** Whether a press ends a drag that selected text, which leaves the row as it was. */
 const isSelectingText = (): boolean => (document.getSelection()?.toString() ?? '') !== '';
 
-type Part = 'head' | 'body';
+/** What a flush draws again: the headings, the rows, or only the rows' order. */
+type Part = 'head' | 'body' | 'order';
+
+/** A row of data as drawn: its element, whose `data-index` is the row's place in `rows`, its key and its row. */
+interface DrawnRow<Row> {
+  element: HTMLElement;
+  key: TableRowKey;
+  row: Row;
+}
+
+/** A state the table draws on rows by their keys. */
+type RowState = 'marked' | 'open' | 'selected';
+
+const NO_ROW_STATES = (): Record<RowState, TableRowKey[]> => ({ marked: [], open: [], selected: [] });
+
+/** Ticks or clears a row's own checkbox, whose state the row's shade follows in CSS. */
+function checkRow(element: HTMLElement, on: boolean): void {
+  const input = element.querySelector<HTMLInputElement>(':scope > .select-cell .checkbox');
+  if (input !== null) {
+    input.checked = on;
+  }
+}
+
+const isOpen = (row: Element): boolean =>
+  row.querySelector(':scope > .expand-cell > .expand')?.getAttribute('aria-expanded') === 'true';
 
 /**
  * Rows of data under column headings. `columns` say what each column shows and how (`format`: text, number, date,
@@ -152,10 +175,10 @@ export class JlTable<Row extends object = TableRow, Extra extends string = never
   /** The column the rows are sorted by. */
   readonly sortKey = this.useChange<TableColumnKey<Row, Extra> | typeof NO_SORT_KEY>(
     NO_SORT_KEY,
-    () => this.schedule('body'),
+    () => this.schedule('order'),
     { attribute: 'sort-key', parse: textOf<TableColumnKey<Row, Extra> | typeof NO_SORT_KEY>(NO_SORT_KEY) }
   );
-  readonly sortDirection = this.useChange<TableSortDirection>(NO_SORT, () => this.schedule('body'), {
+  readonly sortDirection = this.useChange<TableSortDirection>(NO_SORT, () => this.schedule('order'), {
     attribute: 'sort-direction',
     parse: oneOf(TABLE_SORT_DIRECTIONS, NO_SORT),
   });
@@ -219,9 +242,17 @@ export class JlTable<Row extends object = TableRow, Extra extends string = never
 
   // A function cannot be a useChange input: its set() would call it as an updater.
   private readonly _source: { detail: TableDetailRenderer<Row> | null } = { detail: null };
-  private readonly _pending = { body: false, head: false, queued: false };
-  /** The rows as drawn and their keys, by their place: the rows and their checkboxes carry the place. */
-  private readonly _view: { keys: TableRowKey[]; rows: Row[] } = { keys: [], rows: [] };
+  private readonly _pending = { body: false, head: false, order: false, queued: false };
+  /**
+   * The rows as drawn in the order of `rows` (the rows and their checkboxes carry their place), by key, and their
+   * keys in the order shown; the keys each state was last drawn for, so a change redraws only the rows it concerns.
+   */
+  private readonly _view: {
+    byKey: Map<TableRowKey, DrawnRow<Row>[]>;
+    drawn: DrawnRow<Row>[];
+    keys: TableRowKey[];
+    shown: Record<RowState, TableRowKey[]>;
+  } = { byKey: new Map(), drawn: [], keys: [], shown: NO_ROW_STATES() };
 
   private readonly _refs = this.useRefs((ref) => ({
     body: ref('tbody'),
@@ -300,17 +331,21 @@ export class JlTable<Row extends object = TableRow, Extra extends string = never
   }
 
   private flush(): void {
-    const { body, head } = this._pending;
-    this._pending.body = false;
-    this._pending.head = false;
-    this._pending.queued = false;
+    const { body, head, order } = this._pending;
+    Object.assign(this._pending, { body: false, head: false, order: false, queued: false });
     if (head) {
       this.renderHead();
     }
-    this.renderSortState();
+    if (head || order) {
+      this.renderSortState();
+    }
     if (body) {
       this.renderBody();
     }
+    if (order && !body) {
+      this.renderOrder();
+    }
+    this.renderMarks();
     this.renderSelection();
     this.renderExpansion();
   }
@@ -333,7 +368,7 @@ export class JlTable<Row extends object = TableRow, Extra extends string = never
     const keys =
       index === undefined
         ? toggleAll(this._view.keys, new Set(selected))
-        : toggleKey(selected, this._view.keys[Number(index)] ?? Number(index), input.checked);
+        : toggleKey(selected, this._view.drawn[Number(index)]?.key ?? Number(index), input.checked);
     this.selected.set(keys);
     this.events.emit('selection', keys);
   }
@@ -345,7 +380,7 @@ export class JlTable<Row extends object = TableRow, Extra extends string = never
     if (row === undefined || key === undefined || !this.opensOnPress(event, row)) {
       return;
     }
-    this.toggle(key, !row.hasAttribute(EXPANDED_ATTRIBUTE));
+    this.toggle(key, !isOpen(row));
   }
 
   /** The row of data a press is on: one of the table's, not a row in the content of a detail. */
@@ -426,54 +461,83 @@ export class JlTable<Row extends object = TableRow, Extra extends string = never
     return cell;
   }
 
-  /** The arrows and `aria-sort` of the headings, changed in place so a pressed heading keeps the focus. */
+  /** The arrows and `aria-sort` of the sortable headings, changed in place so a pressed heading keeps the focus. */
   private renderSortState(): void {
     const sortKey = this.sortKey.get();
-    for (const cell of this._refs.head.querySelectorAll<HTMLElement>('th[data-key]')) {
+    for (const cell of this._refs.head.querySelectorAll<HTMLElement>('th[data-key]:has(> .sort)')) {
       const direction = cell.dataset.key === sortKey ? this.sortDirection.get() : NO_SORT;
-      const sortable = cell.querySelector('.sort') !== null;
-      setOrRemove(cell, 'aria-sort', sortable ? ARIA_SORT[direction] : '');
+      setOrRemove(cell, 'aria-sort', ARIA_SORT[direction]);
       cell.querySelector<JlIcon>('.sort-icon')?.name.set(SORT_ICONS[direction]);
-      cell.toggleAttribute('data-sorted', direction !== NO_SORT);
     }
   }
 
-  private sortedRows(): Row[] {
+  /** The drawn rows in the order of the sort; each row's sort value is read once, not at every comparison. */
+  private sortedView(): DrawnRow<Row>[] {
     const key = this.sortKey.get();
+    if (key === NO_SORT_KEY) {
+      return [...this._view.drawn];
+    }
     const format = this.columns.get().find((column) => column.key === key)?.format;
-    return sortRows(this.rows.get(), key, this.sortDirection.get(), format);
+    return sortBy(this._view.drawn, ({ row }) => fieldOf(row, key), {
+      direction: this.sortDirection.get(),
+      format,
+    });
   }
 
   private renderBody(): void {
     const columns = this.columns.get();
     if (this.loading.get()) {
-      this.setView([], []);
+      this.setView([]);
       this._refs.body.replaceChildren(...this.skeletonRows(columns));
       return;
     }
     const rows = this.rows.get();
     if (rows.length === 0) {
-      this.setView([], []);
+      this.setView([]);
       this._refs.body.replaceChildren(this.emptyRow(this.span(columns)));
       return;
     }
     const keyField = this.rowKey.get();
-    const keys = new Map(rows.map((row, index) => [row, rowKeyOf(row, keyField, index)]));
-    const sorted = this.sortedRows();
     this.setView(
-      sorted,
-      sorted.map((row, index) => keys.get(row) ?? index)
+      rows.map((row, index) => ({
+        element: this.bodyRow(row, index, columns),
+        key: rowKeyOf(row, keyField, index),
+        row,
+      }))
     );
-    this._refs.body.replaceChildren(...sorted.map((row, index) => this.bodyRow(row, index, columns)));
-    this.renderMarks();
+    this._refs.body.replaceChildren(...this.placeInOrder().map(({ element }) => element));
   }
 
-  private setView(rows: Row[], keys: TableRowKey[]): void {
-    this._view.rows = rows;
-    this._view.keys = keys;
+  /** New rows, which show no state yet: the flush draws the selection, the marks and the open rows on them. */
+  private setView(drawn: DrawnRow<Row>[]): void {
+    this._view.drawn = drawn;
+    this._view.byKey = Map.groupBy(drawn, ({ key }) => key);
+    this._view.shown = NO_ROW_STATES();
   }
 
-  private bodyRow(row: Row, index: number, columns: TableColumn<Row, Extra>[]): Node {
+  /** The rows in the order of the sort, whose keys the select-all box goes by from now on. */
+  private placeInOrder(): DrawnRow<Row>[] {
+    const sorted = this.sortedView();
+    this._view.keys = sorted.map(({ key }) => key);
+    return sorted;
+  }
+
+  /** Moves the rows into the order of the sort, each open row's detail with it: no row is drawn again. */
+  private renderOrder(): void {
+    const body = this._refs.body;
+    const nodes = this.placeInOrder().flatMap(({ element }) => {
+      const detail = detailOf(element);
+      return detail === null ? [element] : [element, detail];
+    });
+    nodes.forEach((node, index) => {
+      const current = body.children.item(index);
+      if (current !== node) {
+        body.insertBefore(node, current);
+      }
+    });
+  }
+
+  private bodyRow(row: Row, index: number, columns: TableColumn<Row, Extra>[]): HTMLElement {
     const first = columns[0];
     const name = first === undefined ? String(index + 1) : formatCell(fieldOf(row, first.key), first.format);
     const select = this.selectable.get() ? (
@@ -557,31 +621,34 @@ export class JlTable<Row extends object = TableRow, Extra extends string = never
     );
   }
 
-  /** The rows of data, without the details under the open ones. */
-  private dataRows(): HTMLElement[] {
-    return [...this._refs.body.querySelectorAll<HTMLElement>(':scope > tr[data-index]')];
+  private keyOf(row: HTMLElement): TableRowKey | undefined {
+    return this._view.drawn[Number(row.dataset.index)]?.key;
   }
 
-  private keyOf(row: HTMLElement): TableRowKey | undefined {
-    return this._view.keys[Number(row.dataset.index)];
+  /**
+   * Draws a state on the rows whose keys came into it or left it since it was last drawn: checking or opening one
+   * row changes that row alone, whatever the number of rows.
+   */
+  private redraw(state: RowState, keys: TableRowKey[], draw: (element: HTMLElement, on: boolean) => void): void {
+    const changes = rowToggles(this._view.shown[state], keys);
+    this._view.shown[state] = keys;
+    for (const { key, open } of changes) {
+      for (const { element } of this._view.byKey.get(key) ?? []) {
+        draw(element, open);
+      }
+    }
   }
 
   /** The bar and the shade of marked rows, changed in place. */
   private renderMarks(): void {
-    const marked = new Set(this.marked.get());
-    for (const row of this.dataRows()) {
-      const key = this.keyOf(row);
-      row.toggleAttribute(MARKED_ATTRIBUTE, key !== undefined && marked.has(key));
-    }
+    this.redraw('marked', this.marked.get(), (element, on) => element.toggleAttribute(MARKED_ATTRIBUTE, on));
   }
 
   /** The details of the open rows, added under them and taken away in place: one that stays open keeps its content. */
   private renderExpansion(): void {
-    const open = new Set(openRows(this.expanded.get(), this.expandable.get()));
-    for (const row of this.dataRows()) {
-      const key = this.keyOf(row);
-      this.renderRowOpen(row, key !== undefined && open.has(key));
-    }
+    this.redraw('open', openRows(this.expanded.get(), this.expandable.get()), (element, open) =>
+      this.renderRowOpen(element, open)
+    );
   }
 
   private renderRowOpen(row: HTMLElement, open: boolean): void {
@@ -589,7 +656,6 @@ export class JlTable<Row extends object = TableRow, Extra extends string = never
     if (chevron === null) {
       return;
     }
-    row.toggleAttribute(EXPANDED_ATTRIBUTE, open);
     chevron.setAttribute('aria-expanded', String(open));
     const detail = detailOf(row);
     if (!open) {
@@ -606,7 +672,7 @@ export class JlTable<Row extends object = TableRow, Extra extends string = never
   }
 
   private detailRow(row: HTMLElement, id: string): Node {
-    const data = this._view.rows[Number(row.dataset.index)];
+    const data = this._view.drawn[Number(row.dataset.index)]?.row;
     const draw = this._source.detail;
     return (
       <tr class="detail" id={id}>
@@ -617,22 +683,14 @@ export class JlTable<Row extends object = TableRow, Extra extends string = never
     );
   }
 
-  /** The checkboxes and the shading of selected rows, changed in place. */
+  /** The checkboxes of the rows whose selection changed, and the select-all box. */
   private renderSelection(): void {
-    const selected = new Set(this.selected.get());
-    for (const input of this._refs.body.querySelectorAll<HTMLInputElement>(
-      ':scope > tr > .select-cell .checkbox'
-    )) {
-      const key = this._view.keys[Number(input.dataset.index)];
-      const on = key !== undefined && selected.has(key);
-      input.checked = on;
-      input.closest('tr')?.toggleAttribute('data-selected', on);
-    }
+    this.redraw('selected', this.selected.get(), checkRow);
     const all = this._refs.head.querySelector<HTMLInputElement>('input.checkbox');
     if (all === null) {
       return;
     }
-    const state = selectionState(this._view.keys, selected);
+    const state = selectionState(this._view.keys, new Set(this.selected.get()));
     all.checked = state === 'all';
     all.indeterminate = state === 'some';
     all.disabled = this._view.keys.length === 0;

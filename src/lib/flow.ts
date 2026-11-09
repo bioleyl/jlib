@@ -44,6 +44,10 @@ export const portOfEdge = (node: FlowNode, edge: FlowEdge): string => edge.port 
 const nodeById = (graph: FlowGraph, id: string): FlowNode | undefined =>
   graph.nodes.find((node) => node.id === id);
 
+/** The graph's nodes by id: where its edges look their ends up, once per graph rather than once per edge. */
+export const nodesById = (graph: FlowGraph): Map<string, FlowNode> =>
+  new Map(graph.nodes.map((node) => [node.id, node]));
+
 // Adding 0 turns -0 into 0, which the graph's JSON and the tests read as the same number.
 const toGrid = (value: number): number => Math.round(value / GRID) * GRID + 0;
 
@@ -138,9 +142,9 @@ export const edgePath = (from: FlowPoint, to: FlowPoint): string => roundedPath(
 export const edgeMidpoint = (from: FlowPoint, to: FlowPoint): FlowPoint => halfway(edgeRoute(from, to));
 
 /** Where an edge starts and ends, or nothing when one of its ends is gone. */
-export function edgeEnds(graph: FlowGraph, edge: FlowEdge): FlowEdgeEnds | undefined {
-  const source = nodeById(graph, edge.from);
-  const target = nodeById(graph, edge.to);
+export function edgeEnds(nodes: ReadonlyMap<string, FlowNode>, edge: FlowEdge): FlowEdgeEnds | undefined {
+  const source = nodes.get(edge.from);
+  const target = nodes.get(edge.to);
   const portId = source ? portOfEdge(source, edge) : '';
   const from = source ? outputAnchor(source, portId) : undefined;
   if (!source || !target || !from) {
@@ -157,9 +161,9 @@ const isInside = (point: FlowPoint, node: FlowNode): boolean =>
   && point.y <= node.position.y + nodeHeight(node);
 
 /** A run went this way: its node left by the edge's exit, and the node it leads to ran too. */
-export function isEdgeTaken(graph: FlowGraph, edge: FlowEdge): boolean {
-  const source = nodeById(graph, edge.from);
-  const target = nodeById(graph, edge.to);
+export function isEdgeTaken(nodes: ReadonlyMap<string, FlowNode>, edge: FlowEdge): boolean {
+  const source = nodes.get(edge.from);
+  const target = nodes.get(edge.to);
   return source?.taken !== undefined && source.taken === portOfEdge(source, edge) && target?.status !== undefined;
 }
 
@@ -171,8 +175,23 @@ export const centeredAt = (point: FlowPoint): FlowPoint =>
 export const nodeAt = (graph: FlowGraph, point: FlowPoint, except = ''): FlowNode | undefined =>
   graph.nodes.find((node) => node.id !== except && isInside(point, node));
 
-export const isPortFree = (graph: FlowGraph, node: FlowNode, portId: string): boolean =>
-  !graph.edges.some((edge) => edge.from === node.id && portOfEdge(node, edge) === portId);
+/** The exits each node has an edge leaving by, read in one pass over the edges. */
+export function usedPorts(graph: FlowGraph, nodes: ReadonlyMap<string, FlowNode>): Map<string, Set<string>> {
+  const used = new Map<string, Set<string>>();
+  for (const edge of graph.edges) {
+    const source = nodes.get(edge.from);
+    if (source !== undefined) {
+      used.set(source.id, (used.get(source.id) ?? new Set()).add(portOfEdge(source, edge)));
+    }
+  }
+  return used;
+}
+
+export const isPortFree = (
+  used: ReadonlyMap<string, ReadonlySet<string>>,
+  node: FlowNode,
+  portId: string
+): boolean => !(used.get(node.id)?.has(portId) ?? false);
 
 /**
  * The graph with one more edge, or nothing when the edge cannot be: a node does not connect to itself, a start takes

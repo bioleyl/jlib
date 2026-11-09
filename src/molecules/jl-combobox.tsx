@@ -101,11 +101,16 @@ export class JlCombobox extends JlFormControl {
 
   private readonly _state = {
     active: NONE,
+    /** The option element the arrows reached: it alone is marked, wherever the filter put it. */
+    activeItem: null as HTMLElement | null,
     matches: [] as ComboboxOption[],
     opening: new AbortController(),
     /** What people typed since the last choice; empty shows every option. */
     query: '',
   };
+
+  // Each option's element, made the first time it shows: typing only filters, orders and highlights them.
+  private readonly _items = new WeakMap<ComboboxOption, HTMLElement>();
 
   private readonly _refs = this.useRefs((ref) => ({
     clear: ref<HTMLButtonElement>('.clear'),
@@ -445,48 +450,69 @@ export class JlCombobox extends JlFormControl {
     }
   }
 
+  /** The options that match what was typed, in their order: elements already made are moved, not made again. */
   private renderOptions(): void {
     const matches = filterOptions(this.options.get(), this._state.query);
     const value = this.value.get();
+    const listbox = this._refs.listbox;
     this._state.matches = matches;
-    this._refs.listbox.replaceChildren(...matches.map((option, index) => this.optionNode(option, index, value)));
-    this._refs.listbox.hidden = matches.length === 0;
+    matches.forEach((option, index) => {
+      const item = this.drawOption(option, index, value);
+      const current = listbox.children.item(index);
+      // An option already in its place stays: moving it would make the browser lay it out again.
+      if (current !== item) {
+        listbox.insertBefore(item, current);
+      }
+    });
+    while (listbox.children.length > matches.length) {
+      listbox.lastElementChild?.remove();
+    }
+    listbox.hidden = matches.length === 0;
     this._refs.empty.hidden = matches.length > 0;
   }
 
-  private optionNode(option: ComboboxOption, index: number, value: string): Node {
-    return (
+  /** The option's element, made once, with where it now sits, whether it is chosen, and the typed text marked. */
+  private drawOption(option: ComboboxOption, index: number, value: string): HTMLElement {
+    const item = this._items.get(option) ?? this.optionNode(option);
+    this._items.set(option, item);
+    item.id = `${this._listId}-${index}`;
+    item.dataset.index = String(index);
+    item.classList.toggle('chosen', option.value === value);
+    item.querySelector('.option-label')?.replaceChildren(...highlighted(option.label, this._state.query));
+    return item;
+  }
+
+  private optionNode(option: ComboboxOption): HTMLElement {
+    const item: HTMLElement = (
       // biome-ignore lint/a11y/useFocusableInteractive: the focus stays in the field, which points here with aria-activedescendant
       <div
-        class={option.value === value ? 'option chosen' : 'option'}
+        class="option"
         role="option"
-        id={`${this._listId}-${index}`}
-        data-index={String(index)}
         aria-selected="false"
         aria-disabled={option.disabled === true ? 'true' : undefined}>
         <span class="text">
-          <span class="option-label">{highlighted(option.label, this._state.query)}</span>
+          <span class="option-label" />
           {option.description === undefined ? null : <span class="description">{option.description}</span>}
         </span>
         <JlIcon class="check" name="check" size={CHECK_SIZE} />
       </div>
     );
+    return item;
   }
 
   /** The active option is the one the arrows reached: aria-selected and aria-activedescendant follow it. */
   private renderActive(): void {
-    const active = this._state.active;
-    for (const item of this._refs.listbox.querySelectorAll<HTMLElement>('[data-index]')) {
-      const isActive = Number(item.dataset.index) === active;
-      item.classList.toggle('active', isActive);
-      item.setAttribute('aria-selected', String(isActive));
-    }
-    setOrRemove(this._refs.native, 'aria-activedescendant', active === NONE ? '' : `${this._listId}-${active}`);
+    const option = this._state.matches[this._state.active];
+    const item = option === undefined ? null : (this._items.get(option) ?? null);
+    this._state.activeItem?.setAttribute('aria-selected', 'false');
+    item?.setAttribute('aria-selected', 'true');
+    this._state.activeItem = item;
+    setOrRemove(this._refs.native, 'aria-activedescendant', item?.id ?? '');
   }
 
   private revealActive(): void {
-    const item = this._refs.listbox.children[this._state.active];
-    if (item instanceof HTMLElement) {
+    const item = this._state.activeItem;
+    if (item !== null) {
       keepInView(this._refs.listbox, item);
     }
   }

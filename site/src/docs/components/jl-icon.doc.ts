@@ -94,7 +94,14 @@ its own, with no text beside it.`,
       type: 'boolean',
     },
   ],
-  styling: [{ description: 'The colour of the sign of a filled icon: the surface colour.', name: '--cutout' }],
+  styling: [
+    { description: 'The colour of the sign of a filled icon: the surface colour.', name: '--cutout' },
+    {
+      description:
+        'Its width and height, over `size`: what a component sets on the icons it draws, from its own size (`jl-icon { --icon-size: 14px }`).',
+      name: '--icon-size',
+    },
+  ],
   summary: 'A lucide icon by name, sized in pixels and coloured by its text.',
   tag: 'jl-icon',
 };

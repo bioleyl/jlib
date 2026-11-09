@@ -45,16 +45,21 @@ export class JlBreadcrumb<Id extends string = string> extends JlElement {
 
   readonly events = this.useEvents<{ select: Id }>();
 
+  // Before `items`: as the trail connects, each input calls back in this order, so the items come with their `max`.
+  /** The most items shown before the middle folds; 0 never folds. */
+  readonly max = this.useChange(0, () => this.render(), { attribute: 'max' });
   readonly items = this.useChange<BreadcrumbItem<Id>[]>([], () => this.renderTrail(), {
     attribute: 'items',
     parse: jsonOf([]),
   });
-  /** The most items shown before the middle folds; 0 never folds. */
-  readonly max = this.useChange(0, () => this.render(), { attribute: 'max' });
   /** The trail's name for screen readers. */
   readonly label = this.useChange('', () => this.renderLabel(), { attribute: 'label' });
 
-  private readonly _state = { expanded: false };
+  /** `drawn` is what the trail was made from: the inputs call back with what they hold as the trail connects. */
+  private readonly _state = {
+    drawn: { expanded: false, items: null as BreadcrumbItem<Id>[] | null, max: 0 },
+    expanded: false,
+  };
 
   private readonly _refs = this.useRefs((ref) => ({
     list: ref('ol'),
@@ -86,7 +91,7 @@ export class JlBreadcrumb<Id extends string = string> extends JlElement {
 
   protected drawTexts(): void {
     this.renderLabel();
-    this.render();
+    this.renderMoreLabel();
   }
 
   private renderLabel(): void {
@@ -101,7 +106,14 @@ export class JlBreadcrumb<Id extends string = string> extends JlElement {
 
   private render(): void {
     const items = this.items.get();
-    const crumbs = visibleCrumbs(items, this.max.get(), this._state.expanded);
+    const max = this.max.get();
+    const expanded = this._state.expanded;
+    const drawn = this._state.drawn;
+    if (items === drawn.items && max === drawn.max && expanded === drawn.expanded) {
+      return;
+    }
+    this._state.drawn = { expanded, items, max };
+    const crumbs = visibleCrumbs(items, max, expanded);
     const lastIndex = items.length - 1;
     this._refs.list.replaceChildren(
       ...crumbs.map((crumb, position) => (
@@ -111,6 +123,18 @@ export class JlBreadcrumb<Id extends string = string> extends JlElement {
         </li>
       ))
     );
+    this.renderMoreLabel();
+  }
+
+  /** The folding button says how many items it holds, in jlib's language. */
+  private renderMoreLabel(): void {
+    const more = this._refs.list.querySelector<HTMLElement>('.more');
+    if (more === null) {
+      return;
+    }
+    const label = jlText('showMoreCount', { count: Number(more.dataset.count) });
+    more.setAttribute('aria-label', label);
+    more.title = label;
   }
 
   /** An item the app follows, found among the items by the id its button carries. */
@@ -149,9 +173,8 @@ export class JlBreadcrumb<Id extends string = string> extends JlElement {
   }
 
   private moreButton(hidden: number): Node {
-    const label = jlText('showMoreCount', { count: hidden });
     return (
-      <button type="button" class="more" aria-label={label} title={label}>
+      <button type="button" class="more" data-count={String(hidden)}>
         <JlIcon name="ellipsis" size={ICON_SIZE} />
       </button>
     );

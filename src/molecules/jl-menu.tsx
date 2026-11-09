@@ -66,10 +66,19 @@ export class JlMenu<Value extends string = string> extends JlElement {
 
   readonly events = this.useEvents<{ select: Value; open: undefined; close: undefined }>();
 
-  readonly items = this.useChange<MenuItem<Value>[]>([], () => this.renderItems(), {
-    attribute: 'items',
-    parse: jsonOf<MenuItem<Value>[]>([]),
-  });
+  // A closed menu holds no items: they are made as it opens, and made again only for a new list while it is open.
+  readonly items = this.useChange<MenuItem<Value>[]>(
+    [],
+    () => {
+      if (this.isOpen()) {
+        this.renderItems();
+      }
+    },
+    {
+      attribute: 'items',
+      parse: jsonOf<MenuItem<Value>[]>([]),
+    }
+  );
   /** Where the menu goes; it flips to the other side when there is no room. */
   readonly placement = this.useChange<Placement>('bottom-start', () => this.follow(), {
     attribute: 'placement',
@@ -83,6 +92,9 @@ export class JlMenu<Value extends string = string> extends JlElement {
     // Whether the menu was open when the pointer went down on the trigger: the click outside closes it then.
     openAtPointerDown: false,
   };
+
+  // The list the items were made from.
+  private readonly _drawn: { items?: MenuItem<Value>[] } = {};
 
   private readonly _refs = this.useRefs((ref) => ({
     menu: ref('.menu'),
@@ -216,6 +228,7 @@ export class JlMenu<Value extends string = string> extends JlElement {
   private open(focusFirst: (enabled: readonly boolean[]) => number): void {
     const menu = this._refs.menu;
     if (!this.isOpen()) {
+      this.renderItems();
       menu.showPopover();
       this.follow();
     }
@@ -306,7 +319,12 @@ export class JlMenu<Value extends string = string> extends JlElement {
   }
 
   private renderItems(): void {
-    this._refs.menu.replaceChildren(...sectionsOf(this.items.get()).map((section) => this.section(section)));
+    const items = this.items.get();
+    if (items === this._drawn.items) {
+      return;
+    }
+    this._drawn.items = items;
+    this._refs.menu.replaceChildren(...sectionsOf(items).map((section) => this.section(section)));
   }
 
   private section(section: Section<Value>): Node {

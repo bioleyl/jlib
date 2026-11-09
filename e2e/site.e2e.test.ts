@@ -7,16 +7,45 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 import type { Browser, Page } from 'playwright-core';
 import type { PreviewServer } from 'vite';
+import type { JlAvatar } from '../src/atoms/jl-avatar';
 import type { JlBadge } from '../src/atoms/jl-badge';
+import type { JlButton } from '../src/atoms/jl-button';
+import type { JlCheckbox } from '../src/atoms/jl-checkbox';
+import type { JlChip } from '../src/atoms/jl-chip';
+import type { JlIcon } from '../src/atoms/jl-icon';
 import type { JlInput } from '../src/atoms/jl-input';
+import type { JlLink } from '../src/atoms/jl-link';
 import type { JlLoadingBar } from '../src/atoms/jl-loading-bar';
+import type { JlRating } from '../src/atoms/jl-rating';
 import type { JlSelect } from '../src/atoms/jl-select';
+import type { JlSkeleton } from '../src/atoms/jl-skeleton';
+import type { JlSlider } from '../src/atoms/jl-slider';
 import type { JlTextarea } from '../src/atoms/jl-textarea';
+import type { JlAlert } from '../src/molecules/jl-alert';
+import type { JlAvatarGroup } from '../src/molecules/jl-avatar-group';
+import type { JlBreadcrumb } from '../src/molecules/jl-breadcrumb';
+import type { JlCalendar } from '../src/molecules/jl-calendar';
+import type { JlChipGroup } from '../src/molecules/jl-chip-group';
+import type { JlCodeBlock } from '../src/molecules/jl-code-block';
+import type { JlCombobox } from '../src/molecules/jl-combobox';
 import type { JlDatePicker } from '../src/molecules/jl-date-picker';
+import type { JlField } from '../src/molecules/jl-field';
 import type { JlInputList } from '../src/molecules/jl-input-list';
+import type { JlListItem } from '../src/molecules/jl-list-item';
 import type { JlLoadState } from '../src/molecules/jl-load-state';
+import type { JlMenu } from '../src/molecules/jl-menu';
+import type { JlPagination } from '../src/molecules/jl-pagination';
+import type { JlSegmented } from '../src/molecules/jl-segmented';
+import type { JlSteps } from '../src/molecules/jl-steps';
+import type { JlTabs } from '../src/molecules/jl-tabs';
+import type { JlTagInput } from '../src/molecules/jl-tag-input';
+import type { JlTimeline } from '../src/molecules/jl-timeline';
+import type { JlTooltip } from '../src/molecules/jl-tooltip';
+import type { JlCommandPalette } from '../src/organisms/jl-command-palette';
 import type { JlFlow } from '../src/organisms/jl-flow';
 import type { JlPageOutlet } from '../src/organisms/jl-page-outlet';
+import type { JlSideNav } from '../src/organisms/jl-side-nav';
+import type { JlTable } from '../src/organisms/jl-table';
 import type { JlTree } from '../src/organisms/jl-tree';
 
 const ROOT = join(import.meta.dirname, '..');
@@ -916,6 +945,152 @@ describe('the text area', () => {
   });
 });
 
+describe('the icon', () => {
+  it('draws its SVG once per name: the same name again, or another size, draws nothing', async () => {
+    const page = await open('/components/icon');
+    const result = await page.evaluate(async () => {
+      const wait = (milliseconds: number) => new Promise((resolve) => setTimeout(resolve, milliseconds));
+      const icon = document.createElement('jl-icon') as JlIcon;
+      const root = icon.shadowRoot;
+      if (!root) {
+        throw new Error('The icon has no shadow root');
+      }
+      // Each SVG put in the icon: one drawing.
+      const counted = { draws: 0 };
+      new MutationObserver((records) => {
+        counted.draws += records.filter((record) =>
+          [...record.addedNodes].some((node) => node instanceof SVGElement)
+        ).length;
+      }).observe(root, { childList: true, subtree: true });
+      icon.name.set('heart');
+      icon.size.set(16);
+      document.body.append(icon);
+      await wait(50);
+      const asItAppears = counted.draws;
+      icon.name.set('heart');
+      icon.size.set(32);
+      await wait(50);
+      const resized = { draws: counted.draws, width: root.querySelector('svg')?.getBoundingClientRect().width };
+      icon.name.set('bell');
+      await wait(50);
+      const outcome = { asItAppears, renamed: counted.draws, resized };
+      icon.remove();
+      return outcome;
+    });
+    expect(result).toEqual({ asItAppears: 1, renamed: 2, resized: { draws: 1, width: 32 } });
+  });
+});
+
+describe('the field', () => {
+  it("names its control once, and makes its error once, then only changes the error's text", async () => {
+    const page = await open('/components/field');
+    const result = await page.evaluate(async () => {
+      const wait = (milliseconds: number) => new Promise((resolve) => setTimeout(resolve, milliseconds));
+      const field = document.createElement('jl-field') as JlField;
+      const input = document.createElement('jl-input') as JlInput;
+      field.label.set('Title');
+      field.hint.set('As on the cover');
+      field.append(input);
+      // Each time the field gives the control its label: set() redraws the control even with the label it has.
+      const counted = { namings: 0 };
+      const setLabel = input.label.set.bind(input.label);
+      Object.defineProperty(input.label, 'set', {
+        value: (label: string) => {
+          counted.namings += 1;
+          setLabel(label);
+        },
+      });
+      document.body.append(field);
+      await wait(50);
+      const nativeInput = input.shadowRoot?.querySelector('input');
+      const root = field.shadowRoot;
+      const shown = (selector: string) => root?.querySelector<HTMLElement>(selector)?.checkVisibility() ?? false;
+      const named = { label: nativeInput?.getAttribute('aria-label'), namings: counted.namings };
+      field.error.set('Required');
+      await wait(0);
+      const error = root?.querySelector('.error');
+      const withError = { error: shown('.error'), hint: shown('.hint'), invalid: input.invalid.get() };
+      field.error.set('Too short');
+      await wait(0);
+      const changed = { sameError: root?.querySelector('.error') === error, text: error?.textContent };
+      field.error.set('');
+      await wait(0);
+      const cleared = { error: shown('.error'), hint: shown('.hint'), invalid: input.invalid.get() };
+      field.label.set('');
+      await wait(0);
+      const unlabelled = shown('.label-row');
+      field.remove();
+      return { changed, cleared, named, unlabelled, withError };
+    });
+    expect(result).toEqual({
+      changed: { sameError: true, text: 'Too short' },
+      cleared: { error: false, hint: true, invalid: false },
+      // Named once as the field appears, however many of its callbacks and slot changes run.
+      named: { label: 'Title', namings: 1 },
+      unlabelled: false,
+      withError: { error: true, hint: false, invalid: true },
+    });
+  });
+});
+
+describe('icon sizes', () => {
+  it('a component sizes its icons by its own size in CSS, setting nothing on them', async () => {
+    const page = await open('/components/button');
+    const result = await page.evaluate(async () => {
+      const wait = (milliseconds: number) => new Promise((resolve) => setTimeout(resolve, milliseconds));
+      const button = document.createElement('jl-button') as JlButton;
+      button.icon.set('plus');
+      button.label.set('Add');
+      document.body.append(button);
+      await wait(50);
+      const icon = button.shadowRoot?.querySelector<JlIcon>('jl-icon.start');
+      const width = () => icon?.shadowRoot?.querySelector('svg')?.getBoundingClientRect().width;
+      const sizes: Record<string, number | undefined> = {};
+      for (const size of ['sm', 'md', 'lg'] as const) {
+        button.size.set(size);
+        await wait(0);
+        sizes[size] = width();
+      }
+      const outcome = { ownSize: icon?.size.get(), sizes };
+      button.remove();
+      return outcome;
+    });
+    // Its own `size` stays the default: the button's CSS gives --icon-size.
+    expect(result).toEqual({ ownSize: 16, sizes: { lg: 18, md: 16, sm: 14 } });
+  });
+});
+
+describe('the date picker, closed', () => {
+  it('makes its calendar only when it opens, with its language, bounds and value', async () => {
+    const page = await open('/components/date-picker');
+    const result = await page.evaluate(async () => {
+      const wait = (milliseconds: number) => new Promise((resolve) => setTimeout(resolve, milliseconds));
+      const picker = document.createElement('jl-date-picker') as JlDatePicker;
+      picker.locale.set('fr-CH');
+      picker.min.set('2026-01-01');
+      picker.value.set('2026-03-14');
+      document.body.append(picker);
+      await wait(50);
+      const calendar = () => picker.shadowRoot?.querySelector<JlCalendar>('jl-calendar') ?? null;
+      const closed = calendar() === null;
+      picker.shadowRoot?.querySelector<HTMLButtonElement>('.open')?.click();
+      await wait(50);
+      const made = calendar();
+      const opened = { locale: made?.locale.get(), min: made?.min.get(), value: made?.value.get() };
+      picker.value.set('2026-04-01');
+      await wait(0);
+      const followed = made?.value.get();
+      picker.remove();
+      return { closed, followed, opened };
+    });
+    expect(result).toEqual({
+      closed: true,
+      followed: '2026-04-01',
+      opened: { locale: 'fr-CH', min: '2026-01-01', value: '2026-03-14' },
+    });
+  });
+});
+
 describe('the tooltip', () => {
   it("shows its bubble alone: the button's own title steps aside while pointed at, and comes back", async () => {
     const page = await open('/components/tooltip');
@@ -1106,5 +1281,1415 @@ describe('the routes', () => {
     expect(await page.evaluate("document.querySelector('site-shell > jl-page-outlet > *').localName")).toBe(
       'site-not-found-page'
     );
+  });
+});
+
+describe('atoms, drawn once', () => {
+  it('a checkbox draws its tick only once ticked, and hides an empty label', async () => {
+    const page = await open('/components/checkbox');
+    const result = await page.evaluate(async () => {
+      const wait = (milliseconds: number) => new Promise((resolve) => setTimeout(resolve, milliseconds));
+      const box = document.createElement('jl-checkbox') as JlCheckbox;
+      box.setAttribute('label', 'Terms');
+      document.body.append(box);
+      await wait(50);
+      const root = box.shadowRoot;
+      const svgs = () =>
+        [...(root?.querySelectorAll('jl-icon') ?? [])].map(
+          (icon) => icon.shadowRoot?.querySelector('svg') ?? null
+        );
+      const shown = (selector: string) => root?.querySelector<HTMLElement>(selector)?.checkVisibility() ?? false;
+      const unticked = { drawn: svgs().filter(Boolean).length, label: shown('.label') };
+      box.checked.set(true);
+      await wait(0);
+      const ticked = { check: shown('.check'), drawn: svgs().filter(Boolean).length };
+      box.indeterminate.set(true);
+      box.label.set('');
+      await wait(0);
+      const partly = { dash: shown('.dash'), drawn: svgs().filter(Boolean).length, label: shown('.label') };
+      box.remove();
+      return { partly, ticked, unticked };
+    });
+    expect(result).toEqual({
+      partly: { dash: true, drawn: 2, label: false },
+      ticked: { check: true, drawn: 1 },
+      unticked: { drawn: 0, label: true },
+    });
+  });
+
+  it('a link draws its new-tab icon only when it is external', async () => {
+    const page = await open('/components/link');
+    const result = await page.evaluate(async () => {
+      const wait = (milliseconds: number) => new Promise((resolve) => setTimeout(resolve, milliseconds));
+      const link = document.createElement('jl-link') as JlLink;
+      link.setAttribute('href', '#');
+      link.setAttribute('label', 'Docs');
+      document.body.append(link);
+      await wait(50);
+      const icon = link.shadowRoot?.querySelector('jl-icon');
+      const drawn = () => icon?.shadowRoot?.querySelector('svg') !== null;
+      const plain = drawn();
+      link.external.set(true);
+      await wait(0);
+      const external = { drawn: drawn(), shown: icon?.checkVisibility() };
+      link.remove();
+      return { external, plain };
+    });
+    expect(result).toEqual({ external: { drawn: true, shown: true }, plain: false });
+  });
+
+  it('an input checks its validity only for what can change it, and draws its buttons once shown', async () => {
+    const page = await open('/components/input');
+    const result = await page.evaluate(async () => {
+      const wait = (milliseconds: number) => new Promise((resolve) => setTimeout(resolve, milliseconds));
+      const input = document.createElement('jl-input') as JlInput;
+      for (const [name, value] of [
+        ['placeholder', 'Name'],
+        ['label', 'Name'],
+        ['autocomplete', 'name'],
+        ['inputmode', 'text'],
+        ['clearable', ''],
+        ['required', ''],
+      ] as const) {
+        input.setAttribute(name, value);
+      }
+      const counted = { checks: 0 };
+      const spied = input as unknown as { mirrorValidity: (native: HTMLInputElement) => void };
+      const mirrorValidity = spied.mirrorValidity.bind(input);
+      Object.defineProperty(input, 'mirrorValidity', {
+        value: (native: HTMLInputElement) => {
+          counted.checks += 1;
+          mirrorValidity(native);
+        },
+      });
+      document.body.append(input);
+      await wait(50);
+      const root = input.shadowRoot;
+      const svg = (selector: string) =>
+        root?.querySelector(`${selector} jl-icon`)?.shadowRoot?.querySelector('svg') ?? null;
+      const appeared = { checks: counted.checks, clear: svg('.clear') !== null, reveal: svg('.reveal') !== null };
+      input.placeholder.set('Full name');
+      input.label.set('Full name');
+      const renamed = counted.checks - appeared.checks;
+      input.value.set('Ada');
+      await wait(0);
+      const filled = { clear: svg('.clear') !== null, valid: input.checkValidity() };
+      input.type.set('password');
+      await wait(0);
+      const reveal = root?.querySelector('.reveal');
+      const password = { label: reveal?.getAttribute('aria-label'), reveal: svg('.reveal') !== null };
+      input.remove();
+      return { appeared, filled, password, renamed };
+    });
+    expect(result).toEqual({
+      // value, type, min, max, step, minlength, maxlength, pattern, required, readonly: and required again from HTML.
+      appeared: { checks: 11, clear: false, reveal: false },
+      filled: { clear: true, valid: true },
+      password: { label: 'Show the password', reveal: true },
+      renamed: 0,
+    });
+  });
+
+  it('a select copies its own options once, and shows the chosen one', async () => {
+    const page = await open('/components/select');
+    const result = await page.evaluate(async () => {
+      const wait = (milliseconds: number) => new Promise((resolve) => setTimeout(resolve, milliseconds));
+      const select = document.createElement('jl-select') as JlSelect;
+      select.setAttribute('placeholder', 'Pick one');
+      select.setAttribute('required', '');
+      for (const value of ['a', 'b', 'c']) {
+        const option = document.createElement('option');
+        option.value = value;
+        option.textContent = value.toUpperCase();
+        select.append(option);
+      }
+      const counted = { options: 0 };
+      new MutationObserver((records) => {
+        for (const record of records) {
+          counted.options += [...record.addedNodes].filter((node) => node instanceof HTMLOptionElement).length;
+        }
+      }).observe(select.shadowRoot as ShadowRoot, { childList: true, subtree: true });
+      document.body.append(select);
+      await wait(50);
+      const native = select.shadowRoot?.querySelector('select');
+      const appeared = { options: counted.options, shown: native?.value, valid: select.checkValidity() };
+      select.value.set('b');
+      await wait(0);
+      const chosen = { options: counted.options, shown: native?.value, valid: select.checkValidity() };
+      select.remove();
+      return { appeared, chosen };
+    });
+    expect(result).toEqual({
+      // The placeholder and the three options, copied once.
+      appeared: { options: 4, shown: '', valid: false },
+      chosen: { options: 4, shown: 'b', valid: true },
+    });
+  });
+
+  it('a slider makes its marks once, and places them again for new bounds', async () => {
+    const page = await open('/components/slider');
+    const result = await page.evaluate(async () => {
+      const wait = (milliseconds: number) => new Promise((resolve) => setTimeout(resolve, milliseconds));
+      const slider = document.createElement('jl-slider') as JlSlider;
+      slider.setAttribute('min', '0');
+      slider.setAttribute('max', '10');
+      slider.setAttribute('marks', '[0, 5, { "value": 10, "label": "Max" }]');
+      slider.style.width = '300px';
+      const counted = { marks: 0 };
+      new MutationObserver((records) => {
+        for (const record of records) {
+          counted.marks += [...record.addedNodes].filter(
+            (node) => node instanceof HTMLElement && node.classList.contains('mark')
+          ).length;
+        }
+      }).observe(slider.shadowRoot as ShadowRoot, { childList: true, subtree: true });
+      document.body.append(slider);
+      await wait(50);
+      const root = slider.shadowRoot;
+      const marks = () => [...(root?.querySelectorAll<HTMLElement>('.mark') ?? [])];
+      const left = (mark: HTMLElement | undefined) => Math.round(mark?.getBoundingClientRect().left ?? 0);
+      const track = root?.querySelector('.native')?.getBoundingClientRect();
+      const start = left(marks()[0]) - Math.round(track?.left ?? 0);
+      const appeared = { made: counted.marks, middle: left(marks()[1]) - left(marks()[0]) };
+      slider.min.set(5);
+      slider.max.set(15);
+      await wait(0);
+      const moved = {
+        made: counted.marks,
+        shown: marks().map((mark) => mark.checkVisibility()),
+        start: left(marks()[1]) - Math.round(track?.left ?? 0),
+      };
+      slider.remove();
+      return { appeared, moved, start };
+    });
+    // The thumb is 16px wide: a mark sits where the thumb's centre does, 8px in, and the middle halfway along the rest.
+    expect(result).toEqual({
+      appeared: { made: 3, middle: 142 },
+      moved: { made: 3, shown: [false, true, true], start: 8 },
+      start: 8,
+    });
+  });
+
+  it('a skeleton makes its lines once', async () => {
+    const page = await open('/components/skeleton');
+    const result = await page.evaluate(async () => {
+      const wait = (milliseconds: number) => new Promise((resolve) => setTimeout(resolve, milliseconds));
+      const skeleton = document.createElement('jl-skeleton') as JlSkeleton;
+      skeleton.setAttribute('shape', 'text');
+      skeleton.setAttribute('lines', '3');
+      const counted = { bones: 0 };
+      new MutationObserver((records) => {
+        for (const record of records) {
+          counted.bones += [...record.addedNodes].filter(
+            (node) => node instanceof HTMLElement && node.classList.contains('bone')
+          ).length;
+        }
+      }).observe(skeleton.shadowRoot as ShadowRoot, { childList: true, subtree: true });
+      document.body.append(skeleton);
+      await wait(50);
+      const appeared = counted.bones;
+      skeleton.lines.set(3);
+      skeleton.shape.set('rect');
+      await wait(0);
+      const outcome = {
+        appeared,
+        rect: counted.bones,
+        shown: skeleton.shadowRoot?.querySelectorAll('.bone').length,
+      };
+      skeleton.remove();
+      return outcome;
+    });
+    expect(result).toEqual({ appeared: 3, rect: 3, shown: 1 });
+  });
+
+  it('a rating draws its icons once, sizes them by CSS, and previews a score under the pointer', async () => {
+    const page = await open('/components/rating');
+    const appeared = await page.evaluate(async () => {
+      const wait = (milliseconds: number) => new Promise((resolve) => setTimeout(resolve, milliseconds));
+      const rating = document.createElement('jl-rating') as JlRating;
+      rating.classList.add('drawn-once');
+      rating.style.cssText = 'position: fixed; top: 8px; left: 8px; z-index: 10000';
+      for (const [name, value] of [
+        ['max', '5'],
+        ['value', '4'],
+        ['icon', 'star'],
+        ['size', 'sm'],
+      ] as const) {
+        rating.setAttribute(name, value);
+      }
+      const counted = { icons: 0 };
+      new MutationObserver((records) => {
+        for (const record of records) {
+          counted.icons += [...record.addedNodes].filter(
+            (node) => node instanceof HTMLElement && node.classList.contains('icon')
+          ).length;
+        }
+      }).observe(rating.shadowRoot as ShadowRoot, { childList: true, subtree: true });
+      Object.assign(window, { ratingIcons: counted });
+      document.body.append(rating);
+      await wait(50);
+      const width = () => rating.shadowRoot?.querySelector('svg')?.getBoundingClientRect().width;
+      const small = { made: counted.icons, width: width() };
+      rating.size.set('lg');
+      await wait(0);
+      return { large: { made: counted.icons, width: width() }, small };
+    });
+    const filled = () =>
+      page.evaluate(() =>
+        [...(document.querySelector('jl-rating.drawn-once')?.shadowRoot?.querySelectorAll('svg') ?? [])].map(
+          (svg) => getComputedStyle(svg).fill !== 'rgba(0, 0, 0, 0)'
+        )
+      );
+    // The colours change through a transition: read them once it ended.
+    await page.locator('jl-rating.drawn-once .icon[data-value="2"]').hover();
+    await page.waitForTimeout(SETTLE_MS);
+    const previewed = await filled();
+    await page.mouse.move(600, 600);
+    await page.waitForTimeout(SETTLE_MS);
+    const left = await filled();
+    await page.evaluate(() => document.querySelector('jl-rating.drawn-once')?.remove());
+    expect({ appeared, left, previewed }).toEqual({
+      appeared: { large: { made: 5, width: 26 }, small: { made: 5, width: 16 } },
+      left: [true, true, true, true, false],
+      previewed: [true, true, false, false, false],
+    });
+  });
+
+  it('an avatar and a chip draw the icons they show, and none they hide', async () => {
+    const page = await open('/components/avatar');
+    const result = await page.evaluate(async () => {
+      const wait = (milliseconds: number) => new Promise((resolve) => setTimeout(resolve, milliseconds));
+      const drawn = (element: Element) =>
+        [...(element.shadowRoot?.querySelectorAll('jl-icon') ?? [])].filter(
+          (icon) => icon.shadowRoot?.querySelector('svg') !== null
+        ).length;
+      const named = document.createElement('jl-avatar') as JlAvatar;
+      named.setAttribute('name', 'Ada Lovelace');
+      const nameless = document.createElement('jl-avatar') as JlAvatar;
+      document.body.append(named, nameless);
+      await wait(50);
+      const avatars = { named: drawn(named), nameless: drawn(nameless) };
+      named.remove();
+      nameless.remove();
+      return avatars;
+    });
+    const chips = await (await open('/components/chip')).evaluate(async () => {
+      const wait = (milliseconds: number) => new Promise((resolve) => setTimeout(resolve, milliseconds));
+      const drawn = (element: Element) =>
+        [...(element.shadowRoot?.querySelectorAll('jl-icon') ?? [])].filter(
+          (icon) => icon.shadowRoot?.querySelector('svg') !== null
+        ).length;
+      const chip = document.createElement('jl-chip') as JlChip;
+      chip.setAttribute('label', 'Draft');
+      document.body.append(chip);
+      await wait(50);
+      const plain = drawn(chip);
+      chip.removable.set(true);
+      await wait(0);
+      const removable = drawn(chip);
+      chip.remove();
+      return { plain, removable };
+    });
+    expect({ avatars: result, chips }).toEqual({
+      avatars: { named: 0, nameless: 1 },
+      chips: { plain: 0, removable: 1 },
+    });
+  });
+});
+
+describe('molecules A, drawn once', () => {
+  it('calendar: makes its 42 days once, and choosing a day changes two of them', async () => {
+    const page = await open('/components/calendar');
+    const result = await page.evaluate(async () => {
+      const wait = (milliseconds: number) => new Promise((resolve) => setTimeout(resolve, milliseconds));
+      const holder = document.createElement('div');
+      // Attributes written in the HTML: each input calls back twice as the calendar connects.
+      holder.innerHTML =
+        '<jl-calendar value="2026-03-14" min="2026-03-03" max="2026-04-20" first-day="0" locale="fr-CH"></jl-calendar>';
+      const calendar = holder.firstElementChild as JlCalendar;
+      const root = calendar.shadowRoot;
+      if (!root) {
+        throw new Error('The calendar has no shadow root');
+      }
+      // Every day cell ever put in the calendar, and each change of a cell's aria-selected.
+      const counted = { cells: new Set<Element>(), flips: 0 };
+      new MutationObserver((records) => {
+        for (const record of records) {
+          counted.flips += record.attributeName === 'aria-selected' ? 1 : 0;
+          for (const node of record.addedNodes) {
+            const cells = node instanceof Element ? [node, ...node.querySelectorAll('td')] : [];
+            for (const cell of cells.filter((element) => element.localName === 'td')) {
+              counted.cells.add(cell);
+            }
+          }
+        }
+      }).observe(root, { attributeFilter: ['aria-selected'], attributes: true, childList: true, subtree: true });
+      const take = async () => {
+        await wait(0);
+        const taken = { cells: counted.cells.size, flips: counted.flips };
+        counted.cells.clear();
+        counted.flips = 0;
+        return taken;
+      };
+      const shown = () => ({
+        first: root.querySelector('td')?.dataset.date,
+        focused: (root.activeElement as HTMLElement | null)?.dataset.date,
+        selected: [...root.querySelectorAll<HTMLElement>('[aria-selected="true"]')].map(
+          (cell) => cell.dataset.date
+        ),
+        title: root.querySelector('.title')?.textContent,
+      });
+      const press = (key: string) =>
+        root.activeElement?.dispatchEvent(new KeyboardEvent('keydown', { bubbles: true, key }));
+      document.body.append(holder);
+      await wait(50);
+      const connected = { ...(await take()), ...shown() };
+      root.querySelector<HTMLElement>('[data-date="2026-03-20"]')?.click();
+      const chosen = { ...(await take()), ...shown(), value: calendar.value.get() };
+      press('ArrowRight');
+      const moved = { ...(await take()), ...shown() };
+      press('PageDown');
+      press('ArrowRight');
+      const turned = {
+        ...(await take()),
+        ...shown(),
+        pastMax: root.querySelector('[data-date="2026-04-21"]')?.getAttribute('aria-disabled'),
+      };
+      holder.remove();
+      return { chosen, connected, moved, turned };
+    });
+    expect(result).toEqual({
+      chosen: {
+        cells: 0,
+        first: '2026-03-01',
+        flips: 2,
+        focused: '2026-03-20',
+        selected: ['2026-03-20'],
+        title: 'mars 2026',
+        value: '2026-03-20',
+      },
+      // Made once; the 14th is marked, then moves to another cell when the week starts on Sunday.
+      connected: {
+        cells: 42,
+        first: '2026-03-01',
+        flips: 3,
+        focused: undefined,
+        selected: ['2026-03-14'],
+        title: 'mars 2026',
+      },
+      moved: {
+        cells: 0,
+        first: '2026-03-01',
+        flips: 0,
+        focused: '2026-03-21',
+        selected: ['2026-03-20'],
+        title: 'mars 2026',
+      },
+      // A page down from the 21st stops at max, the 20th of April, and the arrow cannot pass it.
+      turned: {
+        cells: 0,
+        first: '2026-03-29',
+        flips: 1,
+        focused: '2026-04-20',
+        pastMax: 'true',
+        selected: [],
+        title: 'avril 2026',
+      },
+    });
+  });
+
+  it('chip group: makes its chips once, resizes their icons in place, and shows the check by CSS', async () => {
+    const page = await open('/components/chip-group');
+    const result = await page.evaluate(async () => {
+      const wait = (milliseconds: number) => new Promise((resolve) => setTimeout(resolve, milliseconds));
+      const holder = document.createElement('div');
+      holder.innerHTML = `<jl-chip-group size="sm" value="b" label="Letter" options='[{"value":"a","label":"Alpha"},{"value":"b","label":"Beta"},{"value":"c","label":"Gamma","badge":3}]'></jl-chip-group>`;
+      const group = holder.firstElementChild as JlChipGroup;
+      const root = group.shadowRoot;
+      if (!root) {
+        throw new Error('The chip group has no shadow root');
+      }
+      // Every chip ever put in the group.
+      const made = new Set<Element>();
+      new MutationObserver((records) => {
+        for (const node of records.flatMap((record) => [...record.addedNodes])) {
+          const chips = node instanceof Element ? [node, ...node.querySelectorAll('.chip')] : [];
+          for (const chip of chips.filter((element) => element.matches('.chip'))) {
+            made.add(chip);
+          }
+        }
+      }).observe(root, { childList: true, subtree: true });
+      const take = async () => {
+        await wait(0);
+        const count = made.size;
+        made.clear();
+        return count;
+      };
+      const chip = (value: string) => root.querySelector<HTMLElement>(`.chip[data-value="${value}"]`);
+      const checks = () =>
+        ['a', 'b', 'c'].map((value) => chip(value)?.querySelector('.icon')?.checkVisibility() ?? false);
+      document.body.append(holder);
+      await wait(50);
+      const connected = { checks: checks(), chips: await take() };
+      group.size.set('lg');
+      const resized = {
+        chips: await take(),
+        width: chip('b')?.querySelector('jl-icon')?.shadowRoot?.querySelector('svg')?.getBoundingClientRect()
+          .width,
+      };
+      chip('a')?.click();
+      const chosen = {
+        checked: ['a', 'b', 'c'].map((value) => chip(value)?.getAttribute('aria-checked')),
+        checks: checks(),
+        chips: await take(),
+        value: group.value.get(),
+      };
+      holder.remove();
+      return { chosen, connected, resized };
+    });
+    expect(result).toEqual({
+      chosen: { checked: ['true', 'false', 'false'], checks: [true, false, false], chips: 0, value: ['a'] },
+      connected: { checks: [false, true, false], chips: 3 },
+      resized: { chips: 0, width: 16 },
+    });
+  });
+
+  it('combobox: keeps one element per option while typing, and an arrow changes two of them', async () => {
+    const page = await open('/components/combobox');
+    await page.evaluate(() => {
+      const holder = document.createElement('div');
+      holder.className = 'probe-holder';
+      holder.innerHTML = `<jl-combobox class="probe" label="Fruit" options='[{"value":"apple","label":"Apple"},{"value":"apricot","label":"Apricot"},{"value":"banana","label":"Banana"},{"value":"grape","label":"Grape"},{"value":"papaya","label":"Papaya"}]'></jl-combobox>`;
+      document.body.append(holder);
+      const listbox = holder.querySelector('jl-combobox')?.shadowRoot?.querySelector('.listbox');
+      if (!listbox) {
+        throw new Error('The combobox has no list');
+      }
+      // Every option element ever put in the list, and each change of an option's aria-selected.
+      const probe = { flips: 0, made: new Set<Node>() };
+      Object.assign(window, { probe });
+      new MutationObserver((records) => {
+        for (const record of records) {
+          probe.flips += record.attributeName === 'aria-selected' ? 1 : 0;
+          for (const node of record.addedNodes) {
+            if (node instanceof Element && node.matches('.option')) {
+              probe.made.add(node);
+            }
+          }
+        }
+      }).observe(listbox, {
+        attributeFilter: ['aria-selected'],
+        attributes: true,
+        childList: true,
+        subtree: true,
+      });
+    });
+    await page.waitForTimeout(50);
+    await page.locator('jl-combobox.probe input').click();
+    await page.keyboard.type('ap');
+    const read = () =>
+      page.evaluate(() => {
+        const { probe } = window as unknown as { probe: { flips: number; made: Set<Node> } };
+        const combobox = document.querySelector<JlCombobox>('jl-combobox.probe');
+        const root = combobox?.shadowRoot;
+        const native = root?.querySelector('input');
+        const active = root?.getElementById(native?.getAttribute('aria-activedescendant') ?? '');
+        const outcome = {
+          active: active?.querySelector('.option-label')?.textContent,
+          flips: probe.flips,
+          made: probe.made.size,
+          shown: [...(root?.querySelectorAll('.option') ?? [])].map(
+            (option) => option.querySelector('.option-label')?.textContent
+          ),
+          value: combobox?.value.get(),
+        };
+        probe.flips = 0;
+        return outcome;
+      });
+    const typed = await read();
+    await page.keyboard.press('ArrowDown');
+    const arrowed = await read();
+    await page.keyboard.press('Enter');
+    const chosen = await read();
+    await page.evaluate(() => document.querySelector('.probe-holder')?.remove());
+    const matches = ['Apple', 'Apricot', 'Grape', 'Papaya'];
+    expect({ arrowed, chosen, typed }).toEqual({
+      arrowed: { active: 'Apricot', flips: 2, made: 5, shown: matches, value: '' },
+      chosen: { active: undefined, flips: 1, made: 5, shown: matches, value: 'apricot' },
+      typed: { active: 'Apple', flips: 3, made: 5, shown: matches, value: '' },
+    });
+  });
+
+  it('breadcrumb: makes its crumbs once with its max, and its fold says how many it holds', async () => {
+    const page = await open('/components/breadcrumb');
+    const result = await page.evaluate(async () => {
+      const wait = (milliseconds: number) => new Promise((resolve) => setTimeout(resolve, milliseconds));
+      const holder = document.createElement('div');
+      holder.innerHTML = `<jl-breadcrumb max="3" items='[{"label":"Home","href":"#"},{"label":"Shop","href":"#"},{"label":"Shoes","href":"#"},{"label":"Boots","href":"#"},{"label":"Chelsea"}]'></jl-breadcrumb>`;
+      const breadcrumb = holder.firstElementChild as JlBreadcrumb;
+      const root = breadcrumb.shadowRoot;
+      if (!root) {
+        throw new Error('The breadcrumb has no shadow root');
+      }
+      // Every crumb ever put in the trail.
+      const made = new Set<Element>();
+      new MutationObserver((records) => {
+        for (const node of records.flatMap((record) => [...record.addedNodes])) {
+          const items = node instanceof Element ? [node, ...node.querySelectorAll('li')] : [];
+          for (const item of items.filter((element) => element.localName === 'li')) {
+            made.add(item);
+          }
+        }
+      }).observe(root, { childList: true, subtree: true });
+      const take = async () => {
+        await wait(0);
+        const count = made.size;
+        made.clear();
+        return count;
+      };
+      document.body.append(holder);
+      await wait(50);
+      const connected = { crumbs: await take(), more: root.querySelector('.more')?.getAttribute('aria-label') };
+      root.querySelector<HTMLElement>('.more')?.click();
+      const expanded = { crumbs: await take(), focused: root.activeElement?.textContent };
+      holder.remove();
+      return { connected, expanded };
+    });
+    expect(result).toEqual({
+      connected: { crumbs: 4, more: 'Show 2 more' },
+      expanded: { crumbs: 5, focused: 'Shop' },
+    });
+  });
+
+  it('avatar group: makes its avatars once with its max, and a new size changes them in place', async () => {
+    const page = await open('/components/avatar-group');
+    const result = await page.evaluate(async () => {
+      const wait = (milliseconds: number) => new Promise((resolve) => setTimeout(resolve, milliseconds));
+      const holder = document.createElement('div');
+      holder.innerHTML = `<jl-avatar-group max="2" size="lg" items='[{"name":"Ada Lovelace"},{"name":"Grace Hopper"},{"name":"Alan Turing"},{"name":"Edsger Dijkstra"}]'></jl-avatar-group>`;
+      const group = holder.firstElementChild as JlAvatarGroup;
+      const root = group.shadowRoot;
+      if (!root) {
+        throw new Error('The avatar group has no shadow root');
+      }
+      // Every avatar ever put in the group.
+      const made = new Set<Element>();
+      new MutationObserver((records) => {
+        for (const node of records.flatMap((record) => [...record.addedNodes])) {
+          const avatars = node instanceof Element ? [node, ...node.querySelectorAll('jl-avatar')] : [];
+          for (const avatar of avatars.filter((element) => element.localName === 'jl-avatar')) {
+            made.add(avatar);
+          }
+        }
+      }).observe(root, { childList: true, subtree: true });
+      const take = async () => {
+        await wait(0);
+        const count = made.size;
+        made.clear();
+        return count;
+      };
+      const sizes = () => [...root.querySelectorAll('jl-avatar')].map((avatar) => avatar.getAttribute('size'));
+      document.body.append(holder);
+      await wait(50);
+      const connected = { avatars: await take(), count: root.querySelector('.more')?.textContent, sizes: sizes() };
+      group.size.set('sm');
+      const resized = { avatars: await take(), sizes: sizes() };
+      holder.remove();
+      return { connected, resized };
+    });
+    expect(result).toEqual({
+      connected: { avatars: 3, count: '+2', sizes: ['lg', 'lg', 'lg'] },
+      resized: { avatars: 0, sizes: ['sm', 'sm', 'sm'] },
+    });
+  });
+
+  it('code block: colours its code once, and shows line numbers and its header by CSS', async () => {
+    const page = await open('/components/code-block');
+    const result = await page.evaluate(async () => {
+      const wait = (milliseconds: number) => new Promise((resolve) => setTimeout(resolve, milliseconds));
+      const holder = document.createElement('div');
+      holder.innerHTML =
+        '<jl-code-block heading="answer.ts" language="ts" line-numbers code="const answer = 42;"></jl-code-block>';
+      const block = holder.firstElementChild as JlCodeBlock;
+      const root = block.shadowRoot;
+      if (!root) {
+        throw new Error('The code block has no shadow root');
+      }
+      // Each time the code's nodes are replaced: one colouring.
+      const counted = { colourings: 0 };
+      new MutationObserver((records) => {
+        counted.colourings += records.filter((record) => (record.target as Element).localName === 'code').length;
+      }).observe(root, { childList: true, subtree: true });
+      const take = async () => {
+        await wait(0);
+        const count = counted.colourings;
+        counted.colourings = 0;
+        return count;
+      };
+      const shown = (selector: string) => root.querySelector(selector)?.checkVisibility() ?? false;
+      document.body.append(holder);
+      await wait(50);
+      const connected = {
+        colourings: await take(),
+        gutter: shown('.gutter'),
+        header: shown('header'),
+        keyword: root.querySelector('.tok-keyword')?.textContent,
+      };
+      block.lineNumbers.set(false);
+      block.heading.set('');
+      const plain = { colourings: await take(), gutter: shown('.gutter'), header: shown('header') };
+      holder.remove();
+      return { connected, plain };
+    });
+    expect(result).toEqual({
+      connected: { colourings: 1, gutter: true, header: true, keyword: 'const' },
+      plain: { colourings: 0, gutter: false, header: false },
+    });
+  });
+
+  it("alert: draws only the icon it shows, not the tone's first; none draws none", async () => {
+    const page = await open('/components/alert');
+    const result = await page.evaluate(async () => {
+      const wait = (milliseconds: number) => new Promise((resolve) => setTimeout(resolve, milliseconds));
+      const holder = document.createElement('div');
+      holder.innerHTML =
+        '<jl-alert tone="warn" icon="sparkles" heading="Heads up"></jl-alert><jl-alert tone="danger" icon="none"></jl-alert>';
+      const [own, none] = [...holder.children] as [JlAlert, JlAlert];
+      // Each SVG drawn while the alerts connect: lucide makes each with createElementNS.
+      const drawn = { svgs: 0 };
+      const make = document.createElementNS;
+      Object.defineProperty(document, 'createElementNS', {
+        configurable: true,
+        value: (namespace: string | null, name: string) => {
+          drawn.svgs += name === 'svg' ? 1 : 0;
+          return make.call(document, namespace, name);
+        },
+      });
+      document.body.append(holder);
+      await wait(50);
+      Reflect.deleteProperty(document, 'createElementNS');
+      const shown = (alert: JlAlert, selector: string) =>
+        alert.shadowRoot?.querySelector(selector)?.checkVisibility() ?? false;
+      const outcome = {
+        description: shown(own, '.description'),
+        heading: shown(own, '.heading'),
+        icons: [shown(own, '.icon'), shown(none, '.icon')],
+        svgs: drawn.svgs,
+      };
+      holder.remove();
+      return outcome;
+    });
+    // The sparkles, and the × of each alert's dismiss button.
+    expect(result).toEqual({ description: false, heading: true, icons: [true, false], svgs: 3 });
+  });
+});
+
+describe('molecules B, drawn once', () => {
+  it('a list item makes its icon only with an icon and its chevron only as a link; empty texts take no room', async () => {
+    const page = await open('/components/list-item');
+    const result = await page.evaluate(async () => {
+      const wait = (milliseconds: number) => new Promise((resolve) => setTimeout(resolve, milliseconds));
+      const item = document.createElement('jl-list-item') as JlListItem;
+      item.heading.set('Invoices');
+      document.body.append(item);
+      await wait(50);
+      const root = item.shadowRoot;
+      const icons = () => root?.querySelectorAll('jl-icon').length;
+      const shown = (selector: string) => root?.querySelector<HTMLElement>(selector)?.checkVisibility() ?? false;
+      const plain = { description: shown('.description'), icons: icons(), meta: shown('.meta') };
+      item.description.set('Sent monthly');
+      item.icon.set('check');
+      item.href.set('#');
+      await wait(0);
+      const linked = { chevron: shown('.chevron'), description: shown('.description'), icons: icons() };
+      item.href.set('');
+      await wait(0);
+      const unlinked = { chevron: shown('.chevron'), icons: icons() };
+      item.remove();
+      return { linked, plain, unlinked };
+    });
+    expect(result).toEqual({
+      linked: { chevron: true, description: true, icons: 2 },
+      plain: { description: false, icons: 0, meta: false },
+      unlinked: { chevron: false, icons: 2 },
+    });
+  });
+
+  it('a tag input makes a chip per tag once, then adds or removes only the one that changed', async () => {
+    const page = await open('/components/tag-input');
+    const result = await page.evaluate(async () => {
+      const wait = (milliseconds: number) => new Promise((resolve) => setTimeout(resolve, milliseconds));
+      const counted = { chips: 0, formValues: 0 };
+      // Each time the field gives the form its value.
+      const setFormValue = ElementInternals.prototype.setFormValue;
+      ElementInternals.prototype.setFormValue = function (this: ElementInternals, ...values) {
+        counted.formValues += 1;
+        setFormValue.apply(this, values);
+      };
+      const form = document.createElement('form');
+      const field = document.createElement('jl-tag-input') as JlTagInput;
+      field.name.set('tags');
+      field.max.set(5);
+      field.value.set(['red', 'green', 'blue']);
+      form.append(field);
+      const root = field.shadowRoot;
+      if (!root) {
+        throw new Error('The tag input has no shadow root');
+      }
+      new MutationObserver((records) => {
+        counted.chips += records
+          .flatMap((record) => [...record.addedNodes])
+          .filter((node) => node instanceof HTMLLIElement).length;
+      }).observe(root, { childList: true, subtree: true });
+      document.body.append(form);
+      await wait(50);
+      const connected = { ...counted };
+      const green = root.querySelectorAll('.tag')[1];
+      field.value.set([...field.value.get(), 'cyan']);
+      await wait(0);
+      const added = counted.chips - connected.chips;
+      root.querySelector<HTMLElement>('.tag-remove')?.click();
+      await wait(0);
+      const afterRemoval = { kept: root.querySelector('.tag') === green, made: counted.chips - connected.chips };
+      const tags = [...root.querySelectorAll('.tag-text')].map((tag) => tag.textContent);
+      const submitted = new FormData(form).getAll('tags');
+      field.disabled.set(true);
+      const removable = root.querySelector<HTMLElement>('.tag-remove')?.checkVisibility();
+      ElementInternals.prototype.setFormValue = setFormValue;
+      form.remove();
+      return { added, afterRemoval, connected, removable, submitted, tags };
+    });
+    expect(result).toEqual({
+      added: 1,
+      afterRemoval: { kept: true, made: 1 },
+      // Once from its value, once as it connects for its name.
+      connected: { chips: 3, formValues: 2 },
+      removable: false,
+      submitted: ['green', 'blue', 'cyan'],
+      tags: ['green', 'blue', 'cyan'],
+    });
+  });
+
+  it('a segmented control reads no layout while its inputs change, places its thumb at the frame, and resizes in place', async () => {
+    const page = await open('/components/segmented');
+    const result = await page.evaluate(async () => {
+      const wait = (milliseconds: number) => new Promise((resolve) => setTimeout(resolve, milliseconds));
+      const frame = () => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+      // Each read of an offset: one after a change makes the browser lay the page out there and then.
+      const counted = { reads: 0, segments: 0 };
+      const offsetLeft = Object.getOwnPropertyDescriptor(HTMLElement.prototype, 'offsetLeft');
+      Object.defineProperty(HTMLElement.prototype, 'offsetLeft', {
+        configurable: true,
+        get(this: HTMLElement) {
+          counted.reads += 1;
+          return offsetLeft?.get?.call(this);
+        },
+      });
+      const control = document.createElement('jl-segmented') as JlSegmented;
+      control.options.set([
+        { label: 'Day', value: 'day' },
+        { label: 'Week', value: 'week' },
+        { label: 'Month', value: 'month' },
+      ]);
+      control.value.set('week');
+      document.body.append(control);
+      control.size.set('lg');
+      control.block.set(true);
+      control.value.set('month');
+      const whileChanging = counted.reads;
+      const root = control.shadowRoot;
+      new MutationObserver((records) => {
+        counted.segments += records
+          .flatMap((record) => [...record.addedNodes])
+          .filter((node) => node instanceof HTMLButtonElement).length;
+      }).observe(root as ShadowRoot, { childList: true, subtree: true });
+      await wait(50);
+      control.size.set('sm');
+      await frame();
+      if (offsetLeft) {
+        Object.defineProperty(HTMLElement.prototype, 'offsetLeft', offsetLeft);
+      }
+      const thumb = root?.querySelector<HTMLElement>('.thumb');
+      const chosen = root?.querySelector<HTMLElement>('[aria-checked="true"]');
+      const placed = thumb?.style.getPropertyValue('--x') === `${chosen?.offsetLeft}px`;
+      const iconless = chosen?.textContent;
+      control.remove();
+      return { chosen: iconless, placed, segments: counted.segments, whileChanging };
+    });
+    expect(result).toEqual({ chosen: 'Month', placed: true, segments: 0, whileChanging: 0 });
+  });
+
+  it('tabs change only which tab is selected when the value changes, and place the indicator at the frame', async () => {
+    const page = await open('/components/tabs');
+    const result = await page.evaluate(async () => {
+      const wait = (milliseconds: number) => new Promise((resolve) => setTimeout(resolve, milliseconds));
+      const frame = () => new Promise((resolve) => requestAnimationFrame(() => requestAnimationFrame(resolve)));
+      const counted = { made: 0, reads: 0 };
+      const offsetLeft = Object.getOwnPropertyDescriptor(HTMLElement.prototype, 'offsetLeft');
+      Object.defineProperty(HTMLElement.prototype, 'offsetLeft', {
+        configurable: true,
+        get(this: HTMLElement) {
+          counted.reads += 1;
+          return offsetLeft?.get?.call(this);
+        },
+      });
+      const tabs = document.createElement('jl-tabs') as JlTabs;
+      for (const [name, label] of [
+        ['one', 'Overview'],
+        ['two', 'Activity'],
+        ['three', 'Settings'],
+      ] as const) {
+        const panel = document.createElement('jl-tab-panel');
+        panel.setAttribute('name', name);
+        panel.setAttribute('label', label);
+        panel.setAttribute('icon', 'check');
+        tabs.append(panel);
+      }
+      document.body.append(tabs);
+      tabs.variant.set('pill');
+      tabs.value.set('two');
+      const whileChanging = counted.reads;
+      await wait(50);
+      const root = tabs.shadowRoot;
+      new MutationObserver((records) => {
+        counted.made += records.flatMap((record) => [...record.addedNodes]).length;
+      }).observe(root as ShadowRoot, { childList: true, subtree: true });
+      tabs.value.set('three');
+      await frame();
+      if (offsetLeft) {
+        Object.defineProperty(HTMLElement.prototype, 'offsetLeft', offsetLeft);
+      }
+      const indicator = root?.querySelector<HTMLElement>('.indicator');
+      const selected = root?.querySelector<HTMLElement>('[aria-selected="true"]');
+      const placed = indicator?.style.getPropertyValue('--x') === `${selected?.offsetLeft}px`;
+      const shown = [...tabs.children].map((panel) => panel.hasAttribute('selected'));
+      tabs.remove();
+      return { made: counted.made, placed, selected: selected?.textContent, shown, whileChanging };
+    });
+    expect(result).toEqual({
+      made: 0,
+      placed: true,
+      selected: 'Settings',
+      shown: [false, false, true],
+      whileChanging: 0,
+    });
+  });
+
+  it('a pagination makes its buttons once, then a click changes their numbers in place and focuses the current one', async () => {
+    const page = await open('/components/pagination');
+    const result = await page.evaluate(async () => {
+      const wait = (milliseconds: number) => new Promise((resolve) => setTimeout(resolve, milliseconds));
+      const counted = { entries: 0 };
+      const pagination = document.createElement('jl-pagination') as JlPagination;
+      pagination.pages.set(20);
+      pagination.page.set(10);
+      const root = pagination.shadowRoot;
+      new MutationObserver((records) => {
+        counted.entries += records
+          .flatMap((record) => [...record.addedNodes])
+          .filter((node) => node instanceof HTMLLIElement).length;
+      }).observe(root as ShadowRoot, { childList: true, subtree: true });
+      document.body.append(pagination);
+      await wait(50);
+      const atConnection = counted.entries;
+      root?.querySelector<HTMLElement>('[data-page="11"]')?.click();
+      await wait(0);
+      const current = root?.querySelector<HTMLElement>('[aria-current]');
+      const outcome = {
+        atConnection,
+        current: current?.textContent,
+        focused: root?.activeElement === current,
+        madeOnClick: counted.entries - atConnection,
+        numbers: [...(root?.querySelectorAll('.pages li') ?? [])].map((entry) => entry.textContent),
+      };
+      pagination.remove();
+      return outcome;
+    });
+    expect(result).toEqual({
+      atConnection: 7,
+      current: '11',
+      focused: true,
+      madeOnClick: 0,
+      numbers: ['1', '…', '10', '11', '12', '…', '20'],
+    });
+  });
+
+  it('steps are made once, and a new current step changes them in place', async () => {
+    const page = await open('/components/steps');
+    const result = await page.evaluate(async () => {
+      const wait = (milliseconds: number) => new Promise((resolve) => setTimeout(resolve, milliseconds));
+      const counted = { icons: 0, steps: 0 };
+      const steps = document.createElement('jl-steps') as JlSteps;
+      steps.items.set([{ label: 'Cart' }, { label: 'Address' }, { label: 'Payment' }, { label: 'Done' }]);
+      steps.current.set(1);
+      steps.clickable.set(true);
+      const root = steps.shadowRoot;
+      new MutationObserver((records) => {
+        const added = records.flatMap((record) => [...record.addedNodes]);
+        counted.steps += added.filter((node) => node instanceof HTMLLIElement).length;
+        counted.icons += added.filter((node) => node instanceof Element && node.localName === 'jl-icon').length;
+      }).observe(root as ShadowRoot, { childList: true, subtree: true });
+      document.body.append(steps);
+      await wait(50);
+      const atConnection = { ...counted };
+      steps.current.set(2);
+      await wait(0);
+      const moved = { icons: counted.icons - atConnection.icons, steps: counted.steps - atConnection.steps };
+      root?.querySelector<HTMLElement>('button.head')?.click();
+      await wait(0);
+      const back = {
+        current: steps.current.get(),
+        focused: root?.activeElement === root?.querySelector('[aria-current] .head'),
+        statuses: [...(root?.querySelectorAll<HTMLElement>('.step') ?? [])].map((step) => step.dataset.status),
+      };
+      steps.remove();
+      return { atConnection, back, moved };
+    });
+    expect(result).toEqual({
+      atConnection: { icons: 1, steps: 4 },
+      back: { current: 0, focused: true, statuses: ['current', 'upcoming', 'upcoming', 'upcoming'] },
+      moved: { icons: 1, steps: 0 },
+    });
+  });
+
+  it('a timeline is made once, and compact only resizes its icons', async () => {
+    const page = await open('/components/timeline');
+    const result = await page.evaluate(async () => {
+      const wait = (milliseconds: number) => new Promise((resolve) => setTimeout(resolve, milliseconds));
+      const counted = { events: 0 };
+      const timeline = document.createElement('jl-timeline') as JlTimeline;
+      timeline.items.set([
+        { icon: 'check', time: '14:32', title: 'Deployed' },
+        { time: '14:27', title: 'Checks passed' },
+      ]);
+      const root = timeline.shadowRoot;
+      new MutationObserver((records) => {
+        counted.events += records
+          .flatMap((record) => [...record.addedNodes])
+          .filter((node) => node instanceof HTMLLIElement).length;
+      }).observe(root as ShadowRoot, { childList: true, subtree: true });
+      document.body.append(timeline);
+      await wait(50);
+      const atConnection = counted.events;
+      timeline.compact.set(true);
+      await wait(0);
+      // The CSS sizes the icon when compact (--icon-size): its SVG's drawn width.
+      const size = root?.querySelector('jl-icon')?.shadowRoot?.querySelector('svg')?.getBoundingClientRect().width;
+      const outcome = { atConnection, onCompact: counted.events - atConnection, size };
+      timeline.remove();
+      return outcome;
+    });
+    expect(result).toEqual({ atConnection: 2, onCompact: 0, size: 12 });
+  });
+
+  it('a load state makes its skeleton only when it shows, and shows each part from its state', async () => {
+    const page = await open('/components/load-state');
+    const result = await page.evaluate(async () => {
+      const wait = (milliseconds: number) => new Promise((resolve) => setTimeout(resolve, milliseconds));
+      const counted = { rows: 0 };
+      const state = document.createElement('jl-load-state') as JlLoadState;
+      const root = state.shadowRoot;
+      new MutationObserver((records) => {
+        counted.rows += records
+          .flatMap((record) => [...record.addedNodes])
+          .filter((node) => node instanceof Element && node.classList.contains('bone-row')).length;
+      }).observe(root as ShadowRoot, { childList: true, subtree: true });
+      document.body.append(state);
+      await wait(50);
+      // A quick answer, before the skeleton's delay.
+      state.state.set('ready');
+      await wait(400);
+      const shown = (selector: string) => root?.querySelector<HTMLElement>(selector)?.checkVisibility() ?? false;
+      const ready = {
+        content: shown('.content'),
+        error: shown('.error'),
+        loading: shown('.loading'),
+        rows: counted.rows,
+      };
+      state.delay.set(0);
+      state.state.set('loading');
+      await wait(50);
+      const loading = { content: shown('.content'), loading: shown('.loading'), rows: counted.rows };
+      state.state.set('error');
+      await wait(0);
+      const failed = { error: shown('.error'), loading: shown('.loading') };
+      state.remove();
+      return { failed, loading, ready };
+    });
+    expect(result).toEqual({
+      failed: { error: true, loading: false },
+      // The default skeleton: three rows, made once.
+      loading: { content: false, loading: true, rows: 3 },
+      ready: { content: true, error: false, loading: false, rows: 0 },
+    });
+  });
+
+  it('a menu makes its items as it opens, keeps them for the next opening, and moves the focus to the first', async () => {
+    const page = await open('/components/menu');
+    const result = await page.evaluate(async () => {
+      const wait = (milliseconds: number) => new Promise((resolve) => setTimeout(resolve, milliseconds));
+      const menu = document.createElement('jl-menu') as JlMenu;
+      const trigger = document.createElement('button');
+      trigger.slot = 'trigger';
+      trigger.textContent = 'Actions';
+      menu.append(trigger);
+      menu.items.set([
+        { label: 'Edit', value: 'edit' },
+        { label: 'Delete', value: 'delete' },
+      ]);
+      document.body.append(menu);
+      await wait(50);
+      const root = menu.shadowRoot;
+      const items = () => [...(root?.querySelectorAll('[role="menuitem"]') ?? [])];
+      const closed = items().length;
+      trigger.focus();
+      trigger.dispatchEvent(new KeyboardEvent('keydown', { bubbles: true, composed: true, key: 'ArrowDown' }));
+      await wait(0);
+      const first = items()[0];
+      const opened = { focused: root?.activeElement === first, items: items().length };
+      menu.hide();
+      menu.show();
+      await wait(0);
+      const kept = items()[0] === first;
+      menu.hide();
+      menu.remove();
+      return { closed, kept, opened };
+    });
+    expect(result).toEqual({ closed: 0, kept: true, opened: { focused: true, items: 2 } });
+  });
+
+  it('a tooltip measures once per scroll, its arrow pointing from the same measures', async () => {
+    const page = await open('/components/tooltip');
+    const result = await page.evaluate(async () => {
+      const wait = (milliseconds: number) => new Promise((resolve) => setTimeout(resolve, milliseconds));
+      const tooltip = document.createElement('jl-tooltip') as JlTooltip;
+      const trigger = document.createElement('button');
+      trigger.textContent = 'Save';
+      tooltip.text.set('Save the draft');
+      tooltip.append(trigger);
+      document.body.prepend(tooltip);
+      await wait(50);
+      tooltip.show();
+      await wait(50);
+      const counted = { rects: 0 };
+      const getBoundingClientRect = Element.prototype.getBoundingClientRect;
+      Element.prototype.getBoundingClientRect = function (this: Element) {
+        counted.rects += 1;
+        return getBoundingClientRect.call(this);
+      };
+      window.dispatchEvent(new Event('scroll'));
+      Element.prototype.getBoundingClientRect = getBoundingClientRect;
+      const bubble = tooltip.shadowRoot?.querySelector<HTMLElement>('.bubble');
+      const anchor = trigger.getBoundingClientRect();
+      const box = bubble?.getBoundingClientRect();
+      const arrow = Number.parseFloat(bubble?.style.getPropertyValue('--arrow') ?? '');
+      const centre = anchor.left + anchor.width / 2 - (box?.left ?? 0);
+      tooltip.hide();
+      tooltip.remove();
+      return { pointsAtTrigger: Math.abs(arrow - centre) < 1, rects: counted.rects };
+    });
+    expect(result).toEqual({ pointsAtTrigger: true, rects: 1 });
+  });
+});
+
+describe('organisms, drawn once', () => {
+  it('the table sorts by moving its rows, and checks or opens one row by changing that row alone', async () => {
+    const page = await open('/components/table');
+    const result = await page.evaluate(async () => {
+      const wait = (milliseconds: number) => new Promise((resolve) => setTimeout(resolve, milliseconds));
+      const table = document.createElement('jl-table') as JlTable;
+      // Forty rows whose dates are in another order than their names.
+      const data = Array.from({ length: 40 }, (_, index) => ({
+        id: index,
+        joined: new Date(Date.UTC(2024, 0, 1 + ((index * 7) % 40))).toISOString().slice(0, 10),
+        name: `Item ${index}`,
+      }));
+      table.columns.set([
+        { key: 'name', label: 'Name', sortable: true },
+        { format: 'date', key: 'joined', label: 'Joined', sortable: true },
+      ]);
+      table.rows.set(data);
+      table.selectable.set(true);
+      table.expandable.set('single');
+      table.detail = (row) => document.createTextNode(`More on ${String(row.name)}`);
+      document.body.append(table);
+      await wait(50);
+      const root = table.shadowRoot;
+      if (!root) {
+        throw new Error('The table has no shadow root');
+      }
+      const rows = () => [...root.querySelectorAll<HTMLTableRowElement>('tbody > tr[data-index]')];
+      const rowNamed = (name: string) => rows().find((row) => row.cells[2]?.textContent === name);
+      const before = rows();
+      // Each `checked` the table writes: one row ticked writes that row's box and the select-all box.
+      const writes = { checked: 0 };
+      const checked = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'checked');
+      Object.defineProperty(HTMLInputElement.prototype, 'checked', {
+        configurable: true,
+        get(this: HTMLInputElement) {
+          return checked?.get?.call(this);
+        },
+        set(this: HTMLInputElement, value: boolean) {
+          writes.checked += 1;
+          checked?.set?.call(this, value);
+        },
+      });
+      rowNamed('Item 5')?.querySelector<HTMLInputElement>('.select-cell .checkbox')?.click();
+      if (checked) {
+        Object.defineProperty(HTMLInputElement.prototype, 'checked', checked);
+      }
+      // Each aria-expanded the table writes: opening one row writes that row's chevron.
+      const expanded = { writes: 0 };
+      const chevrons = new MutationObserver((records) => {
+        expanded.writes += records.length;
+      });
+      chevrons.observe(root, { attributeFilter: ['aria-expanded'], subtree: true });
+      table.toggle(3, true);
+      await wait(0);
+      const expandedWrites = expanded.writes;
+      chevrons.disconnect();
+      root.querySelector<HTMLButtonElement>('button.sort[data-key="joined"]')?.click();
+      await wait(0);
+      const after = rows();
+      const joinedOf = (row: HTMLTableRowElement) =>
+        data.find((item) => item.name === row.cells[2]?.textContent)?.joined ?? '';
+      const shown = after.map(joinedOf);
+      const fifth = rowNamed('Item 5');
+      const sixth = rowNamed('Item 6');
+      const background = (row: HTMLTableRowElement | undefined) =>
+        row?.cells[2] ? getComputedStyle(row.cells[2]).backgroundColor : '';
+      const outcome = {
+        checkedWrites: writes.checked,
+        detailUnderRow: rowNamed('Item 3')?.nextElementSibling?.classList.contains('detail') ?? false,
+        expandedWrites,
+        kept: {
+          checked: fifth?.querySelector<HTMLInputElement>('.select-cell .checkbox')?.checked,
+          shaded: background(fifth) !== background(sixth),
+        },
+        sameRows: after.length === before.length && after.every((row) => before.includes(row)),
+        selected: table.selected.get(),
+        sort: root.querySelector('th[data-key="joined"]')?.getAttribute('aria-sort'),
+        sorted: shown.every((joined, index) => index === 0 || (shown[index - 1] ?? '') <= joined),
+      };
+      table.remove();
+      return outcome;
+    });
+    expect(result).toEqual({
+      checkedWrites: 2,
+      detailUnderRow: true,
+      expandedWrites: 1,
+      kept: { checked: true, shaded: true },
+      sameRows: true,
+      selected: [5],
+      sort: 'ascending',
+      sorted: true,
+    });
+  });
+
+  it('the command palette keeps an option per command while typing, and moves the active one in two writes', async () => {
+    const page = await open('/components/command-palette');
+    const result = await page.evaluate(async () => {
+      const wait = (milliseconds: number) => new Promise((resolve) => setTimeout(resolve, milliseconds));
+      const palette = document.createElement('jl-command-palette') as JlCommandPalette;
+      palette.hotkey.set('none');
+      palette.commands.set(
+        Array.from({ length: 30 }, (_, index) => ({
+          group: index % 2 === 0 ? 'Even' : 'Odd',
+          icon: 'search',
+          id: `c${index}`,
+          label: `Command ${index}`,
+        }))
+      );
+      document.body.append(palette);
+      await wait(50);
+      palette.show();
+      await wait(50);
+      const root = palette.shadowRoot;
+      const input = root?.querySelector('input');
+      if (!root || !input) {
+        throw new Error('The palette drew no search box');
+      }
+      const options = () => [...root.querySelectorAll<HTMLElement>('[role="option"]')];
+      const type = async (text: string) => {
+        input.value = text;
+        input.dispatchEvent(new Event('input', { bubbles: true }));
+        await wait(0);
+      };
+      const before = options();
+      await type('command 1');
+      const typed = options();
+      const selections = new MutationObserver(() => undefined);
+      selections.observe(root, { attributeFilter: ['aria-selected'], subtree: true });
+      input.dispatchEvent(new KeyboardEvent('keydown', { bubbles: true, key: 'ArrowDown' }));
+      const selectedWrites = selections.takeRecords().length;
+      selections.disconnect();
+      const active = root.querySelector('[aria-selected="true"]');
+      const activeNamed = active !== null && active.id === input.getAttribute('aria-activedescendant');
+      const activeIsSecond = active === typed[1];
+      await type('zzzz');
+      const empty = {
+        list: root.querySelector<HTMLElement>('.results')?.checkVisibility(),
+        message: root.querySelector<HTMLElement>('.empty')?.checkVisibility(),
+      };
+      palette.close();
+      palette.remove();
+      return {
+        activeIsSecond,
+        activeNamed,
+        empty,
+        kept: typed.every((option) => before.includes(option)),
+        narrowed: typed.length > 0 && typed.length < before.length,
+        selectedWrites,
+      };
+    });
+    expect(result).toEqual({
+      activeIsSecond: true,
+      activeNamed: true,
+      empty: { list: false, message: true },
+      kept: true,
+      narrowed: true,
+      selectedWrites: 2,
+    });
+  });
+
+  it('the side nav draws its items once as it connects, and again only when it turns into its rail', async () => {
+    const page = await open('/components/side-nav');
+    const result = await page.evaluate(async () => {
+      const wait = (milliseconds: number) => new Promise((resolve) => setTimeout(resolve, milliseconds));
+      const nav = document.createElement('jl-side-nav') as JlSideNav;
+      const root = nav.shadowRoot;
+      if (!root) {
+        throw new Error('The side nav has no shadow root');
+      }
+      // Each section put in the nav: two per drawing.
+      const counted = { sections: 0 };
+      new MutationObserver((records) => {
+        counted.sections += records
+          .flatMap((record) => [...record.addedNodes])
+          .filter((node) => node instanceof HTMLElement && node.classList.contains('section')).length;
+      }).observe(root, { childList: true, subtree: true });
+      nav.setAttribute(
+        'sections',
+        JSON.stringify([
+          {
+            items: [
+              { id: 'jobs', label: 'Jobs' },
+              { children: [{ id: 'staff', label: 'Staff' }], id: 'people', label: 'People' },
+            ],
+            label: 'Work',
+          },
+          { items: [{ id: 'settings', label: 'Settings' }], label: 'Admin' },
+        ])
+      );
+      nav.setAttribute('collapsible', '');
+      nav.setAttribute('value', 'staff');
+      document.body.append(nav);
+      await wait(50);
+      const fold = () => root.querySelector<HTMLElement>('.fold')?.checkVisibility();
+      const chevron = root.querySelector('[data-id="people"] .chevron');
+      const asItAppears = {
+        fold: fold(),
+        openChevronTurned: chevron !== null && getComputedStyle(chevron).transform !== 'none',
+        sections: counted.sections,
+      };
+      nav.inDrawer.set(true);
+      await wait(0);
+      const inDrawer = { fold: fold(), sections: counted.sections };
+      nav.inDrawer.set(false);
+      nav.collapsed.set(true);
+      await wait(0);
+      const rail = { fold: fold(), rail: nav.hasAttribute('rail'), sections: counted.sections };
+      nav.remove();
+      return { asItAppears, inDrawer, rail };
+    });
+    expect(result).toEqual({
+      asItAppears: { fold: true, openChevronTurned: true, sections: 2 },
+      inDrawer: { fold: false, sections: 2 },
+      rail: { fold: true, rail: true, sections: 4 },
+    });
+  });
+
+  it("the flow moves only a dragged node's edges, and does not draw its nodes again for a move", async () => {
+    const page = await open('/components/flow');
+    await page.evaluate(async () => {
+      const wait = (milliseconds: number) => new Promise((resolve) => setTimeout(resolve, milliseconds));
+      const flow = document.createElement('jl-flow') as JlFlow;
+      flow.id = 'drawn-once';
+      Object.assign(flow.style, {
+        height: '500px',
+        inset: '0',
+        position: 'fixed',
+        width: '800px',
+        zIndex: '1000',
+      });
+      flow.graph.set({
+        edges: [
+          { from: 'a', id: 'e1', to: 'b' },
+          { from: 'c', id: 'e2', to: 'd' },
+        ],
+        nodes: [
+          { id: 'a', label: 'A', position: { x: 0, y: 0 }, start: true },
+          { id: 'b', label: 'B', position: { x: 0, y: 136 } },
+          { id: 'c', label: 'C', position: { x: 320, y: 0 }, start: true },
+          { id: 'd', label: 'D', position: { x: 320, y: 136 } },
+        ],
+      });
+      document.body.append(flow);
+      await wait(200);
+    });
+    const flow = page.locator('#drawn-once');
+    const label = await flow.locator('[data-node="b"] .label').boundingBox();
+    if (label === null) {
+      throw new Error('The flow drew no node b');
+    }
+    await page.evaluate(() => {
+      const root = document.querySelector('#drawn-once')?.shadowRoot;
+      const svg = root?.querySelector('svg.edges');
+      if (!root || !svg) {
+        throw new Error('The flow drew no edges');
+      }
+      const probe = {
+        labels: [...root.querySelectorAll('.node .label')],
+        otherEdge: 0,
+        ownEdge: 0,
+        svgChildren: 0,
+      };
+      new MutationObserver((records) => {
+        for (const record of records) {
+          const edge = (record.target as Element).closest?.('[data-edge]')?.getAttribute('data-edge');
+          probe.svgChildren += record.type === 'childList' ? 1 : 0;
+          probe.otherEdge += record.attributeName === 'd' && edge === 'e2' ? 1 : 0;
+          probe.ownEdge += record.attributeName === 'd' && edge === 'e1' ? 1 : 0;
+        }
+      }).observe(svg, { attributeFilter: ['d'], attributes: true, childList: true, subtree: true });
+      Object.assign(window, { flowProbe: probe });
+    });
+    await page.mouse.move(label.x + label.width / 2, label.y + label.height / 2);
+    await page.mouse.down();
+    await page.mouse.move(label.x + label.width / 2 + 40, label.y + label.height / 2 + 80, { steps: 8 });
+    const duringDrag = await page.evaluate(() => {
+      const { otherEdge, ownEdge, svgChildren } = (
+        window as unknown as { flowProbe: { otherEdge: number; ownEdge: number; svgChildren: number } }
+      ).flowProbe;
+      return { otherEdge, ownEdgeFollows: ownEdge > 0, svgChildren };
+    });
+    await page.mouse.up();
+    const afterDrop = await page.evaluate(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 50));
+      const element = document.querySelector('#drawn-once') as JlFlow;
+      const { labels } = (window as unknown as { flowProbe: { labels: Element[] } }).flowProbe;
+      const now = [...(element.shadowRoot?.querySelectorAll('.node .label') ?? [])];
+      const moved = element.graph.get().nodes.find((node) => node.id === 'b')?.position;
+      element.remove();
+      return {
+        labelsKept: now.length === labels.length && now.every((label, index) => label === labels[index]),
+        moved: moved !== undefined && moved.y > 136,
+      };
+    });
+    expect({ afterDrop, duringDrag }).toEqual({
+      afterDrop: { labelsKept: true, moved: true },
+      duringDrag: { otherEdge: 0, ownEdgeFollows: true, svgChildren: 0 },
+    });
+    expect(state.errors).toEqual([]);
   });
 });

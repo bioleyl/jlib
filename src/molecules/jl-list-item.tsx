@@ -38,9 +38,9 @@ export class JlListItem extends JlElement {
   );
   readonly description = this.useChange(
     '',
+    // The CSS hides it while empty.
     (value) => {
       this._refs.description.textContent = value;
-      this._refs.description.hidden = value === '';
     },
     { attribute: 'description' }
   );
@@ -49,9 +49,9 @@ export class JlListItem extends JlElement {
   /** A short note at the end: a time, a count, a size. */
   readonly meta = this.useChange(
     '',
+    // The CSS hides it while empty.
     (value) => {
       this._refs.meta.textContent = value;
-      this._refs.meta.hidden = value === '';
     },
     { attribute: 'meta' }
   );
@@ -70,12 +70,10 @@ export class JlListItem extends JlElement {
   );
 
   private readonly _refs = this.useRefs((ref) => ({
-    chevron: ref<JlIcon>('.chevron'),
     description: ref('.description'),
     end: ref('.end'),
     endSlot: ref<HTMLSlotElement>('slot[name="end"]'),
     heading: ref('.heading'),
-    icon: ref<JlIcon>('.icon'),
     iconBox: ref('.icon-box'),
     item: ref('.item'),
     link: ref<HTMLAnchorElement>('.link'),
@@ -98,20 +96,17 @@ export class JlListItem extends JlElement {
           <span class="link-name sr-only" />
         </a>
         <span class="start" hidden>
-          <span class="icon-box">
-            <JlIcon class="icon" size={ICON_SIZE} />
-          </span>
+          <span class="icon-box" />
           <slot name="start" />
         </span>
         <span class="text">
           <span class="heading" id="heading" />
-          <span class="description" id="description" hidden />
+          <span class="description" id="description" />
         </span>
-        <span class="meta" hidden />
+        <span class="meta" />
         <span class="end" hidden>
           <slot name="end" />
         </span>
-        <JlIcon class="chevron" name="chevron-right" size={CHEVRON_SIZE} hidden />
       </div>
     );
   }
@@ -152,7 +147,7 @@ export class JlListItem extends JlElement {
     const selected = this.selected.get();
     setOrRemove(link, 'href', href);
     link.hidden = href === '';
-    this._refs.chevron.hidden = href === '';
+    this.renderChevron(href !== '');
     this.reflect('clickable', this.interactive.get() || href !== '');
     setOrRemove(link, 'aria-current', selected ? 'page' : '');
     if (!this.pressable()) {
@@ -168,12 +163,29 @@ export class JlListItem extends JlElement {
     setOrRemove(item, 'aria-current', selected ? 'true' : '');
   }
 
-  /** The start holds an avatar when one is slotted, otherwise the icon, otherwise nothing. */
+  /** The chevron of a link row, made the first time the row is a link. */
+  private renderChevron(shown: boolean): void {
+    const item = this._refs.item;
+    const chevron = item.querySelector<JlIcon>('.chevron');
+    if (chevron !== null) {
+      chevron.hidden = !shown;
+      return;
+    }
+    if (shown) {
+      item.append(<JlIcon class="chevron" name="chevron-right" size={CHEVRON_SIZE} />);
+    }
+  }
+
+  /** The start holds an avatar when one is slotted, otherwise the icon (made the first time there is one), or nothing. */
   private renderStart(): void {
     const icon = this.icon.get();
     const slotted = hasSlotted(this._refs.startSlot);
-    this._refs.icon.name.set(icon);
-    this._refs.iconBox.hidden = slotted || icon === '';
+    const box = this._refs.iconBox;
+    const drawn = box.querySelector<JlIcon>(JlIcon.selector);
+    if (icon !== '') {
+      drawn === null ? box.append(<JlIcon name={icon} size={ICON_SIZE} />) : drawn.name.set(icon);
+    }
+    box.hidden = slotted || icon === '';
     this._refs.start.hidden = !slotted && icon === '';
   }
 

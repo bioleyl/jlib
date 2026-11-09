@@ -69,14 +69,14 @@ export class JlDatePicker extends JlFormControl {
   readonly locale = this.useChange(
     '',
     (value) => {
-      this._refs.calendar.locale.set(value);
+      this.shownCalendar()?.locale.set(value);
       this.renderPlaceholder();
       this.renderValue();
     },
     { attribute: 'locale' }
   );
   /** The day the calendar's weeks start on: 0 for Sunday, 1 for Monday. */
-  readonly firstDay = this.useChange<Weekday>(MONDAY, (value) => this._refs.calendar.firstDay.set(value), {
+  readonly firstDay = this.useChange<Weekday>(MONDAY, (value) => this.shownCalendar()?.firstDay.set(value), {
     attribute: 'first-day',
     parse: parseWeekday,
   });
@@ -115,7 +115,6 @@ export class JlDatePicker extends JlFormControl {
   };
 
   private readonly _refs = this.useRefs((ref) => ({
-    calendar: ref(JlCalendar),
     clear: ref<HTMLButtonElement>('.clear'),
     control: ref('.control'),
     native: ref<HTMLInputElement>('input'),
@@ -169,9 +168,8 @@ export class JlDatePicker extends JlFormControl {
           id={this._popupId}
           popover="auto"
           role="dialog"
-          attrs={{ part: 'popup' }}>
-          <JlCalendar class="calendar" />
-        </div>
+          attrs={{ part: 'popup' }}
+        />
       </>
     );
   }
@@ -211,7 +209,8 @@ export class JlDatePicker extends JlFormControl {
     this.on(this._refs.clear, 'click', () => this.clearValue());
     this.on(this._refs.popup, 'toggle', (event) => this.onToggle(event as ToggleEvent));
     this.on(this._refs.popup, 'keydown', (event) => this.onPopupKey(event));
-    this._refs.calendar.events.register('pick', (iso) => this.onPick(iso));
+    // A calendar made before a move keeps its day, and is heard again.
+    this.shownCalendar()?.events.register('pick', (iso) => this.onPick(iso));
   }
 
   onDisconnect(): void {
@@ -285,12 +284,40 @@ export class JlDatePicker extends JlFormControl {
     this.focus();
   }
 
+  /**
+   * The calendar, made the first time the popup opens with the field's language, week, bounds and value: a closed
+   * picker draws no month, and a form may hold many pickers.
+   */
+  private calendar(): JlCalendar {
+    const shown = this.shownCalendar();
+    if (shown !== null) {
+      return shown;
+    }
+    const calendar = (
+      <JlCalendar
+        class="calendar"
+        locale={this.locale.get()}
+        firstDay={this.firstDay.get()}
+        min={this.min.get()}
+        max={this.max.get()}
+        value={this.validIso()}
+      />
+    ) as JlCalendar;
+    calendar.events.register('pick', (iso) => this.onPick(iso));
+    this._refs.popup.append(calendar);
+    return calendar;
+  }
+
+  private shownCalendar(): JlCalendar | null {
+    return this._refs.popup.querySelector<JlCalendar>(JlCalendar.selector);
+  }
+
   private openPopup(): void {
     if (this.isOpen() || this.disabled.get() || this._refs.native.disabled) {
       return;
     }
     this.commitText();
-    const calendar = this._refs.calendar;
+    const calendar = this.calendar();
     calendar.value.set(this.validIso());
     const popup = this._refs.popup;
     popup.showPopover();
@@ -360,14 +387,14 @@ export class JlDatePicker extends JlFormControl {
   private renderValue(): void {
     const value = this.validIso();
     this._refs.native.value = this.display(value);
-    this._refs.calendar.value.set(value);
+    this.shownCalendar()?.value.set(value);
     this.internals.setFormValue(value);
     this.renderValidity();
     this.renderClear();
   }
 
   private renderBound(bound: 'min' | 'max', value: string): void {
-    this._refs.calendar[bound].set(value);
+    this.shownCalendar()?.[bound].set(value);
     this.renderValidity();
   }
 

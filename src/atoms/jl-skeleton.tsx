@@ -48,9 +48,14 @@ export class JlSkeleton extends JlElement {
     return css`${BASE_STYLES}${styles}`;
   }
 
+  /** As many bones as lines (one for a block or a circle): only those missing are added, those too many removed. */
   private renderBones(): void {
     const count = this.shape.get() === 'text' ? Math.round(this.lines.get()) : 1;
-    this._refs.bones.replaceChildren(...Array.from({ length: count }, () => <span class="bone" />));
+    const bones = this._refs.bones;
+    for (const bone of [...bones.children].slice(count)) {
+      bone.remove();
+    }
+    bones.append(...Array.from({ length: count - bones.childElementCount }, () => <span class="bone" />));
   }
 
   private setLength(property: string, value: string): void {

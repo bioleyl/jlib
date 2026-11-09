@@ -18,6 +18,7 @@ import {
   monthHasDaysWithin,
   parseIsoDate,
   toIsoDate,
+  WEEKS_PER_GRID,
   weekdayNames,
 } from '../lib/calendar';
 import { setOrRemove, uniqueId } from '../lib/dom';
@@ -38,6 +39,7 @@ const NAV_ICON_SIZE = 16;
 const MONDAY: Weekday = 1;
 const SUNDAY: Weekday = 0;
 const SATURDAY: Weekday = 6;
+const DAYS_PER_WEEK = 7;
 const SELECT_KEYS = ['Enter', ' '];
 const FULL_DATE: Intl.DateTimeFormatOptions = { dateStyle: 'full' };
 
@@ -45,16 +47,20 @@ const FULL_DATE: Intl.DateTimeFormatOptions = { dateStyle: 'full' };
 const parseWeekday = (value: string | null): Weekday =>
   Math.round(clampedNumber(MONDAY, SUNDAY, SATURDAY)(value)) as Weekday;
 
-/** What a page of the calendar needs to draw its days. */
+/** What the cells of a page need to show their dates. */
 type PageContext = {
-  focus: CalendarDate;
   label: (date: CalendarDate) => string;
-  max: CalendarDate | null;
-  min: CalendarDate | null;
   month: number;
-  selected: CalendarDate | null;
   today: CalendarDate;
 };
+
+/** Writes an attribute only when it changes: the same value written again is still a change, styles checked again. */
+function setAttributeIfChanged(element: Element, name: string, value: string | null): void {
+  if (element.getAttribute(name) === value) {
+    return;
+  }
+  value === null ? element.removeAttribute(name) : element.setAttribute(name, value);
+}
 
 /**
  * A month to pick a day from. Arrows move by day and week, Page Up and Page Down by month (by year with Shift),
@@ -95,10 +101,16 @@ export class JlCalendar extends JlFormControl {
 
   private readonly _titleId = uniqueId('jl-calendar-title');
 
-  /** The month shown, and the day the arrows move from (the one focusable cell of the grid). */
+  /**
+   * The month shown, the day the arrows move from (the one focusable cell of the grid), and the dates the cells show.
+   * `drawn` holds what the cells and the weekdays were written for: every input calls back as the calendar connects,
+   * and choosing a day changes only two cells.
+   */
   private readonly _state = {
+    drawn: { days: '', weekdays: '' },
     focus: null as CalendarDate | null,
     formDisabled: false,
+    page: [] as CalendarDate[],
     view: calendarDateOf(new Date()),
   };
 
@@ -144,9 +156,17 @@ export class JlCalendar extends JlFormControl {
         {/* biome-ignore lint/a11y/noNoninteractiveElementToInteractiveRole: a table in the grid role is the ARIA date grid */}
         <table role="grid" aria-labelledby={this._titleId}>
           <thead>
-            <tr />
+            <tr>
+              {Array.from({ length: DAYS_PER_WEEK }, () => (
+                <th scope="col" />
+              ))}
+            </tr>
           </thead>
-          <tbody />
+          <tbody>
+            {Array.from({ length: WEEKS_PER_GRID }, () => (
+              <tr>{Array.from({ length: DAYS_PER_WEEK }, () => this.dayCell())}</tr>
+            ))}
+          </tbody>
         </table>
       </div>
     );
@@ -216,14 +236,9 @@ export class JlCalendar extends JlFormControl {
 
   /** Moves the focus to a day, turning the page when it is in another month. */
   private moveFocus(date: CalendarDate): void {
-    const turn = !isSameMonth(date, this._state.view);
     this._state.focus = date;
-    if (turn) {
-      this._state.view = date;
-      this.renderPage();
-    } else {
-      this.renderFocus();
-    }
+    this._state.view = date;
+    this.renderPage();
     this.focus();
   }
 
@@ -282,24 +297,11 @@ export class JlCalendar extends JlFormControl {
   private renderPage(): void {
     const { min, max } = this.bounds();
     this._state.view = this.viewWithin(min, max);
-    const { year, month } = this._state.view;
+    this._state.focus = this.rovingDate(min, max);
     const locale = pageLocale(this.locale.get());
-    const firstDay = this.firstDay.get();
-    const context: PageContext = {
-      focus: this.rovingDate(min, max),
-      label: dateFormatter(locale, FULL_DATE),
-      max,
-      min,
-      month,
-      selected: parseIsoDate(this.value.get()),
-      today: calendarDateOf(new Date()),
-    };
-    this._state.focus = context.focus;
-    this.renderTitle(formatMonthTitle(year, month, locale));
-    this.renderWeekdays(locale, firstDay);
-    this._refs.days.replaceChildren(
-      ...monthGrid(year, month, firstDay).map((week) => <tr>{week.map((date) => this.dayCell(date, context))}</tr>)
-    );
+    this.renderWeekdays(locale, this.firstDay.get());
+    this.renderDays(locale);
+    this.renderStates(min, max);
     this.renderNavigation(min, max);
   }
 
@@ -312,43 +314,73 @@ export class JlCalendar extends JlFormControl {
   }
 
   private renderWeekdays(locale: string | undefined, firstDay: Weekday): void {
-    const short = weekdayNames(locale, firstDay, 'short');
+    const drawn = `${locale}|${firstDay}`;
+    if (drawn === this._state.drawn.weekdays) {
+      return;
+    }
+    this._state.drawn.weekdays = drawn;
     const long = weekdayNames(locale, firstDay, 'long');
-    this._refs.weekdays.replaceChildren(
-      ...short.map((name, index) => (
-        <th scope="col" abbr={long[index] ?? name}>
-          {name}
-        </th>
-      ))
-    );
+    const headers = this._refs.weekdays.querySelectorAll('th');
+    weekdayNames(locale, firstDay, 'short').forEach((name, index) => {
+      const header = headers.item(index);
+      header.textContent = name;
+      header.abbr = long[index] ?? name;
+    });
   }
 
-  private dayCell(date: CalendarDate, context: PageContext): Node {
-    const outside = date.month !== context.month;
-    const enabled = isWithin(date, context.min, context.max);
+  /** Writes the page's dates in the cells: only for another month, language, first day, or today. */
+  private renderDays(locale: string | undefined): void {
+    const { year, month } = this._state.view;
+    const firstDay = this.firstDay.get();
+    const today = calendarDateOf(new Date());
+    const drawn = `${locale}|${firstDay}|${year}-${month}|${toIsoDate(today)}`;
+    if (drawn === this._state.drawn.days) {
+      return;
+    }
+    this._state.drawn.days = drawn;
+    this._state.page = monthGrid(year, month, firstDay).flat();
+    this.renderTitle(formatMonthTitle(year, month, locale));
+    const context: PageContext = { label: dateFormatter(locale, FULL_DATE), month, today };
+    this.forEachDay((cell, date) => this.writeDay(cell, date, context));
+  }
+
+  private writeDay(cell: HTMLTableCellElement, date: CalendarDate, context: PageContext): void {
+    cell.dataset.date = toIsoDate(date);
+    cell.setAttribute('aria-label', context.label(date));
+    cell.classList.toggle('outside', date.month !== context.month);
+    setAttributeIfChanged(cell, 'aria-current', isSameDate(date, context.today) ? 'date' : null);
+    const number = cell.firstElementChild;
+    if (number !== null) {
+      number.textContent = String(date.day);
+    }
+  }
+
+  /** The chosen day, the days out of bounds, and the one in the tab order (the arrows reach the others). */
+  private renderStates(min: CalendarDate | null, max: CalendarDate | null): void {
+    const selected = parseIsoDate(this.value.get());
+    const focus = this.isOff() ? null : this._state.focus;
+    this.forEachDay((cell, date) => {
+      setAttributeIfChanged(cell, 'aria-selected', String(isSameDate(date, selected)));
+      setAttributeIfChanged(cell, 'aria-disabled', isWithin(date, min, max) ? null : 'true');
+      setAttributeIfChanged(cell, 'tabindex', isSameDate(date, focus) ? '0' : '-1');
+    });
+  }
+
+  private forEachDay(write: (cell: HTMLTableCellElement, date: CalendarDate) => void): void {
+    const cells = this._refs.days.querySelectorAll('td');
+    this._state.page.forEach((date, index) => {
+      write(cells.item(index), date);
+    });
+  }
+
+  /** A day of the grid, made once: the page's dates are written in it. */
+  private dayCell(): Node {
     return (
-      <td
-        class={outside ? 'day outside' : 'day'}
-        // biome-ignore lint/a11y/noNoninteractiveElementToInteractiveRole: the cells of the ARIA date grid
-        role="gridcell"
-        tabIndex={isSameDate(date, context.focus) && !this.isOff() ? 0 : -1}
-        data-date={toIsoDate(date)}
-        aria-label={context.label(date)}
-        aria-selected={String(isSameDate(date, context.selected))}
-        aria-disabled={enabled ? undefined : 'true'}
-        aria-current={isSameDate(date, context.today) ? 'date' : undefined}>
-        <span class="number">{String(date.day)}</span>
+      // biome-ignore lint/a11y/noNoninteractiveElementToInteractiveRole: the cells of the ARIA date grid
+      <td class="day" role="gridcell" tabIndex={-1} aria-selected="false">
+        <span class="number" />
       </td>
     );
-  }
-
-  /** Only the remembered day is in the tab order: the arrows reach the others. */
-  private renderFocus(): void {
-    const focus = this._state.focus;
-    const iso = focus === null ? '' : toIsoDate(focus);
-    for (const cell of this._refs.days.querySelectorAll<HTMLElement>('[data-date]')) {
-      cell.tabIndex = cell.dataset.date === iso && !this.isOff() ? 0 : -1;
-    }
   }
 
   /** The arrows of the header stop where no day of the next month could be chosen. */

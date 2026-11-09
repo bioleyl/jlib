@@ -39,20 +39,27 @@ export class JlField extends JlElement {
   readonly label = this.useChange(
     '',
     (value) => {
+      // The CSS hides the label's row while it is empty.
       this._refs.label.textContent = value;
-      this._refs.labelRow.hidden = value === '';
-      this.syncControl();
+      this.withControl((control) => this.syncLabel(control));
     },
     { attribute: 'label' }
   );
   /** Help under the control, hidden while there is an error. */
-  readonly hint = this.useChange('', () => this.renderMessages(), { attribute: 'hint' });
+  readonly hint = this.useChange(
+    '',
+    (value) => {
+      // The CSS hides it while empty, and while there is an error.
+      this._refs.hint.textContent = value;
+    },
+    { attribute: 'hint' }
+  );
   /** What is wrong with the value, in the danger colour; the control is drawn as invalid meanwhile. */
   readonly error = this.useChange(
     '',
-    () => {
-      this.renderMessages();
-      this.syncControl();
+    (value) => {
+      this.renderError(value);
+      this.withControl((control) => this.syncInvalid(control));
     },
     { attribute: 'error' }
   );
@@ -84,7 +91,7 @@ export class JlField extends JlElement {
   templateHtml(): Node {
     return (
       <div class="field" attrs={{ part: 'base' }}>
-        <div class="label-row" hidden>
+        <div class="label-row">
           <span class="label" />
           <span class="asterisk" aria-hidden="true" hidden>
             *
@@ -92,7 +99,7 @@ export class JlField extends JlElement {
         </div>
         <div class="body">
           <slot />
-          <p class="hint" hidden />
+          <p class="hint" />
           <div class="error-region" aria-live="polite" />
         </div>
       </div>
@@ -120,38 +127,50 @@ export class JlField extends JlElement {
     this.control()?.focus();
   }
 
-  private renderMessages(): void {
-    const error = this.error.get();
-    const hint = this.hint.get();
-    this._refs.hint.textContent = hint;
-    this._refs.hint.hidden = hint === '' || error !== '';
+  /**
+   * Shows the error, which the CSS hides with the field's `has-error`: its paragraph is made at the first error, then
+   * only its text changes. A field that never has one makes no icon.
+   */
+  private renderError(error: string): void {
     this.reflect('has-error', error !== '');
-    this._refs.errorRegion.replaceChildren(
-      ...(error === ''
-        ? []
-        : [
-            <p class="error">
-              <JlIcon name="circle-alert" size={ERROR_ICON_SIZE} />
-              <span>{error}</span>
-            </p>,
-          ])
+    const region = this._refs.errorRegion;
+    const text = region.querySelector('.error-text');
+    if (text !== null) {
+      text.textContent = error;
+      return;
+    }
+    if (error === '') {
+      return;
+    }
+    region.append(
+      <p class="error">
+        <JlIcon name="circle-alert" size={ERROR_ICON_SIZE} />
+        <span class="error-text">{error}</span>
+      </p>
     );
   }
 
   private syncControl(): void {
+    this.withControl((control) => {
+      this.syncLabel(control);
+      this.syncInvalid(control);
+    });
+  }
+
+  /** Runs `sync` on the control in the slot, when there is one. */
+  private withControl(sync: (control: HTMLElement) => void): void {
     const control = this.control();
-    if (control === null) {
-      return;
+    if (control !== null) {
+      sync(control);
     }
-    this.syncLabel(control);
-    this.syncInvalid(control);
   }
 
   /** Names the control for screen readers with the field's label, unless it has a label of its own. */
   private syncLabel(control: HTMLElement): void {
     const input = inputOf<string>(control, 'label');
     const ownLabel = control.hasAttribute('label') || VISIBLE_LABEL_TAGS.includes(control.localName);
-    if (input === null || ownLabel) {
+    // set() runs the control's callback even with the label it has.
+    if (input === null || ownLabel || input.get() === this.label.get()) {
       return;
     }
     input.set(this.label.get());

@@ -11,6 +11,12 @@
   color: var(--jl-muted);
 }
 
+/* The spinner in place of the search icon, while loading. */
+:host([loading]) .icon,
+:host(:not([loading])) jl-spinner {
+  display: none;
+}
+
 /* The browser's own clear button: the field draws its own. */
 .native::-webkit-search-cancel-button,
 .native::-webkit-search-decoration {
@@ -24,6 +30,7 @@
   margin-right: -4px;
 }
 
+.keys:empty,
 .control:focus-within .keys {
   display: none;
 }

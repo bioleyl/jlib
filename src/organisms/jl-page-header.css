@@ -50,6 +50,10 @@ h1 {
   line-height: 1.55;
 }
 
+.description:empty {
+  display: none;
+}
+
 .actions {
   display: flex;
   flex-wrap: wrap;

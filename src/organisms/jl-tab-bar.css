@@ -46,6 +46,11 @@ nav {
   color: var(--jl-accent);
 }
 
+/* The "more" button shows only with a label. */
+.more:has(.label:empty) {
+  display: none;
+}
+
 /* The ring goes round the icon's pill: round the whole column, it would touch the bar's edges. */
 .item:focus-visible {
   box-shadow: none;

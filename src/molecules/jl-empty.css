@@ -44,6 +44,11 @@
   line-height: 1.35;
 }
 
+.heading:empty,
+.description:empty {
+  display: none;
+}
+
 .description {
   max-width: 44ch;
   margin-top: 4px;
@@ -62,4 +67,13 @@
 
 :host([size="sm"]) .actions {
   margin-top: 14px;
+}
+
+/* Its icon's size, by its own: the icon reads --icon-size. */
+jl-icon {
+  --icon-size: 22px;
+}
+
+:host([size="sm"]) jl-icon {
+  --icon-size: 18px;
 }

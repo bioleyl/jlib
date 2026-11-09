@@ -83,9 +83,9 @@ export class JlStat extends JlElement {
   /** A note under the figure: "vs. last month". */
   readonly caption = this.useChange(
     '',
+    // The CSS hides it while empty.
     (value) => {
       this._refs.caption.textContent = value;
-      this._refs.caption.hidden = value === '';
     },
     { attribute: 'caption' }
   );
@@ -120,8 +120,8 @@ export class JlStat extends JlElement {
             <span class="delta-text" />
           </span>
         </div>
-        <p class="caption" hidden />
-        <div class="spark" aria-hidden="true" hidden />
+        <p class="caption" />
+        <div class="spark" aria-hidden="true" />
       </div>
     );
   }
@@ -149,7 +149,7 @@ export class JlStat extends JlElement {
     const values = this.points.get();
     const points = sparklinePoints(isNumberList(values) ? values : [], SPARK_BOX);
     const spark = this._refs.spark;
-    spark.hidden = points.length === 0;
+    // The CSS hides it while empty.
     if (points.length === 0) {
       spark.replaceChildren();
       return;

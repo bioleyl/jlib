@@ -65,9 +65,8 @@ export class JlSearch extends JlFormControl {
   /** Shows a spinner in place of the search icon, while results are on their way. */
   readonly loading = this.useChange(
     false,
+    // The CSS swaps the icon for the spinner.
     (value) => {
-      this._refs.icon.hidden = value;
-      this._refs.spinner.hidden = !value;
       this._refs.native.toggleAttribute('aria-busy', value);
       this.reflect('loading', value);
     },
@@ -88,10 +87,8 @@ export class JlSearch extends JlFormControl {
 
   private readonly _refs = this.useRefs((ref) => ({
     clear: ref('.clear'),
-    icon: ref<JlIcon>('.icon'),
     keys: ref('.keys'),
     native: ref<HTMLInputElement>('input'),
-    spinner: ref(JlSpinner),
   }));
 
   override focus(options?: FocusOptions): void {
@@ -116,13 +113,13 @@ export class JlSearch extends JlFormControl {
       <div class="control" attrs={{ part: 'base' }}>
         <span class="adornment lead">
           <JlIcon class="icon" name="search" size={ICON_SIZE} />
-          <JlSpinner size={ICON_SIZE} hidden />
+          <JlSpinner size={ICON_SIZE} />
         </span>
         <input class="native" id="field" type="search" autocomplete="off" />
         <button class="action clear" type="button" tabIndex={-1} hidden>
           <JlIcon name="x" size={ACTION_ICON_SIZE} />
         </button>
-        <span class="keys" aria-hidden="true" hidden />
+        <span class="keys" aria-hidden="true" />
       </div>
     );
   }
@@ -229,7 +226,8 @@ export class JlSearch extends JlFormControl {
   private renderActions(): void {
     const hasText = this.value.get() !== '';
     this._refs.clear.hidden = !hasText || this._refs.native.disabled;
-    this._refs.keys.hidden = hasText || this._refs.keys.childElementCount === 0;
+    // The CSS hides the keys while there are none.
+    this._refs.keys.hidden = hasText;
   }
 
   private renderShortcut(): void {

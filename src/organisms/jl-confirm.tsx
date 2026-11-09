@@ -37,7 +37,6 @@ export class JlConfirm extends JlElement {
     '',
     (value) => {
       this._refs.text.textContent = value;
-      this._refs.text.hidden = value === '';
     },
     { attribute: 'text' }
   );
@@ -74,7 +73,7 @@ export class JlConfirm extends JlElement {
   templateHtml(): Node {
     return (
       <jl-dialog size="sm">
-        <p class="text" hidden />
+        <p class="text" />
         <slot />
         <JlButton slot="actions" class="cancel" />
         <JlButton slot="actions" class="confirm" variant="primary" />

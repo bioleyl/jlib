@@ -125,3 +125,16 @@
 :host([disabled]) .dismiss:hover {
   background: transparent;
 }
+
+/* Its icons' size, by its own: each icon reads --icon-size. */
+.icon {
+  --icon-size: 14px;
+}
+
+.dismiss jl-icon {
+  --icon-size: 13px;
+}
+
+:host([size="sm"]) jl-icon {
+  --icon-size: 12px;
+}

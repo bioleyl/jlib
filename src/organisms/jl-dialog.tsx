@@ -36,7 +36,6 @@ export class JlDialog extends JlElement {
     '',
     (value) => {
       this._refs.description.textContent = value;
-      this._refs.description.hidden = value === '';
     },
     { attribute: 'description' }
   );
@@ -78,7 +77,7 @@ export class JlDialog extends JlElement {
           <div class="titles">
             {/* biome-ignore lint/a11y/useHeadingContent: the heading is an input, written when it is set */}
             <h2 id="heading" />
-            <p class="description" hidden />
+            <p class="description" />
           </div>
           <JlButton class="close" variant="ghost" icon="x" size="sm" />
         </header>

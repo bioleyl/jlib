@@ -16,7 +16,8 @@ import type { ControlSize } from '../types/options.types';
 export const BUTTON_VARIANTS: readonly ButtonVariant[] = ['secondary', 'primary', 'ghost', 'danger'];
 export const BUTTON_TYPES: readonly ButtonType[] = ['button', 'submit', 'reset'];
 
-const ICON_SIZES: Record<ControlSize, number> = { lg: 18, md: 16, sm: 14 };
+// The spinner's size, by the button's: its icons take theirs from the CSS (--icon-size).
+const SPINNER_SIZES: Record<ControlSize, number> = { lg: 18, md: 16, sm: 14 };
 const NEW_TAB = '_blank';
 /** A page opened in a new tab gets no handle on this one. */
 const SAFE_REL = 'noopener noreferrer';
@@ -157,7 +158,11 @@ export class JlButton extends JlElement {
     const isLink = href !== '';
     const target = this.target.get();
     const off = isLink && this.disabled.get();
-    this.control().append(content);
+    // Moved only between the button and the link: disabled, target and download leave it where it is.
+    const control = this.control();
+    if (content.parentNode !== control) {
+      control.append(content);
+    }
     button.hidden = isLink;
     link.hidden = !isLink;
     setOrRemove(link, 'href', isLink && !off ? href : '');
@@ -189,9 +194,7 @@ export class JlButton extends JlElement {
 
   private renderSize(size: ControlSize): void {
     this.reflect('size', size);
-    this._refs.start.size.set(ICON_SIZES[size]);
-    this._refs.end.size.set(ICON_SIZES[size]);
-    this._refs.spinner.size.set(ICON_SIZES[size]);
+    this._refs.spinner.size.set(SPINNER_SIZES[size]);
   }
 
   private hasSlottedContent(): boolean {
@@ -205,7 +208,6 @@ export class JlButton extends JlElement {
     const hint = this.hint.get();
     const iconOnly = label === '' && !this.hasSlottedContent();
     this._refs.label.textContent = label;
-    this._refs.label.hidden = label === '';
     this.reflect('icon-only', iconOnly);
     for (const control of [this._refs.button, this._refs.link]) {
       setOrRemove(control, 'title', hint);

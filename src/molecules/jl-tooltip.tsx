@@ -3,7 +3,7 @@ import { css } from '@jadis/core';
 import { JlElement } from '../base/jl-element';
 import { arrowOffset } from '../lib/arrow';
 import { clampedNumber, oneOf } from '../lib/attributes';
-import { followAnchor, PLACEMENTS, placeFloating } from '../lib/floating';
+import { PLACEMENTS, positionFloating } from '../lib/floating';
 import { accessibleTarget, deepActiveElement } from '../lib/trigger';
 import { BASE_STYLES, FLOATING_STYLES } from '../styles/shared';
 import styles from './jl-tooltip.css?inline';
@@ -312,14 +312,13 @@ export class JlTooltip extends JlElement {
     bubble.showPopover();
     const following = new AbortController();
     this._state.following = following;
-    followAnchor(this.trigger(), bubble, this.placement.get(), following.signal, GAP);
-    // After followAnchor's own listeners, so the arrow points from where the bubble went.
-    window.addEventListener('scroll', () => this.placeArrow(), {
+    // The bubble follows its trigger while the page scrolls or resizes.
+    window.addEventListener('scroll', () => this.place(), {
       capture: true,
       passive: true,
       signal: following.signal,
     });
-    window.addEventListener('resize', () => this.placeArrow(), { passive: true, signal: following.signal });
+    window.addEventListener('resize', () => this.place(), { passive: true, signal: following.signal });
     // A tap or a click elsewhere puts it away: on a touch screen, nothing else would.
     document.addEventListener(
       'pointerdown',
@@ -339,27 +338,20 @@ export class JlTooltip extends JlElement {
       },
       { signal: following.signal }
     );
-    this.placeArrow();
+    this.place();
   }
 
   private reposition(): void {
-    if (!this.isOpen()) {
-      return;
+    if (this.isOpen()) {
+      this.place();
     }
-    placeFloating(this.trigger(), this._refs.bubble, this.placement.get(), GAP);
-    this.placeArrow();
   }
 
-  private placeArrow(): void {
-    const bubble = this._refs.bubble;
-    const placement = (bubble.dataset.placement ?? this.placement.get()) as Placement;
-    const offset = arrowOffset(
-      this.trigger().getBoundingClientRect(),
-      bubble.getBoundingClientRect(),
-      sideOf(placement),
-      ARROW_MARGIN
-    );
-    bubble.style.setProperty('--arrow', `${offset}px`);
+  /** Puts the bubble by its trigger, and points its arrow at the trigger from what the placing measured. */
+  private place(): void {
+    const placed = positionFloating(this.trigger(), this._refs.bubble, this.placement.get(), GAP);
+    const offset = arrowOffset(placed.anchor, placed.floating, sideOf(placed.placement), ARROW_MARGIN);
+    this._refs.bubble.style.setProperty('--arrow', `${offset}px`);
   }
 
   private renderText(text: string): void {

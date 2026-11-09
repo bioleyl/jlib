@@ -71,17 +71,17 @@ export class JlToast extends JlElement {
   );
   readonly heading = this.useChange(
     '',
+    // The CSS hides it while empty.
     (value) => {
       this._refs.heading.textContent = value;
-      this._refs.heading.hidden = value === '';
     },
     { attribute: 'heading' }
   );
   readonly text = this.useChange(
     '',
+    // The CSS hides it while empty.
     (value) => {
       this._refs.text.textContent = value;
-      this._refs.text.hidden = value === '';
     },
     { attribute: 'text' }
   );
@@ -172,8 +172,8 @@ export class JlToast extends JlElement {
       <div class="toast" attrs={{ part: 'base' }}>
         <JlIcon class="icon" size={ICON_SIZE} />
         <div class="content">
-          <p class="heading" hidden />
-          <p class="text" hidden />
+          <p class="heading" />
+          <p class="text" />
           <JlProgress class="work" size="sm" hidden />
           <slot />
         </div>

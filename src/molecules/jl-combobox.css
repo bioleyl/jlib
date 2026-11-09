@@ -43,7 +43,7 @@
   user-select: none;
 }
 
-.option.active {
+.option[aria-selected="true"] {
   background: var(--jl-surface-3);
 }
 

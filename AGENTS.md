@@ -184,14 +184,23 @@ every page in Chromium: no console error, no undefined `jl-*` tag, no unregister
   maintainer approves it (`npm stage approve`, with 2FA) to make it public. The whole procedure is in RELEASING.md.
 - Biome leaves JSON files alone (not in its includes, JSON formatter and linter off): npm writes package.json and the
   lockfile in its own layout (`npm version`, `npm install x`), which Biome's formatter used to refuse.
-- Every input's callback runs as a component appears, one after the other, and `set()` calls it even with an equal
-  value: a callback that builds children builds them once per input (`jl-input-list` built its rows ten times).
-  Build once, then change in place (`jl-input-list`'s `drawRows`), and set a child only where its state changed
-  (`jl-tree`'s `drawExpanded`, as `JlIcon` draws its SVG on each `set()`).
-- Let CSS draw what the DOM already says, rather than JS keeping a copy: a closed folder's children from
-  `aria-expanded`, the only row's remove button from `:only-child`, a disabled list from `:host([disabled])`, a
-  tree row's indent from its depth (`--level` derived per `.group`), an autosized area's height from
-  `field-sizing: content`. Reading a size (`scrollHeight`) after a style changed lays the whole page out again.
+- Jadis runs every input's callback as a component connects, in field order, twice for an input written as an HTML
+  attribute, and `set()` runs it even with an equal value. A callback that builds children builds them once per
+  input (`jl-input-list` built its rows ten times): build once, then change in place (keep the elements, by id or
+  option, as `jl-input-list`'s `drawRows` does), set a child only where its state changed (`jl-tree`'s
+  `drawExpanded`), and skip a list given again as the same array. Declare first the inputs others read (`max` before
+  `items`, `language` before `code`, `icon` before `tone`), or the first callback draws with a value about to change.
+- Let the CSS draw what the DOM already says, rather than JS keeping a copy: `:empty` for a text that may be empty,
+  `:only-child` for the only row, `:host([attr])` for a reflected input (`:host([disabled])`),
+  `aria-selected`/`aria-checked`/`aria-expanded`/`aria-sort` for state (a closed folder's children from
+  `aria-expanded`), `:has()` for what a child holds, a tree row's indent from its depth (`--level` derived per
+  `.group`), an autosized area's height from `field-sizing: content`, and `--icon-size` on the `jl-icon`s a component
+  draws for their size (never on the host: it would reach every icon inside). Reading a size (`offsetLeft`,
+  `scrollHeight`, `getBoundingClientRect`) after a change lays the page out again: read once, at the next frame or
+  from a `ResizeObserver`.
+- Make what is hidden only when it shows: a closed menu's items, a closed date picker's calendar, a skeleton, an icon
+  a component may show. Format with `lib/intl.ts`, which keeps one `Intl` formatter or collator per language and
+  options.
 
 ## Commands
 

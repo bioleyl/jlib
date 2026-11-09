@@ -5,3 +5,7 @@
 .text {
   color: var(--jl-text-2);
 }
+
+.text:empty {
+  display: none;
+}

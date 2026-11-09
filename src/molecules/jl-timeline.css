@@ -152,3 +152,12 @@
 :host([compact]) .description {
   font-size: var(--jl-font-xs);
 }
+
+/* The markers' icons, smaller when compact: each icon reads --icon-size. */
+.marker jl-icon {
+  --icon-size: 14px;
+}
+
+:host([compact]) .marker jl-icon {
+  --icon-size: 12px;
+}

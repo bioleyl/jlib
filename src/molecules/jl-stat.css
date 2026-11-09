@@ -83,6 +83,11 @@
   white-space: nowrap;
 }
 
+.caption:empty,
+.spark:empty {
+  display: none;
+}
+
 .caption {
   color: var(--jl-muted);
   font-size: var(--jl-font-xs);

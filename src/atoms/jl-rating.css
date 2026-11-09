@@ -3,6 +3,15 @@
   vertical-align: middle;
   --color: var(--jl-accent);
   --empty: var(--jl-faint);
+  --icon-size: 20px;
+}
+
+:host([size="sm"]) {
+  --icon-size: 16px;
+}
+
+:host([size="lg"]) {
+  --icon-size: 26px;
 }
 
 .rating {
@@ -26,6 +35,8 @@
 }
 
 .icon svg {
+  width: var(--icon-size);
+  height: var(--icon-size);
   fill: transparent;
   transition: fill var(--jl-fast) var(--jl-ease);
 }
@@ -38,17 +49,38 @@
   fill: currentColor;
 }
 
-/* The score a click would give: the same colour, lighter, so it reads as a proposal. */
-:host([previewing]) .icon.on {
-  color: color-mix(in srgb, var(--color) 55%, transparent);
-}
-
 :host(:not([readonly]):not([disabled])) .icon:hover {
   transform: scale(1.12);
 }
 
 :host([invalid]) .icon:not(.on) {
   color: var(--jl-danger);
+}
+
+/*
+ * The score a click would give, while a pointer is on an icon: that icon and those before it, in the same colour,
+ * lighter, so it reads as a proposal; those after it empty. A finger has no hover to preview with.
+ */
+@media (hover: hover) {
+  :host(:not([readonly], [disabled], :disabled)) .icon:is(:hover, :has(~ .icon:hover)) {
+    color: color-mix(in srgb, var(--color) 55%, transparent);
+  }
+
+  :host(:not([readonly], [disabled], :disabled)) .icon:is(:hover, :has(~ .icon:hover)) svg {
+    fill: currentColor;
+  }
+
+  :host(:not([readonly], [disabled], :disabled)) .icon:hover ~ .icon {
+    color: var(--empty);
+  }
+
+  :host(:not([readonly], [disabled], :disabled)[invalid]) .icon:hover ~ .icon {
+    color: var(--jl-danger);
+  }
+
+  :host(:not([readonly], [disabled], :disabled)) .icon:hover ~ .icon svg {
+    fill: transparent;
+  }
 }
 
 :host([readonly]) .rating {

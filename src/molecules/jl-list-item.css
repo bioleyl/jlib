@@ -97,6 +97,11 @@
   color: var(--jl-accent);
 }
 
+.description:empty,
+.meta:empty {
+  display: none;
+}
+
 .description {
   color: var(--jl-muted);
   font-size: var(--jl-font-sm);

@@ -21,7 +21,6 @@ export class JlDivider extends JlElement {
     '',
     (value) => {
       this._refs.label.textContent = value;
-      this._refs.label.hidden = value === '';
       this.reflect('labelled', value !== '');
       setOrRemove(this._refs.divider, 'aria-label', value);
     },
@@ -51,7 +50,7 @@ export class JlDivider extends JlElement {
       // biome-ignore lint/a11y/useSemanticElements: the line holds a label, which an <hr> cannot
       <div class="divider" role="separator" attrs={{ part: 'base' }}>
         <span class="line before" />
-        <span class="label" hidden />
+        <span class="label" />
         <span class="line after" />
       </div>
     );

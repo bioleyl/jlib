@@ -10,6 +10,15 @@
   display: inline-flex;
 }
 
+/*
+ * Its size: --icon-size when the component around it sets one (a button's or a chip's, by its own size), else
+ * `size` (--size). The SVG is drawn once per name, whatever size it is later given.
+ */
+.icon > svg {
+  width: var(--icon-size, var(--size));
+  height: var(--icon-size, var(--size));
+}
+
 /* Filled: lucide draws the shape around a sign first (the circle of circle-check, the triangle of triangle-alert).
    It takes the colour, and the sign takes the background's, as if cut out of it. */
 :host([filled]) svg > :first-child {

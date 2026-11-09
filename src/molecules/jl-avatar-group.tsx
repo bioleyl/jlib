@@ -18,21 +18,27 @@ const NAME_SEPARATOR = ', ';
 export class JlAvatarGroup extends JlElement {
   static readonly selector = 'jl-avatar-group';
 
+  // Before `items`: as the group connects, each input calls back in this order, so the items come with their `max`.
+  /** How many avatars show before the count; 0 shows them all. */
+  readonly max = this.useChange(0, () => this.render(), { attribute: 'max' });
   /** The people, in order: `[{ "name": "Ada Lovelace", "src": "/ada.jpg" }]`. */
   readonly items = this.useChange<AvatarItem[]>([], () => this.render(), {
     attribute: 'items',
     parse: jsonOf<AvatarItem[]>([]),
   });
-  /** How many avatars show before the count; 0 shows them all. */
-  readonly max = this.useChange(0, () => this.render(), { attribute: 'max' });
   readonly size = this.useChange<AvatarSize>(
     'md',
     (value) => {
       this.reflect('size', value);
-      this.render();
+      for (const avatar of this._refs.group.querySelectorAll<JlAvatar>(JlAvatar.selector)) {
+        avatar.size.set(value);
+      }
     },
     { attribute: 'size', parse: oneOf(AVATAR_SIZES, 'md') }
   );
+
+  /** What the avatars were made from: the inputs call back with what they hold as the group connects. */
+  private readonly _drawn = { items: null as AvatarItem[] | null, max: 0 };
 
   private readonly _refs = this.useRefs((ref) => ({ group: ref('.group') }));
 
@@ -46,8 +52,15 @@ export class JlAvatarGroup extends JlElement {
   }
 
   private render(): void {
-    const items = this.items.get().filter((item) => typeof item?.name === 'string');
-    const { shown, hidden } = splitVisible(items, this.max.get());
+    const all = this.items.get();
+    const max = this.max.get();
+    if (all === this._drawn.items && max === this._drawn.max) {
+      return;
+    }
+    this._drawn.items = all;
+    this._drawn.max = max;
+    const items = all.filter((item) => typeof item?.name === 'string');
+    const { shown, hidden } = splitVisible(items, max);
     const size = this.size.get();
     const avatars = shown.map((item) => (
       <JlAvatar name={item.name} src={item.src ?? ''} size={size} title={item.name} />

@@ -1,3 +1,5 @@
+import { dateTimeFormat } from './intl';
+
 import type { CalendarDate, DatePart, Weekday, WeekdayWidth } from '../types/calendar.types';
 
 // Dates are plain years, months and days. The arithmetic runs on UTC timestamps, where every day lasts exactly a
@@ -172,7 +174,7 @@ export function dateFormatter(
   locale: string | undefined,
   options: Intl.DateTimeFormatOptions = { dateStyle: 'medium' }
 ): (date: CalendarDate) => string {
-  const format = new Intl.DateTimeFormat(locale, { ...options, timeZone: UTC });
+  const format = dateTimeFormat(locale, { ...options, timeZone: UTC });
   return (date) => format.format(new Date(utcTime(date)));
 }
 
@@ -212,7 +214,7 @@ const isDatePart = (type: string): type is DatePart => DATE_PARTS.some((part) =>
 
 /** A date written in digits in a locale, cut in its parts: `25`, `.`, `10`, `.`, `2026`. */
 const numericParts = (locale: string | undefined): Intl.DateTimeFormatPart[] =>
-  new Intl.DateTimeFormat(locale, { ...NUMERIC_DATE, timeZone: UTC }).formatToParts(new Date(utcTime(A_SUNDAY)));
+  dateTimeFormat(locale, { ...NUMERIC_DATE, timeZone: UTC }).formatToParts(new Date(utcTime(A_SUNDAY)));
 
 /** The order a locale writes the day, the month and the year in: `['day', 'month', 'year']` in French. */
 export const dateOrder = (locale: string | undefined): DatePart[] =>

@@ -135,17 +135,12 @@ tbody tr.detail td {
   color: var(--jl-faint);
 }
 
-th[data-sorted] {
+th[aria-sort] {
   color: var(--jl-text);
 }
 
-th[data-sorted] .sort-icon {
+th[aria-sort] .sort-icon {
   color: var(--jl-accent);
-}
-
-/* Selected rows keep their shade: the hover and the stripes leave them alone. */
-tbody tr[data-selected] td {
-  background: var(--jl-accent-soft);
 }
 
 /* Marked rows (a search's matches) carry a bar at their start and a shade, which selection and hover take over. */
@@ -157,23 +152,31 @@ tbody tr[data-marked] td:first-child {
   box-shadow: inset 3px 0 0 var(--jl-accent);
 }
 
-tbody tr:not(.empty, .skeleton, .detail, [data-selected]):hover td {
+/* Selected rows, whose own checkbox is ticked, keep their shade: the hover and the stripes leave them alone. */
+tbody tr:has(> .select-cell .checkbox:checked) td {
+  background: var(--jl-accent-soft);
+}
+
+tbody tr:not(.empty, .skeleton, .detail, :has(> .select-cell .checkbox:checked)):hover td {
   background: var(--jl-surface-2);
 }
 
 /* The stripes count the rows of data, not the details of open rows. */
-:host([striped]) tbody tr:nth-child(even of :where(:not(.detail))):not(.empty, [data-selected], [data-marked]) td {
+:host([striped])
+  tbody
+  tr:nth-child(even of :where(:not(.detail))):not(.empty, [data-marked], :has(> .select-cell .checkbox:checked))
+  td {
   background: var(--jl-surface-2);
 }
 
-:host([striped]) tbody tr:not(.empty, .skeleton, .detail, [data-selected]):hover td {
+:host([striped]) tbody tr:not(.empty, .skeleton, .detail, :has(> .select-cell .checkbox:checked)):hover td {
   background: var(--jl-surface-3);
 }
 
 /* An open row's detail takes the shade of its row. */
 :host([striped])
   tbody
-  tr:nth-child(even of :where(:not(.detail))):not([data-selected], [data-marked])
+  tr:nth-child(even of :where(:not(.detail))):not([data-marked], :has(> .select-cell .checkbox:checked))
   + .detail
   td {
   background: var(--jl-surface-2);

@@ -60,7 +60,6 @@ export class JlTabBar<Id extends string = string> extends JlElement {
     '',
     (value) => {
       this._refs.moreLabel.textContent = value;
-      this._refs.more.hidden = value === '';
     },
     { attribute: 'more' }
   );
@@ -78,7 +77,7 @@ export class JlTabBar<Id extends string = string> extends JlElement {
     return (
       <nav attrs={{ part: 'base' }}>
         <div class="items" />
-        <button class="item more" type="button" hidden>
+        <button class="item more" type="button">
           <span class="icon">
             <JlIcon name="ellipsis" size={ICON_SIZE} />
           </span>

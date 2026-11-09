@@ -19,6 +19,16 @@ const EDGES = new Map<number, string>([
   [1, 'end'],
 ]);
 
+/** A tick drawn under the track, with the mark it stands for. */
+type MarkTick = { element: HTMLElement; mark: SliderMark };
+
+const tickElement = (mark: SliderMark): HTMLElement => (
+  <span class="mark">
+    <span class="tick" />
+    {mark.label === undefined ? null : <span class="mark-label">{mark.label}</span>}
+  </span>
+);
+
 /**
  * A number picked by dragging along a track, on the browser's own range input: the arrow keys, Page Up/Down,
  * Home and End move it. The track fills in the accent colour up to the thumb.
@@ -61,6 +71,8 @@ export class JlSlider extends JlFormControl {
   );
 
   private readonly _form = { disabled: false };
+  // The ticks of every readable mark, and the list they were made from: new bounds only place them again.
+  private readonly _ticks: { from?: Array<number | SliderMark>; ticks: MarkTick[] } = { ticks: [] };
 
   private readonly _refs = this.useRefs((ref) => ({
     marks: ref('.marks'),
@@ -130,7 +142,7 @@ export class JlSlider extends JlFormControl {
   /** New bounds move the thumb and the marks. */
   private renderRange(): void {
     this.render();
-    this.renderMarks();
+    this.placeMarks();
   }
 
   /** The fill, the shown number and the form's value, from the value the native input kept. */
@@ -142,29 +154,34 @@ export class JlSlider extends JlFormControl {
     this.internals.setFormValue(native.value);
   }
 
+  /** Makes the ticks once per list of marks, every readable one, then places them. */
   private renderMarks(): void {
+    const from = this.marks.get();
+    if (from === this._ticks.from) {
+      return;
+    }
+    const marks = marksOf(from, Number.NEGATIVE_INFINITY, Number.POSITIVE_INFINITY);
+    this._ticks.from = from;
+    this._ticks.ticks = marks.map((mark) => ({ element: tickElement(mark), mark }));
+    this._refs.marks.replaceChildren(...this._ticks.ticks.map((tick) => tick.element));
+    this.placeMarks();
+  }
+
+  /** Puts each tick where its value sits between the bounds; one outside them is hidden. */
+  private placeMarks(): void {
     const min = this.min.get();
     const max = this.max.get();
-    const marks = marksOf(this.marks.get(), min, max);
-    const container = this._refs.marks;
-    container.hidden = marks.length === 0;
+    for (const { element, mark } of this._ticks.ticks) {
+      const fraction = fractionOf(mark.value, min, max);
+      element.hidden = mark.value < min || mark.value > max;
+      element.style.setProperty('--at', String(fraction));
+      setOrRemove(element, 'data-edge', EDGES.get(fraction) ?? '');
+    }
+    const shown = this._ticks.ticks.filter((tick) => !tick.element.hidden);
+    this._refs.marks.hidden = shown.length === 0;
     this.reflect(
       'has-labels',
-      marks.some((mark) => mark.label !== undefined)
-    );
-    container.replaceChildren(
-      ...marks.map((mark) => {
-        const element = (
-          <span class="mark">
-            <span class="tick" />
-            {mark.label === undefined ? null : <span class="mark-label">{mark.label}</span>}
-          </span>
-        );
-        const fraction = fractionOf(mark.value, min, max);
-        element.style.setProperty('--at', String(fraction));
-        setOrRemove(element, 'data-edge', EDGES.get(fraction) ?? '');
-        return element;
-      })
+      shown.some((tick) => tick.mark.label !== undefined)
     );
   }
 }

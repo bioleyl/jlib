@@ -66,7 +66,6 @@ export class JlPageOutlet extends JlElement {
       dropped.remove();
     }
     if (this.pages().length === 0) {
-      this.append(page);
       this.reveal(page);
       return;
     }
@@ -106,14 +105,24 @@ export class JlPageOutlet extends JlElement {
     this.reveal(page);
   }
 
-  /** Puts the page in the current one's place. */
+  /**
+   * Puts the page in the current one's place, and brings its top into view when the current one's was scrolled past,
+   * as a page loaded by the browser starts at its top.
+   */
   private reveal(page: HTMLElement): void {
+    // Read before the swap, from the layout the browser has: read after, it would lay the new page out on the spot.
+    const scrolledPast = this.getBoundingClientRect().top < 0;
     for (const left of this.pages().filter((child) => child !== page)) {
       left.remove();
     }
     page.removeAttribute('slot');
+    if (page.parentElement !== this) {
+      this.append(page);
+    }
     this.drawWaiting(false);
-    this.scrollToTop();
+    if (scrolledPast) {
+      this.scrollIntoView({ block: 'start' });
+    }
     this.events.emit('show', page);
   }
 
@@ -124,14 +133,6 @@ export class JlPageOutlet extends JlElement {
   private drawWaiting(waiting: boolean): void {
     setOrRemove(this, 'aria-busy', waiting ? 'true' : '');
     this.whenRendered(() => this._refs.line.active.set(waiting));
-  }
-
-  /** Brings the top of the new page into view, as a page loaded by the browser starts at its top. */
-  private scrollToTop(): void {
-    if (this.getBoundingClientRect().top >= 0) {
-      return;
-    }
-    this.scrollIntoView({ block: 'start' });
   }
 }
 

@@ -9,9 +9,6 @@ import styles from './jl-timeline.css?inline';
 
 import type { TimelineItem } from '../types/jl-timeline.types';
 
-const ICON_SIZE = 14;
-const COMPACT_ICON_SIZE = 12;
-
 /**
  * What happened, in order, along a vertical line: each event a dot (or an icon in a circle) in its tone's colour,
  * its time beside the marker (the times in one column), a title and an optional description. `compact` tightens it
@@ -20,23 +17,19 @@ const COMPACT_ICON_SIZE = 12;
 export class JlTimeline extends JlElement {
   static readonly selector = 'jl-timeline';
 
-  readonly items = this.useChange<TimelineItem[]>([], () => this.render(), {
+  readonly items = this.useChange<TimelineItem[]>([], (value) => this.renderItems(value), {
     attribute: 'items',
     parse: jsonOf<TimelineItem[]>([]),
   });
   /** Smaller markers and less space between events. */
-  readonly compact = this.useChange(
-    false,
-    (value) => {
-      this.reflect('compact', value);
-      this.render();
-    },
-    { attribute: 'compact' }
-  );
+  readonly compact = this.useChange(false, (value) => this.reflect('compact', value), { attribute: 'compact' });
   /** The list's name for screen readers. */
   readonly label = this.useChange('', (value) => setOrRemove(this._refs.list, 'aria-label', value), {
     attribute: 'label',
   });
+
+  // The items the events show: the same list again (an attribute's second call at connection) makes none.
+  private readonly _drawn: { items?: TimelineItem[] } = {};
 
   private readonly _refs = this.useRefs((ref) => ({ list: ref('ol') }));
 
@@ -48,18 +41,22 @@ export class JlTimeline extends JlElement {
     return css`${BASE_STYLES}${styles}`;
   }
 
-  private render(): void {
-    this._refs.list.replaceChildren(...this.items.get().map((item) => this.itemNode(item)));
+  private renderItems(items: TimelineItem[]): void {
+    if (items === this._drawn.items) {
+      return;
+    }
+    this._drawn.items = items;
+    this._refs.list.replaceChildren(...items.map((item) => this.itemNode(item)));
   }
 
+  /** An event; the CSS sizes its icon, smaller when compact (--icon-size). */
   private itemNode(item: TimelineItem): Node {
-    const size = this.compact.get() ? COMPACT_ICON_SIZE : ICON_SIZE;
     const marker =
       item.icon === undefined ? (
         <span class="marker dot" aria-hidden="true" />
       ) : (
         <span class="marker circle" aria-hidden="true">
-          <JlIcon name={item.icon} size={size} />
+          <JlIcon name={item.icon} />
         </span>
       );
     return (

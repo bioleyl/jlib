@@ -56,6 +56,7 @@ pre {
 }
 
 .gutter {
+  display: none;
   flex: none;
   padding-right: 4px;
   color: var(--jl-faint);
@@ -72,6 +73,14 @@ pre {
   overflow-x: auto;
   color: var(--jl-text);
   tab-size: 2;
+}
+
+:host([line-numbers]) .gutter {
+  display: block;
+}
+
+:host(:not([has-header])) header {
+  display: none;
 }
 
 :host([wrap]) pre {

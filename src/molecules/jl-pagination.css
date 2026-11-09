@@ -116,3 +116,22 @@ nav {
   text-align: center;
   white-space: nowrap;
 }
+
+/* The list, or "3 of 12" when compact. */
+:host([compact]) .pages,
+:host(:not([compact])) .status {
+  display: none;
+}
+
+/* The arrows' size, by the pagination's: each icon reads --icon-size. */
+jl-icon {
+  --icon-size: 16px;
+}
+
+:host([size="sm"]) jl-icon {
+  --icon-size: 14px;
+}
+
+:host([size="lg"]) jl-icon {
+  --icon-size: 18px;
+}

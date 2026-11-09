@@ -1,3 +1,5 @@
+import { collator, dateTimeFormat, numberFormat } from './intl';
+
 import type {
   TableAlign,
   TableCellFormat,
@@ -18,6 +20,8 @@ const DIRECTION_SIGN: Record<TableSortDirection, number> = { asc: 1, desc: -1, n
 
 const DATE_FORMAT: Intl.DateTimeFormatOptions = { dateStyle: 'medium' };
 const DATE_TIME_FORMAT: Intl.DateTimeFormatOptions = { dateStyle: 'medium', timeStyle: 'short' };
+// Text sorts its numbers by value: "item 2" before "item 10".
+const NUMERIC_TEXT: Intl.CollatorOptions = { numeric: true };
 
 export const nextSortDirection = (direction: TableSortDirection): TableSortDirection => NEXT_DIRECTION[direction];
 
@@ -48,51 +52,90 @@ export function toTime(value: unknown): number {
   return Number.NaN;
 }
 
-const compareNumbers = (a: number, b: number): number => a - b;
-
-const COMPARERS: Record<TableCellFormat, (a: unknown, b: unknown, locale?: string) => number> = {
-  badge: (a, b, locale) => String(a).localeCompare(String(b), locale),
-  code: (a, b, locale) => String(a).localeCompare(String(b), locale),
-  date: (a, b) => compareNumbers(toTime(a), toTime(b)),
-  datetime: (a, b) => compareNumbers(toTime(a), toTime(b)),
-  number: (a, b) => compareNumbers(toNumber(a), toNumber(b)),
-  text: (a, b, locale) => String(a).localeCompare(String(b), locale, { numeric: true }),
+/** What a column orders its values by: numbers for numbers and dates, text for the rest. */
+const SORT_VALUES: Record<TableCellFormat, (value: unknown) => number | string> = {
+  badge: String,
+  code: String,
+  date: toTime,
+  datetime: toTime,
+  number: toNumber,
+  text: String,
 };
 
-/** Whether a value cannot be ordered in the format: empty, or not a number or a date where one is expected. */
-function isUnorderable(value: unknown, format: TableCellFormat): boolean {
+const TEXT_ORDERS: Record<TableCellFormat, Intl.CollatorOptions | undefined> = {
+  badge: undefined,
+  code: undefined,
+  date: undefined,
+  datetime: undefined,
+  number: undefined,
+  text: NUMERIC_TEXT,
+};
+
+/** A value as its column orders it, read once per sort; `undefined` when it cannot be ordered: empty, or unreadable. */
+function sortValueOf(value: unknown, format: TableCellFormat): number | string | undefined {
   if (isEmpty(value)) {
-    return true;
+    return undefined;
   }
-  const unorderable: Record<TableCellFormat, () => boolean> = {
-    badge: () => false,
-    code: () => false,
-    date: () => Number.isNaN(toTime(value)),
-    datetime: () => Number.isNaN(toTime(value)),
-    number: () => Number.isNaN(toNumber(value)),
-    text: () => false,
-  };
-  return unorderable[format]();
+  const sortValue = SORT_VALUES[format](value);
+  return Number.isNaN(sortValue) ? undefined : sortValue;
+}
+
+const compareTextOf = (format: TableCellFormat, locale: string | undefined): ((a: string, b: string) => number) =>
+  collator(locale, TEXT_ORDERS[format]).compare;
+
+/** Orders two sort values one way, the values that cannot be ordered after the others in both directions. */
+function compareSortValues(
+  a: number | string | undefined,
+  b: number | string | undefined,
+  sign: number,
+  compareText: (a: string, b: string) => number
+): number {
+  if (a === undefined || b === undefined) {
+    return Number(a === undefined) - Number(b === undefined);
+  }
+  return sign * (typeof a === 'number' && typeof b === 'number' ? a - b : compareText(String(a), String(b)));
 }
 
 /**
  * Orders two cell values ascending: numbers by value, dates by time, text with `localeCompare`. Empty and
  * unreadable values come after the others.
  */
-export function compareCells(a: unknown, b: unknown, format: TableCellFormat, locale?: string): number {
-  const aMissing = isUnorderable(a, format);
-  const bMissing = isUnorderable(b, format);
-  if (aMissing || bMissing) {
-    return Number(aMissing) - Number(bMissing);
-  }
-  return COMPARERS[format](a, b, locale);
-}
+export const compareCells = (a: unknown, b: unknown, format: TableCellFormat, locale?: string): number =>
+  compareSortValues(sortValueOf(a, format), sortValueOf(b, format), 1, compareTextOf(format, locale));
 
 /**
  * A row's field by its name, whatever the page's type of row: a column names its field as text, and the HTML that
  * writes the rows is not checked against a type.
  */
 export const fieldOf = (row: object, key: string): unknown => Reflect.get(row, key);
+
+/** How a column orders: which way, its values read in which format, its text compared in which language. */
+interface ColumnOrder {
+  direction: TableSortDirection;
+  format?: TableCellFormat;
+  locale?: string;
+}
+
+/**
+ * Items ordered by a value of each, read once per item rather than at every comparison; `none` gives them back as
+ * they came. The sort is stable, and empty values stay at the end in both directions.
+ */
+export function sortBy<Item>(
+  items: readonly Item[],
+  readValue: (item: Item) => unknown,
+  order: ColumnOrder
+): Item[] {
+  const sign = DIRECTION_SIGN[order.direction];
+  if (sign === 0) {
+    return [...items];
+  }
+  const format = order.format ?? 'text';
+  const compareText = compareTextOf(format, order.locale);
+  return items
+    .map((item) => ({ item, value: sortValueOf(readValue(item), format) }))
+    .sort((a, b) => compareSortValues(a.value, b.value, sign, compareText))
+    .map(({ item }) => item);
+}
 
 /**
  * The rows ordered by one column; `none` gives them back as they came. The sort is stable, and empty values stay
@@ -105,20 +148,7 @@ export function sortRows<Row extends object>(
   format: TableCellFormat = 'text',
   locale?: string
 ): Row[] {
-  const sign = DIRECTION_SIGN[direction];
-  if (sign === 0 || key === '') {
-    return [...rows];
-  }
-  return [...rows].sort((a, b) => {
-    const aValue = fieldOf(a, key);
-    const bValue = fieldOf(b, key);
-    const aMissing = isUnorderable(aValue, format);
-    const bMissing = isUnorderable(bValue, format);
-    if (aMissing || bMissing) {
-      return Number(aMissing) - Number(bMissing);
-    }
-    return sign * COMPARERS[format](aValue, bValue, locale);
-  });
+  return key === '' ? [...rows] : sortBy(rows, (row) => fieldOf(row, key), { direction, format, locale });
 }
 
 const FORMATTERS: Record<TableCellFormat, (value: unknown, locale?: string) => string> = {
@@ -126,15 +156,15 @@ const FORMATTERS: Record<TableCellFormat, (value: unknown, locale?: string) => s
   code: (value) => String(value),
   date: (value, locale) => {
     const time = toTime(value);
-    return Number.isNaN(time) ? String(value) : new Intl.DateTimeFormat(locale, DATE_FORMAT).format(time);
+    return Number.isNaN(time) ? String(value) : dateTimeFormat(locale, DATE_FORMAT).format(time);
   },
   datetime: (value, locale) => {
     const time = toTime(value);
-    return Number.isNaN(time) ? String(value) : new Intl.DateTimeFormat(locale, DATE_TIME_FORMAT).format(time);
+    return Number.isNaN(time) ? String(value) : dateTimeFormat(locale, DATE_TIME_FORMAT).format(time);
   },
   number: (value, locale) => {
     const number = toNumber(value);
-    return Number.isNaN(number) ? String(value) : new Intl.NumberFormat(locale).format(number);
+    return Number.isNaN(number) ? String(value) : numberFormat(locale).format(number);
   },
   text: (value) => String(value),
 };
@@ -180,7 +210,8 @@ export function selectionState(
 
 /** The selection after the select-all box is pressed: every row when not all were selected, else none of them. */
 export function toggleAll(keys: readonly TableRowKey[], selected: ReadonlySet<TableRowKey>): TableRowKey[] {
-  const others = [...selected].filter((key) => !keys.includes(key));
+  const shown = new Set(keys);
+  const others = [...selected].filter((key) => !shown.has(key));
   return selectionState(keys, selected) === 'all' ? others : [...others, ...keys];
 }
 
@@ -219,9 +250,11 @@ export const withRowOpen = (
 ): TableRowKey[] => ROW_OPENERS[expansion](expanded, key, open);
 
 /** What changed between two sets of open rows, as the `toggle` events to emit: the rows closed, then those opened. */
-export function rowToggles(before: readonly TableRowKey[], after: readonly TableRowKey[]): TableToggle[] {
-  const closed = before.filter((key) => !after.includes(key)).map((key) => ({ key, open: false }));
-  const opened = after.filter((key) => !before.includes(key)).map((key) => ({ key, open: true }));
+export function rowToggles(before: Iterable<TableRowKey>, after: Iterable<TableRowKey>): TableToggle[] {
+  const was = new Set(before);
+  const is = new Set(after);
+  const closed = [...was].filter((key) => !is.has(key)).map((key) => ({ key, open: false }));
+  const opened = [...is].filter((key) => !was.has(key)).map((key) => ({ key, open: true }));
   return [...closed, ...opened];
 }
 
