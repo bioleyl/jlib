@@ -54,7 +54,7 @@ export class JlTree extends JlElement {
 
   readonly events = this.useEvents<{ select: string; toggle: { id: string; open: boolean } }>();
 
-  readonly items = this.useChange<TreeItem[]>([], () => this.renderItems(), {
+  readonly items = this.useChange<TreeItem[]>([], () => this.itemsChanged(), {
     attribute: 'items',
     parse: jsonOf<TreeItem[]>([]),
   });
@@ -90,6 +90,8 @@ export class JlTree extends JlElement {
   private readonly _focus = { id: '' };
   // Each reload has a number: pages answering an earlier one are dropped.
   private readonly _loading = { generation: 0, levels: new Map<string | null, TreeLevel>() };
+  // While a page is added, `items` changes without the whole tree being drawn again: the page draws its own rows.
+  private readonly _drawing = { pageOnly: false };
 
   private readonly _refs = this.useRefs((ref) => ({ tree: ref('.tree') }));
 
@@ -294,7 +296,7 @@ export class JlTree extends JlElement {
         (error: unknown) => this.failLevel(parent, error, generation)
       );
     this._loading.levels.set(parent, { error: '', pending, total: level?.total ?? 0 });
-    this.whenRendered(() => this.renderItems());
+    this.whenRendered(() => this.drawLevelEnd(parent));
     return pending;
   }
 
@@ -312,7 +314,24 @@ export class JlTree extends JlElement {
     // A loader that answers an empty page has no more to give, whatever its total said.
     const total = page.items.length === 0 ? loaded : page.total;
     this._loading.levels.set(parent, { error: '', pending: null, total });
-    this.items.set(withPage(this.items.get(), parent, page.items));
+    const items = withPage(this.items.get(), parent, page.items);
+    if (this.levelContainer(parent) === null) {
+      this.items.set(items);
+    } else {
+      // The rows already drawn stay as they are: a tree of thousands of items would otherwise be drawn again, and
+      // the browser laid out again, for every page.
+      this._drawing.pageOnly = true;
+      try {
+        this.items.set(items);
+      } finally {
+        this._drawing.pageOnly = false;
+      }
+      const level = this.levelOf(parent);
+      this.drawLevelEnd(
+        parent,
+        page.items.map((item) => this.itemNode(item, level))
+      );
+    }
     this.loadOpenFolders();
     const first = page.items[0];
     if (focusFirst && first !== undefined) {
@@ -326,7 +345,7 @@ export class JlTree extends JlElement {
     }
     const total = this._loading.levels.get(parent)?.total ?? 0;
     this._loading.levels.set(parent, { error: messageOf(error) || this.errorLabel(), pending: null, total });
-    this.whenRendered(() => this.renderItems());
+    this.whenRendered(() => this.drawLevelEnd(parent));
   }
 
   /** The open folders whose children the loader has not given yet: their first page. */
@@ -386,6 +405,12 @@ export class JlTree extends JlElement {
     return this.errorText.get() || jlText('loadError');
   }
 
+  private itemsChanged(): void {
+    if (!this._drawing.pageOnly) {
+      this.renderItems();
+    }
+  }
+
   private renderItems(): void {
     const hadFocus = this.hasFocusInside();
     this._rows.clear();
@@ -395,9 +420,58 @@ export class JlTree extends JlElement {
     );
     this.renderExpanded();
     this.renderSelection();
+    this.moveFocus(this.tabStop(), hadFocus);
+  }
+
+  /** Where the Tab stop goes once rows are drawn: where it was, else the selected item, else the first. */
+  private tabStop(): string {
+    if (this._rows.has(this._focus.id)) {
+      return this._focus.id;
+    }
     const first = this._rows.keys().next().value ?? '';
-    const start = this._rows.has(this.value.get()) ? this.value.get() : first;
-    this.moveFocus(this._rows.has(this._focus.id) ? this._focus.id : start, hadFocus);
+    return this._rows.has(this.value.get()) ? this.value.get() : first;
+  }
+
+  /**
+   * Draws the rows a page added to a level, then the row that ends the level again, and nothing else: a spinner, a
+   * page or an error leaves the other rows as they are. A level not drawn yet draws the whole tree. The focus that
+   * was on the row ending the level moves to the one replacing it.
+   */
+  private drawLevelEnd(parent: string | null, added: readonly HTMLElement[] = []): void {
+    const container = this.levelContainer(parent);
+    if (container === null) {
+      this.renderItems();
+      return;
+    }
+    const hadFocus = this.hasFocusInside();
+    const endId = levelEndId(parent);
+    this._rows.get(endId)?.remove();
+    this._rows.delete(endId);
+    const ending = this.levelEndNodes(parent, this.levelOf(parent));
+    container.append(...added, ...ending);
+    const drawn = [...added, ...ending]
+      .filter((node): node is HTMLElement => node instanceof HTMLElement && node.dataset.id !== undefined)
+      .flatMap((row) => [row, ...row.querySelectorAll<HTMLElement>('[role="treeitem"]')])
+      .map((row): [string, HTMLElement] => [row.dataset.id ?? '', row]);
+    this.drawExpanded(drawn);
+    this.drawSelection(drawn);
+    this.moveFocus(this.tabStop(), hadFocus && !this.hasFocusInside());
+  }
+
+  /** The element holding a level's rows; null when they are not drawn, or when the tree shows its empty note. */
+  private levelContainer(parent: string | null): HTMLElement | null {
+    if (parent === null) {
+      return this.items.get().length > 0 && this._rows.size > 0 ? this._refs.tree : null;
+    }
+    return this._rows.get(parent)?.querySelector<HTMLElement>(':scope > .group') ?? null;
+  }
+
+  /** The depth of a level's rows: 1 for the roots. */
+  private levelOf(parent: string | null): number {
+    if (parent === null) {
+      return 1;
+    }
+    return (allItems(this.items.get()).find((entry) => entry.item.id === parent)?.level ?? 0) + 1;
   }
 
   private itemNode(item: TreeItem, level: number): HTMLElement {
@@ -534,8 +608,16 @@ export class JlTree extends JlElement {
   }
 
   private renderExpanded(): void {
+    this.drawExpanded(this._rows);
+    if (!this.isVisible(this._focus.id)) {
+      this.moveFocus(this.visibleAncestor(this._focus.id), false);
+    }
+  }
+
+  /** Opens or closes the groups of these rows, as `expanded` says. */
+  private drawExpanded(rows: Iterable<[string, HTMLElement]>): void {
     const expanded = new Set(this.expanded.get());
-    for (const [id, row] of this._rows) {
+    for (const [id, row] of rows) {
       const group = row.querySelector<HTMLElement>(':scope > .group');
       if (group === null) {
         continue;
@@ -544,9 +626,6 @@ export class JlTree extends JlElement {
       row.setAttribute('aria-expanded', String(open));
       group.hidden = !open;
       row.querySelector<JlIcon>(':scope > .row > .icon.auto')?.name.set(open ? OPEN_FOLDER_ICON : FOLDER_ICON);
-    }
-    if (!this.isVisible(this._focus.id)) {
-      this.moveFocus(this.visibleAncestor(this._focus.id), false);
     }
   }
 
@@ -564,8 +643,12 @@ export class JlTree extends JlElement {
   }
 
   private renderSelection(): void {
+    this.drawSelection(this._rows);
+  }
+
+  private drawSelection(rows: Iterable<[string, HTMLElement]>): void {
     const value = this.value.get();
-    for (const [id, row] of this._rows) {
+    for (const [id, row] of rows) {
       row.setAttribute('aria-selected', String(id === value));
     }
   }
