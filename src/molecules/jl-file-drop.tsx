@@ -158,7 +158,7 @@ export class JlFileDrop extends JlFormControl {
           attrs={{ part: 'base' }}>
           <JlIcon class="zone-icon" name="upload" size={ZONE_ICON_SIZES.md} />
           <p class="text" id={this._ids.text} />
-          <p class="hint" id={this._ids.hint} hidden />
+          <p class="hint" id={this._ids.hint} />
           <button class="browse" type="button" aria-describedby={this._ids.hint} />
         </div>
         <input class="picker" id="picker" type="file" tabIndex={-1} hidden />
@@ -369,8 +369,8 @@ export class JlFileDrop extends JlFormControl {
     const maxSize = this.maxSize.get();
     const limit = maxSize === NO_LIMIT ? '' : jlText('fileUpTo', { size: formatFileSize(maxSize, pageLocale()) });
     const hint = [types, limit].filter((part) => part !== '').join(' · ');
+    // The CSS hides it while empty.
     this._refs.hint.textContent = hint;
-    this._refs.hint.hidden = hint === '';
   }
 
   /** Each file is its own entry under the field's name, as from a native file input. */

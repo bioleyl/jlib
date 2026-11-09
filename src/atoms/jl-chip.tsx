@@ -17,10 +17,9 @@ registerIcons({ check: Check, x: X });
 
 export const CHIP_SIZES: readonly ChipSize[] = ['md', 'sm'];
 
-const ICON_SIZES: Record<ChipSize, number> = { md: 14, sm: 12 };
-const DISMISS_ICON_SIZES: Record<ChipSize, number> = { md: 13, sm: 12 };
 const DISMISS_KEYS = ['Backspace', 'Delete'];
 const SELECTED_ICON = 'check';
+const DISMISS_ICON = 'x';
 
 /**
  * A compact token: a filter people turn on and off (`selectable`), a tag they can take away (`removable`), or a
@@ -57,6 +56,10 @@ export class JlChip extends JlElement {
     false,
     (value) => {
       this._refs.dismiss.hidden = !value;
+      // The × gets its SVG the first time it shows: a chip that cannot be removed draws none.
+      if (value) {
+        this._refs.dismissIcon.name.set(DISMISS_ICON);
+      }
       this.reflect('removable', value);
     },
     { attribute: 'removable' }
@@ -106,7 +109,7 @@ export class JlChip extends JlElement {
           <slot />
         </span>
         <button class="dismiss" type="button" hidden>
-          <JlIcon name="x" />
+          <JlIcon />
         </button>
       </span>
     );
@@ -188,8 +191,6 @@ export class JlChip extends JlElement {
 
   private renderSize(size: ChipSize): void {
     this.reflect('size', size);
-    this._refs.icon.size.set(ICON_SIZES[size]);
-    this._refs.dismissIcon.size.set(DISMISS_ICON_SIZES[size]);
   }
 }
 

@@ -55,7 +55,7 @@ export class JlSideNav<Id extends string = string> extends JlElement {
   /** `collapse`: people folded the side nav into its rail (true) or unfolded it (false), for the app to remember. */
   readonly events = this.useEvents<{ select: Id; collapse: boolean }>();
 
-  readonly sections = this.useChange<SideNavSection<Id>[]>([], () => this.render(), {
+  readonly sections = this.useChange<SideNavSection<Id>[]>([], () => this.schedule(), {
     attribute: 'sections',
     parse: parseSections<Id>,
   });
@@ -69,21 +69,30 @@ export class JlSideNav<Id extends string = string> extends JlElement {
     false,
     (value) => {
       this.reflect('collapsed', value);
-      this.renderRail();
+      this.schedule();
     },
     { attribute: 'collapsed' }
   );
   /** Adds a button at the bottom that folds the side nav into its rail and unfolds it. */
-  readonly collapsible = this.useChange(false, () => this.renderFold(), { attribute: 'collapsible' });
+  readonly collapsible = this.useChange(false, (value) => this.reflect('collapsible', value), {
+    attribute: 'collapsible',
+  });
   /** The fold button's text while the side nav is open; jlib's own when empty. */
-  readonly collapseLabel = this.useChange('', () => this.renderFold(), { attribute: 'collapse-label' });
+  readonly collapseLabel = this.useChange('', () => this.schedule(), { attribute: 'collapse-label' });
   /** Its hint while the side nav is a rail; jlib's own when empty. */
-  readonly expandLabel = this.useChange('', () => this.renderFold(), { attribute: 'expand-label' });
+  readonly expandLabel = this.useChange('', () => this.schedule(), { attribute: 'expand-label' });
   /**
    * Set by `jl-app-shell` while the side nav is its drawer, on a narrow screen: the drawer shows it whole, and its
    * fold button hides, `collapsed` waiting for a wide screen again.
    */
-  readonly inDrawer = this.useChange(false, () => this.renderRail(), { attribute: 'in-drawer' });
+  readonly inDrawer = this.useChange(
+    false,
+    (value) => {
+      this.reflect('in-drawer', value);
+      this.schedule();
+    },
+    { attribute: 'in-drawer' }
+  );
   /** The name of the navigation for screen readers. */
   readonly label = this.useChange('', () => this.renderLabel(), { attribute: 'label' });
 
@@ -91,6 +100,12 @@ export class JlSideNav<Id extends string = string> extends JlElement {
 
   /** The parents people opened, or that hold the active item. */
   private readonly _state = { open: new Set<string>() };
+  /** The sections and the form (rail or whole) the items were drawn for, and whether a drawing waits. */
+  private readonly _drawn: { queued: boolean; rail: boolean; sections: SideNavSection<Id>[] | undefined } = {
+    queued: false,
+    rail: false,
+    sections: undefined,
+  };
 
   private readonly _refs = this.useRefs((ref) => ({
     fold: ref(JlButton),
@@ -105,7 +120,7 @@ export class JlSideNav<Id extends string = string> extends JlElement {
         <div class="sections" />
         <div class="bottom">
           <slot name="footer" />
-          <JlButton class="fold" variant="ghost" block hidden />
+          <JlButton class="fold" variant="ghost" block />
         </div>
       </nav>
     );
@@ -163,27 +178,51 @@ export class JlSideNav<Id extends string = string> extends JlElement {
     this.events.emit('collapse', collapsed);
   }
 
-  /** The rail, or the whole side nav: drawn again, said on the host (`rail`) for the styles and the page. */
-  private renderRail(): void {
-    this.reflect('rail', this.isRail());
-    this.render();
+  /** Draws on the next microtask: the inputs set while connecting give one drawing, not one each. */
+  private schedule(): void {
+    if (this._drawn.queued) {
+      return;
+    }
+    this._drawn.queued = true;
+    queueMicrotask(() => this.flush());
+  }
+
+  /** The rail, or the whole side nav, said on the host (`rail`) for the styles and the page. */
+  private flush(): void {
+    this._drawn.queued = false;
+    const rail = this.isRail();
+    this.reflect('rail', rail);
     this.renderFold();
+    this.renderItems(rail);
+  }
+
+  /** Draws the items again only for other sections or the other form: the rail's rows lead elsewhere. */
+  private renderItems(rail: boolean): void {
+    const sections = this.sections.get();
+    if (sections === this._drawn.sections && rail === this._drawn.rail) {
+      return;
+    }
+    Object.assign(this._drawn, { rail, sections });
+    this.render();
   }
 
   protected drawTexts(): void {
     this.renderLabel();
-    this.renderFold();
-    this.render();
+    for (const expander of this._refs.sections.querySelectorAll<HTMLElement>('.expander')) {
+      const name = findItem(this.sections.get(), expander.dataset.id ?? '')?.label ?? '';
+      expander.setAttribute('aria-label', jlText('showPagesOf', { name }));
+    }
+    this.schedule();
   }
 
   private renderLabel(): void {
     this._refs.nav.setAttribute('aria-label', this.label.get() || jlText('mainNavigation'));
   }
 
+  /** The fold button's icon and text; the CSS hides it unless `collapsible`, and in a drawer. */
   private renderFold(): void {
     const fold = this._refs.fold;
     const rail = this.isRail();
-    fold.hidden = !this.collapsible.get() || this.inDrawer.get();
     fold.icon.set(rail ? EXPAND_ICON : COLLAPSE_ICON);
     fold.label.set(rail ? '' : this.collapseLabel.get() || jlText('collapseMenu'));
     fold.hint.set(rail ? this.expandLabel.get() || jlText('expandMenu') : '');
@@ -356,7 +395,6 @@ export class JlSideNav<Id extends string = string> extends JlElement {
       const id = row?.dataset.id ?? '';
       const open = this._state.open.has(id);
       list.hidden = !open;
-      entry?.classList.toggle('open', open);
       for (const control of entry?.querySelectorAll(`[aria-controls="${list.id}"]`) ?? []) {
         control.setAttribute('aria-expanded', String(open));
       }

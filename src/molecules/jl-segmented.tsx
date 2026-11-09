@@ -4,17 +4,14 @@ import { JlIcon } from '../atoms/jl-icon';
 import { JlFormControl } from '../base/jl-form-control';
 import { jsonOf, oneOf, textOf } from '../lib/attributes';
 import { setOrRemove } from '../lib/dom';
-import { moveIndicator } from '../lib/indicator';
+import { followTarget } from '../lib/indicator';
 import { CONTROL_SIZES } from '../lib/options';
-import { watchSizes } from '../lib/resize';
 import { firstIndex, lastIndex, stepIndex } from '../lib/roving';
 import { BASE_STYLES } from '../styles/shared';
 import styles from './jl-segmented.css?inline';
 
 import type { SegmentedOption } from '../types/jl-segmented.types';
 import type { ControlSize } from '../types/options.types';
-
-const ICON_SIZES: Record<ControlSize, number> = { lg: 18, md: 16, sm: 14 };
 
 type KeyMove = (enabled: readonly boolean[], from: number) => number;
 
@@ -40,7 +37,7 @@ export class JlSegmented<Value extends string = string> extends JlFormControl {
 
   readonly events = this.useEvents<{ change: Value }>();
 
-  readonly options = this.useChange<SegmentedOption<Value>[]>([], () => this.renderOptions(), {
+  readonly options = this.useChange<SegmentedOption<Value>[]>([], (value) => this.renderOptions(value), {
     attribute: 'options',
     parse: jsonOf<SegmentedOption<Value>[]>([]),
   });
@@ -53,7 +50,7 @@ export class JlSegmented<Value extends string = string> extends JlFormControl {
     'md',
     (value) => {
       this.reflect('size', value);
-      this.renderOptions();
+      this.renderIconSize();
     },
     {
       attribute: 'size',
@@ -65,7 +62,7 @@ export class JlSegmented<Value extends string = string> extends JlFormControl {
     false,
     (value) => {
       this.reflect('block', value);
-      this.placeThumb();
+      this._thumb.place();
     },
     { attribute: 'block' }
   );
@@ -84,7 +81,13 @@ export class JlSegmented<Value extends string = string> extends JlFormControl {
 
   private readonly _state = { disabledByForm: false };
 
-  private readonly _resize = watchSizes(() => this.placeThumb());
+  // The options the segments show: the same list again (an attribute's second call at connection) makes none.
+  private readonly _drawn: { options?: SegmentedOption<Value>[] } = {};
+
+  private readonly _thumb = followTarget(
+    () => this._refs.thumb,
+    () => this.selectedSegment()
+  );
 
   private readonly _refs = this.useRefs((ref) => ({
     group: ref('.group'),
@@ -108,7 +111,7 @@ export class JlSegmented<Value extends string = string> extends JlFormControl {
   }
 
   onConnect(): void {
-    this._resize.observe(this._refs.group);
+    this._thumb.watch(this._refs.group);
     this.on(this._refs.group, 'click', (event) => {
       const segment = (event.target as Element).closest<HTMLButtonElement>('.segment');
       if (segment !== null) {
@@ -119,7 +122,7 @@ export class JlSegmented<Value extends string = string> extends JlFormControl {
   }
 
   onDisconnect(): void {
-    this._resize.disconnect();
+    this._thumb.stop();
   }
 
   protected resetValue(): void {
@@ -145,16 +148,23 @@ export class JlSegmented<Value extends string = string> extends JlFormControl {
   }
 
   // No reflect() here: it runs for `options` before the attributes declared after it are read.
-  private renderOptions(): void {
-    const iconSize = ICON_SIZES[this.size.get()];
-    const segments = this.options.get().map((option) => this.segment(option, iconSize));
-    this._refs.group.replaceChildren(this._refs.thumb, ...segments);
+  private renderOptions(options: SegmentedOption<Value>[]): void {
+    if (options === this._drawn.options) {
+      return;
+    }
+    this._drawn.options = options;
+    this._refs.group.replaceChildren(this._refs.thumb, ...options.map((option) => this.segment(option)));
     this.renderValue();
     this.renderDisabled();
   }
 
+  /** The CSS sizes the icons by the control's size (--icon-size): the thumb follows the segments' new widths. */
+  private renderIconSize(): void {
+    this._thumb.place();
+  }
+
   /** A segment; with only an icon, its value names it. */
-  private segment(option: SegmentedOption<Value>, iconSize: number): HTMLButtonElement {
+  private segment(option: SegmentedOption<Value>): HTMLButtonElement {
     const label = option.label ?? '';
     const name = label === '' ? option.value : undefined;
     return (
@@ -168,7 +178,7 @@ export class JlSegmented<Value extends string = string> extends JlFormControl {
         class="segment"
         data-value={option.value}
         data-disabled={option.disabled === true ? '' : undefined}>
-        {option.icon === undefined ? '' : <JlIcon name={option.icon} size={iconSize} />}
+        {option.icon === undefined ? '' : <JlIcon name={option.icon} />}
         {label === '' ? '' : <span class="label">{label}</span>}
         {option.badge === undefined ? '' : <span class="badge">{String(option.badge)}</span>}
       </button>
@@ -195,7 +205,7 @@ export class JlSegmented<Value extends string = string> extends JlFormControl {
       segment.tabIndex = checked ? 0 : -1;
     });
     this.internals.setFormValue(value);
-    this.placeThumb();
+    this._thumb.place();
   }
 
   private renderDisabled(): void {
@@ -204,10 +214,6 @@ export class JlSegmented<Value extends string = string> extends JlFormControl {
     for (const segment of this.segments()) {
       segment.disabled = disabled || segment.hasAttribute('data-disabled');
     }
-  }
-
-  private placeThumb(): void {
-    moveIndicator(this._refs.thumb, this.selectedSegment());
   }
 
   private onKeydown(event: KeyboardEvent): void {

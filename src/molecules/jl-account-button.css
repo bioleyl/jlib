@@ -55,6 +55,10 @@ jl-avatar {
   font-size: var(--jl-font-xs);
 }
 
+.description:empty {
+  display: none;
+}
+
 /* The avatar alone, round. */
 :host([compact]) {
   display: inline-block;

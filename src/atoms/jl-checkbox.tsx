@@ -11,6 +11,8 @@ import { JlIcon } from './jl-icon';
 registerIcons({ check: Check, minus: Minus });
 
 const ICON_SIZE = 12;
+const CHECK_ICON = 'check';
+const DASH_ICON = 'minus';
 const DEFAULT_VALUE = 'on';
 
 /**
@@ -32,7 +34,6 @@ export class JlCheckbox extends JlFormControl {
     '',
     (value) => {
       this._refs.label.textContent = value;
-      this._refs.label.hidden = value === '';
       this.renderText();
     },
     { attribute: 'label' }
@@ -42,7 +43,6 @@ export class JlCheckbox extends JlFormControl {
     '',
     (value) => {
       this._refs.description.textContent = value;
-      this._refs.description.hidden = value === '';
       this.renderText();
     },
     { attribute: 'description' }
@@ -70,6 +70,8 @@ export class JlCheckbox extends JlFormControl {
   private readonly _form = { disabled: false };
 
   private readonly _refs = this.useRefs((ref) => ({
+    check: ref<JlIcon>('.check'),
+    dash: ref<JlIcon>('.dash'),
     description: ref('.description'),
     label: ref('.label'),
     native: ref<HTMLInputElement>('input'),
@@ -91,15 +93,15 @@ export class JlCheckbox extends JlFormControl {
       <label class="wrap" attrs={{ part: 'base' }}>
         <span class="box">
           <input type="checkbox" class="native" id="field" aria-describedby="description" />
-          <JlIcon class="mark check" name="check" size={ICON_SIZE} />
-          <JlIcon class="mark dash" name="minus" size={ICON_SIZE} />
+          <JlIcon class="mark check" size={ICON_SIZE} />
+          <JlIcon class="mark dash" size={ICON_SIZE} />
         </span>
         <span class="text" hidden>
           <span class="title">
-            <span class="label" hidden />
+            <span class="label" />
             <slot />
           </span>
-          <span id="description" class="description" hidden />
+          <span id="description" class="description" />
         </span>
       </label>
     );
@@ -143,6 +145,10 @@ export class JlCheckbox extends JlFormControl {
     if (native.checked !== checked) {
       native.checked = checked;
     }
+    // A mark gets its SVG the first time it shows, so a page's unticked boxes draw none; the CSS shows the right one.
+    if (checked) {
+      this._refs.check.name.set(CHECK_ICON);
+    }
     this.renderFormValue();
   }
 
@@ -156,6 +162,9 @@ export class JlCheckbox extends JlFormControl {
 
   private renderIndeterminate(indeterminate: boolean): void {
     this._refs.native.indeterminate = indeterminate;
+    if (indeterminate) {
+      this._refs.dash.name.set(DASH_ICON);
+    }
   }
 
   private renderFormValue(): void {

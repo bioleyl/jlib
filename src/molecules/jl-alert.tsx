@@ -48,6 +48,10 @@ export class JlAlert extends JlElement {
 
   readonly events = this.useEvents<{ dismiss: undefined }>();
 
+  // Before `tone`: as the alert connects, each input calls back in this order, so a page's icon is drawn without the
+  // tone's first.
+  /** An icon name in place of the tone's own; `none` shows no icon. */
+  readonly icon = this.useChange('', () => this.renderIcon(), { attribute: 'icon' });
   readonly tone = this.useChange<Tone>(
     'info',
     (value) => {
@@ -57,11 +61,11 @@ export class JlAlert extends JlElement {
     },
     { attribute: 'tone', parse: oneOf(TONES, 'info') }
   );
+  // The CSS hides the heading and the description while they are empty.
   readonly heading = this.useChange(
     '',
     (value) => {
       this._refs.heading.textContent = value;
-      this._refs.heading.hidden = value === '';
     },
     { attribute: 'heading' }
   );
@@ -70,12 +74,9 @@ export class JlAlert extends JlElement {
     '',
     (value) => {
       this._refs.description.textContent = value;
-      this._refs.description.hidden = value === '';
     },
     { attribute: 'description' }
   );
-  /** An icon name in place of the tone's own; `none` shows no icon. */
-  readonly icon = this.useChange('', () => this.renderIcon(), { attribute: 'icon' });
   /** Shows an × that hides the alert and fires `dismiss`. */
   readonly dismissible = this.useChange(
     false,
@@ -109,8 +110,8 @@ export class JlAlert extends JlElement {
       <div class="alert" role="status" attrs={{ part: 'base' }}>
         <JlIcon class="icon" size={ICON_SIZE} />
         <div class="content">
-          <p class="heading" hidden />
-          <p class="description" hidden />
+          <p class="heading" />
+          <p class="description" />
           <div class="text" hidden>
             <slot />
           </div>
@@ -151,7 +152,7 @@ export class JlAlert extends JlElement {
     const name = own === '' ? TONE_ICONS[this.tone.get()] : own;
     this._refs.icon.name.set(name === NO_ICON ? '' : name);
     this._refs.icon.filled.set(own === '' && TONE_ICON_FILLED[this.tone.get()]);
-    this._refs.icon.hidden = name === NO_ICON;
+    // The CSS hides the icon without it.
     this.reflect('has-icon', name !== NO_ICON);
   }
 }

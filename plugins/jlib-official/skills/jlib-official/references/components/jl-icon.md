@@ -43,6 +43,7 @@ Inputs: a JSX prop sets one, code calls `.set(value)` and `.get()`, HTML writes 
 ## Styling
 
 - `--cutout` (custom property): The colour of the sign of a filled icon: the surface colour.
+- `--icon-size` (custom property): Its width and height, over `size`: what a component sets on the icons it draws, from its own size (`jl-icon { --icon-size: 14px }`).
 
 ## Examples
 

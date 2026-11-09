@@ -14,7 +14,7 @@ import { jlText } from '../lib/texts';
 import { BASE_STYLES } from '../styles/shared';
 import styles from './jl-command-palette.css?inline';
 
-import type { PaletteCommand, PaletteGroup, PaletteMatch } from '../types/jl-command-palette.types';
+import type { PaletteCommand, PaletteMatch } from '../types/jl-command-palette.types';
 
 // The icons it draws itself: a page registers only the names it writes.
 registerIcons({ search: Search });
@@ -31,7 +31,15 @@ const MOVES: ReadonlyMap<string, number> = new Map([
   ['ArrowUp', -1],
 ]);
 
-const optionId = (index: number): string => `option-${index}`;
+const OPTION_ID_PREFIX = 'option-';
+
+/** A command's option as drawn, kept while the command is in `commands`: a search moves it, never draws it again. */
+interface DrawnOption {
+  element: HTMLElement;
+  label: HTMLElement;
+  /** The matched letters its label shows, joined. */
+  marks: string;
+}
 
 const onApple = (): boolean => isApplePlatform(navigator.platform);
 
@@ -58,7 +66,7 @@ export class JlCommandPalette<Id extends string = string> extends JlElement {
   /** `search`: what was typed, once typing pauses (and empty when it opens), for a page that answers it. */
   readonly events = this.useEvents<{ select: Id; open: undefined; close: undefined; search: string }>();
 
-  readonly commands = this.useChange<PaletteCommand<Id>[]>([], () => this.renderResults(), {
+  readonly commands = this.useChange<PaletteCommand<Id>[]>([], (commands) => this.renderCommands(commands), {
     attribute: 'commands',
     parse: jsonOf<PaletteCommand<Id>[]>([]),
   });
@@ -83,11 +91,16 @@ export class JlCommandPalette<Id extends string = string> extends JlElement {
   /** The dialog's name for screen readers. */
   readonly label = this.useChange('', () => this.drawTexts(), { attribute: 'label' });
 
-  private readonly _state: { active: number; matches: PaletteMatch<Id>[]; timer: number } = {
-    active: 0,
-    matches: [],
-    timer: 0,
-  };
+  /** The matches listed, their options in the same order, the one active, and every option drawn by its command. */
+  private readonly _state: {
+    active: number;
+    activeOption: HTMLElement | undefined;
+    made: number;
+    matches: PaletteMatch<Id>[];
+    options: Map<PaletteCommand<Id>, DrawnOption>;
+    shown: HTMLElement[];
+    timer: number;
+  } = { active: 0, activeOption: undefined, made: 0, matches: [], options: new Map(), shown: [], timer: 0 };
 
   private readonly _refs = this.useRefs((ref) => ({
     closeText: ref('.close-text'),
@@ -130,7 +143,7 @@ export class JlCommandPalette<Id extends string = string> extends JlElement {
           <kbd class="escape">Esc</kbd>
         </div>
         <div class="results" id="results" role="listbox" />
-        <p class="empty" role="status" hidden />
+        <p class="empty" role="status" />
         <footer aria-hidden="true">
           <span class="hint">
             <kbd>↑</kbd>
@@ -227,7 +240,8 @@ export class JlCommandPalette<Id extends string = string> extends JlElement {
 
   private indexOf(target: EventTarget | null): number | null {
     const option = target instanceof Element ? target.closest<HTMLElement>('[role="option"]') : null;
-    return option === null ? null : Number(option.dataset.index);
+    const index = option === null ? -1 : this._state.shown.indexOf(option);
+    return index === -1 ? null : index;
   }
 
   private move(step: number): void {
@@ -284,19 +298,36 @@ export class JlCommandPalette<Id extends string = string> extends JlElement {
     this._refs.hotkeyKeys.replaceChildren(...(none ? [] : keycaps(hotkey)));
   }
 
+  /** Forgets the options of commands that left; the list is drawn again only while it shows, and when it opens. */
+  private renderCommands(commands: PaletteCommand<Id>[]): void {
+    const kept = new Set(commands);
+    for (const command of this._state.options.keys()) {
+      if (!kept.has(command)) {
+        this._state.options.delete(command);
+      }
+    }
+    if (this._refs.dialog.open) {
+      this.renderResults();
+    }
+  }
+
+  /** Lists the matches in their groups, moving the options already drawn; the CSS hides an empty list. */
   private renderResults(): void {
     const groups = groupMatches(matchCommands(this.commands.get(), this._refs.input.value));
+    const lists = groups.map((group) => ({
+      label: group.label,
+      options: group.matches.map((match) => this.drawOption(match)),
+    }));
     this._state.matches = groups.flatMap((group) => group.matches);
-    this._refs.results.replaceChildren(...groups.map((group, index) => this.groupNode(group, index)));
-    this._refs.results.hidden = this._state.matches.length === 0;
-    this._refs.empty.hidden = this._state.matches.length > 0;
+    this._state.shown = lists.flatMap((list) => list.options);
+    this._refs.results.replaceChildren(
+      ...lists.map((list, index) => this.groupNode(list.label, list.options, index))
+    );
     this.activate(0);
   }
 
-  private groupNode(group: PaletteGroup<Id>, groupIndex: number): Node {
-    const first = this._state.matches.indexOf(group.matches[0] as PaletteMatch<Id>);
-    const options = group.matches.map((match, index) => this.optionNode(match, first + index));
-    if (group.label === '') {
+  private groupNode(label: string, options: HTMLElement[], groupIndex: number): Node {
+    if (label === '') {
       // biome-ignore lint/a11y/useSemanticElements: a group of options in a listbox has no HTML element
       return <div role="group">{options}</div>;
     }
@@ -305,41 +336,59 @@ export class JlCommandPalette<Id extends string = string> extends JlElement {
       // biome-ignore lint/a11y/useSemanticElements: a group of options in a listbox has no HTML element
       <div role="group" aria-labelledby={labelId}>
         <div class="group-label" id={labelId} aria-hidden="true">
-          {group.label}
+          {label}
         </div>
         {options}
       </div>
     );
   }
 
-  private optionNode(match: PaletteMatch<Id>, index: number): Node {
-    const { command } = match;
+  /** The match's option, made the first time its command is listed, its label's marks changed when they do. */
+  private drawOption(match: PaletteMatch<Id>): HTMLElement {
+    const drawn = this._state.options.get(match.command) ?? this.makeOption(match.command);
+    const marks = match.positions.join();
+    if (drawn.marks !== marks) {
+      drawn.label.replaceChildren(...highlighted(match.command.label, match.positions));
+      drawn.marks = marks;
+    }
+    return drawn.element;
+  }
+
+  private makeOption(command: PaletteCommand<Id>): DrawnOption {
+    const label = <span class="option-label">{command.label}</span>;
+    const id = `${OPTION_ID_PREFIX}${this._state.made++}`;
     const icon =
       command.icon === undefined ? (
         <span class="option-icon" />
       ) : (
         <JlIcon class="option-icon" name={command.icon} size={OPTION_ICON_SIZE} />
       );
-    return (
+    const element = (
       // biome-ignore lint/a11y/useFocusableInteractive: the focus stays in the search box, which points here with aria-activedescendant
-      <div class="option" role="option" id={optionId(index)} data-index={index} aria-selected="false">
+      <div class="option" role="option" id={id} aria-selected="false">
         {icon}
-        <span class="option-label">{highlighted(command.label, match.positions)}</span>
+        {label}
         {command.description ? <span class="option-description">{command.description}</span> : null}
         {command.shortcut === undefined ? null : <span class="keys">{keycaps(command.shortcut)}</span>}
       </div>
     );
+    const drawn = { element, label, marks: '' };
+    this._state.options.set(command, drawn);
+    return drawn;
   }
 
+  /** Marks the option that becomes active and clears the one that was: the others are left alone. */
   private activate(index: number): void {
     this._state.active = index;
-    const options = this._refs.results.querySelectorAll<HTMLElement>('[role="option"]');
-    for (const option of options) {
-      option.setAttribute('aria-selected', String(Number(option.dataset.index) === index));
+    this._state.activeOption?.setAttribute('aria-selected', 'false');
+    const active = this._state.shown[index];
+    this._state.activeOption = active;
+    active?.setAttribute('aria-selected', 'true');
+    setOrRemove(this._refs.input, 'aria-activedescendant', active?.id ?? '');
+    if (active !== undefined) {
+      // Scrolled once the list is laid out for the frame, not straight after it changed, which would lay it out again.
+      requestAnimationFrame(() => active.scrollIntoView({ block: 'nearest' }));
     }
-    const active = options[index];
-    setOrRemove(this._refs.input, 'aria-activedescendant', active === undefined ? '' : optionId(index));
-    active?.scrollIntoView({ block: 'nearest' });
   }
 }
 

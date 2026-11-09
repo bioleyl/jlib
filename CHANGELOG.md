@@ -3,6 +3,66 @@
 What changed in each version of [@syware/jlib](https://www.npmjs.com/package/@syware/jlib). Every component is shown
 and documented on [the documentation site](https://bioleyl.github.io/jlib/).
 
+## Unreleased
+
+Every component builds what it shows once and changes it in place, and the CSS draws what the DOM already says. A
+record form of 92 fields, 49 lists and 794 icons blocked the page for about 500 ms as it opened; with the text area
+and input list fixes of the previous change, it no longer blocks it.
+
+### Changed
+
+- **Icons are sized by the component around them, in CSS**: `jl-icon` reads `--icon-size` before its `size`, and a
+  button, chip, avatar, empty state, chip group, segmented control, pagination or timeline sets it from its own size,
+  instead of setting each icon's `size`.
+- **CSS shows and hides from the state the DOM holds**: an empty label, hint, description or text takes no room
+  (`:empty`); a disabled list or tag input hides its buttons, a load state shows its part, a navbar its drawer and a
+  side nav its fold button from a host attribute; selection is styled by `aria-selected`, `aria-checked` and
+  `aria-sort`, and a table's selected row by its ticked box (`:has()`).
+
+### Fixed
+
+- **`jl-icon` draws its SVG once per name**: its `name` and its `size` each drew it, and every `set()` drew it again,
+  even with the same name: two to four drawings per icon as it appeared (a chip nine, for two icons). The same name
+  now draws nothing, and an icon a component hides (a checkbox's tick, an input's buttons, a link's new-tab sign, an
+  avatar's or a chip's) is drawn the first time it shows.
+- **`jl-field` names its control once**: its label and its error each synced the control, as did its connection and
+  every slot change. Each now changes only what it concerns; the error is made at the first one, then only its text
+  changes, so a field without an error makes no icon.
+- **Lists are built once and changed in place**, instead of in every callback as they appeared (each input runs its
+  callback as a component connects): a calendar's 42 days (462 made as it connected, and again for each day chosen),
+  a tag input's chips, a pagination's buttons (42 as it appeared), steps, a timeline, a chip group, a breadcrumb, an
+  avatar group, a slider's marks, a select's options, a rating's stars (30 for 5), a skeleton's lines and a side nav's
+  items. A code block colours its code once.
+- **`jl-date-picker` makes its calendar when it first opens**, and **`jl-menu` its items**; **`jl-load-state`** makes
+  its skeleton only when it shows.
+- **`jl-combobox` and `jl-command-palette` keep one element per option while people type**: each keystroke made every
+  option and its icon again, and each arrow key rewrote every option. They now move the options, and an arrow key
+  changes the old and the new active one.
+- **`jl-table` sorts by moving its rows**: a sort drew every row again, with its icons, badges and open details. Each
+  row's sort value is read once per sort, and ticking or opening one row changes that row only.
+- **`jl-flow` drags only what moves**: each pointer move drew every edge again, and a drop every node; only the dragged
+  node's edges now follow it.
+- **`jl-tabs` and `jl-segmented` place their indicator at the next frame**: each input read the layout right after a
+  change, about five times as one appeared, and a tab change or a `size` made every tab or segment again.
+  **`jl-tooltip`** reads its anchor once per scroll.
+- **Dates and numbers are written with one `Intl` formatter per language and options** (`lib/intl.ts`): a calendar
+  page made sixteen per drawing, a table one per number or date cell; the table sorts its text with one
+  `Intl.Collator`, and its select-all box no longer compares every selected row with every row shown.
+- **`jl-input` checks its validity only for what can change it** (19 checks as it appeared, now 11), and a password's
+  show/hide button said "Hide the password" while it was hidden: it now says what pressing it does.
+- **`jl-button` moves its content only between its button and its link**: `disabled`, `target` and `download` each
+  moved it again. **`jl-alert`** with its own icon no longer draws its tone's icon first.
+
+### Worth a look when you update
+
+- A list given again as the same array object (`select.options`, `steps.items`, `timeline.items`, `menu.items`,
+  `segmented.options`) draws nothing: give a new array, as views do, rather than changing one in place.
+- `jl-table`'s rows lose their `data-selected`, `data-sorted` and `data-expanded` attributes, which the CSS read: a
+  style an app put on them reads the row's ticked box (`:has(:checked)`), the heading's `aria-sort` or the chevron's
+  `aria-expanded` instead. A column sorted by the page but not sortable no longer darkens its heading.
+- `--icon-size` set on an element applies to every `jl-icon` inside it, over their `size`.
+- After a click on `jl-rating`, the preview under the pointer stays until the pointer leaves.
+
 ## 0.12.1 (2026-11-09)
 
 A side nav whose header and footer stay put, and a tree that adds a page without drawing itself again.

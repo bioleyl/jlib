@@ -32,7 +32,6 @@ const STATUS_LABELS: Record<AvatarStatus, string> = {
   online: 'online',
 };
 
-const ICON_SIZES: Record<AvatarSize, number> = { lg: 20, md: 16, sm: 13, xl: 28 };
 const FALLBACK_ICON = 'user';
 
 /**
@@ -78,7 +77,7 @@ export class JlAvatar extends JlElement {
         <span class="face">
           <img alt="" hidden onLoad={() => this.settleImage(true)} onError={() => this.settleImage(false)} />
           <span class="initials" aria-hidden="true" />
-          <JlIcon class="fallback" name={FALLBACK_ICON} hidden />
+          <JlIcon class="fallback" hidden />
           <slot />
         </span>
         <span class="status" hidden />
@@ -124,12 +123,15 @@ export class JlAvatar extends JlElement {
     this._refs.slot.hidden = image;
     this._refs.initials.hidden = image || custom || !hasInitials;
     this._refs.icon.hidden = image || custom || hasInitials;
+    // The person icon gets its SVG the first time it shows: an avatar with a name or a picture draws none.
+    if (!this._refs.icon.hidden) {
+      this._refs.icon.name.set(FALLBACK_ICON);
+    }
     this.reflect('has-image', image);
   }
 
   private renderSize(size: AvatarSize): void {
     this.reflect('size', size);
-    this._refs.icon.size.set(ICON_SIZES[size]);
   }
 
   private renderStatus(status: AvatarStatus | ''): void {

@@ -32,8 +32,8 @@ export class JlAccordionItem extends JlElement {
   readonly description = this.useChange(
     '',
     (value) => {
+      // The CSS hides it while empty.
       this._refs.description.textContent = value;
-      this._refs.description.hidden = value === '';
     },
     { attribute: 'description' }
   );
@@ -75,7 +75,7 @@ export class JlAccordionItem extends JlElement {
           </slot>
           <span class="titles">
             <span class="heading" />
-            <span class="description" hidden />
+            <span class="description" />
           </span>
           <JlIcon class="chevron" name="chevron-down" size={ICON_SIZE} />
         </summary>

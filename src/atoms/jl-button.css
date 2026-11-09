@@ -53,6 +53,10 @@
     color var(--jl-fast) var(--jl-ease);
 }
 
+.text:empty {
+  display: none;
+}
+
 :host([icon-only]) .base {
   width: var(--height);
   padding: 0;
@@ -104,4 +108,17 @@
 .base[aria-disabled="true"] {
   cursor: not-allowed;
   opacity: 0.5;
+}
+
+/* Its icons' size, by its own: each icon reads --icon-size. */
+jl-icon {
+  --icon-size: 16px;
+}
+
+:host([size="sm"]) jl-icon {
+  --icon-size: 14px;
+}
+
+:host([size="lg"]) jl-icon {
+  --icon-size: 18px;
 }

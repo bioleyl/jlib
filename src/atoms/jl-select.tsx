@@ -29,6 +29,9 @@ const optionElement = (option: SelectOption): HTMLOptionElement => (
   </option>
 );
 
+const sameNodes = (nodes: Element[], others: Element[]): boolean =>
+  nodes.length === others.length && nodes.every((node, index) => node === others[index]);
+
 const groupNodes = (group: SelectOptionGroup): Node[] => {
   const options = group.options.map(optionElement);
   return group.label === null ? options : [<optgroup label={group.label}>{options}</optgroup>];
@@ -70,7 +73,7 @@ export class JlSelect<Value extends string = string> extends JlFormControl {
     (value) => {
       this._refs.native.required = value;
       this.reflect('required', value);
-      this.renderValue();
+      this.mirrorValidity(this._refs.native);
     },
     { attribute: 'required' }
   );
@@ -95,6 +98,9 @@ export class JlSelect<Value extends string = string> extends JlFormControl {
   private readonly _form = { disabled: false };
   // The option kept for a value no option has, while there is one.
   private _kept: HTMLOptionElement | undefined;
+  // What the options and the choice were drawn from: the callbacks run again at connection with the same values, and
+  // onConnect looks for the page's own options once more.
+  private readonly _drawn: { light: Element[]; options?: SelectOption<Value>[]; value?: string } = { light: [] };
 
   private readonly _refs = this.useRefs((ref) => ({
     native: ref<HTMLSelectElement>('select'),
@@ -124,9 +130,6 @@ export class JlSelect<Value extends string = string> extends JlFormControl {
       this.value.set(value);
       this.events.emit('change', value);
     });
-    if (this.options.get().length > 0) {
-      return;
-    }
     // Children the parser added after the element connected are there now.
     this.renderOptions();
   }
@@ -145,13 +148,18 @@ export class JlSelect<Value extends string = string> extends JlFormControl {
     this._refs.native.disabled = this.disabled.get() || this._form.disabled;
   }
 
-  /** The options from `options`, or else copies of the `<option>` and `<optgroup>` the page wrote inside. */
-  private optionNodes(): Node[] {
+  /** The `<option>` and `<optgroup>` the page wrote inside, used when `options` is empty. */
+  private lightOptions(): Element[] {
+    return this.options.get().length > 0 ? [] : [...this.querySelectorAll(LIGHT_OPTIONS)];
+  }
+
+  /** The options from `options`, or else copies of the page's own. */
+  private optionNodes(light: Element[]): Node[] {
     const options = this.options.get();
     if (options.length > 0) {
       return groupOptions(options).flatMap(groupNodes);
     }
-    return [...this.querySelectorAll(LIGHT_OPTIONS)].map((node) => node.cloneNode(true));
+    return light.map((node) => node.cloneNode(true));
   }
 
   private placeholderNodes(): Node[] {
@@ -171,7 +179,14 @@ export class JlSelect<Value extends string = string> extends JlFormControl {
    * inside an option, an option the page added and removed before its check ran.
    */
   private renderOptions(): void {
-    this._refs.native.replaceChildren(...this.placeholderNodes(), ...this.optionNodes());
+    const options = this.options.get();
+    const light = this.lightOptions();
+    if (options === this._drawn.options && sameNodes(light, this._drawn.light)) {
+      return;
+    }
+    this._drawn.options = options;
+    this._drawn.light = light;
+    this._refs.native.replaceChildren(...this.placeholderNodes(), ...this.optionNodes(light));
     this._kept = undefined;
     this.keepUnknownValue();
     this.renderValue();
@@ -179,33 +194,39 @@ export class JlSelect<Value extends string = string> extends JlFormControl {
 
   /** Another value among the options drawn: only the option kept for an unknown value comes or goes. */
   private renderChosen(): void {
+    // Attribute callbacks run before the options' at connection: drawing the options shows the value then.
+    if (this._drawn.options === undefined || this.value.get() === this._drawn.value) {
+      return;
+    }
     this.dropKept();
     this.keepUnknownValue();
     this.renderValue();
   }
 
-  /** Another placeholder: its own option is written, added or removed, the others left as they are. */
+  /**
+   * Another placeholder: its own option is written, added or removed, the others left as they are. Only one that
+   * comes or goes can change the option shown.
+   */
   private renderPlaceholder(): void {
-    this.writePlaceholder();
-    this.renderValue();
-  }
-
-  private writePlaceholder(): void {
     const native = this._refs.native;
     const shown = native.querySelector<HTMLOptionElement>(`:scope > option.${PLACEHOLDER_CLASS}`);
     const placeholder = this.placeholder.get();
+    if (this._drawn.options === undefined || (shown === null && placeholder === '')) {
+      return;
+    }
     if (shown === null) {
       native.prepend(...this.placeholderNodes());
+      this.renderValue();
       return;
     }
     if (placeholder === '') {
       shown.remove();
+      this.renderValue();
       return;
     }
-    if (shown.text === placeholder) {
-      return;
+    if (shown.text !== placeholder) {
+      shown.text = placeholder;
     }
-    shown.text = placeholder;
   }
 
   /** The option kept for a value no option has goes once another value is chosen. */
@@ -239,6 +260,7 @@ export class JlSelect<Value extends string = string> extends JlFormControl {
   private renderValue(): void {
     const native = this._refs.native;
     native.selectedIndex = this.shownIndex();
+    this._drawn.value = this.value.get();
     this.reflect('placeholder-shown', native.selectedOptions[0]?.classList.contains(PLACEHOLDER_CLASS) === true);
     this.internals.setFormValue(native.value);
     this.mirrorValidity(native);

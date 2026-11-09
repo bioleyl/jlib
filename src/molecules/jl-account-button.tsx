@@ -30,8 +30,8 @@ export class JlAccountButton extends JlElement {
   readonly description = this.useChange(
     '',
     (value) => {
+      // The CSS hides it while empty.
       this._refs.description.textContent = value;
-      this._refs.description.hidden = value === '';
       this.renderLabel();
     },
     { attribute: 'description' }
@@ -69,7 +69,7 @@ export class JlAccountButton extends JlElement {
             {avatar}
             <span class="text">
               <span class="name" />
-              <span class="description" hidden />
+              <span class="description" />
             </span>
           </span>
         </button>

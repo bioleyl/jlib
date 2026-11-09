@@ -165,6 +165,12 @@ mark {
   text-align: center;
 }
 
+/* An empty list gives its room to the message that nothing matches, which shows only then. */
+.results:empty,
+.results:not(:empty) + .empty {
+  display: none;
+}
+
 footer {
   display: flex;
   flex: none;

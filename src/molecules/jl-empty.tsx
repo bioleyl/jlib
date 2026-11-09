@@ -19,7 +19,6 @@ export const EMPTY_SIZES: readonly EmptySize[] = ['md', 'sm'];
 const DEFAULT_ICON = 'inbox';
 // `icon="none"` shows no icon.
 const NO_ICON = 'none';
-const ICON_SIZES: Record<EmptySize, number> = { md: 22, sm: 18 };
 
 /**
  * What a list, a table or a page shows when it has nothing yet: an icon, a heading, a sentence that says what to
@@ -28,12 +27,12 @@ const ICON_SIZES: Record<EmptySize, number> = { md: 22, sm: 18 };
 export class JlEmpty extends JlElement {
   static readonly selector = 'jl-empty';
 
-  readonly icon = this.useChange(DEFAULT_ICON, () => this.renderIcon(), { attribute: 'icon' });
+  readonly icon = this.useChange(DEFAULT_ICON, (value) => this.renderIcon(value), { attribute: 'icon' });
+  // The CSS hides the heading and the description while they are empty.
   readonly heading = this.useChange(
     '',
     (value) => {
       this._refs.heading.textContent = value;
-      this._refs.heading.hidden = value === '';
     },
     { attribute: 'heading' }
   );
@@ -41,7 +40,6 @@ export class JlEmpty extends JlElement {
     '',
     (value) => {
       this._refs.description.textContent = value;
-      this._refs.description.hidden = value === '';
     },
     { attribute: 'description' }
   );
@@ -49,7 +47,6 @@ export class JlEmpty extends JlElement {
     'md',
     (value) => {
       this.reflect('size', value);
-      this.renderIcon();
     },
     { attribute: 'size', parse: oneOf(EMPTY_SIZES, 'md') }
   );
@@ -69,8 +66,8 @@ export class JlEmpty extends JlElement {
         <span class="medallion">
           <JlIcon />
         </span>
-        <p class="heading" hidden />
-        <p class="description" hidden />
+        <p class="heading" />
+        <p class="description" />
         <div class="actions" hidden>
           <slot />
         </div>
@@ -92,11 +89,9 @@ export class JlEmpty extends JlElement {
     this._refs.actions.hidden = !hasSlotted(this._refs.slot);
   }
 
-  private renderIcon(): void {
-    const name = this.icon.get();
+  private renderIcon(name: string): void {
     const hidden = name === '' || name === NO_ICON;
     this._refs.icon.name.set(hidden ? '' : name);
-    this._refs.icon.size.set(ICON_SIZES[this.size.get()]);
     this._refs.medallion.hidden = hidden;
   }
 }

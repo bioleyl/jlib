@@ -2,6 +2,13 @@
   display: block;
 }
 
+/* Each part shows in its own state, which the host carries. */
+:host(:not([state="error"])) .error,
+:host(:not([state="empty"])) .empty,
+:host(:not([state="ready"])) .content {
+  display: none;
+}
+
 .bones {
   display: grid;
   gap: 16px;

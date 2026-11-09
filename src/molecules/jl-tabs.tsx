@@ -5,8 +5,7 @@ import { JlElement } from '../base/jl-element';
 import { oneOf } from '../lib/attributes';
 import { define } from '../lib/define';
 import { setOrRemove, uniqueId } from '../lib/dom';
-import { moveIndicator } from '../lib/indicator';
-import { watchSizes } from '../lib/resize';
+import { followTarget } from '../lib/indicator';
 import { firstIndex, lastIndex, stepIndex } from '../lib/roving';
 import { BASE_STYLES } from '../styles/shared';
 import { JlTabPanel } from './jl-tab-panel';
@@ -53,7 +52,7 @@ export class JlTabs extends JlElement {
     'line',
     (value) => {
       this.reflect('variant', value);
-      this.placeIndicator();
+      this._indicator.place();
     },
     { attribute: 'variant', parse: oneOf(TAB_VARIANTS, 'line') }
   );
@@ -62,7 +61,7 @@ export class JlTabs extends JlElement {
     false,
     (value) => {
       this.reflect('block', value);
-      this.placeIndicator();
+      this._indicator.place();
     },
     { attribute: 'block' }
   );
@@ -71,10 +70,15 @@ export class JlTabs extends JlElement {
     attribute: 'label',
   });
 
-  private readonly _observers = {
-    mutations: new MutationObserver((records) => this.onMutations(records)),
-    resize: watchSizes(() => this.placeIndicator()),
-  };
+  private readonly _mutations = new MutationObserver((records) => this.onMutations(records));
+
+  private readonly _indicator = followTarget(
+    () => this._refs.indicator,
+    () => this.tabs().find((tab) => tab.getAttribute('aria-selected') === 'true') ?? null
+  );
+
+  // What each tab shows of its panel: a render that finds it the same leaves the tab as it is.
+  private readonly _shown = new WeakMap<HTMLElement, string>();
 
   private readonly _refs = this.useRefs((ref) => ({
     indicator: ref('.indicator'),
@@ -101,13 +105,13 @@ export class JlTabs extends JlElement {
 
   onConnect(): void {
     this.render();
-    this._observers.mutations.observe(this, {
+    this._mutations.observe(this, {
       attributeFilter: PANEL_ATTRIBUTES,
       attributes: true,
       childList: true,
       subtree: true,
     });
-    this._observers.resize.observe(this._refs.list);
+    this._indicator.watch(this._refs.list);
     this.on(this._refs.list, 'click', (event) => {
       const tab = (event.target as Element).closest<HTMLElement>('[role="tab"]');
       if (tab !== null) {
@@ -118,8 +122,8 @@ export class JlTabs extends JlElement {
   }
 
   onDisconnect(): void {
-    this._observers.mutations.disconnect();
-    this._observers.resize.disconnect();
+    this._mutations.disconnect();
+    this._indicator.stop();
   }
 
   private panels(): HTMLElement[] {
@@ -158,7 +162,7 @@ export class JlTabs extends JlElement {
         this.renderTab(tab, panel, index === selected);
       }
     });
-    this.placeIndicator();
+    this._indicator.place();
   }
 
   /** Adds or removes tab buttons to match the panels; the buttons left keep their focus. */
@@ -173,13 +177,7 @@ export class JlTabs extends JlElement {
   }
 
   private renderTab(tab: HTMLElement, panel: HTMLElement, selected: boolean): void {
-    const icon = panel.getAttribute('icon') ?? '';
-    const badge = panel.getAttribute('badge') ?? '';
-    tab.replaceChildren(
-      icon === '' ? '' : <JlIcon name={icon} size={ICON_SIZE} />,
-      <span class="label">{panel.getAttribute('label') ?? ''}</span>,
-      badge === '' ? '' : <span class="badge">{badge}</span>
-    );
+    this.renderTabContent(tab, panel);
     tab.setAttribute('aria-selected', String(selected));
     tab.tabIndex = selected ? 0 : -1;
     tab.toggleAttribute('aria-disabled', isDisabled(panel));
@@ -192,9 +190,21 @@ export class JlTabs extends JlElement {
     panel.tabIndex = 0;
   }
 
-  private placeIndicator(): void {
-    const selected = this.tabs().find((tab) => tab.getAttribute('aria-selected') === 'true') ?? null;
-    moveIndicator(this._refs.indicator, selected);
+  /** The panel's icon, label and badge on its tab, made again only when one of them changed. */
+  private renderTabContent(tab: HTMLElement, panel: HTMLElement): void {
+    const icon = panel.getAttribute('icon') ?? '';
+    const label = panel.getAttribute('label') ?? '';
+    const badge = panel.getAttribute('badge') ?? '';
+    const shown = JSON.stringify([icon, label, badge]);
+    if (this._shown.get(tab) === shown) {
+      return;
+    }
+    this._shown.set(tab, shown);
+    tab.replaceChildren(
+      icon === '' ? '' : <JlIcon name={icon} size={ICON_SIZE} />,
+      <span class="label">{label}</span>,
+      badge === '' ? '' : <span class="badge">{badge}</span>
+    );
   }
 
   private onKeydown(event: KeyboardEvent): void {

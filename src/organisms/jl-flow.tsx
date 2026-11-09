@@ -20,6 +20,7 @@ import {
   moveNode,
   nodeAt,
   nodeHeight,
+  nodesById,
   outputAnchor,
   portsOf,
   portX,
@@ -29,6 +30,7 @@ import {
   revealIn,
   snap,
   toWorld,
+  usedPorts,
   zoomAt,
 } from '../lib/flow';
 import { registerIcons } from '../lib/icons';
@@ -134,6 +136,29 @@ const newId = (prefix: string): string =>
 const addLabel = (node: FlowNode, port: FlowPort): string =>
   port.label ? `Add after ${node.label}, ${port.label}` : `Add after ${node.label}`;
 
+/** A node's element, and what it was last drawn from: its node, and its free exits (those + shows on). */
+interface DrawnNode {
+  element: HTMLElement;
+  freePorts: string;
+  node: FlowNode | undefined;
+}
+
+/** An edge's group: its line, and the wide invisible twin that catches the pointer. */
+interface DrawnEdge {
+  group: SVGGElement;
+  hit: SVGPathElement;
+  line: SVGPathElement;
+}
+
+/** Whether a node's new version differs in its position alone, as a drag or the arrows leave it: it only moves. */
+function movedOnly(before: FlowNode, after: FlowNode): boolean {
+  const keys = new Set([...Object.keys(before), ...Object.keys(after)]);
+  return [...keys].every((key) => key === 'position' || Reflect.get(before, key) === Reflect.get(after, key));
+}
+
+// Port ids joined: a node is drawn again when the exits + shows on change.
+const PORT_SEPARATOR = '\n';
+
 /**
  * A flow of nodes joined by edges, to edit: people move the nodes, draw an edge from a node's exit to another node,
  * press + on a free exit to ask for the next node, and move and zoom the view. Every edit goes out as a new graph
@@ -168,7 +193,7 @@ export class JlFlow extends JlElement {
     false,
     (value) => {
       this.reflect('readonly', value);
-      this.render();
+      this.schedule();
     },
     { attribute: 'readonly' }
   );
@@ -185,9 +210,12 @@ export class JlFlow extends JlElement {
     fitted: false,
     gesture: IDLE,
     graph: EMPTY,
+    nodes: nodesById(EMPTY),
+    queued: false,
     viewport: { x: 0, y: 0, zoom: 1 } as FlowViewport,
   };
-  private readonly _nodes = new Map<string, HTMLElement>();
+  private readonly _nodes = new Map<string, DrawnNode>();
+  private readonly _edges = new Map<string, DrawnEdge>();
   private readonly _svg = {
     draft: svgElement('path', { class: 'edge draft' }),
     root: svgElement('svg', { class: 'edges', height: '1', width: '1' }),
@@ -223,8 +251,11 @@ export class JlFlow extends JlElement {
   reveal(id: string): void {
     this.whenRendered(() => {
       const node = this.nodeOf(id);
+      if (!node) {
+        return;
+      }
       const { width, height } = this._refs.viewport.getBoundingClientRect();
-      if (!node || width === 0) {
+      if (width === 0) {
         return;
       }
       this.setViewport(revealIn(this._state.viewport, node, width, height));
@@ -302,8 +333,8 @@ export class JlFlow extends JlElement {
       button.setAttribute('aria-label', text);
     }
     // Nodes and ports drawn already keep their elements: their texts change in place.
-    for (const node of this._nodes.values()) {
-      node.setAttribute('aria-roledescription', jlText('node'));
+    for (const { element } of this._nodes.values()) {
+      element.setAttribute('aria-roledescription', jlText('node'));
     }
     for (const port of this._refs.nodes.querySelectorAll<HTMLElement>('.port')) {
       port.title = jlText('dragToConnect');
@@ -340,11 +371,28 @@ export class JlFlow extends JlElement {
   }
 
   private show(graph: FlowGraph): void {
-    this._state.graph = graph;
-    this.render();
+    this.keep(graph);
+    this.schedule();
     if (!this._state.fitted && graph.nodes.length > 0) {
       requestAnimationFrame(() => this.fit());
     }
+  }
+
+  private keep(graph: FlowGraph): void {
+    this._state.graph = graph;
+    this._state.nodes = nodesById(graph);
+  }
+
+  /** Draws on the next microtask: the inputs set while connecting, or an edit and its echo, give one drawing. */
+  private schedule(): void {
+    if (this._state.queued) {
+      return;
+    }
+    this._state.queued = true;
+    queueMicrotask(() => {
+      this._state.queued = false;
+      this.render();
+    });
   }
 
   /** An edit: drawn, kept, and sent to the page. */
@@ -387,7 +435,7 @@ export class JlFlow extends JlElement {
   }
 
   private nodeOf(id: string): FlowNode | undefined {
-    return this._state.graph.nodes.find((node) => node.id === id);
+    return this._state.nodes.get(id);
   }
 
   private pointerDown(event: PointerEvent): void {
@@ -448,12 +496,12 @@ export class JlFlow extends JlElement {
     this._state.gesture = { ...gesture, moved };
     const world = this.worldPoint(event);
     const position = snap({ x: world.x - gesture.offset.x, y: world.y - gesture.offset.y });
-    this._state.graph = moveNode(this._state.graph, gesture.node, position);
-    const element = this._nodes.get(gesture.node);
-    if (element) {
-      this.place(element, position);
+    this.keep(moveNode(this._state.graph, gesture.node, position));
+    const drawn = this._nodes.get(gesture.node);
+    if (drawn) {
+      this.place(drawn.element, position);
     }
-    this.renderEdges();
+    this.renderEdgesOf(gesture.node);
   }
 
   private drawDraft(gesture: Extract<FlowGesture, { kind: 'connect' }>, event: PointerEvent): void {
@@ -614,23 +662,39 @@ export class JlFlow extends JlElement {
     this.renderEdges();
   }
 
-  /** The nodes' elements stay from one drawing to the next: the focused one keeps the focus. */
+  /**
+   * The nodes' elements stay from one drawing to the next: the focused one keeps the focus. A node is drawn again
+   * only when its object or its free exits changed: moving one node draws that one.
+   */
   private renderNodes(): void {
-    const nodes = this._state.graph.nodes;
-    const ids = new Set(nodes.map((node) => node.id));
-    for (const [id, element] of this._nodes) {
-      if (!ids.has(id)) {
+    const { graph, nodes } = this._state;
+    for (const [id, { element }] of this._nodes) {
+      if (!nodes.has(id)) {
         element.remove();
         this._nodes.delete(id);
       }
     }
-    for (const node of nodes) {
-      this.drawNode(this._nodes.get(node.id) ?? this.createNode(node.id), node);
+    const used = usedPorts(graph, nodes);
+    for (const node of graph.nodes) {
+      const free = this.readonly.get() ? [] : portsOf(node).filter((port) => isPortFree(used, node, port.id));
+      this.drawNodeIfChanged(this._nodes.get(node.id) ?? this.createNode(node.id), node, new Set(free));
     }
     this.renderSelection();
   }
 
-  private createNode(id: string): HTMLElement {
+  /** Draws a node again only when more than its position changed: a node that only moved is moved. */
+  private drawNodeIfChanged(drawn: DrawnNode, node: FlowNode, free: ReadonlySet<FlowPort>): void {
+    const freePorts = [...free].map((port) => port.id).join(PORT_SEPARATOR);
+    const moves = drawn.node !== undefined && drawn.freePorts === freePorts && movedOnly(drawn.node, node);
+    Object.assign(drawn, { freePorts, node });
+    if (moves) {
+      this.place(drawn.element, node.position);
+      return;
+    }
+    this.drawNode(drawn.element, node, free);
+  }
+
+  private createNode(id: string): DrawnNode {
     // A node is a group (it holds its exits' buttons) that takes the focus: to be selected, moved with the arrows and
     // removed with Delete. No HTML element is both.
     const element = (
@@ -645,12 +709,13 @@ export class JlFlow extends JlElement {
         attrs={{ part: 'node' }}
       />
     );
-    this._nodes.set(id, element);
+    const drawn = { element, freePorts: '', node: undefined };
+    this._nodes.set(id, drawn);
     this._refs.nodes.append(element);
-    return element;
+    return drawn;
   }
 
-  private drawNode(element: HTMLElement, node: FlowNode): void {
+  private drawNode(element: HTMLElement, node: FlowNode, free: ReadonlySet<FlowPort>): void {
     const ports = portsOf(node);
     element.setAttribute('aria-label', node.label);
     setOrRemove(element, 'aria-description', noteOf(node));
@@ -694,7 +759,11 @@ export class JlFlow extends JlElement {
             {node.detail}
           </span>
         ) : null}
-        <span class="ports">{ports.map((port, index) => this.portElement(node, port, index, ports.length))}</span>
+        <span class="ports">
+          {ports.map((port, index) =>
+            this.portElement(node, port, { count: ports.length, free: free.has(port), index })
+          )}
+        </span>
       </>
     );
     this.place(element, node.position);
@@ -709,8 +778,11 @@ export class JlFlow extends JlElement {
     element.style.setProperty('--tone', color);
   }
 
-  private portElement(node: FlowNode, port: FlowPort, index: number, count: number): HTMLElement {
-    const free = !this.readonly.get() && isPortFree(this._state.graph, node, port.id);
+  private portElement(
+    node: FlowNode,
+    port: FlowPort,
+    { count, free, index }: { count: number; free: boolean; index: number }
+  ): HTMLElement {
     const element = (
       <span class="port" data-port={port.id} title={jlText('dragToConnect')} attrs={{ part: 'port' }}>
         <span class="dot" />
@@ -735,20 +807,54 @@ export class JlFlow extends JlElement {
 
   private renderSelection(): void {
     const selected = this.selected.get();
-    for (const [id, element] of this._nodes) {
+    for (const [id, { element }] of this._nodes) {
       element.classList.toggle('selected', id === selected);
       element.part.toggle('selected', id === selected);
       setOrRemove(element, 'aria-current', id === selected ? 'true' : '');
     }
   }
 
+  /** The edges' groups stay from one drawing to the next, changed in place; those of removed edges go. */
   private renderEdges(): void {
-    const { edge: selected, graph } = this._state;
+    const { edge: selected, graph, nodes } = this._state;
     const groups = graph.edges.flatMap((edge) => {
-      const ends = edgeEnds(graph, edge);
-      return ends ? [this.edgeGroup(edge.id, ends, edge.id === selected, isEdgeTaken(graph, edge))] : [];
+      const ends = edgeEnds(nodes, edge);
+      return ends
+        ? [this.drawEdge(edge.id, ends, { selected: edge.id === selected, taken: isEdgeTaken(nodes, edge) })]
+        : [];
     });
-    this._svg.root.replaceChildren(...groups, this._svg.draft);
+    const kept = new Set(groups);
+    for (const [id, { group }] of this._edges) {
+      if (!kept.has(group)) {
+        group.remove();
+        this._edges.delete(id);
+      }
+    }
+    this.placeInOrder([...groups, this._svg.draft]);
+    this.renderEdgeTool();
+  }
+
+  /** Puts the edges in the graph's order, the draft last: those already in place stay. */
+  private placeInOrder(elements: SVGElement[]): void {
+    const root = this._svg.root;
+    elements.forEach((element, index) => {
+      const current = root.children.item(index);
+      if (current !== element) {
+        root.insertBefore(element, current);
+      }
+    });
+  }
+
+  /** The edges of a node being dragged follow it; the others stay as they are. */
+  private renderEdgesOf(id: string): void {
+    const { graph, nodes } = this._state;
+    for (const edge of graph.edges.filter((candidate) => candidate.from === id || candidate.to === id)) {
+      const ends = edgeEnds(nodes, edge);
+      const drawn = this._edges.get(edge.id);
+      if (ends && drawn) {
+        this.drawPath(drawn, ends);
+      }
+    }
     this.renderEdgeTool();
   }
 
@@ -756,22 +862,43 @@ export class JlFlow extends JlElement {
    * An edge, with a wide invisible twin that catches the pointer: a thin line is still easy to press. One a run took
    * stands out.
    */
-  private edgeGroup(id: string, ends: FlowEdgeEnds, selected: boolean, taken: boolean): SVGGElement {
-    const d = edgePath(ends.from, ends.to);
+  private drawEdge(
+    id: string,
+    ends: FlowEdgeEnds,
+    { selected, taken }: { selected: boolean; taken: boolean }
+  ): SVGGElement {
+    const drawn = this._edges.get(id) ?? this.createEdge(id);
     const states = [selected ? 'selected' : '', taken ? 'taken' : ''].filter((state) => state !== '');
-    const group = svgElement('g', { class: ['edge-group', ...states].join(' '), 'data-edge': id });
-    group.append(
-      svgElement('path', { class: 'edge-hit', d }),
-      svgElement('path', { class: 'edge', d, 'data-tone': ends.tone, part: ['edge', ...states].join(' ') })
-    );
-    return group;
+    drawn.group.setAttribute('class', ['edge-group', ...states].join(' '));
+    drawn.line.setAttribute('data-tone', ends.tone);
+    drawn.line.setAttribute('part', ['edge', ...states].join(' '));
+    this.drawPath(drawn, ends);
+    return drawn.group;
+  }
+
+  private createEdge(id: string): DrawnEdge {
+    const group = svgElement('g', { 'data-edge': id });
+    const drawn = {
+      group,
+      hit: svgElement('path', { class: 'edge-hit' }),
+      line: svgElement('path', { class: 'edge' }),
+    };
+    group.append(drawn.hit, drawn.line);
+    this._edges.set(id, drawn);
+    return drawn;
+  }
+
+  private drawPath({ hit, line }: DrawnEdge, ends: FlowEdgeEnds): void {
+    const d = edgePath(ends.from, ends.to);
+    hit.setAttribute('d', d);
+    line.setAttribute('d', d);
   }
 
   /** The button that removes the selected edge, in its middle. */
   private renderEdgeTool(): void {
     const { edge: selected, graph } = this._state;
     const edge = graph.edges.find((candidate) => candidate.id === selected);
-    const ends = edge ? edgeEnds(graph, edge) : undefined;
+    const ends = edge ? edgeEnds(this._state.nodes, edge) : undefined;
     const button = this._refs.removeEdge;
     button.hidden = ends === undefined || this.readonly.get();
     if (!ends) {

@@ -28,14 +28,24 @@ const LANGUAGE_LABELS: Record<CodeLanguage, string> = {
 export class JlCodeBlock extends JlElement {
   static readonly selector = 'jl-code-block';
 
-  readonly code = this.useChange('', () => this.render(), { attribute: 'code' });
+  // Before `code`: as the block connects, each input calls back in this order, so the code is coloured once.
   readonly language = this.useChange<CodeLanguage>('text', () => this.render(), {
     attribute: 'language',
     parse: oneOf(CODE_LANGUAGES, 'text'),
   });
+  readonly code = this.useChange('', () => this.render(), { attribute: 'code' });
   /** A file name or a title over the code. */
-  readonly heading = this.useChange('', () => this.renderHeader(), { attribute: 'heading' });
-  readonly lineNumbers = this.useChange(false, () => this.render(), { attribute: 'line-numbers' });
+  readonly heading = this.useChange(
+    '',
+    (value) => {
+      this._refs.heading.textContent = value;
+      this.reflect('has-header', value !== '');
+    },
+    { attribute: 'heading' }
+  );
+  readonly lineNumbers = this.useChange(false, (value) => this.reflect('line-numbers', value), {
+    attribute: 'line-numbers',
+  });
   readonly hideCopy = this.useChange(
     false,
     (value) => {
@@ -52,11 +62,13 @@ export class JlCodeBlock extends JlElement {
     { attribute: 'max-height' }
   );
 
+  /** What the code was coloured from: the inputs call back with what they hold as the block connects. */
+  private readonly _drawn = { language: '', source: '' };
+
   private readonly _refs = this.useRefs((ref) => ({
     code: ref('code'),
     copy: ref(JlCopyButton),
     gutter: ref('.gutter'),
-    header: ref('header'),
     heading: ref('.heading'),
     language: ref('.language'),
   }));
@@ -64,12 +76,12 @@ export class JlCodeBlock extends JlElement {
   templateHtml(): Node {
     return (
       <figure attrs={{ part: 'base' }}>
-        <header hidden>
+        <header>
           <span class="heading" />
           <span class="language" />
         </header>
         <div class="body">
-          <div class="gutter" aria-hidden="true" hidden />
+          <div class="gutter" aria-hidden="true" />
           <pre>
             <code />
           </pre>
@@ -96,26 +108,21 @@ export class JlCodeBlock extends JlElement {
   private render(): void {
     const source = this.source();
     const language = this.language.get();
+    if (source === this._drawn.source && language === this._drawn.language) {
+      return;
+    }
+    this._drawn.source = source;
+    this._drawn.language = language;
     this._refs.code.replaceChildren(...highlightedNodes(source, language));
     this._refs.copy.value.set(source);
+    this._refs.language.textContent = LANGUAGE_LABELS[language];
     this.renderGutter(source);
-    this.renderHeader();
   }
 
+  /** The line numbers, which the CSS shows with `line-numbers`. */
   private renderGutter(source: string): void {
-    const gutter = this._refs.gutter;
-    gutter.hidden = !this.lineNumbers.get();
     const count = source.split('\n').length;
-    gutter.textContent = Array.from({ length: count }, (_, index) => String(index + 1)).join('\n');
-  }
-
-  private renderHeader(): void {
-    const heading = this.heading.get();
-    const label = LANGUAGE_LABELS[this.language.get()];
-    this._refs.heading.textContent = heading;
-    this._refs.language.textContent = label;
-    this._refs.header.hidden = heading === '';
-    this.reflect('has-header', heading !== '');
+    this._refs.gutter.textContent = Array.from({ length: count }, (_, index) => String(index + 1)).join('\n');
   }
 }
 

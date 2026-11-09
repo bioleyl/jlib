@@ -16,6 +16,7 @@ import {
   moveNode,
   nodeAt,
   nodeHeight,
+  nodesById,
   outputAnchor,
   positionAfter,
   removeEdge,
@@ -24,6 +25,7 @@ import {
   roundedPath,
   snap,
   toWorld,
+  usedPorts,
   zoomAt,
 } from '../src/lib/flow';
 
@@ -57,7 +59,7 @@ describe('anchors and edges', () => {
   });
 
   it('gives a node without ports one exit, and an edge without a port its first', () => {
-    const ends = edgeEnds(graph, { from: 'start', id: 'x', to: 'check' });
+    const ends = edgeEnds(nodesById(graph), { from: 'start', id: 'x', to: 'check' });
     expect(ends?.from.x).toBe(FLOW_NODE.width / 2);
     expect(ends?.to).toEqual({ x: FLOW_NODE.width / 2, y: 200 });
     expect(ends?.tone).toBe('neutral');
@@ -87,15 +89,15 @@ describe('anchors and edges', () => {
         { ...mail, status: 'running' },
       ],
     };
-    expect(run.edges.map((edge) => isEdgeTaken(run, edge))).toEqual([true, true, false]);
+    expect(run.edges.map((edge) => isEdgeTaken(nodesById(run), edge))).toEqual([true, true, false]);
     const notYet: FlowGraph = { ...run, nodes: [run.nodes[0] as FlowNode, check, mail] };
-    expect(isEdgeTaken(notYet, { from: 'start', id: 'e1', to: 'check' })).toBe(false);
+    expect(isEdgeTaken(nodesById(notYet), { from: 'start', id: 'e1', to: 'check' })).toBe(false);
   });
 
   it('takes the tone of the exit, and draws nothing for a missing end', () => {
-    expect(edgeEnds(graph, { from: 'check', id: 'x', port: 'no', to: 'mail' })?.tone).toBe('danger');
-    expect(edgeEnds(graph, { from: 'check', id: 'x', to: 'gone' })).toBeUndefined();
-    expect(edgeEnds(graph, { from: 'mail', id: 'x', to: 'check' })).toBeUndefined();
+    expect(edgeEnds(nodesById(graph), { from: 'check', id: 'x', port: 'no', to: 'mail' })?.tone).toBe('danger');
+    expect(edgeEnds(nodesById(graph), { from: 'check', id: 'x', to: 'gone' })).toBeUndefined();
+    expect(edgeEnds(nodesById(graph), { from: 'mail', id: 'x', to: 'check' })).toBeUndefined();
   });
 
   it('runs straight down, across halfway and down again, its corners rounded', () => {
@@ -146,8 +148,8 @@ describe('edits', () => {
   });
 
   it('tells free exits from taken ones', () => {
-    expect(isPortFree(graph, start, 'out')).toBe(false);
-    expect(isPortFree(graph, check, 'yes')).toBe(true);
+    expect(isPortFree(usedPorts(graph, nodesById(graph)), start, 'out')).toBe(false);
+    expect(isPortFree(usedPorts(graph, nodesById(graph)), check, 'yes')).toBe(true);
   });
 
   it('removes a node with its edges, and an edge alone', () => {

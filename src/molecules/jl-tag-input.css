@@ -85,6 +85,11 @@
   color: var(--jl-muted);
 }
 
+/* A disabled field keeps its tags: none can be removed. */
+:host([disabled]) .tag-remove {
+  display: none;
+}
+
 .popup {
   min-width: 180px;
   padding: 4px;
@@ -110,7 +115,7 @@
   user-select: none;
 }
 
-.option.active,
+.option[aria-selected="true"],
 .option:hover {
   background: var(--jl-surface-3);
 }

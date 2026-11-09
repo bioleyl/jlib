@@ -73,7 +73,12 @@
   font-size: var(--jl-font-sm);
 }
 
-.heading[hidden] + .text {
+.heading:empty,
+.text:empty {
+  display: none;
+}
+
+.heading:empty + .text {
   color: var(--jl-text-2);
   font-size: var(--jl-font-md);
 }

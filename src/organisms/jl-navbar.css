@@ -136,7 +136,7 @@ ul {
     display: inline-flex;
   }
 
-  .drawer:not([hidden]) {
+  :host([expanded]) .drawer {
     display: block;
     padding: 8px 12px 12px;
     border-top: 1px solid var(--jl-line);

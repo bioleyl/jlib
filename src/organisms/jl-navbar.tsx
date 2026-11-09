@@ -61,7 +61,7 @@ export class JlNavbar extends JlElement {
             <JlIcon name={MENU_ICON} size={ICON_SIZE} />
           </button>
         </div>
-        <nav class="drawer" id="drawer" hidden>
+        <nav class="drawer" id="drawer">
           <ul />
         </nav>
       </header>
@@ -115,17 +115,16 @@ export class JlNavbar extends JlElement {
   }
 
   private renderToggleLabel(): void {
-    const open = !this._refs.drawer.hidden;
+    const open = this.hasAttribute('expanded');
     this._refs.toggle.setAttribute('aria-label', open ? jlText('closeMenu') : jlText('menu'));
   }
 
-  /** Opens or closes the list of links under the bar, on a narrow bar. */
+  /** Opens or closes the list of links under the bar, on a narrow bar: the CSS shows it while `expanded`. */
   private setDrawer(open: boolean): void {
-    this._refs.drawer.hidden = !open;
+    this.reflect('expanded', open);
     this._refs.toggle.setAttribute('aria-expanded', String(open));
     this.renderToggleLabel();
     this._refs.toggleIcon.name.set(open ? CLOSE_ICON : MENU_ICON);
-    this.reflect('expanded', open);
   }
 }
 

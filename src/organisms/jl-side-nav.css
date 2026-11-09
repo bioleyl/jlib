@@ -43,6 +43,12 @@ nav {
   padding: 0 9px;
 }
 
+/* A side nav that does not fold, or that a drawer shows whole, has no fold button. */
+:host(:not([collapsible])) .fold,
+:host([in-drawer]) .fold {
+  display: none;
+}
+
 :host([rail]) .fold::part(base) {
   justify-content: center;
   padding: 0;
@@ -216,8 +222,9 @@ nav {
   transition: transform var(--jl-fast) var(--jl-ease);
 }
 
-.entry.open > .item .chevron,
-.entry.open > .expander jl-icon {
+/* An open parent: its list of children shows. */
+.entry:has(> .children:not([hidden])) > .item .chevron,
+.entry:has(> .children:not([hidden])) > .expander jl-icon {
   transform: rotate(90deg);
 }
 

@@ -41,6 +41,10 @@ summary::-webkit-details-marker {
   white-space: nowrap;
 }
 
+.description:empty {
+  display: none;
+}
+
 .icon {
   color: var(--jl-muted);
 }

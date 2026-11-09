@@ -54,6 +54,12 @@
   color: var(--fg);
 }
 
+:host(:not([has-icon])) .icon,
+.heading:empty,
+.description:empty {
+  display: none;
+}
+
 .content {
   display: grid;
   flex: 1;

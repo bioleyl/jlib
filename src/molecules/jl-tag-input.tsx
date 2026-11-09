@@ -40,6 +40,9 @@ const parseTextList = (value: string | null): string[] => {
   return Array.isArray(parsed) ? parsed.map(String) : [];
 };
 
+/** The tag a chip shows. */
+const chipTag = (chip: HTMLElement): string => chip.dataset.tag ?? '';
+
 const highlighted = (label: string, query: string): (Node | string)[] =>
   matchParts(label, query).map((part) => (part.matched ? <mark>{part.text}</mark> : part.text));
 
@@ -52,7 +55,7 @@ export class JlTagInput extends JlFormControl {
 
   readonly events = this.useEvents<{ change: string[] }>();
 
-  readonly value = this.useChange<string[]>([], () => this.renderTags(), {
+  readonly value = this.useChange<string[]>([], (value) => this.renderValue(value), {
     attribute: 'value',
     parse: parseTextList,
   });
@@ -62,7 +65,7 @@ export class JlTagInput extends JlFormControl {
     attribute: 'label',
   });
   /** The most tags the field takes; 0 for no limit. */
-  readonly max = this.useChange(NO_LIMIT, () => this.renderTags(), {
+  readonly max = this.useChange(NO_LIMIT, () => this.renderFull(), {
     attribute: 'max',
     parse: clampedNumber(NO_LIMIT, 0, Number.MAX_SAFE_INTEGER),
   });
@@ -140,7 +143,9 @@ export class JlTagInput extends JlFormControl {
   }
 
   protected drawTexts(): void {
-    this.renderTags();
+    for (const chip of this.chips()) {
+      this.nameRemoveButton(chip);
+    }
     this.renderValidity();
   }
 
@@ -243,7 +248,7 @@ export class JlTagInput extends JlFormControl {
   private onControlClick(event: MouseEvent): void {
     const remove = (event.target as Element).closest<HTMLElement>('.tag-remove');
     if (remove !== null) {
-      this.removeAt(Number(remove.dataset.index));
+      this.removeAt(this.chipIndex(remove));
       this.focus();
       return;
     }
@@ -258,7 +263,7 @@ export class JlTagInput extends JlFormControl {
     if (button === null) {
       return;
     }
-    const index = Number(button.dataset.index);
+    const index = this.chipIndex(button);
     const handlers = new Map<string, () => void>([
       ['ArrowLeft', () => this.focusTag(Math.max(0, index - 1))],
       ['ArrowRight', () => this.focusTag(index + 1)],
@@ -344,7 +349,7 @@ export class JlTagInput extends JlFormControl {
 
   /** Focuses a chip's remove button; past the last chip, the field. */
   private focusTag(index: number): void {
-    const button = this._refs.tags.querySelector<HTMLElement>(`.tag-remove[data-index="${index}"]`);
+    const button = this.chips()[index]?.querySelector<HTMLElement>('.tag-remove') ?? null;
     if (button === null) {
       this.focus();
       return;
@@ -354,10 +359,8 @@ export class JlTagInput extends JlFormControl {
 
   /** Points at the chips people tried to add again. */
   private flash(duplicates: string[]): void {
-    const tags = this.value.get();
-    for (const chip of this._refs.tags.querySelectorAll<HTMLElement>('.tag')) {
-      const tag = tags[Number(chip.dataset.index)];
-      if (tag === undefined || !hasTag(duplicates, tag)) {
+    for (const chip of this.chips()) {
+      if (!hasTag(duplicates, chipTag(chip))) {
         continue;
       }
       chip.classList.add('flash');
@@ -446,9 +449,7 @@ export class JlTagInput extends JlFormControl {
   private renderActive(): void {
     const active = this._state.active;
     for (const item of this._refs.listbox.querySelectorAll<HTMLElement>('[data-index]')) {
-      const isActive = Number(item.dataset.index) === active;
-      item.classList.toggle('active', isActive);
-      item.setAttribute('aria-selected', String(isActive));
+      item.setAttribute('aria-selected', String(Number(item.dataset.index) === active));
     }
     setOrRemove(this._refs.native, 'aria-activedescendant', active === NONE ? '' : `${this._listId}-${active}`);
   }
@@ -476,31 +477,70 @@ export class JlTagInput extends JlFormControl {
     setOrRemove(native, 'aria-expanded', offers ? String(this.isOpen()) : '');
   }
 
-  private renderTags(): void {
-    const tags = this.value.get();
-    const editable = !this.disabled.get();
-    this._refs.tags.replaceChildren(
-      ...tags.map((tag, index) => (
-        <li class="tag" data-index={String(index)}>
-          <span class="tag-text">{tag}</span>
-          {editable ? (
-            <button
-              class="tag-remove"
-              type="button"
-              tabIndex={-1}
-              aria-label={jlText('removeNamed', { name: tag })}
-              data-index={String(index)}>
-              <JlIcon name="x" size={REMOVE_ICON_SIZE} />
-            </button>
-          ) : null}
-        </li>
-      ))
-    );
-    const max = this.max.get();
-    this.reflect('full', max !== NO_LIMIT && tags.length >= max);
+  private renderValue(tags: string[]): void {
+    this.renderChips(tags);
+    this.renderFull();
     this.renderPlaceholder();
     this.renderFormValue();
     this.renderValidity();
+  }
+
+  /**
+   * Makes the chips match the tags: those of tags taken out go, a chip is made for each tag added, and the others stay
+   * as they are, so adding or removing a tag makes or removes one chip.
+   */
+  private renderChips(tags: string[]): void {
+    const list = this._refs.tags;
+    const kept = new Set(tags);
+    for (const chip of this.chips()) {
+      if (!kept.has(chipTag(chip))) {
+        chip.remove();
+      }
+    }
+    tags.forEach((tag, index) => {
+      const chips = this.chips();
+      const chip = chips[index];
+      if (chip !== undefined && chipTag(chip) === tag) {
+        return;
+      }
+      const later = chips.slice(index + 1).find((other) => chipTag(other) === tag);
+      list.insertBefore(later ?? this.chip(tag), chip ?? null);
+    });
+    for (const extra of this.chips().slice(tags.length)) {
+      extra.remove();
+    }
+  }
+
+  /** A chip, its remove button hidden by the CSS while the field is disabled. */
+  private chip(tag: string): HTMLElement {
+    const chip = (
+      <li class="tag" data-tag={tag}>
+        <span class="tag-text">{tag}</span>
+        <button class="tag-remove" type="button" tabIndex={-1}>
+          <JlIcon name="x" size={REMOVE_ICON_SIZE} />
+        </button>
+      </li>
+    ) as HTMLElement;
+    this.nameRemoveButton(chip);
+    return chip;
+  }
+
+  private nameRemoveButton(chip: HTMLElement): void {
+    chip.querySelector('.tag-remove')?.setAttribute('aria-label', jlText('removeNamed', { name: chipTag(chip) }));
+  }
+
+  private chips(): HTMLElement[] {
+    return [...this._refs.tags.children] as HTMLElement[];
+  }
+
+  /** The place of the chip an element is in. */
+  private chipIndex(element: Element): number {
+    return this.chips().findIndex((chip) => chip.contains(element));
+  }
+
+  private renderFull(): void {
+    const max = this.max.get();
+    this.reflect('full', max !== NO_LIMIT && this.value.get().length >= max);
   }
 
   /** The placeholder shows while there is no tag; chips take its place. */
@@ -535,7 +575,6 @@ export class JlTagInput extends JlFormControl {
     this._refs.native.disabled = disabled;
     this.reflect('disabled', disabled);
     this.closeList();
-    this.renderTags();
   }
 }
 

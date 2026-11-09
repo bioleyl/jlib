@@ -89,6 +89,10 @@
   line-height: 1.4;
 }
 
+.hint:empty {
+  display: none;
+}
+
 .browse {
   display: inline-flex;
   align-items: center;

@@ -23,7 +23,6 @@ export class JlPageHeader extends JlElement {
     '',
     (value) => {
       this._refs.description.textContent = value;
-      this._refs.description.hidden = value === '';
     },
     { attribute: 'description' }
   );
@@ -51,7 +50,7 @@ export class JlPageHeader extends JlElement {
           <div class="titles">
             {/* biome-ignore lint/a11y/useHeadingContent: the heading is an input, written when it is set */}
             <h1 />
-            <p class="description" hidden />
+            <p class="description" />
           </div>
           <div class="actions" hidden>
             <slot name="actions" />

@@ -64,16 +64,18 @@ export class JlInput extends JlFormControl {
   readonly inputmode = this.useChange('', (value) => this.setNative('inputmode', value), {
     attribute: 'inputmode',
   });
-  readonly min = this.useChange('', (value) => this.setNative('min', value), { attribute: 'min' });
-  readonly max = this.useChange('', (value) => this.setNative('max', value), { attribute: 'max' });
-  readonly step = this.useChange('', (value) => this.setNative('step', value), { attribute: 'step' });
-  readonly minlength = this.useChange('', (value) => this.setNative('minlength', value), {
+  readonly min = this.useChange('', (value) => this.setConstraint('min', value), { attribute: 'min' });
+  readonly max = this.useChange('', (value) => this.setConstraint('max', value), { attribute: 'max' });
+  readonly step = this.useChange('', (value) => this.setConstraint('step', value), { attribute: 'step' });
+  readonly minlength = this.useChange('', (value) => this.setConstraint('minlength', value), {
     attribute: 'minlength',
   });
-  readonly maxlength = this.useChange('', (value) => this.setNative('maxlength', value), {
+  readonly maxlength = this.useChange('', (value) => this.setConstraint('maxlength', value), {
     attribute: 'maxlength',
   });
-  readonly pattern = this.useChange('', (value) => this.setNative('pattern', value), { attribute: 'pattern' });
+  readonly pattern = this.useChange('', (value) => this.setConstraint('pattern', value), {
+    attribute: 'pattern',
+  });
   readonly required = this.useChange(false, (value) => this.setFlag('required', value), { attribute: 'required' });
   readonly readonly = this.useChange(false, (value) => this.setFlag('readonly', value), { attribute: 'readonly' });
   readonly disabled = this.useChange(false, (value) => this.renderDisabled(value), { attribute: 'disabled' });
@@ -100,12 +102,13 @@ export class JlInput extends JlFormControl {
     { attribute: 'icon' }
   );
   /** Shows a button that empties the field while it holds text. */
-  readonly clearable = this.useChange(false, () => this.renderActions(), { attribute: 'clearable' });
+  readonly clearable = this.useChange(false, () => this.renderClear(), { attribute: 'clearable' });
 
   private readonly _form = { disabled: false };
 
   private readonly _refs = this.useRefs((ref) => ({
     clear: ref('.clear'),
+    clearIcon: ref<JlIcon>('.clear jl-icon'),
     icon: ref<JlIcon>('.icon'),
     native: ref<HTMLInputElement>('input'),
     reveal: ref('.reveal'),
@@ -128,10 +131,10 @@ export class JlInput extends JlFormControl {
         <slot name="start" />
         <input class="native" id="field" />
         <button class="action clear" type="button" tabIndex={-1} hidden>
-          <JlIcon name="x" size={ACTION_ICON_SIZE} />
+          <JlIcon size={ACTION_ICON_SIZE} />
         </button>
         <button class="action reveal" type="button" hidden>
-          <JlIcon name="eye" size={ICON_SIZE} />
+          <JlIcon size={ICON_SIZE} />
         </button>
         <slot name="end" />
       </div>
@@ -184,20 +187,13 @@ export class JlInput extends JlFormControl {
 
   protected drawTexts(): void {
     this._refs.clear.setAttribute('aria-label', jlText('clear'));
-    this.renderRevealLabel();
+    this.renderReveal();
   }
 
   private toggleReveal(): void {
     const native = this._refs.native;
-    const revealed = native.type === PASSWORD;
-    native.type = revealed ? REVEALED : PASSWORD;
-    this._refs.revealIcon.name.set(revealed ? 'eye-off' : 'eye');
-    this.renderRevealLabel();
-  }
-
-  private renderRevealLabel(): void {
-    const revealed = this._refs.native.type === REVEALED;
-    this._refs.reveal.setAttribute('aria-label', revealed ? jlText('hidePassword') : jlText('showPassword'));
+    native.type = native.type === PASSWORD ? REVEALED : PASSWORD;
+    this.renderReveal();
   }
 
   private renderValue(value: string): void {
@@ -207,12 +203,12 @@ export class JlInput extends JlFormControl {
     }
     this.internals.setFormValue(value);
     this.mirrorValidity(native);
-    this.renderActions();
+    this.renderClear();
   }
 
   private renderType(type: InputType): void {
     this._refs.native.type = type;
-    this.renderActions();
+    this.renderReveal();
     this.mirrorValidity(this._refs.native);
   }
 
@@ -224,24 +220,46 @@ export class JlInput extends JlFormControl {
   /** The native field is disabled by the element's own flag or by a disabled fieldset around it. */
   private syncNativeDisabled(): void {
     this._refs.native.disabled = this.disabled.get() || this._form.disabled;
-    this.renderActions();
+    this.renderClear();
   }
 
-  private renderActions(): void {
+  /** The × shows while an editable field holds text; its SVG is drawn the first time it does. */
+  private renderClear(): void {
     const editable = !this.disabled.get() && !this.readonly.get();
-    this._refs.clear.hidden = !(this.clearable.get() && editable && this.value.get() !== '');
-    this._refs.reveal.hidden = this.type.get() !== PASSWORD;
+    const clear = this._refs.clear;
+    clear.hidden = !(this.clearable.get() && editable && this.value.get() !== '');
+    if (!clear.hidden) {
+      this._refs.clearIcon.name.set('x');
+    }
   }
 
+  /** The eye shows for a password only, drawn then, and says what pressing it does to the text. */
+  private renderReveal(): void {
+    const reveal = this._refs.reveal;
+    reveal.hidden = this.type.get() !== PASSWORD;
+    if (reveal.hidden) {
+      return;
+    }
+    const revealed = this._refs.native.type === REVEALED;
+    this._refs.revealIcon.name.set(revealed ? 'eye-off' : 'eye');
+    reveal.setAttribute('aria-label', jlText(revealed ? 'hidePassword' : 'showPassword'));
+  }
+
+  /** An attribute that does not change what the field accepts (a placeholder, a name, a keyboard hint). */
   private setNative(name: string, value: string): void {
     setOrRemove(this._refs.native, name, value);
+  }
+
+  /** A constraint on what the field accepts: its validity changes with it. */
+  private setConstraint(name: string, value: string): void {
+    this.setNative(name, value);
     this.mirrorValidity(this._refs.native);
   }
 
   private setFlag(name: string, value: boolean): void {
     this._refs.native.toggleAttribute(name, value);
     this.reflect(name, value);
-    this.renderActions();
+    this.renderClear();
     this.mirrorValidity(this._refs.native);
   }
 }

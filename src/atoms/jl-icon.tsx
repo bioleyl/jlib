@@ -16,10 +16,20 @@ export class JlIcon extends JlElement {
   static readonly selector = 'jl-icon';
 
   readonly name = this.useChange('', () => this.draw(), { attribute: 'name' });
-  readonly size = this.useChange(DEFAULT_SIZE, () => this.draw(), { attribute: 'size' });
+  /** Its width and height in pixels, which the CSS gives the SVG: a new size draws nothing again. */
+  readonly size = this.useChange(
+    DEFAULT_SIZE,
+    (value) => this._refs.icon.style.setProperty('--size', `${value}px`),
+    {
+      attribute: 'size',
+    }
+  );
   readonly label = this.useChange('', (value) => this.setAccessibleName(value), { attribute: 'label' });
   /** The icon's first shape (the circle or triangle around a sign) in solid colour, the sign cut out of it. */
   readonly filled = this.useChange(false, (value) => this.reflect('filled', value), { attribute: 'filled' });
+
+  // The name of the SVG drawn: set() calls draw() even with the same name, and a page sets names over many rows.
+  private readonly _drawn = { name: '' };
 
   private readonly _refs = this.useRefs((ref) => ({ icon: ref('.icon') }));
 
@@ -33,6 +43,9 @@ export class JlIcon extends JlElement {
 
   private draw(): void {
     const name = this.name.get();
+    if (name === this._drawn.name) {
+      return;
+    }
     if (name !== '' && !hasIcon(name)) {
       // A page registers its icons after its imports, which define the components: icons a server wrote in the page
       // upgrade before that. One not known yet is drawn at the end of the task, before the browser paints.
@@ -46,6 +59,8 @@ export class JlIcon extends JlElement {
   private drawNow(): void {
     const name = this.name.get();
     this._refs.icon.replaceChildren(...(name === '' ? [] : [iconElement(name, this.size.get())]));
+    // A name not registered yet draws a neutral mark: setting it again, once registered, draws the icon.
+    this._drawn.name = name === '' || hasIcon(name) ? name : '';
   }
 
   private setAccessibleName(label: string): void {

@@ -4,6 +4,7 @@ import { ChevronLeft, ChevronRight } from 'lucide';
 import { JlIcon } from '../atoms/jl-icon';
 import { JlElement } from '../base/jl-element';
 import { clampedNumber, oneOf } from '../lib/attributes';
+import { setOrRemove } from '../lib/dom';
 import { registerIcons } from '../lib/icons';
 import { CONTROL_SIZES } from '../lib/options';
 import { clampPage, pageItems } from '../lib/pagination';
@@ -17,7 +18,6 @@ import type { PageItem } from '../types/pagination.types';
 // The icons it draws itself: a page registers only the names it writes.
 registerIcons({ 'chevron-left': ChevronLeft, 'chevron-right': ChevronRight });
 
-const ICON_SIZES: Record<ControlSize, number> = { lg: 18, md: 16, sm: 14 };
 const MAX_PAGES = Number.MAX_SAFE_INTEGER;
 const MAX_NEIGHBOURS = 5;
 const STEP_BACK = -1;
@@ -72,10 +72,9 @@ export class JlPagination extends JlElement {
     list: ref('.pages'),
     nav: ref('nav'),
     next: ref<HTMLButtonElement>('.next'),
-    nextIcon: ref<JlIcon>('.next jl-icon'),
     previous: ref<HTMLButtonElement>('.previous'),
-    previousIcon: ref<JlIcon>('.previous jl-icon'),
-    status: ref('.status'),
+    statusPrefix: ref('.status-prefix'),
+    statusText: ref('.status-text'),
   }));
 
   templateHtml(): Node {
@@ -85,7 +84,10 @@ export class JlPagination extends JlElement {
           <JlIcon name="chevron-left" />
         </button>
         <ol class="pages" />
-        <span class="status" hidden />
+        <span class="status">
+          <span class="status-prefix sr-only" />
+          <span class="status-text" />
+        </span>
         <button type="button" class="button next">
           <JlIcon name="chevron-right" />
         </button>
@@ -125,51 +127,67 @@ export class JlPagination extends JlElement {
     return clampPage(this.page.get(), this.pages.get());
   }
 
+  /** The CSS shows the list, or "3 of 12" when `compact`: only the one shown is drawn. */
   private render(): void {
     const pages = this.pages.get();
     const page = this.currentPage();
-    const compact = this.compact.get();
     this._refs.previous.disabled = page <= 1;
     this._refs.next.disabled = page >= pages;
-    this._refs.list.hidden = compact;
-    this._refs.status.hidden = !compact;
-    this._refs.status.replaceChildren(
-      <span class="sr-only">{`${jlText('page')} `}</span>,
-      jlText('pageOfTotal', { page, total: Math.max(pages, 1) })
-    );
-    if (!compact) {
-      const items = pageItems(page, pages, this.siblings.get(), this.boundaries.get());
-      this._refs.list.replaceChildren(...items.map((item) => this.entry(item, page)));
+    if (this.compact.get()) {
+      this._refs.statusPrefix.textContent = `${jlText('page')} `;
+      this._refs.statusText.textContent = jlText('pageOfTotal', { page, total: Math.max(pages, 1) });
+      return;
+    }
+    const items = pageItems(page, pages, this.siblings.get(), this.boundaries.get());
+    items.forEach((item, index) => {
+      const entry = this.entryAt(index, item.type);
+      if (item.type === 'page') {
+        this.renderPageButton(entry, item.page, page);
+      }
+    });
+    const list = this._refs.list;
+    while (list.childElementCount > items.length) {
+      list.lastElementChild?.remove();
     }
   }
 
-  private entry(item: PageItem, current: number): Node {
-    if (item.type === 'gap') {
-      return (
+  /**
+   * The list's entry at a place, made only when the place has none or one of the other kind (a gap, a page): the list
+   * keeps its length from page to page, so stepping through changes the buttons' numbers, not the buttons.
+   */
+  private entryAt(index: number, kind: PageItem['type']): Element {
+    const list = this._refs.list;
+    const entry = list.children.item(index);
+    if (entry !== null && entry.classList.contains('gap') === (kind === 'gap')) {
+      return entry;
+    }
+    const made =
+      kind === 'gap' ? (
         <li class="gap" aria-hidden="true">
           …
         </li>
+      ) : (
+        <li>
+          <button type="button" class="button page" />
+        </li>
       );
+    entry === null ? list.append(made) : entry.replaceWith(made);
+    return made as Element;
+  }
+
+  private renderPageButton(entry: Element, page: number, current: number): void {
+    const button = entry.firstElementChild as HTMLButtonElement;
+    const text = String(page);
+    if (button.textContent !== text) {
+      button.textContent = text;
+      button.dataset.page = text;
     }
-    const isCurrent = item.page === current;
-    return (
-      <li>
-        <button
-          type="button"
-          class="button page"
-          data-page={item.page}
-          aria-label={jlText('pageNumber', { page: item.page })}
-          aria-current={isCurrent ? 'page' : undefined}>
-          {String(item.page)}
-        </button>
-      </li>
-    );
+    button.setAttribute('aria-label', jlText('pageNumber', { page }));
+    setOrRemove(button, 'aria-current', page === current ? 'page' : '');
   }
 
   private renderSize(size: ControlSize): void {
     this.reflect('size', size);
-    this._refs.previousIcon.size.set(ICON_SIZES[size]);
-    this._refs.nextIcon.size.set(ICON_SIZES[size]);
   }
 
   /** Goes one page back or forward from an arrow; at an end, the focus moves to the other arrow. */

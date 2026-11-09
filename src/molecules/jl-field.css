@@ -35,10 +35,6 @@
   line-height: 18px;
 }
 
-.error-region:empty {
-  display: contents;
-}
-
 .error {
   display: flex;
   align-items: flex-start;
@@ -51,6 +47,22 @@
 .error jl-icon {
   flex: none;
   margin-top: 2px;
+}
+
+/* No label, no row; no hint, or an error in its place, no hint. */
+.label-row:has(> .label:empty),
+.hint:empty,
+:host([has-error]) .hint {
+  display: none;
+}
+
+/* Without an error, the region takes no room, and the error made at the first one hides. */
+:host(:not([has-error])) .error-region {
+  display: contents;
+}
+
+:host(:not([has-error])) .error {
+  display: none;
 }
 
 /* Beside: the label takes a column and sits on the baseline of the control's first line of text. */

@@ -93,6 +93,11 @@
   gap: 2px;
 }
 
+.label:empty,
+.description:empty {
+  display: none;
+}
+
 .description {
   color: var(--jl-muted);
   font-size: var(--jl-font-sm);

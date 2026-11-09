@@ -50,10 +50,6 @@ export function matchCommands<Id extends string>(
 
 /** The matches under their group headings, groups in the order their first command comes. */
 export function groupMatches<Id extends string>(matches: readonly PaletteMatch<Id>[]): PaletteGroup<Id>[] {
-  const groups = new Map<string, PaletteMatch<Id>[]>();
-  for (const match of matches) {
-    const label = match.command.group ?? NO_GROUP;
-    groups.set(label, [...(groups.get(label) ?? []), match]);
-  }
+  const groups = Map.groupBy(matches, (match) => match.command.group ?? NO_GROUP);
   return [...groups].map(([label, grouped]) => ({ label, matches: grouped }));
 }

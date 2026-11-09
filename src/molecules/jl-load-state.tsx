@@ -127,12 +127,12 @@ export class JlLoadState extends JlElement {
     { attribute: 'state', parse: oneOf(LOAD_STATES, 'loading') }
   );
   /** The shape of the skeleton; slot `loading` takes one of the page's own instead. */
-  readonly skeleton = this.useChange<LoadSkeleton>('rows', () => this.renderSkeleton(), {
+  readonly skeleton = this.useChange<LoadSkeleton>('rows', () => this.redrawSkeleton(), {
     attribute: 'skeleton',
     parse: oneOf(LOAD_SKELETONS, 'rows'),
   });
   /** How many rows, cards or lines the skeleton has. */
-  readonly count = this.useChange(DEFAULT_COUNT, () => this.renderSkeleton(), {
+  readonly count = this.useChange(DEFAULT_COUNT, () => this.redrawSkeleton(), {
     attribute: 'count',
     parse: clampedNumber(DEFAULT_COUNT, 1, MAX_COUNT),
   });
@@ -158,8 +158,6 @@ export class JlLoadState extends JlElement {
 
   private readonly _refs = this.useRefs((ref) => ({
     bones: ref('.bones'),
-    content: ref('.content'),
-    empty: ref('.empty'),
     error: ref(JlEmpty),
     loading: ref('.loading'),
     retry: ref<JlButton>('.retry'),
@@ -219,13 +217,13 @@ export class JlLoadState extends JlElement {
             <div class="bones" />
           </slot>
         </div>
-        <jl-empty class="error" icon="circle-alert" hidden>
+        <jl-empty class="error" icon="circle-alert">
           <JlButton class="retry" icon="refresh" />
         </jl-empty>
-        <div class="empty" hidden>
+        <div class="empty">
           <slot name="empty" />
         </div>
-        <div class="content" hidden>
+        <div class="content">
           <slot />
         </div>
       </div>
@@ -243,8 +241,6 @@ export class JlLoadState extends JlElement {
   }
 
   onConnect(): void {
-    this.renderSkeleton();
-    this.renderState(this.state.get());
     this._refs.retry.events.register('press', () => {
       this.events.emit('retry');
       void this._work.retry?.();
@@ -255,22 +251,32 @@ export class JlLoadState extends JlElement {
     clearTimeout(this._work.timer);
   }
 
+  /** The CSS shows what the state on the host says; the skeleton waits for `delay` first. */
   private renderState(state: LoadState): void {
-    const refs = this._refs;
     clearTimeout(this._work.timer);
-    refs.loading.hidden = true;
-    refs.error.hidden = state !== 'error';
-    refs.empty.hidden = state !== 'empty';
-    refs.content.hidden = state !== 'ready';
+    this._refs.loading.hidden = true;
     this.reflect('state', state);
     if (state === 'loading') {
-      this._work.timer = setTimeout(() => {
-        refs.loading.hidden = false;
-      }, this.delay.get());
+      this._work.timer = setTimeout(() => this.showSkeleton(), this.delay.get());
     }
   }
 
-  private renderSkeleton(): void {
+  /** Shows the skeleton, made the first time it shows: most loads answer before it would. */
+  private showSkeleton(): void {
+    if (this._refs.bones.childElementCount === 0) {
+      this.drawSkeleton();
+    }
+    this._refs.loading.hidden = false;
+  }
+
+  /** A new shape or count changes a skeleton already made; one never shown stays unmade. */
+  private redrawSkeleton(): void {
+    if (this._refs.bones.childElementCount > 0) {
+      this.drawSkeleton();
+    }
+  }
+
+  private drawSkeleton(): void {
     const kind = this.skeleton.get();
     this._refs.bones.className = `bones ${kind}`;
     this._refs.bones.replaceChildren(...SKELETONS[kind](this.count.get()));

@@ -71,11 +71,17 @@
   background: var(--jl-surface-2);
 }
 
-.chip.selected,
-.chip.selected:hover:not(:disabled) {
+/* Chosen: checked as a radio with one choice, pressed as a toggle button with several. */
+.chip:is([aria-checked="true"], [aria-pressed="true"]),
+.chip:is([aria-checked="true"], [aria-pressed="true"]):hover:not(:disabled) {
   border-color: var(--jl-accent-line);
   background: var(--jl-accent-soft);
   color: var(--jl-accent);
+}
+
+/* A chip without an icon of its own shows its check only while chosen. */
+.chip:not([data-icon], [aria-checked="true"], [aria-pressed="true"]) .icon {
+  display: none;
 }
 
 .chip:disabled {
@@ -104,7 +110,20 @@
   text-align: center;
 }
 
-.chip.selected .badge {
+.chip:is([aria-checked="true"], [aria-pressed="true"]) .badge {
   background: color-mix(in srgb, var(--jl-accent) 14%, transparent);
   color: var(--jl-accent);
+}
+
+/* The chips' icons' size, by the group's: each icon reads --icon-size. */
+jl-icon {
+  --icon-size: 14px;
+}
+
+:host([size="sm"]) jl-icon {
+  --icon-size: 12px;
+}
+
+:host([size="lg"]) jl-icon {
+  --icon-size: 16px;
 }

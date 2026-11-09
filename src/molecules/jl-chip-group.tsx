@@ -19,7 +19,6 @@ import type { RovingMove } from '../types/roving-index.types';
 // The icons it draws itself: a page registers only the names it writes.
 registerIcons({ check: Check });
 
-const ICON_SIZES: Record<ControlSize, number> = { lg: 16, md: 14, sm: 12 };
 const SELECTED_ICON = 'check';
 const CHIP_SELECTOR = '.chip';
 
@@ -74,7 +73,6 @@ export class JlChipGroup<Value extends string = string> extends JlFormControl {
     'md',
     (value) => {
       this.reflect('size', value);
-      this.renderOptions();
     },
     { attribute: 'size', parse: oneOf(CONTROL_SIZES, 'md') }
   );
@@ -101,8 +99,11 @@ export class JlChipGroup<Value extends string = string> extends JlFormControl {
     { attribute: 'disabled' }
   );
 
-  /** The chip that holds the Tab stop with several choices: the last one people reached. */
-  private readonly _state = { disabledByForm: false, stop: '' };
+  /**
+   * The chip that holds the Tab stop with several choices: the last one people reached. `drawn` is the list the chips
+   * were made from: the options call back with the same list as the group connects.
+   */
+  private readonly _state = { disabledByForm: false, drawn: null as ChipGroupOption<Value>[] | null, stop: '' };
 
   // The form's entries carry the field's name: they are written again when it changes.
   private readonly _nameWatch = new MutationObserver(() => this.renderFormValue());
@@ -224,12 +225,17 @@ export class JlChipGroup<Value extends string = string> extends JlFormControl {
 
   // No reflect() here: it runs for `options` before the attributes declared after it are read.
   private renderOptions(): void {
-    const iconSize = ICON_SIZES[this.size.get()];
-    this._refs.group.replaceChildren(...this.options.get().map((option) => this.chip(option, iconSize)));
+    const options = this.options.get();
+    if (options === this._state.drawn) {
+      return;
+    }
+    this._state.drawn = options;
+    this._refs.group.replaceChildren(...options.map((option) => this.chip(option)));
     this.renderValue();
   }
 
-  private chip(option: ChipGroupOption<Value>, iconSize: number): HTMLButtonElement {
+  /** A chip without an icon of its own has a check, which the CSS shows while it is chosen. */
+  private chip(option: ChipGroupOption<Value>): HTMLButtonElement {
     const badge = option.badge === undefined ? '' : String(option.badge);
     return (
       <button
@@ -239,14 +245,14 @@ export class JlChipGroup<Value extends string = string> extends JlFormControl {
         data-value={option.value}
         data-icon={option.icon}
         data-disabled={option.disabled === true ? '' : undefined}>
-        <JlIcon class="icon" size={iconSize} hidden />
+        <JlIcon class="icon" name={option.icon ?? SELECTED_ICON} />
         <span class="label">{option.label}</span>
         {badge === '' ? '' : <span class="badge">{badge}</span>}
       </button>
     ) as HTMLButtonElement;
   }
 
-  /** Radios with one choice, toggle buttons with several; each chosen chip shows its icon or a check. */
+  /** Radios with one choice, toggle buttons with several. */
   private renderValue(): void {
     const chosen = new Set<string>(this.chosen());
     const multiple = this.multiple.get();
@@ -259,13 +265,6 @@ export class JlChipGroup<Value extends string = string> extends JlFormControl {
       setOrRemove(chip, 'role', multiple ? '' : 'radio');
       setOrRemove(chip, 'aria-checked', multiple ? '' : String(selected));
       setOrRemove(chip, 'aria-pressed', multiple ? String(selected) : '');
-      chip.classList.toggle('selected', selected);
-      const icon = chip.querySelector<JlIcon>('.icon');
-      const name = chip.dataset.icon ?? (selected ? SELECTED_ICON : '');
-      icon?.name.set(name);
-      if (icon !== null) {
-        icon.hidden = name === '';
-      }
     }
     this.renderTabStop();
     this.renderFormValue();

@@ -39,7 +39,6 @@ export class JlDrawer extends JlElement {
     '',
     (value) => {
       this._refs.description.textContent = value;
-      this._refs.description.hidden = value === '';
     },
     { attribute: 'description' }
   );
@@ -86,7 +85,7 @@ export class JlDrawer extends JlElement {
           <div class="titles">
             {/* biome-ignore lint/a11y/useHeadingContent: the heading is an input, written when it is set */}
             <h2 id="heading" />
-            <p class="description" id="description" hidden />
+            <p class="description" id="description" />
           </div>
           <div class="actions">
             <slot name="actions" />

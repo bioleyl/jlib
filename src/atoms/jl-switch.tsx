@@ -28,7 +28,6 @@ export class JlSwitch extends JlFormControl {
     '',
     (value) => {
       this._refs.label.textContent = value;
-      this._refs.label.hidden = value === '';
       this.renderText();
     },
     { attribute: 'label' }
@@ -38,7 +37,6 @@ export class JlSwitch extends JlFormControl {
     '',
     (value) => {
       this._refs.description.textContent = value;
-      this._refs.description.hidden = value === '';
       this.renderText();
     },
     { attribute: 'description' }
@@ -98,10 +96,10 @@ export class JlSwitch extends JlFormControl {
         </span>
         <span class="text" hidden>
           <span class="title">
-            <span class="label" hidden />
+            <span class="label" />
             <slot />
           </span>
-          <span id="description" class="description" hidden />
+          <span id="description" class="description" />
         </span>
       </label>
     );

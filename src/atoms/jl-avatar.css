@@ -108,3 +108,20 @@ img {
 :host([status="away"]) .status {
   background: var(--jl-warn);
 }
+
+/* The fallback icon's size, by the avatar's: the icon reads --icon-size. */
+.fallback {
+  --icon-size: 16px;
+}
+
+:host([size="sm"]) .fallback {
+  --icon-size: 13px;
+}
+
+:host([size="lg"]) .fallback {
+  --icon-size: 20px;
+}
+
+:host([size="xl"]) .fallback {
+  --icon-size: 28px;
+}

@@ -20,6 +20,7 @@ const NEW_TAB = '_blank';
 // A page opened in a new tab gets no handle on this one, and no referrer.
 const SAFE_REL = 'noopener noreferrer';
 const ICON_SIZE = 13;
+const EXTERNAL_ICON = 'external-link';
 // A link is followed with Enter (Space scrolls the page, as on a link).
 const ENTER = 'Enter';
 
@@ -38,7 +39,6 @@ export class JlLink extends JlElement {
     '',
     (value) => {
       this._refs.label.textContent = value;
-      this._refs.label.hidden = value === '';
     },
     { attribute: 'label' }
   );
@@ -75,9 +75,9 @@ export class JlLink extends JlElement {
     return (
       // biome-ignore lint/a11y/useValidAnchor: the href is an input, set when the page gives one
       <a attrs={{ part: 'base' }}>
-        <span class="label" hidden />
+        <span class="label" />
         <slot />
-        <JlIcon name="external-link" size={ICON_SIZE} hidden />
+        <JlIcon size={ICON_SIZE} hidden />
         <span class="new-tab sr-only" hidden>
           (opens in a new tab)
         </span>
@@ -126,6 +126,10 @@ export class JlLink extends JlElement {
     setOrRemove(anchor, 'target', target);
     setOrRemove(anchor, 'rel', external || newTab ? SAFE_REL : '');
     this._refs.icon.hidden = !external;
+    // Its SVG is drawn the first time it shows: most links are not external.
+    if (external) {
+      this._refs.icon.name.set(EXTERNAL_ICON);
+    }
     this._refs.newTab.hidden = !newTab;
   }
 }

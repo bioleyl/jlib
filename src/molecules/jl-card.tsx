@@ -27,8 +27,8 @@ export class JlCard extends JlElement {
   readonly heading = this.useChange(
     '',
     (value) => {
+      // The CSS hides the heading and the description while they are empty.
       this._refs.heading.textContent = value;
-      this._refs.heading.hidden = value === '';
       this._refs.linkName.textContent = value || DEFAULT_LINK_NAME;
       this.renderSections();
     },
@@ -38,7 +38,6 @@ export class JlCard extends JlElement {
     '',
     (value) => {
       this._refs.description.textContent = value;
-      this._refs.description.hidden = value === '';
       this.renderSections();
     },
     { attribute: 'description' }
@@ -88,8 +87,8 @@ export class JlCard extends JlElement {
         <header hidden>
           <div class="titles">
             {/* biome-ignore lint/a11y/useHeadingContent: the heading is an input, written when it is set */}
-            <h3 id="heading" hidden />
-            <p class="description" id="description" hidden />
+            <h3 id="heading" />
+            <p class="description" id="description" />
           </div>
           <div class="actions">
             <slot name="actions" />

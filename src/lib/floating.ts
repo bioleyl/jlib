@@ -94,6 +94,29 @@ export function computePosition(
   };
 }
 
+/**
+ * Puts a fixed-position element next to its anchor, and gives what it measured: the anchor's rect, the element's
+ * rect where it went, and the placement it got after flipping. Something drawn from them (an arrow) needs no reading
+ * after the writes, which would lay the page out again.
+ */
+export function positionFloating(
+  anchor: Element,
+  floating: HTMLElement,
+  placement: Placement,
+  gap?: number
+): { anchor: Rect; floating: Rect; placement: Placement } {
+  const rect = anchor.getBoundingClientRect();
+  const viewport = { height: window.innerHeight, width: document.documentElement.clientWidth };
+  const size = { height: floating.offsetHeight, width: floating.offsetWidth };
+  const result = computePosition(rect, size, viewport, placement, gap);
+  const left = Math.round(result.left);
+  const top = Math.round(result.top);
+  floating.style.left = `${left}px`;
+  floating.style.top = `${top}px`;
+  floating.dataset.placement = result.placement;
+  return { anchor: rect, floating: { ...size, left, top }, placement: result.placement };
+}
+
 /** Puts a fixed-position element next to its anchor; returns the placement it got after flipping. */
 export function placeFloating(
   anchor: Element,
@@ -101,14 +124,7 @@ export function placeFloating(
   placement: Placement,
   gap?: number
 ): Placement {
-  const rect = anchor.getBoundingClientRect();
-  const viewport = { height: window.innerHeight, width: document.documentElement.clientWidth };
-  const size = { height: floating.offsetHeight, width: floating.offsetWidth };
-  const result = computePosition(rect, size, viewport, placement, gap);
-  floating.style.left = `${Math.round(result.left)}px`;
-  floating.style.top = `${Math.round(result.top)}px`;
-  floating.dataset.placement = result.placement;
-  return result.placement;
+  return positionFloating(anchor, floating, placement, gap).placement;
 }
 
 /** Keeps a floating element by its anchor while the page scrolls or resizes, until the signal aborts. */

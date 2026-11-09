@@ -48,6 +48,10 @@
   display: none;
 }
 
+.label:empty {
+  display: none;
+}
+
 .label {
   flex: none;
   max-width: 80%;

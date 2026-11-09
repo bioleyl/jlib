@@ -15,11 +15,12 @@ import type { ControlSize } from '../types/options.types';
 // The icons it draws itself: a page registers only the names it writes.
 registerIcons({ star: Star });
 
-const ICON_SIZES: Record<ControlSize, number> = { lg: 26, md: 20, sm: 16 };
+// The SVGs' own size; the CSS gives them the size of the `size` input.
+const ICON_SIZE = 20;
+const DEFAULT_ICON = 'star';
 const DEFAULT_MAX = 5;
 // Digit keys set the rating: a scale of ten is as far as they reach, and as far as a row of stars stays readable.
 const MAX_LIMIT = 10;
-const NO_PREVIEW = 0;
 
 /**
  * A row of stars (or hearts, or any icon) to give a score: a click, the arrows or a digit set it, and choosing the
@@ -48,15 +49,11 @@ export class JlRating extends JlFormControl {
     },
     { attribute: 'readonly' }
   );
-  readonly icon = this.useChange('star', () => this.renderIcons(), { attribute: 'icon' });
-  readonly size = this.useChange<ControlSize>(
-    'md',
-    (value) => {
-      this.reflect('size', value);
-      this.renderIcons();
-    },
-    { attribute: 'size', parse: oneOf(CONTROL_SIZES, 'md') }
-  );
+  readonly icon = this.useChange(DEFAULT_ICON, () => this.renderIcons(), { attribute: 'icon' });
+  readonly size = this.useChange<ControlSize>('md', (value) => this.reflect('size', value), {
+    attribute: 'size',
+    parse: oneOf(CONTROL_SIZES, 'md'),
+  });
   /** The name screen readers give the scale. */
   readonly label = this.useChange('', () => this.renderLabel(), { attribute: 'label' });
   readonly required = this.useChange(
@@ -78,7 +75,8 @@ export class JlRating extends JlFormControl {
     { attribute: 'invalid' }
   );
 
-  private readonly _state = { formDisabled: false, preview: NO_PREVIEW };
+  // The icon the row is drawn with: max and icon run again at connection, and a row of the same icons stays.
+  private readonly _state = { drawnIcon: '', formDisabled: false };
 
   private readonly _refs = this.useRefs((ref) => ({
     icons: ref('.icons'),
@@ -105,8 +103,6 @@ export class JlRating extends JlFormControl {
     const slider = this._refs.slider;
     this.on(slider, 'keydown', (event) => this.onKey(event));
     this.on(slider, 'click', (event) => this.onChoose(event));
-    this.on(slider, 'pointermove', (event) => this.onHover(event));
-    this.on(slider, 'pointerleave', () => this.setPreview(NO_PREVIEW));
   }
 
   protected resetValue(): void {
@@ -140,28 +136,12 @@ export class JlRating extends JlFormControl {
     if (chosen === null || !this.canChange()) {
       return;
     }
-    this.setPreview(NO_PREVIEW);
     this.commit(ratingAfterChoice(this.current(), chosen));
-  }
-
-  private onHover(event: PointerEvent): void {
-    if (!this.canChange()) {
-      return;
-    }
-    this.setPreview(this.iconValueAt(event) ?? NO_PREVIEW);
   }
 
   private iconValueAt(event: Event): number | null {
     const icon = (event.target as Element).closest<HTMLElement>('[data-value]');
     return icon === null ? null : Number(icon.dataset.value);
-  }
-
-  private setPreview(preview: number): void {
-    if (preview === this._state.preview) {
-      return;
-    }
-    this._state.preview = preview;
-    this.renderValue();
   }
 
   /** The value as the scale shows it: never past its end. */
@@ -186,27 +166,31 @@ export class JlRating extends JlFormControl {
     this._refs.slider.setAttribute('aria-label', this.label.get() || jlText('rating'));
   }
 
+  /** Draws the row of icons again only for another icon or another count. */
   private renderIcons(): void {
-    const name = this.icon.get() === '' ? 'star' : this.icon.get();
-    const size = ICON_SIZES[this.size.get()];
-    const icons = Array.from({ length: this.max.get() }, (_, index) => (
+    const name = this.icon.get() || DEFAULT_ICON;
+    const max = this.max.get();
+    const row = this._refs.icons;
+    if (name === this._state.drawnIcon && row.childElementCount === max) {
+      return;
+    }
+    this._state.drawnIcon = name;
+    const icons = Array.from({ length: max }, (_, index) => (
       <span class="icon" data-value={String(index + 1)}>
-        {iconElement(name, size)}
+        {iconElement(name, ICON_SIZE)}
       </span>
     ));
-    this._refs.icons.replaceChildren(...icons);
+    row.replaceChildren(...icons);
     this.renderValue();
   }
 
+  /** The score, in the icons and for screen readers; the score a pointer would give is the CSS's. */
   private renderValue(): void {
     const value = this.current();
     const max = this.max.get();
-    const preview = this._state.preview;
-    const shown = preview === NO_PREVIEW ? value : preview;
     for (const icon of this._refs.icons.querySelectorAll<HTMLElement>('[data-value]')) {
-      icon.classList.toggle('on', Number(icon.dataset.value) <= shown);
+      icon.classList.toggle('on', Number(icon.dataset.value) <= value);
     }
-    this.reflect('previewing', preview !== NO_PREVIEW);
     const slider = this._refs.slider;
     slider.setAttribute('aria-valuenow', String(value));
     slider.setAttribute('aria-valuemax', String(max));
@@ -228,7 +212,6 @@ export class JlRating extends JlFormControl {
     this.reflect('disabled', disabled);
     this._refs.slider.tabIndex = off ? -1 : 0;
     this._refs.slider.toggleAttribute('aria-disabled', off);
-    this.setPreview(NO_PREVIEW);
   }
 }
 
