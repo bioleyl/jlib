@@ -1,7 +1,7 @@
 {
   "all": {
-    "gzip": 111175,
-    "raw": 445405
+    "gzip": 111216,
+    "raw": 445525
   },
   "baseline": {
     "gzip": 8553,
@@ -845,11 +845,11 @@
       "level": "organisms",
       "tag": "jl-page-header",
       "added": {
-        "gzip": 1624,
+        "gzip": 1625,
         "raw": 4813
       },
       "total": {
-        "gzip": 10177,
+        "gzip": 10178,
         "raw": 29136
       }
     },
@@ -871,12 +871,12 @@
       "level": "organisms",
       "tag": "jl-side-nav",
       "added": {
-        "gzip": 7114,
-        "raw": 22949
+        "gzip": 7169,
+        "raw": 23069
       },
       "total": {
-        "gzip": 15667,
-        "raw": 47272
+        "gzip": 15722,
+        "raw": 47392
       }
     },
     {

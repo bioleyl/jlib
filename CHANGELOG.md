@@ -3,15 +3,29 @@
 What changed in each version of [@syware/jlib](https://www.npmjs.com/package/@syware/jlib). Every component is shown
 and documented on [the documentation site](https://bioleyl.github.io/jlib/).
 
-## Unreleased
+## 0.12.1 (2026-11-09)
+
+A side nav whose header and footer stay put, and a tree that adds a page without drawing itself again.
 
 ### Fixed
 
+- **`jl-side-nav` keeps its header slot and its bottom in place**: a list of items longer than the nav scrolled the
+  whole nav, taking the brand and the account (and the fold button) off screen, so folding the nav or reaching the
+  settings meant scrolling back to the top. The sections now take the room between them and scroll there alone, with a
+  scrollbar gutter so the rows do not shift as it comes and goes
+  ([#4](https://github.com/bioleyl/jlib/issues/4)).
+- **A short list keeps to the top of the nav**: the sections no longer spread over the room they now hold, so the
+  items stay under their heading and the footer stays at the bottom.
 - **`jl-tree` adds a page without drawing the tree again**: each page a loader gave, the spinner before it and an
   error drew every row the tree held again, twice per page, then laid the whole tree out again to give its row the
   focus. A tree of a few hundred items froze the page for a moment at each "Show more" and each folder opened, longer
   as it grew (over 300 ms per press at 900 rows). Only the page's rows and the row that ends their level are drawn
   now; the others, and the focus, stay as they are.
+
+### Worth a look when you update
+
+- A style put into the side nav's shadow root to keep its header and footer still (`nav { overflow: hidden }`,
+  `.sections { flex: 1; min-height: 0; overflow-y: auto }`) can go.
 
 ## 0.12.0 (2026-11-07)
 

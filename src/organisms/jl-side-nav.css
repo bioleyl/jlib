@@ -16,8 +16,8 @@ nav {
   gap: 8px;
   height: 100%;
   padding: 12px 8px;
-  overflow-x: hidden;
-  overflow-y: auto;
+  /* Only .sections scrolls: the header slot and .bottom stay put while a long list runs between them. */
+  overflow: hidden;
   color: var(--jl-text-2);
   font-size: var(--jl-font-md);
 }
@@ -25,9 +25,14 @@ nav {
 /* The footer and the fold button keep to the bottom. */
 .bottom {
   display: flex;
+  flex: none;
   flex-direction: column;
   gap: 8px;
   margin-top: auto;
+}
+
+::slotted([slot="header"]) {
+  flex: none;
 }
 
 /* The fold button spans the nav like a row, its icon and label where the rows have theirs; centred in the rail. */
@@ -45,6 +50,14 @@ nav {
 
 .sections {
   display: grid;
+  /* The part that scrolls: flex: 1 with min-height: 0 so it takes the room between the header and the footer
+     instead of pushing them out; align-content: start keeps a short list at the top rather than spreading it over
+     that room; the gutter keeps the rows from shifting as the scrollbar comes and goes. */
+  flex: 1;
+  min-height: 0;
+  align-content: start;
+  overflow-y: auto;
+  scrollbar-gutter: stable;
   gap: 14px;
 }
 

@@ -54,7 +54,8 @@ export const NAV_SECTIONS: SideNavSection<Place>[] = [
 - `collapsible` adds a button that folds the side nav into a rail of icons; `collapse` says so, for the app to
   remember it on the device (`localStorage`), and `collapsed` starts it folded. While folded, the host carries the
   `rail` attribute: style its header with `jl-side-nav[rail] …`.
-- Slots `header` (the app's icon and name, the search button) and `footer` (the person signed in).
+- Slots `header` (the app's icon and name, the search button) and `footer` (the person signed in). They stay in
+  place: a long list scrolls in the sections between them, so no app styles the nav's shadow root for it.
 - The tab bar takes the main places only (an icon each); its `more` label adds a last button that opens the drawer
   with the rest.
 

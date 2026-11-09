@@ -184,3 +184,16 @@ every page in Chromium: no console error, no undefined `jl-*` tag, no unregister
   maintainer approves it (`npm stage approve`, with 2FA) to make it public. The whole procedure is in RELEASING.md.
 - Biome leaves JSON files alone (not in its includes, JSON formatter and linter off): npm writes package.json and the
   lockfile in its own layout (`npm version`, `npm install x`), which Biome's formatter used to refuse.
+
+## Commands
+
+- `node` and `gh` are not on the default PATH here: node lives in `~/.nvm/versions/node/v26.12.0/bin` (v24.22.1 also installed), `gh` in `~/.local/bin`. Export the PATH before `npm`, `node scripts/shoot.mjs` or `gh`.
+
+## Traps
+
+- `npm run generate --check` is stale on a new day: the calendar and date-picker doc examples hold today's date, so generate rewrites those two skill references every day. Keep a scoped change clean by `git checkout`-ing them after running generate.
+- A scroll area that is a flex item needs `align-content: start` as well as `flex: 1; min-height: 0`: a grid scroller with free space (a short list) otherwise spreads its rows over the room it took (jl-side-nav's `.sections`).
+
+## Conventions
+
+- A component's own CSS is minified into its shadow root, so a probe cannot override it by appending a `<style>` to the shadow root (same specificity, later `@layer` order loses): to measure the previous behaviour, check out the old CSS file and run again.

@@ -54,7 +54,8 @@ as a rail, the host carries the rail attribute, for styles around it: jl-side-na
 
 Every item is a link (with an href) or a button, so the Tab key reaches it; Up and Down move between the visible
 items, Right opens a parent and Left closes it. Items without an href fire select; put the side nav in the nav slot
-of jl-app-shell for the whole frame.`,
+of jl-app-shell for the whole frame. A list longer than the nav scrolls between the header slot and the bottom, which
+stay in place.`,
   events: [
     { description: 'An item was chosen: its id.', detail: 'Id', name: 'select' },
     {
@@ -194,8 +195,14 @@ of jl-app-shell for the whole frame.`,
     },
   ],
   slots: [
-    { description: 'Above the sections: a brand, a workspace switcher.', name: 'header' },
-    { description: 'At the bottom: the account, a help link.', name: 'footer' },
+    {
+      description: 'Above the sections, and stays there while they scroll: a brand, a workspace switcher.',
+      name: 'header',
+    },
+    {
+      description: 'At the bottom, and stays there while the sections scroll: the account, a help link.',
+      name: 'footer',
+    },
   ],
   styling: [
     { description: 'The width when expanded (248px).', name: '--width' },
