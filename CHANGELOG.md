@@ -3,6 +3,16 @@
 What changed in each version of [@syware/jlib](https://www.npmjs.com/package/@syware/jlib). Every component is shown
 and documented on [the documentation site](https://bioleyl.github.io/jlib/).
 
+## Unreleased
+
+### Fixed
+
+- **`jl-tree` adds a page without drawing the tree again**: each page a loader gave, the spinner before it and an
+  error drew every row the tree held again, twice per page, then laid the whole tree out again to give its row the
+  focus. A tree of a few hundred items froze the page for a moment at each "Show more" and each folder opened, longer
+  as it grew (over 300 ms per press at 900 rows). Only the page's rows and the row that ends their level are drawn
+  now; the others, and the focus, stay as they are.
+
 ## 0.12.0 (2026-11-07)
 
 The skills for coding agents, rewritten for an agent that has never seen jlib, and installable in any agent; Enter in

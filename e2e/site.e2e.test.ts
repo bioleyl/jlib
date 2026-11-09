@@ -14,6 +14,7 @@ import type { JlDatePicker } from '../src/molecules/jl-date-picker';
 import type { JlLoadState } from '../src/molecules/jl-load-state';
 import type { JlFlow } from '../src/organisms/jl-flow';
 import type { JlPageOutlet } from '../src/organisms/jl-page-outlet';
+import type { JlTree } from '../src/organisms/jl-tree';
 
 const ROOT = join(import.meta.dirname, '..');
 const DOCS = join(ROOT, 'site', 'src', 'docs', 'components');
@@ -581,6 +582,78 @@ describe('the select', () => {
       placeholder: 'Choose one',
       sameOption: true,
       shown: '',
+    });
+  });
+});
+
+describe('the tree', () => {
+  it('adds a page after the rows it has, without drawing them again, and hands the focus to the first it brought', async () => {
+    const page = await open('/components/tree');
+    const result = await page.evaluate(async () => {
+      const wait = (milliseconds: number) => new Promise((resolve) => setTimeout(resolve, milliseconds));
+      const tree = document.createElement('jl-tree') as JlTree;
+      document.body.append(tree);
+      // Five roots and three children under each, two to a page; the roots are folders.
+      tree.loader = (parent, offset) => {
+        const ids = parent === null ? ['r0', 'r1', 'r2', 'r3', 'r4'] : [`${parent}a`, `${parent}b`, `${parent}c`];
+        const items = ids.slice(offset, offset + 2).map((id) => ({ id, label: id, lazy: parent === null }));
+        return Promise.resolve({ items, total: ids.length });
+      };
+      await wait(50);
+      const root = tree.shadowRoot;
+      if (!root) {
+        throw new Error('The tree has no shadow root');
+      }
+      const row = (id: string) => root.querySelector<HTMLElement>(`[data-id="${id}"]`);
+      const levelEnd = (parent = '') => row(`jl-tree-level-end:${parent}`);
+      const first = row('r0');
+      // Rows of items taken out of the tree: none, when a page only adds its own.
+      const removed: string[] = [];
+      new MutationObserver((records) => {
+        for (const node of records.flatMap((record) => [...record.removedNodes])) {
+          if (node instanceof HTMLElement && node.dataset.id && !node.classList.contains('level-end')) {
+            removed.push(node.dataset.id);
+          }
+        }
+      }).observe(root, { childList: true, subtree: true });
+      // An item selected before its page comes is shown selected once it does.
+      tree.value.set('r3');
+      levelEnd()?.focus();
+      levelEnd()?.dispatchEvent(new KeyboardEvent('keydown', { bubbles: true, key: 'Enter' }));
+      await wait(50);
+      const focused = root.activeElement?.getAttribute('data-id');
+      tree.toggle('r0', true);
+      await wait(50);
+      levelEnd('r0')?.click();
+      await wait(50);
+      const ids = (selector: string) =>
+        [...root.querySelectorAll<HTMLElement>(selector)].map((element) => element.dataset.id);
+      const outcome = {
+        children: ids('[data-id="r0"] > .group > [role="treeitem"]'),
+        closed: row('r2')?.getAttribute('aria-expanded'),
+        closedGroupHidden: row('r2')?.querySelector<HTMLElement>(':scope > .group')?.hidden,
+        focused,
+        open: row('r0')?.getAttribute('aria-expanded'),
+        removed,
+        roots: ids('.tree > [role="treeitem"]'),
+        sameFirst: row('r0') === first,
+        selected: row('r3')?.getAttribute('aria-selected'),
+        tabStops: ids('[role="treeitem"][tabindex="0"]'),
+      };
+      tree.remove();
+      return outcome;
+    });
+    expect(result).toEqual({
+      children: ['r0a', 'r0b', 'r0c'],
+      closed: 'false',
+      closedGroupHidden: true,
+      focused: 'r2',
+      open: 'true',
+      removed: [],
+      roots: ['r0', 'r1', 'r2', 'r3', 'jl-tree-level-end:'],
+      sameFirst: true,
+      selected: 'true',
+      tabStops: ['r2'],
     });
   });
 });
