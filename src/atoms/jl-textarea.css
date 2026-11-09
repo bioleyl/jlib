@@ -14,17 +14,25 @@
 
 /* The area takes the frame's whole box, so its own scrollbar and resize handle sit inside the border. */
 .native {
+  --padding-y: 8px;
   display: block;
   height: auto;
   min-height: calc(var(--jl-control-md) - 2px);
-  padding: 8px 12px;
+  padding: var(--padding-y) 12px;
   border-radius: inherit;
   resize: vertical;
 }
 
+/*
+ * The browser sizes an autosized area to its text (field-sizing: Chrome 123, Safari 26.2, Firefox 152), from `rows`
+ * lines (--rows) up to `max-rows` (--max-rows, absent without a limit, which leaves max-height none), then it
+ * scrolls. A browser without field-sizing keeps the area at its rows, scrolling.
+ */
 :host([autosize]) .native {
+  field-sizing: content;
+  min-height: max(calc(var(--jl-control-md) - 2px), calc(var(--rows, 1) * 1lh + 2 * var(--padding-y)));
+  max-height: calc(var(--max-rows) * 1lh + 2 * var(--padding-y));
   resize: none;
-  overflow-y: hidden;
 }
 
 :host([readonly]) .control {

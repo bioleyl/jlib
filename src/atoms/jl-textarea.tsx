@@ -8,12 +8,11 @@ import styles from './jl-textarea.css?inline';
 const DEFAULT_ROWS = 3;
 // Without a max-rows, an autosized area grows as far as its text goes.
 const UNLIMITED_ROWS = 0;
-// The line height of the frame, for a browser that reports "normal".
-const FALLBACK_LINE_HEIGHT = 20;
 
 /**
  * A text field of several lines that takes part in forms. `rows` sets its height; with `autosize` it grows with
- * its text up to `max-rows`. A `maxlength` shows a counter under the field.
+ * its text up to `max-rows`, sized by the browser (CSS `field-sizing`): nothing is measured. A `maxlength` shows a
+ * counter under the field.
  */
 export class JlTextarea extends JlFormControl {
   static readonly selector = 'jl-textarea';
@@ -27,22 +26,19 @@ export class JlTextarea extends JlFormControl {
   readonly rows = this.useChange(
     DEFAULT_ROWS,
     (value) => {
-      this._refs.native.rows = Math.max(1, value);
-      this.fit();
+      const native = this._refs.native;
+      native.rows = Math.max(1, value);
+      // The lines an autosized area starts from, for its CSS.
+      native.style.setProperty('--rows', String(native.rows));
     },
     { attribute: 'rows' }
   );
   /** Grows with the text, from `rows` up to `max-rows`. */
-  readonly autosize = this.useChange(
-    false,
-    (value) => {
-      this.reflect('autosize', value);
-      this.fit();
-    },
-    { attribute: 'autosize' }
-  );
+  readonly autosize = this.useChange(false, (value) => this.reflect('autosize', value), { attribute: 'autosize' });
   /** The most lines an autosized area grows to before it scrolls; 0 for no limit. */
-  readonly maxRows = this.useChange(UNLIMITED_ROWS, () => this.fit(), { attribute: 'max-rows' });
+  readonly maxRows = this.useChange(UNLIMITED_ROWS, (value) => this.renderMaxRows(value), {
+    attribute: 'max-rows',
+  });
   /** The most characters it takes; shows a counter under the field. */
   readonly maxlength = this.useChange('', (value) => this.renderMaxlength(value), { attribute: 'maxlength' });
   /** The field's name for screen readers, when no visible label names it. */
@@ -109,8 +105,6 @@ export class JlTextarea extends JlFormControl {
       this.events.emit('input', native.value);
     });
     this.on(native, 'change', () => this.events.emit('change', native.value));
-    // Laid out only now: the heights measured while the template was detached were empty.
-    this.fit();
   }
 
   protected resetValue(): void {
@@ -135,7 +129,6 @@ export class JlTextarea extends JlFormControl {
     this.internals.setFormValue(value);
     this.mirrorValidity(native);
     this.renderCounter();
-    this.fit();
   }
 
   private renderMaxlength(maxlength: string): void {
@@ -162,30 +155,14 @@ export class JlTextarea extends JlFormControl {
     this.mirrorValidity(this._refs.native);
   }
 
-  /** Fits the height to the text when autosized, between `rows` and `max-rows` lines. */
-  private fit(): void {
-    const native = this._refs.native;
-    native.style.removeProperty('height');
-    native.style.removeProperty('overflow-y');
-    if (!this.autosize.get() || native.scrollHeight === 0) {
+  /** The lines an autosized area grows to, for its CSS; left out without a limit, which leaves its max-height none. */
+  private renderMaxRows(maxRows: number): void {
+    const style = this._refs.native.style;
+    if (maxRows <= UNLIMITED_ROWS) {
+      style.removeProperty('--max-rows');
       return;
     }
-    const limit = this.heightLimit(native);
-    const height = Math.min(native.scrollHeight, limit);
-    native.style.height = `${height}px`;
-    native.style.overflowY = native.scrollHeight > limit ? 'auto' : 'hidden';
-  }
-
-  /** The height of `max-rows` lines (never fewer than `rows`), or no limit without it. */
-  private heightLimit(native: HTMLTextAreaElement): number {
-    const maxRows = this.maxRows.get();
-    if (maxRows <= UNLIMITED_ROWS) {
-      return Number.POSITIVE_INFINITY;
-    }
-    const style = getComputedStyle(native);
-    const padding = Number.parseFloat(style.paddingTop) + Number.parseFloat(style.paddingBottom);
-    const lineHeight = Number.parseFloat(style.lineHeight) || FALLBACK_LINE_HEIGHT;
-    return Math.max(maxRows, this.rows.get()) * lineHeight + padding;
+    style.setProperty('--max-rows', String(maxRows));
   }
 }
 

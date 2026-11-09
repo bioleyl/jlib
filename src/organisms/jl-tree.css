@@ -5,12 +5,27 @@
 }
 
 .tree {
+  --level: 0;
   color: var(--jl-text-2);
   font-size: var(--jl-font-md);
 }
 
+/*
+ * Each row's depth, from 0 at the roots: a group takes its folder's (--level, inherited), and the rows in it one more.
+ * The rows are indented by it, and the line under an open folder drawn at its folder's chevron.
+ */
 .group {
+  --group-level: var(--level);
   position: relative;
+}
+
+.group > * {
+  --level: calc(var(--group-level) + 1);
+}
+
+/* A folder's children show while it says it is open: aria-expanded, which screen readers read too, is the one state. */
+.item[aria-expanded="false"] > .group {
+  display: none;
 }
 
 /* A quiet line under each open folder, from its chevron down along its children. */

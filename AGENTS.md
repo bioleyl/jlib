@@ -184,6 +184,14 @@ every page in Chromium: no console error, no undefined `jl-*` tag, no unregister
   maintainer approves it (`npm stage approve`, with 2FA) to make it public. The whole procedure is in RELEASING.md.
 - Biome leaves JSON files alone (not in its includes, JSON formatter and linter off): npm writes package.json and the
   lockfile in its own layout (`npm version`, `npm install x`), which Biome's formatter used to refuse.
+- Every input's callback runs as a component appears, one after the other, and `set()` calls it even with an equal
+  value: a callback that builds children builds them once per input (`jl-input-list` built its rows ten times).
+  Build once, then change in place (`jl-input-list`'s `drawRows`), and set a child only where its state changed
+  (`jl-tree`'s `drawExpanded`, as `JlIcon` draws its SVG on each `set()`).
+- Let CSS draw what the DOM already says, rather than JS keeping a copy: a closed folder's children from
+  `aria-expanded`, the only row's remove button from `:only-child`, a disabled list from `:host([disabled])`, a
+  tree row's indent from its depth (`--level` derived per `.group`), an autosized area's height from
+  `field-sizing: content`. Reading a size (`scrollHeight`) after a style changed lays the whole page out again.
 
 ## Commands
 
