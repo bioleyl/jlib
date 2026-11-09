@@ -3,11 +3,13 @@
 What changed in each version of [@syware/jlib](https://www.npmjs.com/package/@syware/jlib). Every component is shown
 and documented on [the documentation site](https://bioleyl.github.io/jlib/).
 
-## Unreleased
+## 0.13.0 (2026-11-09)
 
 Large forms and trees no longer freeze the page: every component builds what it shows once and changes it in place,
 the CSS draws what the DOM already says, and nothing is measured. A record form of 92 fields, 49 lists, 31 text areas
-and 794 icons blocked the page for about 500 ms as it opened; it now opens without a task over 50 ms.
+and 794 icons blocked the page for about 500 ms as it opened; it now opens without a task over 50 ms. Two changes ask
+for a look before updating (a minor version, as jlib is before 1.0): a list changed in place and given again as the
+same array draws nothing, and `jl-table`'s rows lose the attributes a style may have read.
 
 ### Changed
 
@@ -69,8 +71,9 @@ and 794 icons blocked the page for about 500 ms as it opened; it now opens witho
 
 - An autosized `jl-textarea` grows with its text where the browser has `field-sizing` (Chrome 123, Safari 26.2,
   Firefox 152 on); in an older one it keeps its `rows` height, and scrolls.
-- A list given again as the same array object (`select.options`, `steps.items`, `timeline.items`, `menu.items`,
-  `segmented.options`) draws nothing: give a new array, as views do, rather than changing one in place.
+- A list given again as the same array object (`select.options`, `segmented.options`, `chipGroup.options`,
+  `steps.items`, `timeline.items`, `menu.items`, `breadcrumb.items`, `avatarGroup.items`, `slider.marks`,
+  `sideNav.sections`) draws nothing: give a new array, as views do, rather than changing one in place.
 - `jl-table`'s rows lose their `data-selected`, `data-sorted` and `data-expanded` attributes, which the CSS read: a
   style an app put on them reads the row's ticked box (`:has(:checked)`), the heading's `aria-sort` or the chevron's
   `aria-expanded` instead. A column sorted by the page but not sortable no longer darkens its heading.

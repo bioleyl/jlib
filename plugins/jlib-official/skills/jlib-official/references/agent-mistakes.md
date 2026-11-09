@@ -31,6 +31,7 @@ of [SKILL.md](../SKILL.md#rules).
 22. One ref for two components of a class
 23. `?raw` styles
 24. Tests that read the shadow DOM, or do not wait
+25. A list changed in place and given again
 
 ## 1. The tag form in JSX
 
@@ -492,3 +493,23 @@ expect(page.shadowRoot?.querySelector<JlTable<Order>>('jl-table')?.rows.get()).t
 ```
 
 See [testing.md](testing.md).
+
+## 25. A list changed in place and given again
+
+Rule: **Inputs are fields, outputs are events.**
+
+```ts
+// Bad: the same array, so the component has nothing new to draw
+const items = steps.items.get();
+items.push({ label: 'Shipped' });
+steps.items.set(items);
+```
+
+```ts
+// Good: a new array
+steps.items.set([...steps.items.get(), { label: 'Shipped' }]);
+```
+
+A component draws its list once and compares the array it is given with the one it drew. `JlSelect`, `JlSegmented`,
+`JlChipGroup`, `JlSteps`, `JlTimeline`, `JlMenu`, `JlBreadcrumb`, `JlAvatarGroup`, `JlSlider` (its `marks`) and
+`JlSideNav` (its `sections`) draw nothing for the same object.
