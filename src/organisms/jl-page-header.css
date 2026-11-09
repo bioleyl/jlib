@@ -29,7 +29,7 @@
 
 .titles {
   display: grid;
-  flex: 1 1 320px;
+  flex: 275px;
   gap: 6px;
   min-width: 0;
 }
