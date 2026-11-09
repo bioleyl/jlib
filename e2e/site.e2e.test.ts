@@ -8,9 +8,12 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import type { Browser, Page } from 'playwright-core';
 import type { PreviewServer } from 'vite';
 import type { JlBadge } from '../src/atoms/jl-badge';
+import type { JlInput } from '../src/atoms/jl-input';
 import type { JlLoadingBar } from '../src/atoms/jl-loading-bar';
 import type { JlSelect } from '../src/atoms/jl-select';
+import type { JlTextarea } from '../src/atoms/jl-textarea';
 import type { JlDatePicker } from '../src/molecules/jl-date-picker';
+import type { JlInputList } from '../src/molecules/jl-input-list';
 import type { JlLoadState } from '../src/molecules/jl-load-state';
 import type { JlFlow } from '../src/organisms/jl-flow';
 import type { JlPageOutlet } from '../src/organisms/jl-page-outlet';
@@ -587,25 +590,27 @@ describe('the select', () => {
 });
 
 describe('the tree', () => {
-  it('adds a page after the rows it has, without drawing them again, and hands the focus to the first it brought', async () => {
+  it('adds a page after the rows it has, without drawing them again, and gives the focus once to the first it brought', async () => {
     const page = await open('/components/tree');
     const result = await page.evaluate(async () => {
       const wait = (milliseconds: number) => new Promise((resolve) => setTimeout(resolve, milliseconds));
       const tree = document.createElement('jl-tree') as JlTree;
       document.body.append(tree);
-      // Five roots and three children under each, two to a page; the roots are folders.
-      tree.loader = (parent, offset) => {
-        const ids = parent === null ? ['r0', 'r1', 'r2', 'r3', 'r4'] : [`${parent}a`, `${parent}b`, `${parent}c`];
-        const items = ids.slice(offset, offset + 2).map((id) => ({ id, label: id, lazy: parent === null }));
-        return Promise.resolve({ items, total: ids.length });
-      };
+      // Five folders, two to a page: the third page is the last.
+      const roots = ['r0', 'r1', 'r2', 'r3', 'r4'];
+      tree.loader = (_parent, offset) =>
+        Promise.resolve({
+          items: roots.slice(offset, offset + 2).map((id) => ({ id, label: id, lazy: true })),
+          total: roots.length,
+        });
       await wait(50);
       const root = tree.shadowRoot;
       if (!root) {
         throw new Error('The tree has no shadow root');
       }
       const row = (id: string) => root.querySelector<HTMLElement>(`[data-id="${id}"]`);
-      const levelEnd = (parent = '') => row(`jl-tree-level-end:${parent}`);
+      const ids = (selector: string) =>
+        [...root.querySelectorAll<HTMLElement>(selector)].map((element) => element.dataset.id);
       const first = row('r0');
       // Rows of items taken out of the tree: none, when a page only adds its own.
       const removed: string[] = [];
@@ -616,27 +621,32 @@ describe('the tree', () => {
           }
         }
       }).observe(root, { childList: true, subtree: true });
+      // Each focus() lays the page out: counted while a page is pressed for and comes.
+      const focus = HTMLElement.prototype.focus;
+      const counted = { focusCalls: 0 };
+      HTMLElement.prototype.focus = function (this: HTMLElement, options?: FocusOptions) {
+        counted.focusCalls += 1;
+        focus.call(this, options);
+      };
+      const pressMore = async () => {
+        const more = row('jl-tree-level-end:');
+        more?.focus();
+        counted.focusCalls = 0;
+        more?.dispatchEvent(new KeyboardEvent('keydown', { bubbles: true, key: 'Enter' }));
+        await wait(50);
+        return { focusCalls: counted.focusCalls, focused: root.activeElement?.getAttribute('data-id') };
+      };
       // An item selected before its page comes is shown selected once it does.
       tree.value.set('r3');
-      levelEnd()?.focus();
-      levelEnd()?.dispatchEvent(new KeyboardEvent('keydown', { bubbles: true, key: 'Enter' }));
-      await wait(50);
-      const focused = root.activeElement?.getAttribute('data-id');
-      tree.toggle('r0', true);
-      await wait(50);
-      levelEnd('r0')?.click();
-      await wait(50);
-      const ids = (selector: string) =>
-        [...root.querySelectorAll<HTMLElement>(selector)].map((element) => element.dataset.id);
+      const second = await pressMore();
+      const last = await pressMore();
+      HTMLElement.prototype.focus = focus;
       const outcome = {
-        children: ids('[data-id="r0"] > .group > [role="treeitem"]'),
-        closed: row('r2')?.getAttribute('aria-expanded'),
-        closedGroupHidden: row('r2')?.querySelector<HTMLElement>(':scope > .group')?.hidden,
-        focused,
-        open: row('r0')?.getAttribute('aria-expanded'),
+        last,
         removed,
         roots: ids('.tree > [role="treeitem"]'),
         sameFirst: row('r0') === first,
+        second,
         selected: row('r3')?.getAttribute('aria-selected'),
         tabStops: ids('[role="treeitem"][tabindex="0"]'),
       };
@@ -644,16 +654,264 @@ describe('the tree', () => {
       return outcome;
     });
     expect(result).toEqual({
-      children: ['r0a', 'r0b', 'r0c'],
-      closed: 'false',
-      closedGroupHidden: true,
-      focused: 'r2',
-      open: 'true',
+      // Once to the spinner that took the pressed row's place, once to the first item the page brought.
+      last: { focusCalls: 2, focused: 'r4' },
       removed: [],
-      roots: ['r0', 'r1', 'r2', 'r3', 'jl-tree-level-end:'],
+      roots: ['r0', 'r1', 'r2', 'r3', 'r4'],
       sameFirst: true,
+      second: { focusCalls: 2, focused: 'r2' },
       selected: 'true',
-      tabStops: ['r2'],
+      tabStops: ['r4'],
+    });
+  });
+
+  it('draws only the level it loads, and the icon of the folder that opens or closes only', async () => {
+    const page = await open('/components/tree');
+    const result = await page.evaluate(async () => {
+      const wait = (milliseconds: number) => new Promise((resolve) => setTimeout(resolve, milliseconds));
+      const tree = document.createElement('jl-tree') as JlTree;
+      document.body.append(tree);
+      const children: Record<string, string[]> = { r0: ['r0a', 'r0b', 'r0c'], r1: ['r1a'] };
+      const failed = new Set<string>();
+      // Three folders and their children, two to a page. r1 fails once; then it says it has three children but
+      // gives one, and its empty second page ends it.
+      tree.loader = (parent, offset) => {
+        if (parent === 'r1' && !failed.has(parent)) {
+          failed.add(parent);
+          return Promise.reject(new Error('Offline'));
+        }
+        const ids = parent === null ? ['r0', 'r1', 'r2'] : (children[parent] ?? []);
+        const items = ids.slice(offset, offset + 2).map((id) => ({ id, label: id, lazy: parent === null }));
+        return Promise.resolve({ items, total: parent === 'r1' ? 3 : ids.length });
+      };
+      await wait(50);
+      const root = tree.shadowRoot;
+      if (!root) {
+        throw new Error('The tree has no shadow root');
+      }
+      const row = (id: string) => root.querySelector<HTMLElement>(`[data-id="${id}"]`);
+      const levelEnd = (parent: string) => row(`jl-tree-level-end:${parent}`);
+      const ids = (selector: string) =>
+        [...root.querySelectorAll<HTMLElement>(selector)].map((element) => element.dataset.id);
+      // Rows taken out of the tree: no item's, and only the ends of the levels loaded.
+      const removed = { endRows: new Set<string>(), items: [] as string[] };
+      new MutationObserver((records) => {
+        for (const node of records.flatMap((record) => [...record.removedNodes])) {
+          if (!(node instanceof HTMLElement) || !node.dataset.id) {
+            continue;
+          }
+          if (node.classList.contains('level-end')) {
+            removed.endRows.add(node.dataset.id);
+            continue;
+          }
+          removed.items.push(node.dataset.id);
+        }
+      }).observe(root, { childList: true, subtree: true });
+      tree.toggle('r0', true);
+      await wait(50);
+      levelEnd('r0')?.click();
+      await wait(50);
+      tree.toggle('r1', true);
+      await wait(50);
+      const errorShown = levelEnd('r1')?.querySelector('.retry') !== null;
+      // The error's row loads the page again, then the next, which comes empty.
+      levelEnd('r1')?.click();
+      await wait(50);
+      levelEnd('r1')?.click();
+      await wait(50);
+      // The icons drawn again as r0 closes: each icon draws its SVG in its own shadow root.
+      const iconsDrawn = new Set<Element>();
+      for (const icon of root.querySelectorAll('jl-icon')) {
+        if (icon.shadowRoot) {
+          new MutationObserver(() => iconsDrawn.add(icon)).observe(icon.shadowRoot, {
+            childList: true,
+            subtree: true,
+          });
+        }
+      }
+      // The CSS indents each row by its depth: a child one step (16px) further than its folder.
+      const padding = (id: string) => {
+        const shownRow = row(id)?.querySelector(':scope > .row');
+        return shownRow ? Number.parseFloat(getComputedStyle(shownRow).paddingLeft) : Number.NaN;
+      };
+      const indent = {
+        child: padding('r0a') - padding('r0'),
+        levelEnd: padding('jl-tree-level-end:') - padding('r0'),
+      };
+      tree.toggle('r0', false);
+      await wait(50);
+      const outcome = {
+        endRowsRedrawn: [...removed.endRows].sort(),
+        errorShown,
+        iconsDrawn: [...iconsDrawn].map((icon) => icon.closest<HTMLElement>('[role="treeitem"]')?.dataset.id),
+        indent,
+        r0: ids('[data-id="r0"] > .group > [role="treeitem"]'),
+        r1: ids('[data-id="r1"] > .group > [role="treeitem"]'),
+        removedItems: removed.items,
+        roots: ids('.tree > [role="treeitem"]'),
+      };
+      tree.remove();
+      return outcome;
+    });
+    expect(result).toEqual({
+      endRowsRedrawn: ['jl-tree-level-end:r0', 'jl-tree-level-end:r1'],
+      errorShown: true,
+      iconsDrawn: ['r0'],
+      indent: { child: 16, levelEnd: 0 },
+      r0: ['r0a', 'r0b', 'r0c'],
+      r1: ['r1a'],
+      removedItems: [],
+      roots: ['r0', 'r1', 'jl-tree-level-end:'],
+    });
+  });
+});
+
+describe('the input list', () => {
+  it('draws its rows once as it appears, changes them in place, and builds them again for new values or controls', async () => {
+    const page = await open('/components/input-list');
+    const result = await page.evaluate(async () => {
+      const wait = (milliseconds: number) => new Promise((resolve) => setTimeout(resolve, milliseconds));
+      const list = document.createElement('jl-input-list') as JlInputList;
+      const root = list.shadowRoot;
+      if (!root) {
+        throw new Error('The input list has no shadow root');
+      }
+      // Each time the rows are built: their container gets new children.
+      const counted = { builds: 0 };
+      new MutationObserver((records) => {
+        counted.builds += records.filter(
+          (record) =>
+            record.target instanceof Element && record.target.matches('.rows') && record.addedNodes.length > 0
+        ).length;
+      }).observe(root, { childList: true, subtree: true });
+      list.values.set(['Ada', 'Grace']);
+      list.label.set('Names');
+      list.placeholder.set('A name');
+      document.body.append(list);
+      await wait(50);
+      // Each row's control: an input, then a text area once multiline.
+      const controls = () => [...root.querySelectorAll<JlInput | JlTextarea>('.row > :first-child')];
+      // Whether each row's remove button shows: the CSS hides it for the only row and in a disabled list.
+      const removable = () =>
+        [...root.querySelectorAll<HTMLElement>('.remove')].map((remove) => remove.checkVisibility());
+      const addable = () => root.querySelector<HTMLElement>('.add')?.checkVisibility();
+      const shown = controls();
+      const asItAppears = { addable: addable(), builds: counted.builds, removable: removable() };
+      list.label.set('People');
+      list.placeholder.set('Someone');
+      list.removeLabel.set('Take out');
+      list.disabled.set(true);
+      await wait(50);
+      const changed = {
+        addable: addable(),
+        builds: counted.builds,
+        disabled: controls().map((control) => control.disabled.get()),
+        labels: controls().map((control) => control.label.get()),
+        removable: removable(),
+        sameControls: controls().every((control, index) => control === shown[index]),
+      };
+      list.multiline.set(true);
+      await wait(50);
+      const multiline = { builds: counted.builds, tags: controls().map((control) => control.localName) };
+      // New values build the rows again; enabled, the only row still keeps its remove button hidden.
+      list.values.set(['Hedy']);
+      list.disabled.set(false);
+      await wait(50);
+      const outcome = {
+        asItAppears,
+        changed,
+        multiline,
+        newValues: { builds: counted.builds, removable: removable(), rows: controls().length },
+      };
+      list.remove();
+      return outcome;
+    });
+    expect(result).toEqual({
+      asItAppears: { addable: true, builds: 1, removable: [true, true] },
+      changed: {
+        addable: false,
+        builds: 1,
+        disabled: [true, true],
+        labels: ['People', 'People'],
+        removable: [false, false],
+        sameControls: true,
+      },
+      multiline: { builds: 2, tags: ['jl-textarea', 'jl-textarea'] },
+      newValues: { builds: 3, removable: [false], rows: 1 },
+    });
+  });
+});
+
+describe('the text area', () => {
+  it('sizes each area to its text up to max-rows by CSS, reading no height', async () => {
+    const page = await open('/components/textarea');
+    const result = await page.evaluate(async () => {
+      const wait = (milliseconds: number) => new Promise((resolve) => setTimeout(resolve, milliseconds));
+      // Each read of a text area's height after a change of the page lays the page out again: they are counted.
+      const scrollHeight = Object.getOwnPropertyDescriptor(Element.prototype, 'scrollHeight');
+      const counted = { reads: 0 };
+      Object.defineProperty(Element.prototype, 'scrollHeight', {
+        configurable: true,
+        get(this: Element) {
+          if (this instanceof HTMLTextAreaElement) {
+            counted.reads += 1;
+          }
+          return scrollHeight?.get?.call(this);
+        },
+      });
+      const text = (count: number) => Array.from({ length: count }, (_, line) => `Line ${line + 1}`).join('\n');
+      // Areas of 1, 4 and 8 lines, then one of 8 lines that grows to 3 at most.
+      const sizes = [
+        { lines: 1, maxRows: 0 },
+        { lines: 4, maxRows: 0 },
+        { lines: 8, maxRows: 0 },
+        { lines: 8, maxRows: 3 },
+      ];
+      const areas = sizes.map(({ lines, maxRows }) => {
+        const area = document.createElement('jl-textarea') as JlTextarea;
+        area.rows.set(1);
+        area.maxRows.set(maxRows);
+        area.autosize.set(true);
+        area.value.set(text(lines));
+        return area;
+      });
+      document.body.append(...areas);
+      await wait(100);
+      const heights = () =>
+        areas.map((area) => area.shadowRoot?.querySelector('textarea')?.getBoundingClientRect().height ?? 0);
+      const fitted = heights();
+      const [first] = areas;
+      first?.value.set(text(6));
+      await wait(100);
+      const grown = heights();
+      const reads = counted.reads;
+      if (scrollHeight) {
+        Object.defineProperty(Element.prototype, 'scrollHeight', scrollHeight);
+      }
+      const cappedArea = areas[3]?.shadowRoot?.querySelector('textarea');
+      // Read while the areas are in the page: a removed one has no layout.
+      const cappedScrolls =
+        cappedArea !== undefined && cappedArea !== null && cappedArea.scrollHeight > cappedArea.clientHeight;
+      const [one = 0, four = 0, eight = 0, capped = 0] = fitted;
+      for (const area of areas) {
+        area.remove();
+      }
+      return {
+        cappedScrolls,
+        cappedShorter: one < capped && capped < four,
+        firstGrew: (grown[0] ?? 0) > one,
+        increasing: one < four && four < eight,
+        reads,
+      };
+    });
+    // The browser sizes them (field-sizing): no height is read, as they appear or as they grow. Each of their
+    // callbacks used to read it, three times each: 18 reads per area.
+    expect(result).toEqual({
+      cappedScrolls: true,
+      cappedShorter: true,
+      firstGrew: true,
+      increasing: true,
+      reads: 0,
     });
   });
 });

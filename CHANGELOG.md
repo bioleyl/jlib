@@ -3,6 +3,30 @@
 What changed in each version of [@syware/jlib](https://www.npmjs.com/package/@syware/jlib). Every component is shown
 and documented on [the documentation site](https://bioleyl.github.io/jlib/).
 
+## Unreleased
+
+Large forms and trees no longer freeze the page: CSS draws what the DOM already says, and nothing is measured.
+
+### Fixed
+
+- **`jl-textarea`'s `autosize` is CSS's `field-sizing: content`**: each change (value, rows, autosize, max-rows, the
+  connection) read the area's height three times, each read laying the whole page out again (18 per area as it
+  appeared). A form of some forty lists and areas froze for about 400 ms as it opened; it now takes about 50 ms. The
+  browser sizes the area from `rows` lines up to `max-rows`, then it scrolls; the component measures nothing.
+- **`jl-input-list` builds its rows once as it appears**: each of its inputs (type, label, placeholder, options,
+  disabled…) built every row again, and they all run as the list appears: about ten builds per list. They now change
+  the rows in place; new values, or another kind of control (options, `multiline`), build them again. The CSS hides
+  the remove button of the only row, and the buttons of a disabled list.
+- **`jl-tree` gives the focus once per page, and redraws only the icon of the folder that opens or closes**: a page
+  asked for from the keyboard focused the tree twice in one task, each focus laying the tree out, and each folder that
+  opened or closed drew the icon of every folder again. A closed folder's children are hidden by the CSS, from
+  `aria-expanded`, and each row's indent comes from its depth in the CSS, not from a style each row was given.
+
+### Worth a look when you update
+
+- An autosized `jl-textarea` grows with its text where the browser has `field-sizing` (Chrome 123, Safari 26.2,
+  Firefox 152 on); in an older one it keeps its `rows` height, and scrolls.
+
 ## 0.12.1 (2026-11-09)
 
 A side nav whose header and footer stay put, and a tree that adds a page without drawing itself again.
