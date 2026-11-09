@@ -186,14 +186,18 @@ every page in Chromium: no console error, no undefined `jl-*` tag, no unregister
   lockfile in its own layout (`npm version`, `npm install x`), which Biome's formatter used to refuse.
 - Jadis runs every input's callback as a component connects, in field order, twice for an input written as an HTML
   attribute, and `set()` runs it even with an equal value. A callback that builds children builds them once per
-  input: build once, then change in place (keep the elements, by id or option), and skip a list given again as the
-  same array. Declare first the inputs others read (`max` before `items`, `language` before `code`, `icon` before
-  `tone`), or the first callback draws with a value about to change.
+  input (`jl-input-list` built its rows ten times): build once, then change in place (keep the elements, by id or
+  option, as `jl-input-list`'s `drawRows` does), set a child only where its state changed (`jl-tree`'s
+  `drawExpanded`), and skip a list given again as the same array. Declare first the inputs others read (`max` before
+  `items`, `language` before `code`, `icon` before `tone`), or the first callback draws with a value about to change.
 - Let the CSS draw what the DOM already says, rather than JS keeping a copy: `:empty` for a text that may be empty,
-  `:host([attr])` for a reflected input, `aria-selected`/`aria-checked`/`aria-expanded`/`aria-sort` for state,
-  `:has()` for what a child holds, and `--icon-size` on the `jl-icon`s a component draws for their size (never on the
-  host: it would reach every icon inside). Reading a size (`offsetLeft`, `scrollHeight`, `getBoundingClientRect`)
-  after a change lays the page out again: read once, at the next frame or from a `ResizeObserver`.
+  `:only-child` for the only row, `:host([attr])` for a reflected input (`:host([disabled])`),
+  `aria-selected`/`aria-checked`/`aria-expanded`/`aria-sort` for state (a closed folder's children from
+  `aria-expanded`), `:has()` for what a child holds, a tree row's indent from its depth (`--level` derived per
+  `.group`), an autosized area's height from `field-sizing: content`, and `--icon-size` on the `jl-icon`s a component
+  draws for their size (never on the host: it would reach every icon inside). Reading a size (`offsetLeft`,
+  `scrollHeight`, `getBoundingClientRect`) after a change lays the page out again: read once, at the next frame or
+  from a `ResizeObserver`.
 - Make what is hidden only when it shows: a closed menu's items, a closed date picker's calendar, a skeleton, an icon
   a component may show. Format with `lib/intl.ts`, which keeps one `Intl` formatter or collator per language and
   options.

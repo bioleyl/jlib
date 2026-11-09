@@ -19,6 +19,13 @@
   min-width: 0;
 }
 
+/* The only row stays, to type the first value in; a disabled list adds and removes none. */
+.row:only-child > .remove,
+:host([disabled]) .remove,
+:host([disabled]) .add {
+  display: none;
+}
+
 [hidden] {
   display: none;
 }
