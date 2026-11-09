@@ -11,7 +11,7 @@ what people learn in one app works in the next. This skill says what each page d
 patterns with jlib's components, whose use is the `jlib-official` skill's (the Claude Code plugin installs it with
 this one). Load both.
 
-Written for the patterns of `@syware/jlib@0.12.0`. The patterns: <https://bioleyl.github.io/jlib/patterns>
+Written for the patterns of `@syware/jlib@0.12.1`. The patterns: <https://bioleyl.github.io/jlib/patterns>
 
 ## How to use this skill
 
