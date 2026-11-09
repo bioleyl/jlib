@@ -77,9 +77,9 @@ The same date, written in three locales.
 
 ```html
 <div class="stack narrow">
-  <jl-date-picker label="Date (English)" locale="en-GB" value="2026-11-14"></jl-date-picker>
-  <jl-date-picker label="Date (French)" locale="fr-CH" value="2026-11-14"></jl-date-picker>
-  <jl-date-picker label="Date (German)" locale="de-DE" value="2026-11-14" clearable></jl-date-picker>
+  <jl-date-picker label="Date (English)" locale="en-GB" value="2026-11-16"></jl-date-picker>
+  <jl-date-picker label="Date (French)" locale="fr-CH" value="2026-11-16"></jl-date-picker>
+  <jl-date-picker label="Date (German)" locale="de-DE" value="2026-11-16" clearable></jl-date-picker>
 </div>
 ```
 
@@ -94,10 +94,10 @@ A destination from a combobox, the stay from two date pickers (check-out starts 
   </jl-field>
   <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px">
     <jl-field label="Check-in" required>
-      <jl-date-picker class="demo-check-in" name="check-in" min="2026-11-07" value="2026-11-14" required></jl-date-picker>
+      <jl-date-picker class="demo-check-in" name="check-in" min="2026-11-09" value="2026-11-16" required></jl-date-picker>
     </jl-field>
     <jl-field label="Check-out" required>
-      <jl-date-picker class="demo-check-out" name="check-out" min="2026-11-15" value="2026-11-17" required></jl-date-picker>
+      <jl-date-picker class="demo-check-out" name="check-out" min="2026-11-17" value="2026-11-19" required></jl-date-picker>
     </jl-field>
   </div>
   <jl-field label="Guests" hint="Email addresses: each guest gets the confirmation.">
@@ -151,8 +151,8 @@ picker.events.register('change', (iso) => {
 ```html
 <div class="stack narrow">
   <jl-date-picker size="sm" label="Small" placeholder="Small"></jl-date-picker>
-  <jl-date-picker size="lg" label="Large" value="2026-11-14"></jl-date-picker>
-  <jl-date-picker label="Disabled" value="2026-11-14" disabled></jl-date-picker>
+  <jl-date-picker size="lg" label="Large" value="2026-11-16"></jl-date-picker>
+  <jl-date-picker label="Disabled" value="2026-11-16" disabled></jl-date-picker>
   <jl-date-picker label="Invalid" placeholder="Required" invalid></jl-date-picker>
 </div>
 ```

@@ -3,8 +3,10 @@ import { addDays, calendarDateOf, formatDate, parseIsoDate, toIsoDate } from '@s
 import type { JlCalendar } from '@syware/jlib';
 import type { ComponentDoc } from '../../types/docs.types';
 
-// The examples are about the weeks around today, so they stay meaningful whenever the page is read.
-const TODAY = calendarDateOf(new Date());
+// The examples are about the weeks around today, so they stay meaningful whenever the page is read. The day is fixed
+// rather than the clock: npm run generate writes these examples into the skills' references, and `generate --check`
+// (npm run check, and the publish workflow) would find them stale the next day.
+const TODAY = parseIsoDate('2026-11-09') ?? calendarDateOf(new Date());
 const BOOKING_WINDOW_DAYS = 30;
 const IN_A_WEEK = 7;
 const MIN = toIsoDate(TODAY);

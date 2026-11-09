@@ -22,11 +22,11 @@ import { JlCalendar } from '@syware/jlib';
 ```
 
 ```tsx
-<JlCalendar value="2026-11-14" />
+<JlCalendar value="2026-11-16" />
 ```
 
 ```html
-<jl-calendar value="2026-11-14"></jl-calendar>
+<jl-calendar value="2026-11-16"></jl-calendar>
 ```
 
 ## Properties
@@ -73,9 +73,9 @@ Names and the first day of the week follow the locale and first-day.
 
 ```html
 <div class="row" style="align-items: start">
-  <jl-calendar locale="en-US" first-day="0" value="2026-11-14"></jl-calendar>
-  <jl-calendar locale="fr-CH" value="2026-11-14"></jl-calendar>
-  <jl-calendar locale="de-CH" value="2026-11-14" size="sm"></jl-calendar>
+  <jl-calendar locale="en-US" first-day="0" value="2026-11-16"></jl-calendar>
+  <jl-calendar locale="fr-CH" value="2026-11-16"></jl-calendar>
+  <jl-calendar locale="de-CH" value="2026-11-16" size="sm"></jl-calendar>
 </div>
 ```
 
@@ -84,7 +84,7 @@ Names and the first day of the week follow the locale and first-day.
 Bookings open for the next 30 days: other days are struck out and cannot be chosen.
 
 ```html
-<jl-calendar min="2026-11-07" max="2026-12-07" value="2026-11-14" label="Delivery day"></jl-calendar>
+<jl-calendar min="2026-11-09" max="2026-12-09" value="2026-11-16" label="Delivery day"></jl-calendar>
 ```
 
 ### Listening
@@ -110,7 +110,7 @@ calendar.events.register('change', (iso) => {
 
 ```html
 <div class="row" style="align-items: start">
-  <jl-calendar size="lg" value="2026-11-14"></jl-calendar>
-  <jl-calendar disabled value="2026-11-14"></jl-calendar>
+  <jl-calendar size="lg" value="2026-11-16"></jl-calendar>
+  <jl-calendar disabled value="2026-11-16"></jl-calendar>
 </div>
 ```

@@ -3,7 +3,9 @@ import { addDays, calendarDateOf, parseIsoDate, toIsoDate } from '@syware/jlib/l
 import type { JlDatePicker } from '@syware/jlib';
 import type { ComponentDoc } from '../../types/docs.types';
 
-const TODAY = calendarDateOf(new Date());
+// The day the examples start from, fixed rather than the clock: the generated skill references would otherwise go
+// stale the next day (see jl-calendar.doc.ts).
+const TODAY = parseIsoDate('2026-11-09') ?? calendarDateOf(new Date());
 const IN_A_WEEK = 7;
 const STAY_NIGHTS = 3;
 const MIN = toIsoDate(TODAY);
