@@ -592,7 +592,7 @@ export class JlTable<Row extends object = TableRow, Extra extends string = never
     const select = this.selectable.get();
     const expand = this.isExpandable();
     return Array.from({ length: SKELETON_ROWS }, () => (
-      <tr class="skeleton">
+      <tr class="skeleton" attrs={{ 'aria-hidden': 'true' }}>
         {select ? (
           <td class="select-cell">
             <span class="bone box" />
@@ -639,9 +639,12 @@ export class JlTable<Row extends object = TableRow, Extra extends string = never
     }
   }
 
-  /** The bar and the shade of marked rows, changed in place. */
+  /** The bar and the shade of marked rows, changed in place; `aria-selected` tells a screen reader the same. */
   private renderMarks(): void {
-    this.redraw('marked', this.marked.get(), (element, on) => element.toggleAttribute(MARKED_ATTRIBUTE, on));
+    this.redraw('marked', this.marked.get(), (element, on) => {
+      element.toggleAttribute(MARKED_ATTRIBUTE, on);
+      setOrRemove(element, 'aria-selected', on ? 'true' : '');
+    });
   }
 
   /** The details of the open rows, added under them and taken away in place: one that stays open keeps its content. */

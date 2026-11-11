@@ -3,7 +3,8 @@ import { css } from '@jadis/core';
 import { JlElement } from '../base/jl-element';
 import { oneOf } from '../lib/attributes';
 import { svgElement } from '../lib/dom';
-import { optionalNumber, percentLabel, percentOf, progressRatio, ringGeometry } from '../lib/progress';
+import { parseNumber } from '../lib/numeric';
+import { percentLabel, percentOf, progressRatio, ringGeometry } from '../lib/progress';
 import { BASE_STYLES } from '../styles/shared';
 import { PROGRESS_TONES } from './jl-progress';
 import styles from './jl-progress-ring.css?inline';
@@ -27,7 +28,7 @@ export class JlProgressRing extends JlElement {
   /** How much is done, out of `max`; `null` (no attribute) for work of unknown length. */
   readonly value = this.useChange<number | null>(null, () => this.renderValue(), {
     attribute: 'value',
-    parse: optionalNumber,
+    parse: parseNumber,
   });
   readonly max = this.useChange(DEFAULT_MAX, () => this.renderValue(), { attribute: 'max' });
   /** The ring's width and height, in pixels. */

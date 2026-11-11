@@ -7,14 +7,14 @@ import { jsonOf, oneOf, textListOf } from '../lib/attributes';
 import { setOrRemove } from '../lib/dom';
 import { registerIcons } from '../lib/icons';
 import { CONTROL_SIZES } from '../lib/options';
-import { rovingIndex } from '../lib/roving-index';
+import { rovingIndex } from '../lib/roving';
 import { jlText } from '../lib/texts';
 import { BASE_STYLES } from '../styles/shared';
 import styles from './jl-chip-group.css?inline';
 
 import type { ChipGroupOption } from '../types/jl-chip-group.types';
 import type { ControlSize } from '../types/options.types';
-import type { RovingMove } from '../types/roving-index.types';
+import type { RovingMove } from '../types/roving.types';
 
 // The icons it draws itself: a page registers only the names it writes.
 registerIcons({ check: Check });

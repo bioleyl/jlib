@@ -1,14 +1,5 @@
 const PERCENT = 100;
 
-/**
- * A number attribute that may be absent: `null` when it is missing or unreadable. A progress without a value is
- * indeterminate.
- */
-export const optionalNumber = (value: string | null): number | null => {
-  const parsed = value === null || value.trim() === '' ? Number.NaN : Number(value);
-  return Number.isFinite(parsed) ? parsed : null;
-};
-
 /** How far along a value is, from 0 to 1; a maximum of 0 or less counts as no progress. */
 export function progressRatio(value: number, max: number): number {
   if (!(max > 0) || !Number.isFinite(value)) {
