@@ -2,9 +2,10 @@ import type { Hotkey, KeyPress } from '../types/hotkey.types';
 
 const SEPARATOR = '+';
 
-type Modifier = 'mod' | 'ctrl' | 'meta' | 'shift' | 'alt';
+export type Modifier = 'mod' | 'ctrl' | 'meta' | 'shift' | 'alt';
 
-const MODIFIER_NAMES: Record<string, Modifier> = {
+/** The words a key combination may use for each modifier: "mod+k", "cmd+shift+p", "ctrl+/". */
+export const MODIFIER_NAMES: Record<string, Modifier> = {
   alt: 'alt',
   cmd: 'meta',
   command: 'meta',
@@ -17,7 +18,7 @@ const MODIFIER_NAMES: Record<string, Modifier> = {
 };
 
 /** How each modifier reads on a keycap, on Apple keyboards and elsewhere. */
-const MODIFIER_LABELS: Record<Modifier, { apple: string; other: string }> = {
+export const MODIFIER_LABELS: Record<Modifier, { apple: string; other: string }> = {
   alt: { apple: '⌥', other: 'Alt' },
   ctrl: { apple: '⌃', other: 'Ctrl' },
   meta: { apple: '⌘', other: 'Win' },
@@ -26,7 +27,7 @@ const MODIFIER_LABELS: Record<Modifier, { apple: string; other: string }> = {
 };
 
 /** The order keycaps are written in: ⌃⌥⇧⌘ on Apple, Ctrl+Alt+Shift elsewhere. */
-const MODIFIER_ORDER: { apple: readonly Modifier[]; other: readonly Modifier[] } = {
+export const MODIFIER_ORDER: { apple: readonly Modifier[]; other: readonly Modifier[] } = {
   apple: ['ctrl', 'alt', 'shift', 'mod', 'meta'],
   other: ['mod', 'ctrl', 'alt', 'shift', 'meta'],
 };

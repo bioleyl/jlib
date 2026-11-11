@@ -1,16 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { optionalNumber, percentLabel, percentOf, progressRatio, ringGeometry } from '../src/lib/progress';
-
-describe('optionalNumber', () => {
-  it('reads numbers and gives null for a missing or unreadable value', () => {
-    expect(optionalNumber('42.5')).toBe(42.5);
-    expect(optionalNumber('0')).toBe(0);
-    expect(optionalNumber(null)).toBeNull();
-    expect(optionalNumber(' ')).toBeNull();
-    expect(optionalNumber('half')).toBeNull();
-  });
-});
+import { percentLabel, percentOf, progressRatio, ringGeometry } from '../src/lib/progress';
 
 describe('progressRatio', () => {
   it('divides by the maximum and keeps the result between 0 and 1', () => {

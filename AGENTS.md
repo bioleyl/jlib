@@ -205,6 +205,11 @@ every page in Chromium: no console error, no undefined `jl-*` tag, no unregister
 ## Commands
 
 - `node` and `gh` are not on the default PATH here: node lives in `~/.nvm/versions/node/v26.12.0/bin` (v24.22.1 also installed), `gh` in `~/.local/bin`. Export the PATH before `npm`, `node scripts/shoot.mjs` or `gh`.
+- On this machine node is /usr/bin/node v22.22.1 (no ~/.nvm here). Node 22 cannot import .ts, so `npm run generate` runs as `npx --yes tsx scripts/generate-index.mjs`; vitest and the rest work with node 22.
+- The e2e suite needs a browser: `npx playwright-core install chromium-headless-shell` once, then `npm run test:e2e` (builds the site, serves it with vite preview).
+- `tests/render.test.ts` is the render benchmark (happy-dom): it wraps `Jadis.prototype.renderTemplate` and `useChange` and counts, per component, the template renders, the input callbacks and the DOM nodes added, against budgets (the measured numbers). It runs with `npm run test`; a component that rebuilds its children for every input fails it. The budgets are exact for renders and nodes, a ceiling for the callbacks (attribute callbacks fire at connection, in field order).
+- `gh` was not installed here; installed 2.63.2 into ~/.local/bin and ran `gh auth setup-git` once so `git push` to the https remote authenticates (no credential helper configured).
+- Skills are refreshed by the package's `postinstall`: `npx skills update -p -y` (`-p` project scope, `-y` skips the scope prompt). `.claude/` and `.agents/` stay out of git (both in .gitignore); `.claude-plugin/marketplace.json` is tracked.
 
 ## Traps
 

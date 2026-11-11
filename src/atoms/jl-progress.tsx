@@ -2,7 +2,8 @@ import { css } from '@jadis/core';
 
 import { JlElement } from '../base/jl-element';
 import { oneOf } from '../lib/attributes';
-import { optionalNumber, percentLabel, percentOf, progressRatio } from '../lib/progress';
+import { parseNumber } from '../lib/numeric';
+import { percentLabel, percentOf, progressRatio } from '../lib/progress';
 import { BASE_STYLES } from '../styles/shared';
 import styles from './jl-progress.css?inline';
 
@@ -25,7 +26,7 @@ export class JlProgress extends JlElement {
   /** How much is done, out of `max`; `null` (no attribute) for work of unknown length. */
   readonly value = this.useChange<number | null>(null, () => this.render(), {
     attribute: 'value',
-    parse: optionalNumber,
+    parse: parseNumber,
   });
   readonly max = this.useChange(DEFAULT_MAX, () => this.render(), { attribute: 'max' });
   readonly tone = this.useChange<ProgressTone>('accent', (value) => this.reflect('tone', value), {

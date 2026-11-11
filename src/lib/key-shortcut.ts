@@ -1,43 +1,36 @@
+import { MODIFIER_LABELS, MODIFIER_NAMES, MODIFIER_ORDER } from './hotkey';
+
 import type { KeyShortcut } from '../types/key-shortcut.types';
-
-type ModifierName = 'mod' | 'ctrl' | 'meta' | 'alt' | 'shift';
-
-/** The words a shortcut may use for each modifier: "mod+k", "cmd+shift+p", "ctrl+/". */
-const MODIFIER_WORDS: Record<string, ModifierName> = {
-  alt: 'alt',
-  cmd: 'meta',
-  command: 'meta',
-  control: 'ctrl',
-  ctrl: 'ctrl',
-  meta: 'meta',
-  mod: 'mod',
-  option: 'alt',
-  shift: 'shift',
-};
+import type { Modifier } from './hotkey';
 
 const SEPARATOR = '+';
 
-const isModifierWord = (word: string): boolean => Object.hasOwn(MODIFIER_WORDS, word);
+const isModifierWord = (word: string): boolean => Object.hasOwn(MODIFIER_NAMES, word);
 
 /** The keys a shortcut's state must match, from the pressed key's modifiers. */
 type PressedKey = Pick<KeyboardEvent, 'key' | 'ctrlKey' | 'metaKey' | 'altKey' | 'shiftKey'>;
 
-const MAC_SYMBOLS: Record<ModifierName, string> = { alt: '⌥', ctrl: '⌃', meta: '⌘', mod: '⌘', shift: '⇧' };
-const PC_NAMES: Record<ModifierName, string> = {
+const PC_NAMES: Record<Modifier, string> = {
   alt: 'Alt',
   ctrl: 'Ctrl',
   meta: 'Meta',
   mod: 'Ctrl',
   shift: 'Shift',
 };
-const ARIA_NAMES: Record<ModifierName, string> = {
+const MAC_SYMBOLS: Record<Modifier, string> = {
+  alt: MODIFIER_LABELS.alt.apple,
+  ctrl: MODIFIER_LABELS.ctrl.apple,
+  meta: MODIFIER_LABELS.meta.apple,
+  mod: MODIFIER_LABELS.mod.apple,
+  shift: MODIFIER_LABELS.shift.apple,
+};
+const ARIA_NAMES: Record<Modifier, string> = {
   alt: 'Alt',
   ctrl: 'Control',
   meta: 'Meta',
   mod: 'Control',
   shift: 'Shift',
 };
-const MODIFIER_ORDER: readonly ModifierName[] = ['ctrl', 'alt', 'shift', 'mod', 'meta'];
 
 /** Names of keys that read better than their `KeyboardEvent.key`. */
 const KEY_LABELS: Record<string, string> = {
@@ -68,7 +61,7 @@ export function parseShortcut(text: string): KeyShortcut | null {
     parts
       .slice(0, -1)
       .filter(isModifierWord)
-      .map((part) => MODIFIER_WORDS[part])
+      .map((part) => MODIFIER_NAMES[part])
   );
   return {
     alt: modifiers.has('alt'),
@@ -101,8 +94,8 @@ export function matchesShortcut(event: PressedKey, shortcut: KeyShortcut, mac: b
   );
 }
 
-const activeModifiers = (shortcut: KeyShortcut): ModifierName[] =>
-  MODIFIER_ORDER.filter((modifier) => shortcut[modifier]);
+const activeModifiers = (shortcut: KeyShortcut): Modifier[] =>
+  MODIFIER_ORDER.apple.filter((modifier) => shortcut[modifier]);
 
 const keyLabel = (key: string): string => KEY_LABELS[key] ?? (key.length === 1 ? key.toUpperCase() : key);
 

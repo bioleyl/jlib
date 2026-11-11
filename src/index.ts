@@ -68,7 +68,7 @@ export type * from './types/keycaps.types';
 export type * from './types/option-filter.types';
 export type * from './types/options.types';
 export type * from './types/pagination.types';
-export type * from './types/roving-index.types';
+export type * from './types/roving.types';
 export type * from './types/sparkline.types';
 export type * from './types/texts.types';
 export * from './atoms/jl-app-icon';

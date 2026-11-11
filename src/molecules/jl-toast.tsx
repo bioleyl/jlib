@@ -7,8 +7,8 @@ import { JlProgress } from '../atoms/jl-progress';
 import { JlElement } from '../base/jl-element';
 import { oneOf } from '../lib/attributes';
 import { registerIcons } from '../lib/icons';
+import { parseNumber } from '../lib/numeric';
 import { TONE_ICON_FILLED, TONE_ICONS } from '../lib/options';
-import { optionalNumber } from '../lib/progress';
 import { jlText } from '../lib/texts';
 import { BASE_STYLES } from '../styles/shared';
 import styles from './jl-toast.css?inline';
@@ -117,7 +117,7 @@ export class JlToast extends JlElement {
   /** How far the work is, in percent; `null` (no attribute) for work of unknown length. */
   readonly progress = this.useChange<number | null>(null, (value) => this._refs.work.value.set(value), {
     attribute: 'progress',
-    parse: optionalNumber,
+    parse: parseNumber,
   });
 
   private readonly _timer = { animation: null as Animation | null, entered: false };

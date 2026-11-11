@@ -1,7 +1,4 @@
-/*
- * Moving through a row of choices with the keyboard: tabs, segments, menu items. The entries that cannot be
- * chosen are skipped; the moves wrap around the ends. Every function answers -1 when nothing can be chosen.
- */
+import type { RovingMove } from '../types/roving.types';
 
 const NONE = -1;
 
@@ -35,4 +32,19 @@ export function letterIndex(
     (label, index) => enabled[index] === true && label.trim().toLocaleLowerCase().startsWith(wanted)
   );
   return stepIndex(matches, from, 1);
+}
+
+/**
+ * Where the arrow keys of a list or a radio group move the focus, skipping the disabled items as native radios do.
+ * The list says which items are disabled; from nowhere (-1), next starts at the first item and previous at the last.
+ */
+export function rovingIndex(disabled: readonly boolean[], from: number, move: RovingMove): number {
+  const enabled = disabled.map((isDisabled) => !isDisabled);
+  const moves: Record<RovingMove, () => number> = {
+    first: () => firstIndex(enabled),
+    last: () => lastIndex(enabled),
+    next: () => stepIndex(enabled, from, 1),
+    previous: () => stepIndex(enabled, from === NONE ? disabled.length : from, -1),
+  };
+  return moves[move]();
 }
