@@ -3,6 +3,34 @@
 What changed in each version of [@syware/jlib](https://www.npmjs.com/package/@syware/jlib). Every component is shown
 and documented on [the documentation site](https://bioleyl.github.io/jlib/).
 
+## 0.14.0 (2026-11-11)
+
+A render budget, so a redraw regression is caught the day it appears: the suite now counts, for each component it
+opens, how many times its template is built, how many of its inputs run and how many DOM nodes are added, and fails
+when a component goes over its budget. A release's notes follow, with what to look at when you update (a minor
+version, as jlib is before 1.0): the `@jadis/core` peer moves to 1.8, and two helpers of `lib/` merge.
+
+### Added
+
+- **Render budget** (`tests/render.test.ts`, run by `npm run test` and so by CI): `Jadis`'s `renderTemplate` and
+  `useChange` are wrapped to count, per component, the template renders, the input callbacks and the DOM nodes added.
+  Ten components are measured as they draw (icon, button, badge, input, select, chip group, menu, calendar, table of
+  25 rows, tree), and three more times as their state changes (a table taking a selection, marks and a sort, a select
+  given a value, a tree opening a folder): the rows and options keep their elements, nothing is rebuilt. A component
+  costs about 0.07 ms and 15 kB as it appears.
+
+### Changed
+
+- **The `@jadis/core` peer is `^1.8.0`** (was `^1.6.0`), the version jlib is built and tested against.
+- **`lib/roving.ts` takes the roving-index moves**: `rovingIndex` (which items are disabled) is now built from the
+  enabled-index helpers, and `lib/roving-index.ts` is gone, with `firstEnabledIndex` and `lastEnabledIndex` folded
+  into `firstIndex` and `lastIndex`. `lib/progress.ts` drops `optionalNumber` for `numeric.parseNumber`, and
+  `lib/key-shortcut.ts` reuses the modifier tables of `lib/hotkey.ts`.
+- **`jl-table`'s skeleton rows are hidden from screen readers** (`aria-hidden`), and a marked row says it with
+  `aria-selected` beside the `data-marked` a style reads.
+- The agent folders `.claude/` and `.agents/` are kept out of git, and `npm install` refreshes the skills with
+  `npx skills update -p -y` (project scope, no prompt).
+
 ## 0.13.0 (2026-11-09)
 
 Large forms and trees no longer freeze the page: every component builds what it shows once and changes it in place,
