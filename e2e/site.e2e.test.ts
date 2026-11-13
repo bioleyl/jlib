@@ -100,6 +100,8 @@ const BACKDROP_CORNER = 5;
 // More Escapes in a row than a browser lets a page refuse by cancelling the dialog's cancel event.
 const ESCAPE_PRESSES = 4;
 const ESCAPE_GAP_MS = 150;
+// A point of the window with room for a menu under it and beside it.
+const MENU_POINT = { x: 320, y: 240 };
 // Longer than a tooltip waits before it shows for the focus.
 const TOOLTIP_SHOWN_MS = 900;
 // Longer than the copy button says what a press came to.
@@ -3583,6 +3585,76 @@ describe("a press on a tree's item", () => {
       selected: [],
       told: [{ button: 'main', by: 'click', id: 'c', label: 'Licence' }],
     });
+    expect(state.errors).toEqual([]);
+  });
+});
+
+describe('a menu opened at a point', () => {
+  /** A menu without a trigger, and a button that has the focus when it opens. */
+  const menuAndButton = async (): Promise<Page> => {
+    const page = await open('/components/menu');
+    await mount(page, '<button type="button" id="before">Before</button><jl-menu label="Row actions"></jl-menu>');
+    await page.evaluate(() => {
+      const menu = document.querySelector('#test-area jl-menu') as JlMenu;
+      const chosen: string[] = [];
+      Object.assign(window, { chosen });
+      menu.items.set([
+        { label: 'Rename', value: 'rename' },
+        { label: 'Archive', value: 'archive' },
+      ]);
+      menu.events.register('select', (value) => chosen.push(value));
+      document.querySelector<HTMLElement>('#before')?.focus();
+    });
+    return page;
+  };
+  /** Where the menu is, whether it shows, and which of its items has the focus. */
+  const drawn = (page: Page) =>
+    page.evaluate(() => {
+      const menu = document.querySelector('#test-area jl-menu') as JlMenu;
+      const panel = menu.shadowRoot?.querySelector<HTMLElement>('[role="menu"]');
+      const box = panel?.getBoundingClientRect();
+      const focused = menu.shadowRoot?.activeElement;
+      return {
+        focused: focused instanceof HTMLElement ? focused.dataset.value : undefined,
+        inWindow: box !== undefined && box.right <= window.innerWidth && box.bottom <= window.innerHeight,
+        left: box?.left,
+        open: panel?.matches(':popover-open'),
+        top: box?.top,
+      };
+    });
+  /** Opens the menu at a point, and waits for it to have come in: it moves a little as it does. */
+  const showAt = async (page: Page, point: { x: number; y: number }): Promise<void> => {
+    await page.evaluate(
+      ({ x, y }) => (document.querySelector('#test-area jl-menu') as JlMenu).showAt(x, y),
+      point
+    );
+    await page.waitForTimeout(SETTLE_MS);
+  };
+
+  it('opens there, the focus on its first item, and gives the focus back when Escape closes it', async () => {
+    const page = await menuAndButton();
+    await showAt(page, MENU_POINT);
+    expect(await drawn(page)).toEqual({
+      focused: 'rename',
+      inWindow: true,
+      left: MENU_POINT.x,
+      open: true,
+      top: MENU_POINT.y,
+    });
+    await page.keyboard.press('Escape');
+    expect(await drawn(page)).toMatchObject({ open: false });
+    expect(await page.evaluate(() => document.activeElement?.id)).toBe('before');
+    expect(state.errors).toEqual([]);
+  });
+
+  it('stays in the window when the point is in its bottom right corner, and tells the action chosen', async () => {
+    const page = await menuAndButton();
+    const corner = await page.evaluate(() => ({ x: window.innerWidth - 4, y: window.innerHeight - 4 }));
+    await showAt(page, corner);
+    expect(await drawn(page)).toMatchObject({ inWindow: true, open: true });
+    await page.keyboard.press('ArrowDown');
+    await page.keyboard.press('Enter');
+    expect(await page.evaluate(() => (window as unknown as { chosen: string[] }).chosen)).toEqual(['archive']);
     expect(state.errors).toEqual([]);
   });
 });

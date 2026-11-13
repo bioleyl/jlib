@@ -106,6 +106,16 @@ export function positionFloating(
   gap?: number
 ): { anchor: Rect; floating: Rect; placement: Placement } {
   const rect = anchor.getBoundingClientRect();
+  return { anchor: rect, ...positionBy(rect, floating, placement, gap) };
+}
+
+/** Puts a fixed-position element next to a rectangle of the window, and gives where it went. */
+function positionBy(
+  rect: Rect,
+  floating: HTMLElement,
+  placement: Placement,
+  gap?: number
+): { floating: Rect; placement: Placement } {
   const viewport = { height: window.innerHeight, width: document.documentElement.clientWidth };
   const size = { height: floating.offsetHeight, width: floating.offsetWidth };
   const result = computePosition(rect, size, viewport, placement, gap);
@@ -114,7 +124,18 @@ export function positionFloating(
   floating.style.left = `${left}px`;
   floating.style.top = `${top}px`;
   floating.dataset.placement = result.placement;
-  return { anchor: rect, floating: { ...size, left, top }, placement: result.placement };
+  return { floating: { ...size, left, top }, placement: result.placement };
+}
+
+const AT_POINT: Placement = 'bottom-start';
+const NO_GAP = 0;
+
+/**
+ * Puts a fixed-position element at a point of the window, as a menu opens where the pointer asked for it: its top
+ * left corner there, above the point when there is no room under it, and kept inside the window.
+ */
+export function placeAtPoint(point: Point, floating: HTMLElement): void {
+  positionBy({ ...point, height: 0, width: 0 }, floating, AT_POINT, NO_GAP);
 }
 
 /** Puts a fixed-position element next to its anchor; returns the placement it got after flipping. */
