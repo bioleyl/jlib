@@ -196,7 +196,7 @@ export class JlCalendar extends JlFormControl {
   protected setDisabledByForm(disabled: boolean): void {
     this._state.formDisabled = disabled;
     // A disabled field gets this call as it upgrades, before its template exists: wait for it.
-    this.whenRendered(() => this.renderDisabled(this.disabled.get()));
+    this.whenRendered(() => this.drawDisabled());
   }
 
   private bounds(): { min: CalendarDate | null; max: CalendarDate | null } {
@@ -403,6 +403,11 @@ export class JlCalendar extends JlFormControl {
 
   private renderDisabled(disabled: boolean): void {
     this.reflect('disabled', disabled);
+    this.drawDisabled();
+  }
+
+  /** Without the attribute: the form says its state before the `disabled` input has taken the attribute's change. */
+  private drawDisabled(): void {
     setAriaFlag(this._refs.grid, 'aria-disabled', this.isOff());
     this.renderPage();
   }

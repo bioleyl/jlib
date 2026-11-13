@@ -113,7 +113,7 @@ export class JlRating extends JlFormControl {
   protected setDisabledByForm(disabled: boolean): void {
     this._state.formDisabled = disabled;
     // A disabled field gets this call as it upgrades, before its template exists: wait for it.
-    this.whenRendered(() => this.renderDisabled(this.disabled.get()));
+    this.whenRendered(() => this.drawDisabled());
   }
 
   private canChange(): boolean {
@@ -209,8 +209,13 @@ export class JlRating extends JlFormControl {
   }
 
   private renderDisabled(disabled: boolean): void {
-    const off = disabled || this._state.formDisabled;
     this.reflect('disabled', disabled);
+    this.drawDisabled();
+  }
+
+  /** Without the attribute: the form says its state before the `disabled` input has taken the attribute's change. */
+  private drawDisabled(): void {
+    const off = this.disabled.get() || this._state.formDisabled;
     this._refs.slider.tabIndex = off ? -1 : 0;
     setAriaFlag(this._refs.slider, 'aria-disabled', off);
   }

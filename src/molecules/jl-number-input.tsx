@@ -139,7 +139,7 @@ export class JlNumberInput extends JlFormControl {
   /** The browser calls it for a disabled fieldset and for the element's own disabled attribute, even before render. */
   protected setDisabledByForm(disabled: boolean): void {
     this._state.disabledByForm = disabled;
-    this.whenRendered(() => this.renderDisabled(this.disabled.get()));
+    this.whenRendered(() => this.drawDisabled());
   }
 
   private onKey(event: KeyboardEvent): void {
@@ -223,8 +223,13 @@ export class JlNumberInput extends JlFormControl {
   }
 
   private renderDisabled(disabled: boolean): void {
-    this._refs.native.disabled = disabled || this._state.disabledByForm;
     this.reflect('disabled', disabled);
+    this.drawDisabled();
+  }
+
+  /** Without the attribute: the form says its state before the `disabled` input has taken the attribute's change. */
+  private drawDisabled(): void {
+    this._refs.native.disabled = this.disabled.get() || this._state.disabledByForm;
     this.renderButtons();
   }
 

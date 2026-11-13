@@ -2945,3 +2945,41 @@ describe('the toaster over a modal', () => {
     expect(state.errors).toEqual([]);
   });
 });
+
+// The browser tells a form control that it is disabled before the `disabled` input has read the attribute's change:
+// a control that writes the attribute back from there can never be enabled again.
+describe('a disabled control', () => {
+  const controls = [
+    'button',
+    'calendar',
+    'checkbox',
+    'chip-group',
+    'combobox',
+    'date-picker',
+    'file-drop',
+    'input',
+    'number-input',
+    'radio-group',
+    'rating',
+    'search',
+    'segmented',
+    'select',
+    'slider',
+    'switch',
+    'tag-input',
+    'textarea',
+  ];
+
+  it.each(controls)('jl-%s is enabled again once its attribute is removed', async (name) => {
+    const page = await open(`/components/${name}`);
+    await mount(page, `<jl-${name} label="Field" disabled></jl-${name}>`);
+    const enabled = await page.evaluate(async () => {
+      const control = document.querySelector('#test-area > *') as HTMLElement;
+      control.removeAttribute('disabled');
+      await new Promise((resolve) => setTimeout(resolve, 50));
+      return !control.hasAttribute('disabled') && !control.matches(':disabled');
+    });
+    expect(enabled).toBe(true);
+    expect(state.errors).toEqual([]);
+  });
+});
