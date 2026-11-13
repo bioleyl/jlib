@@ -3,7 +3,8 @@ import type { ComponentDoc } from '../../types/docs.types';
 export const doc: ComponentDoc = {
   className: 'JlCopyButton',
   description: `Puts a text on the clipboard and turns into a check for a moment, so people know it worked. Code blocks
-use it; use it beside any value people copy: a token, a link, a command.`,
+use it; use it beside any value people copy: a token, a link, a command. Where the clipboard refuses (a page served
+without https has none, a permission denied), a press says that it could not copy, in the danger colour.`,
   events: [{ description: 'The text is on the clipboard.', detail: 'string', name: 'copy' }],
   examples: [
     {
@@ -24,7 +25,14 @@ use it; use it beside any value people copy: a token, a link, a command.`,
     },
   ],
   level: 'molecule',
-  methods: [{ description: 'Copies the value now.', name: 'copy', signature: 'copy(): Promise<void>' }],
+  methods: [
+    {
+      description:
+        'Copies the value now. Rejects when the clipboard refuses: the page that calls it decides what to say.',
+      name: 'copy',
+      signature: 'copy(): Promise<void>',
+    },
+  ],
   name: 'Copy button',
   playground: { attributes: { label: 'Copy', value: 'Hello from jlib' } },
   props: [

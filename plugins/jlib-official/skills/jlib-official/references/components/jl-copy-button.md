@@ -8,7 +8,8 @@ Copies a text to the clipboard, and says so.
 - On the site: https://bioleyl.github.io/jlib/components/copy-button
 
 Puts a text on the clipboard and turns into a check for a moment, so people know it worked. Code blocks
-use it; use it beside any value people copy: a token, a link, a command.
+use it; use it beside any value people copy: a token, a link, a command. Where the clipboard refuses (a page served
+without https has none, a permission denied), a press says that it could not copy, in the danger colour.
 
 ## Use
 
@@ -40,7 +41,7 @@ In JSX, the `on…` prop, its handler given the detail; in code, `events.registe
 
 ## Methods
 
-- `copy(): Promise<void>`: Copies the value now.
+- `copy(): Promise<void>`: Copies the value now. Rejects when the clipboard refuses: the page that calls it decides what to say.
 
 ## Examples
 

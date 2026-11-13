@@ -67,6 +67,8 @@ export const doc: ComponentDoc = {
   description: `The toaster is the place where toasts appear: a corner or an edge of the window, the newest nearest the
 edge, at most max at a time (older ones wait for newer ones to close). It sits in the top layer, so its toasts show
 over open dialogs too, and it is a polite live region: screen readers read each new toast without being cut off.
+While a jl-dialog, a jl-drawer or the command palette is open, the toaster sits inside it: a modal makes everything
+outside it inert, and a toast must stay within reach. It goes back to its place when the modal closes.
 
 Most pages never write one: import toast from jlib and call toast({ heading, text, tone }) from anywhere. It
 finds the page's toaster, or puts one at the end of the body the first time, and returns a handle whose dismiss()
