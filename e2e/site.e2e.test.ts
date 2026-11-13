@@ -3092,3 +3092,31 @@ describe("the table's select-all box", () => {
     expect(state.errors).toEqual([]);
   });
 });
+
+describe('the menu, given its items again while open', () => {
+  it('stays open, the focus on the item of the same value', async () => {
+    const page = await open('/components/menu');
+    await mount(page, '<jl-menu label="Actions"><button type="button">Actions</button></jl-menu>');
+    const refreshed = await page.evaluate(async () => {
+      const settle = (): Promise<void> => new Promise((resolve) => setTimeout(resolve, 200));
+      const menu = document.querySelector('#test-area jl-menu') as JlMenu;
+      const items = [
+        { label: 'Rename', value: 'rename' },
+        { label: 'Archive', value: 'archive' },
+      ];
+      menu.items.set(items);
+      menu.show();
+      await settle();
+      menu.shadowRoot?.querySelector<HTMLElement>('[data-value="archive"]')?.focus();
+      menu.items.set([{ label: 'Duplicate', value: 'duplicate' }, ...items]);
+      await settle();
+      const focused = menu.shadowRoot?.activeElement;
+      return {
+        focused: focused instanceof HTMLElement ? focused.dataset.value : undefined,
+        open: menu.shadowRoot?.querySelector('[role="menu"]')?.matches(':popover-open'),
+      };
+    });
+    expect(refreshed).toEqual({ focused: 'archive', open: true });
+    expect(state.errors).toEqual([]);
+  });
+});

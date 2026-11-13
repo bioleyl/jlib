@@ -324,7 +324,27 @@ export class JlMenu<Value extends string = string> extends JlElement {
       return;
     }
     this._drawn.items = items;
+    const focused = this.focusedValue();
     this._refs.menu.replaceChildren(...sectionsOf(items).map((section) => this.section(section)));
+    if (focused !== undefined) {
+      this.focusItemOf(focused);
+    }
+  }
+
+  /** The value of the item that holds the focus, when one does. */
+  private focusedValue(): string | undefined {
+    const active = this.shadowRoot?.activeElement;
+    return active instanceof HTMLElement && active.matches(ITEM_SELECTOR) ? active.dataset.value : undefined;
+  }
+
+  /**
+   * Keeps the focus in a list drawn again while it is open: the item that held it is gone, and a focus fallen out of
+   * the menu closes it. The item of the same value takes it, else the first one to choose, else the menu.
+   */
+  private focusItemOf(value: string): void {
+    const items = this.menuItems();
+    const target = items.find((item) => item.dataset.value === value) ?? items[0] ?? this._refs.menu;
+    target.focus();
   }
 
   private section(section: Section<Value>): Node {
