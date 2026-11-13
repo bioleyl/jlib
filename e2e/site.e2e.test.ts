@@ -3081,6 +3081,29 @@ describe('a disabled control', () => {
 });
 
 describe('the button', () => {
+  // Jadis 1.8.1: the onConnect of a connection that ended before it ran is dropped, where it wired everything twice.
+  it('presses once when it was taken out and put back before it was wired', async () => {
+    const page = await open('/components/button');
+    const presses = await page.evaluate(async () => {
+      const button = document.createElement('jl-button') as JlButton;
+      button.label.set('Save');
+      const heard = { presses: 0 };
+      document.body.prepend(button);
+      button.remove();
+      await Promise.resolve();
+      document.body.prepend(button);
+      await new Promise((resolve) => setTimeout(resolve, 50));
+      button.events.register('press', () => {
+        heard.presses += 1;
+      });
+      button.shadowRoot?.querySelector('button')?.click();
+      button.remove();
+      return heard.presses;
+    });
+    expect(presses).toBe(1);
+    expect(state.errors).toEqual([]);
+  });
+
   it('shows a text given right after it joined the page', async () => {
     const page = await open('/components/button');
     const iconOnly = await page.evaluate(async () => {

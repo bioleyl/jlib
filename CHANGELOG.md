@@ -35,6 +35,8 @@ merge. Three changes ask for a look before updating.
 - **Enter in a field respects the form's submit button**: nothing while that button is disabled, or a `jl-button`
   is `loading`; a native button goes along as the submitter.
 - **`jl-button` shows a text given right after it joined the page**; it stayed icon-only.
+- **A component taken out of the page and put back at once does things once**: its listeners were wired twice (one
+  click, two `press`). The `@jadis/core` peer is `^1.8.1`, which fixes it.
 - **`jl-input-list` works after it is taken out of the page and put back** (its rows heard nothing any more), and
   takes numbers in `values` (`values='[1,2]'` threw).
 - **`jl-field` keeps a label its control was given in code**: a JSX prop writes no attribute, and the field replaced

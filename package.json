@@ -88,7 +88,7 @@
     "version": "node scripts/plugin-version.mjs"
   },
   "peerDependencies": {
-    "@jadis/core": "^1.8.0"
+    "@jadis/core": "^1.8.1"
   },
   "dependencies": {
     "lucide": "^1.61.0"
@@ -97,7 +97,7 @@
     "@biomejs/biome": "^2.6.3",
     "@fontsource-variable/jetbrains-mono": "^5.3.0",
     "@fontsource-variable/manrope": "^5.3.0",
-    "@jadis/core": "^1.8.0",
+    "@jadis/core": "^1.8.1",
     "@types/node": "^24.13.3",
     "axe-core": "^4.14.0",
     "happy-dom": "^21.0.4",

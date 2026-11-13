@@ -114,8 +114,8 @@ an import map. `@syware/jlib/all` defines every component and registers the comm
 <script type="importmap">
   {
     "imports": {
-      "@jadis/core": "https://esm.sh/@jadis/core@1.8.0",
-      "@jadis/core/": "https://esm.sh/@jadis/core@1.8.0/",
+      "@jadis/core": "https://esm.sh/@jadis/core@1.8.1",
+      "@jadis/core/": "https://esm.sh/@jadis/core@1.8.1/",
       "lucide": "https://esm.sh/lucide@1.61.0",
       "@syware/jlib/all": "https://esm.sh/@syware/jlib@0.14.0/all?external=@jadis/core,lucide"
     }
