@@ -1,6 +1,6 @@
 # jlib: notes for working on the code
 
-jlib is a component library on Jadis (`@jadis/core` 1.8) and native Web Components, in atomic design, with a static
+jlib is a component library on Jadis (`@jadis/core` 1.9) and native Web Components, in atomic design, with a static
 documentation site that shows and tests every component.
 
 ## Layout

@@ -3680,3 +3680,48 @@ describe("the menu of a row, on the table's page", () => {
     expect(state.errors).toEqual([]);
   });
 });
+
+// Jadis 1.9: a component's listeners hear the events it emitted itself, not one of the same name that bubbles up.
+describe('the tabs and a field in a panel', () => {
+  it('tell a change of tab, not the native change of the field', async () => {
+    const page = await open('/components/tabs');
+    await mount(
+      page,
+      `<jl-tabs>
+         <jl-tab-panel name="a" label="First"><select id="in-panel"><option>1</option><option>2</option></select></jl-tab-panel>
+         <jl-tab-panel name="b" label="Second">Second</jl-tab-panel>
+       </jl-tabs>`
+    );
+    await page.evaluate(() => {
+      const heard: string[] = [];
+      Object.assign(window, { heard });
+      (document.querySelector('#test-area jl-tabs') as JlTabs).events.register('change', (name) =>
+        heard.push(String(name))
+      );
+    });
+    await page.selectOption('#in-panel', '2');
+    await page.locator('#test-area jl-tabs [role="tab"]', { hasText: 'Second' }).click();
+    expect(await page.evaluate(() => (window as unknown as { heard: string[] }).heard)).toEqual(['b']);
+    expect(state.errors).toEqual([]);
+  });
+});
+
+// Jadis 1.9: a component that comes back hears only of the attributes that changed while it was away.
+describe('a field taken out of the page and put back', () => {
+  it('keeps what was typed, over the value it was written with', async () => {
+    const page = await open('/components/input');
+    await mount(page, '<jl-input label="Name" value="written"></jl-input>');
+    await page.locator('#test-area jl-input input').fill('typed');
+    const value = await page.evaluate(async () => {
+      const input = document.querySelector('#test-area jl-input') as JlInput;
+      const area = input.parentElement;
+      input.remove();
+      await new Promise((resolve) => setTimeout(resolve, 50));
+      area?.append(input);
+      await new Promise((resolve) => setTimeout(resolve, 50));
+      return input.value.get();
+    });
+    expect(value).toBe('typed');
+    expect(state.errors).toEqual([]);
+  });
+});
