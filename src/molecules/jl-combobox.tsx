@@ -4,7 +4,7 @@ import { Check, ChevronDown, X } from 'lucide';
 import { JlIcon } from '../atoms/jl-icon';
 import { JlFormControl } from '../base/jl-form-control';
 import { jsonOf, oneOf } from '../lib/attributes';
-import { setOrRemove, uniqueId } from '../lib/dom';
+import { setAriaFlag, setOrRemove, uniqueId } from '../lib/dom';
 import { followAnchor } from '../lib/floating';
 import { registerIcons } from '../lib/icons';
 import { keepInView } from '../lib/keep-in-view';
@@ -76,7 +76,7 @@ export class JlCombobox extends JlFormControl {
   readonly required = this.useChange(
     false,
     (value) => {
-      this._refs.native.toggleAttribute('aria-required', value);
+      setAriaFlag(this._refs.native, 'aria-required', value);
       this.reflect('required', value);
       this.renderValidity();
     },
@@ -88,7 +88,7 @@ export class JlCombobox extends JlFormControl {
     false,
     (value) => {
       this.reflect('invalid', value);
-      this._refs.native.toggleAttribute('aria-invalid', value);
+      setAriaFlag(this._refs.native, 'aria-invalid', value);
     },
     { attribute: 'invalid' }
   );

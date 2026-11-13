@@ -21,7 +21,7 @@ import {
   WEEKS_PER_GRID,
   weekdayNames,
 } from '../lib/calendar';
-import { setOrRemove, uniqueId } from '../lib/dom';
+import { setAriaFlag, setOrRemove, uniqueId } from '../lib/dom';
 import { registerIcons } from '../lib/icons';
 import { pageLocale } from '../lib/locale';
 import { CONTROL_SIZES } from '../lib/options';
@@ -403,7 +403,7 @@ export class JlCalendar extends JlFormControl {
 
   private renderDisabled(disabled: boolean): void {
     this.reflect('disabled', disabled);
-    this._refs.grid.toggleAttribute('aria-disabled', this.isOff());
+    setAriaFlag(this._refs.grid, 'aria-disabled', this.isOff());
     this.renderPage();
   }
 }

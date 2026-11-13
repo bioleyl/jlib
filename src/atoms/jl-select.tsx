@@ -3,7 +3,7 @@ import { ChevronDown } from 'lucide';
 
 import { JlFormControl } from '../base/jl-form-control';
 import { asValue, jsonOf, oneOf, textOf } from '../lib/attributes';
-import { setOrRemove } from '../lib/dom';
+import { setAriaFlag, setOrRemove } from '../lib/dom';
 import { registerIcons } from '../lib/icons';
 import { groupOptions } from '../lib/option-groups';
 import { CONTROL_SIZES } from '../lib/options';
@@ -90,7 +90,7 @@ export class JlSelect<Value extends string = string> extends JlFormControl {
     false,
     (value) => {
       this.reflect('invalid', value);
-      this._refs.native.toggleAttribute('aria-invalid', value);
+      setAriaFlag(this._refs.native, 'aria-invalid', value);
     },
     { attribute: 'invalid' }
   );

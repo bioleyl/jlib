@@ -4,7 +4,7 @@ import { JlIcon } from '../atoms/jl-icon';
 import { JlElement } from '../base/jl-element';
 import { oneOf } from '../lib/attributes';
 import { define } from '../lib/define';
-import { setOrRemove, uniqueId } from '../lib/dom';
+import { setAriaFlag, setOrRemove, uniqueId } from '../lib/dom';
 import { followTarget } from '../lib/indicator';
 import { firstIndex, lastIndex, stepIndex } from '../lib/roving';
 import { BASE_STYLES } from '../styles/shared';
@@ -180,7 +180,7 @@ export class JlTabs extends JlElement {
     this.renderTabContent(tab, panel);
     tab.setAttribute('aria-selected', String(selected));
     tab.tabIndex = selected ? 0 : -1;
-    tab.toggleAttribute('aria-disabled', isDisabled(panel));
+    setAriaFlag(tab, 'aria-disabled', isDisabled(panel));
     if (panel.id === '') {
       panel.id = uniqueId('jl-tab-panel');
     }

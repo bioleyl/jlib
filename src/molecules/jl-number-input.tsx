@@ -4,7 +4,7 @@ import { Minus, Plus } from 'lucide';
 import { JlIcon } from '../atoms/jl-icon';
 import { JlFormControl } from '../base/jl-form-control';
 import { oneOf } from '../lib/attributes';
-import { setOrRemove } from '../lib/dom';
+import { setAriaFlag, setOrRemove } from '../lib/dom';
 import { registerIcons } from '../lib/icons';
 import { clamp, parseNumber, stepValue } from '../lib/numeric';
 import { CONTROL_SIZES } from '../lib/options';
@@ -64,7 +64,7 @@ export class JlNumberInput extends JlFormControl {
   readonly required = this.useChange(
     false,
     (value) => {
-      this._refs.native.toggleAttribute('aria-required', value);
+      setAriaFlag(this._refs.native, 'aria-required', value);
       this.reflect('required', value);
       this.renderValidity();
     },
@@ -76,7 +76,7 @@ export class JlNumberInput extends JlFormControl {
     false,
     (value) => {
       this.reflect('invalid', value);
-      this._refs.native.toggleAttribute('aria-invalid', value);
+      setAriaFlag(this._refs.native, 'aria-invalid', value);
     },
     { attribute: 'invalid' }
   );

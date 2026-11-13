@@ -3,7 +3,7 @@ import { Eye, EyeOff, X } from 'lucide';
 
 import { JlFormControl } from '../base/jl-form-control';
 import { oneOf } from '../lib/attributes';
-import { setOrRemove } from '../lib/dom';
+import { setAriaFlag, setOrRemove } from '../lib/dom';
 import { registerIcons } from '../lib/icons';
 import { CONTROL_SIZES } from '../lib/options';
 import { jlText } from '../lib/texts';
@@ -84,7 +84,7 @@ export class JlInput extends JlFormControl {
     false,
     (value) => {
       this.reflect('invalid', value);
-      this._refs.native.toggleAttribute('aria-invalid', value);
+      setAriaFlag(this._refs.native, 'aria-invalid', value);
     },
     { attribute: 'invalid' }
   );

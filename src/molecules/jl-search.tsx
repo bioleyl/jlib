@@ -5,7 +5,7 @@ import { JlIcon } from '../atoms/jl-icon';
 import { JlSpinner } from '../atoms/jl-spinner';
 import { JlFormControl } from '../base/jl-form-control';
 import { oneOf } from '../lib/attributes';
-import { setOrRemove } from '../lib/dom';
+import { setAriaFlag, setOrRemove } from '../lib/dom';
 import { registerIcons } from '../lib/icons';
 import {
   hasCommandModifier,
@@ -67,7 +67,7 @@ export class JlSearch extends JlFormControl {
     false,
     // The CSS swaps the icon for the spinner.
     (value) => {
-      this._refs.native.toggleAttribute('aria-busy', value);
+      setAriaFlag(this._refs.native, 'aria-busy', value);
       this.reflect('loading', value);
     },
     { attribute: 'loading' }

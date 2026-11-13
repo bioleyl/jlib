@@ -2,7 +2,7 @@ import { css } from '@jadis/core';
 
 import { JlElement } from '../base/jl-element';
 import { oneOf } from '../lib/attributes';
-import { setOrRemove } from '../lib/dom';
+import { setAriaFlag, setOrRemove } from '../lib/dom';
 import { elementInternals } from '../lib/internals';
 import { CONTROL_SIZES } from '../lib/options';
 import { BASE_STYLES } from '../styles/shared';
@@ -65,8 +65,8 @@ export class JlButton extends JlElement {
     (value) => {
       this._refs.spinner.hidden = !value;
       this._refs.start.hidden = value || this.icon.get() === '';
-      this._refs.button.toggleAttribute('aria-busy', value);
-      this._refs.link.toggleAttribute('aria-busy', value);
+      setAriaFlag(this._refs.button, 'aria-busy', value);
+      setAriaFlag(this._refs.link, 'aria-busy', value);
       this.reflect('loading', value);
     },
     { attribute: 'loading' }

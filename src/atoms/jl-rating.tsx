@@ -3,6 +3,7 @@ import { Star } from 'lucide';
 
 import { JlFormControl } from '../base/jl-form-control';
 import { clampedNumber, oneOf } from '../lib/attributes';
+import { setAriaFlag } from '../lib/dom';
 import { iconElement, registerIcons } from '../lib/icons';
 import { CONTROL_SIZES } from '../lib/options';
 import { ratingAfterChoice, ratingAfterKey } from '../lib/rating';
@@ -45,7 +46,7 @@ export class JlRating extends JlFormControl {
     false,
     (value) => {
       this.reflect('readonly', value);
-      this._refs.slider.toggleAttribute('aria-readonly', value);
+      setAriaFlag(this._refs.slider, 'aria-readonly', value);
     },
     { attribute: 'readonly' }
   );
@@ -59,7 +60,7 @@ export class JlRating extends JlFormControl {
   readonly required = this.useChange(
     false,
     (value) => {
-      this._refs.slider.toggleAttribute('aria-required', value);
+      setAriaFlag(this._refs.slider, 'aria-required', value);
       this.renderValidity();
     },
     { attribute: 'required' }
@@ -70,7 +71,7 @@ export class JlRating extends JlFormControl {
     false,
     (value) => {
       this.reflect('invalid', value);
-      this._refs.slider.toggleAttribute('aria-invalid', value);
+      setAriaFlag(this._refs.slider, 'aria-invalid', value);
     },
     { attribute: 'invalid' }
   );
@@ -211,7 +212,7 @@ export class JlRating extends JlFormControl {
     const off = disabled || this._state.formDisabled;
     this.reflect('disabled', disabled);
     this._refs.slider.tabIndex = off ? -1 : 0;
-    this._refs.slider.toggleAttribute('aria-disabled', off);
+    setAriaFlag(this._refs.slider, 'aria-disabled', off);
   }
 }
 

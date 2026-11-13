@@ -3,6 +3,7 @@ import { ChevronDown } from 'lucide';
 
 import { JlIcon } from '../atoms/jl-icon';
 import { JlElement } from '../base/jl-element';
+import { setAriaFlag } from '../lib/dom';
 import { registerIcons } from '../lib/icons';
 import { BASE_STYLES } from '../styles/shared';
 import styles from './jl-accordion-item.css?inline';
@@ -52,7 +53,7 @@ export class JlAccordionItem extends JlElement {
     false,
     (value) => {
       this.reflect('disabled', value);
-      this._refs.summary.toggleAttribute('aria-disabled', value);
+      setAriaFlag(this._refs.summary, 'aria-disabled', value);
       this._refs.summary.tabIndex = value ? -1 : 0;
     },
     { attribute: 'disabled' }

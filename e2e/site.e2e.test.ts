@@ -190,6 +190,18 @@ describe('every page of the site', () => {
   );
 });
 
+/** Puts a component alone in the page shown, in the state a test needs: its page defines its tag. */
+async function mount(page: Page, html: string): Promise<void> {
+  await page.evaluate((markup) => {
+    document.querySelector('#test-area')?.remove();
+    const area = document.createElement('div');
+    area.id = 'test-area';
+    area.innerHTML = markup;
+    document.body.prepend(area);
+  }, html);
+  await page.waitForTimeout(SETTLE_MS);
+}
+
 describe('the forms page', () => {
   it('submits the fields as FormData, like native ones', async () => {
     const page = await open('/forms');
@@ -2690,6 +2702,35 @@ describe('organisms, drawn once', () => {
       afterDrop: { labelsKept: true, moved: true },
       duringDrag: { otherEdge: 0, ownEdgeFollows: true, svgChildren: 0 },
     });
+    expect(state.errors).toEqual([]);
+  });
+});
+
+// A bare attribute (aria-invalid="") is one browsers read as false: a state is said with "true", or not at all.
+describe('the ARIA states', () => {
+  const cases = [
+    { attribute: 'aria-invalid', html: '<jl-input label="Name" invalid></jl-input>', path: '/components/input' },
+    {
+      attribute: 'aria-required',
+      html: '<jl-number-input label="Seats" required></jl-number-input>',
+      path: '/components/number-input',
+    },
+    { attribute: 'aria-busy', html: '<jl-button loading>Save</jl-button>', path: '/components/button' },
+    {
+      attribute: 'aria-disabled',
+      html: '<jl-tabs><jl-tab-panel name="a" label="A"></jl-tab-panel><jl-tab-panel name="b" label="B" disabled></jl-tab-panel></jl-tabs>',
+      path: '/components/tabs',
+    },
+  ];
+
+  it.each(cases)('$attribute is "true" where it is set, in $path', async ({ attribute, html, path }) => {
+    const page = await open(path);
+    await mount(page, html);
+    const values = await page
+      .locator(`#test-area [${attribute}]`)
+      .evaluateAll((elements, name) => elements.map((element) => element.getAttribute(name)), attribute);
+    expect(values.length).toBeGreaterThan(0);
+    expect(new Set(values)).toEqual(new Set(['true']));
     expect(state.errors).toEqual([]);
   });
 });

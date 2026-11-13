@@ -2,6 +2,7 @@ import { css } from '@jadis/core';
 
 import { JlFormControl } from '../base/jl-form-control';
 import { jsonOf, oneOf, textOf } from '../lib/attributes';
+import { setAriaFlag } from '../lib/dom';
 import { rovingIndex } from '../lib/roving';
 import { jlText } from '../lib/texts';
 import { BASE_STYLES } from '../styles/shared';
@@ -78,7 +79,7 @@ export class JlRadioGroup<Value extends string = string> extends JlFormControl {
     false,
     (value) => {
       this.reflect('required', value);
-      this._refs.group.toggleAttribute('aria-required', value);
+      setAriaFlag(this._refs.group, 'aria-required', value);
       this.renderValidity();
     },
     { attribute: 'required' }
@@ -239,7 +240,7 @@ export class JlRadioGroup<Value extends string = string> extends JlFormControl {
       radio.setAttribute('aria-disabled', String(disabled));
       radio.tabIndex = -1;
     }
-    this._refs.group.toggleAttribute('aria-disabled', groupDisabled);
+    setAriaFlag(this._refs.group, 'aria-disabled', groupDisabled);
     const stop = this.tabStop(radios, value);
     if (stop !== undefined) {
       stop.tabIndex = 0;

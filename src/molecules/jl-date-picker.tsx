@@ -15,7 +15,7 @@ import {
   parseTypedDate,
   toIsoDate,
 } from '../lib/calendar';
-import { setOrRemove, uniqueId } from '../lib/dom';
+import { setAriaFlag, setOrRemove, uniqueId } from '../lib/dom';
 import { followAnchor } from '../lib/floating';
 import { registerIcons } from '../lib/icons';
 import { pageLocale } from '../lib/locale';
@@ -85,7 +85,7 @@ export class JlDatePicker extends JlFormControl {
   readonly required = this.useChange(
     false,
     (value) => {
-      this._refs.native.toggleAttribute('aria-required', value);
+      setAriaFlag(this._refs.native, 'aria-required', value);
       this.reflect('required', value);
       this.renderValidity();
     },
@@ -97,7 +97,7 @@ export class JlDatePicker extends JlFormControl {
     false,
     (value) => {
       this.reflect('invalid', value);
-      this._refs.native.toggleAttribute('aria-invalid', value);
+      setAriaFlag(this._refs.native, 'aria-invalid', value);
     },
     { attribute: 'invalid' }
   );
