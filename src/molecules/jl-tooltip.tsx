@@ -329,14 +329,19 @@ export class JlTooltip extends JlElement {
       },
       { signal: following.signal }
     );
+    // Escape puts the bubble away and does nothing else: taken before the page's listeners (capture) and kept from
+    // the browser, or the dialog the trigger sits in would close with it.
     document.addEventListener(
       'keydown',
       (event) => {
-        if (event.key === 'Escape') {
-          this.close();
+        if (event.key !== 'Escape') {
+          return;
         }
+        event.preventDefault();
+        event.stopPropagation();
+        this.close();
       },
-      { signal: following.signal }
+      { capture: true, signal: following.signal }
     );
     this.place();
   }

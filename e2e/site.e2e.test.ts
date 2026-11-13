@@ -99,6 +99,8 @@ const BACKDROP_CORNER = 5;
 // More Escapes in a row than a browser lets a page refuse by cancelling the dialog's cancel event.
 const ESCAPE_PRESSES = 4;
 const ESCAPE_GAP_MS = 150;
+// Longer than a tooltip waits before it shows for the focus.
+const TOOLTIP_SHOWN_MS = 900;
 // Longer than the copy button says what a press came to.
 const COPY_SAYS_MS = 1800;
 
@@ -3187,6 +3189,33 @@ describe("the load state and a page's mistake", () => {
       return { failedFetch, mistake, state: loadState.state.get() };
     });
     expect(outcomes).toEqual({ failedFetch: false, mistake: 'TypeError', state: 'error' });
+    expect(state.errors).toEqual([]);
+  });
+});
+
+describe('Escape on a tooltip in a dialog', () => {
+  it('puts the tooltip away and leaves the dialog open; the next one closes the dialog', async () => {
+    const page = await open('/components/tooltip');
+    await mount(
+      page,
+      '<dialog><jl-tooltip text="Removes the row"><button type="button" id="hinted">Remove</button></jl-tooltip></dialog>'
+    );
+    await page.evaluate(() => document.querySelector<HTMLDialogElement>('#test-area dialog')?.showModal());
+    // The keyboard brings the focus, so the tooltip shows for it.
+    await page.keyboard.press('Shift+Tab');
+    await page.keyboard.press('Tab');
+    await page.waitForTimeout(TOOLTIP_SHOWN_MS);
+    const drawn = (): Promise<{ dialog?: boolean; tooltip?: boolean }> =>
+      page.evaluate(() => ({
+        dialog: document.querySelector<HTMLDialogElement>('#test-area dialog')?.open,
+        tooltip:
+          document.querySelector('#test-area jl-tooltip')?.shadowRoot?.querySelector(':popover-open') !== null,
+      }));
+    expect(await drawn()).toEqual({ dialog: true, tooltip: true });
+    await page.keyboard.press('Escape');
+    expect(await drawn()).toEqual({ dialog: true, tooltip: false });
+    await page.keyboard.press('Escape');
+    expect(await drawn()).toEqual({ dialog: false, tooltip: false });
     expect(state.errors).toEqual([]);
   });
 });
