@@ -253,6 +253,42 @@ describe('Enter in a field', () => {
     expect(output).toContain('ada@example.com');
     expect(state.errors).toEqual([]);
   });
+
+  const submitsOnEnter = async (form: string): Promise<{ submits: number; submitter: string | null }> => {
+    const page = await open('/components/input');
+    await mount(page, form);
+    await page.evaluate(() => {
+      const heard = { submits: 0, submitter: null as string | null };
+      Object.assign(window, { heard });
+      document.querySelector('#test-area form')?.addEventListener('submit', (event) => {
+        event.preventDefault();
+        heard.submits += 1;
+        heard.submitter = (event as SubmitEvent).submitter?.getAttribute('value') ?? null;
+      });
+    });
+    await page.locator('#test-area jl-input input').press('Enter');
+    return page.evaluate(
+      () => (window as unknown as { heard: { submits: number; submitter: string | null } }).heard
+    );
+  };
+
+  it("submits nothing while the form's submit button is disabled or at work", async () => {
+    const field = '<jl-input name="q" label="Name"></jl-input>';
+    expect(await submitsOnEnter(`<form>${field}<button disabled>Save</button></form>`)).toMatchObject({
+      submits: 0,
+    });
+    expect(
+      await submitsOnEnter(`<form>${field}<jl-button type="submit" loading>Save</jl-button></form>`)
+    ).toMatchObject({ submits: 0 });
+    expect(state.errors).toEqual([]);
+  });
+
+  it("submits with the form's submit button as the submitter", async () => {
+    const form =
+      '<form><jl-input name="q" label="Name"></jl-input><button name="action" value="save">Save</button></form>';
+    expect(await submitsOnEnter(form)).toEqual({ submits: 1, submitter: 'save' });
+    expect(state.errors).toEqual([]);
+  });
 });
 
 // Rows with an absolutely positioned part, as jl-kbd's spoken text is: it must stay in the area that scrolls it.
