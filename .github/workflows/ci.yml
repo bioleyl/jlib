@@ -1,0 +1,32 @@
+name: Checks
+
+# What a change must pass before it is merged: the generated files, the lint, the types and the unit tests, the site
+# opened in a browser (every page, every component in its states, an accessibility sweep), and the package as an
+# app installs it. Deploying and publishing start from main, after these.
+on:
+  pull_request:
+  push:
+    branches: ['main']
+
+permissions:
+  contents: read
+
+concurrency:
+  group: checks-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '24'
+          cache: npm
+      # No install script of a dependency runs here.
+      - run: npm ci --ignore-scripts
+      - run: npm run check
+      - run: npm run check:pack
+      - run: npx playwright-core install --with-deps chromium-headless-shell
+      - run: npm run test:e2e

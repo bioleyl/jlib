@@ -82,6 +82,7 @@
     "lint": "biome check .",
     "format": "biome check --write .",
     "check": "npm run generate -- --check && npm run lint && npm run typecheck && npm run test",
+    "check:pack": "node scripts/pack-check.mjs",
     "prepack": "npm run build:lib",
     "prepublishOnly": "npm run check",
     "version": "node scripts/plugin-version.mjs"
