@@ -27,6 +27,9 @@ to the parent, Home and End jump to the first and last items, Enter or Space sel
 the next page). A press on a row selects it and opens or closes a folder; a press on the chevron only opens or
 closes. Tab enters and leaves the tree as one stop.
 
+Every press on an item fires press first, with the item, the button and the browser's event: a page that shows its
+own menu on a right click, or keeps an item from being chosen, cancels that event.
+
 ## Use
 
 ```ts
@@ -72,6 +75,7 @@ In JSX, the `on…` prop, its handler given the detail; in code, `events.registe
 
 - `select` (`onSelect` in JSX), detail `string`: An item was selected: its id.
 - `toggle` (`onToggle` in JSX), detail `{ id: string; open: boolean }`: A folder opened or closed.
+- `press` (`onPress` in JSX), detail `{ id: string; item: TreeItem; button: 'main' | 'auxiliary' | 'secondary'; event: MouseEvent | KeyboardEvent }`: An item was pressed, before the tree acts on it: its id, the item, the button ('main' for a click, Enter or Space, 'auxiliary' for a middle click, 'secondary' for a right click, the keyboard's menu key or a long press) and the browser's event, a pointer's or the keyboard's. Cancel that event (event.preventDefault()) to refuse the press: the item is not selected, its folder stays as it is, a link is not followed, and the browser's menu stays away. A folder's chevron fires none.
 
 ## Methods
 
@@ -180,4 +184,30 @@ Items with an href are links: the address follows them, and a middle click opens
 ```html
 <jl-tree class="narrow" label="Documents" expanded='["reports"]'
   items='[{"id":"reports","label":"Reports","children":[{"id":"q3","label":"Q3 report.pdf","href":"#q3","hint":"Reports/Q3 report.pdf"},{"id":"q4","label":"Q4 report.pdf","href":"#q4","hint":"Reports/Q4 report.pdf"}]}]'></jl-tree>
+```
+
+### A press on an item
+
+press says which item was pressed and with which button, before the tree acts on it. A right click, the keyboard's menu key or a long press asks for the item's menu: cancel the event and show your own where the pointer is. A press the page refuses selects nothing: here the archive cannot be chosen.
+
+```html
+<div class="stack">
+  <jl-tree class="narrow pressed" label="Mailboxes" expanded='["inbox"]'
+    items='[{"id":"inbox","label":"Inbox","children":[{"id":"todo","label":"To do"},{"id":"waiting","label":"Waiting"}]},{"id":"archive","label":"Archive"}]'></jl-tree>
+  <span class="muted pressed-item" aria-live="polite">Press an item, with either button.</span>
+</div>
+```
+
+```js
+const tree = root.querySelector('jl-tree.pressed');
+tree.events.register('press', ({ button, event, item }) => {
+  if (button === 'secondary') {
+    event.preventDefault(); // the browser's menu stays away
+    openMenuFor(item, event);
+    return;
+  }
+  if (item.id === 'archive') {
+    event.preventDefault(); // not selected
+  }
+});
 ```

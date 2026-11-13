@@ -3,7 +3,16 @@ import { oneOf, TABLE_EXPANSIONS } from '@syware/jlib';
 import tableCode from '../typing/jl-table.code.ts?raw';
 import tableJsx from '../typing/jl-table.jsx.tsx?raw';
 
-import type { JlButton, JlFacts, JlSegmented, JlTable, TableColumn, TableRow, Tone } from '@syware/jlib';
+import type {
+  JlButton,
+  JlFacts,
+  JlSegmented,
+  JlTable,
+  PressButton,
+  TableColumn,
+  TableRow,
+  Tone,
+} from '@syware/jlib';
 import type { ComponentDoc } from '../../types/docs.types';
 import type { Member, Order } from '../../types/jl-table.doc.types';
 
@@ -227,6 +236,28 @@ function wireOrders(root: HTMLElement): void {
 }
 
 /** The users table and its toolbar: the selection count and a button that acts on it. */
+/** What a press on a row says to people: the member, and the button that pressed. */
+const BUTTON_WORDS: Record<PressButton, string> = {
+  auxiliary: 'the middle button',
+  main: 'a click',
+  secondary: 'a right click, the menu key or a long press',
+};
+
+function wirePresses(root: HTMLElement): void {
+  const table = root.querySelector<JlTable<Member>>('jl-table.pressed');
+  const told = root.querySelector('.pressed-row');
+  table?.rows.set(USERS.slice(0, 4));
+  table?.events.register('press', ({ button, event, row }) => {
+    // The page's own menu would open here, at event.clientX and event.clientY: the browser's stays away.
+    if (button === 'secondary') {
+      event.preventDefault();
+    }
+    if (told !== null) {
+      told.textContent = `${row.name}: ${BUTTON_WORDS[button]}`;
+    }
+  });
+}
+
 function wireUsers(root: HTMLElement): void {
   const table = root.querySelector<JlTable<Member>>('jl-table.users');
   const count = root.querySelector('.selection-count');
@@ -259,6 +290,9 @@ Numbers sort by value, dates by time, text in the language's order; empty values
 checkbox to each row and one in the header that selects them all (a dash when only some are), and emits selection
 with the keys of the selected rows, read from row-key.
 
+A press on a row fires press, with the row, the button and the browser's event: a page opens a record on a click,
+or cancels the event of a right click to show its own menu.
+
 expandable lets rows open: a press on a row, or on its chevron, shows its detail under it, and the row stays as it
 is. single keeps one row open, opening another closes it; multiple opens any number. detail draws what an open row
 shows, from its row; expanded holds the keys of the open rows, and each opening and closing emits toggle.
@@ -275,6 +309,12 @@ For a cell that is more than a value (a person with an avatar, a link, a menu), 
       description: 'The selection changed: the keys of the selected rows.',
       detail: 'Array<string | number>',
       name: 'selection',
+    },
+    {
+      description:
+        "A row was pressed, on itself and not on a control in it: its key, the row, the button ('main' for a click, 'auxiliary' for a middle click, 'secondary' for a right click, the keyboard's menu key or a long press) and the browser's event, which says where the pointer is. Cancel that event (event.preventDefault()) to refuse the press: the browser's menu stays away, and an expandable row stays as it is.",
+      detail: "{ key: string | number; row: Row; button: 'main' | 'auxiliary' | 'secondary'; event: MouseEvent }",
+      name: 'press',
     },
     {
       description:
@@ -418,6 +458,31 @@ For a cell that is more than a value (a person with an avatar, a link, a menu), 
           columns='[{"key":"field","label":"Field","width":"28%"},{"key":"value","label":"Value","wrap":true}]'
           rows='[{"field":"title","value":"Minutes of the town council, 1952 to 1957"},{"field":"description","value":"The council\\u2019s minutes, bound by year, with the indexes of the decisions and the letters received, as the clerk kept them."},{"field":"storedAt","value":"https://archive.example.com/objects/rr_1622818982000013/i_2/content/minutes-1952-1957.pdf"}]'></jl-table>`,
       title: 'Long text',
+    },
+    {
+      description:
+        "press says which row was pressed and with which button. A click opens a record; a right click, the keyboard's menu key or a long press asks for the row's menu: cancel the event and show your own where the pointer is. --row-cursor: pointer tells people the rows open something. Rows do not take the focus: give the keyboard its own way to what a press does, a link or a button in the row.",
+      html: `
+        <div class="stack">
+          <jl-table class="pressed" row-key="id" style="--row-cursor: pointer"
+            columns='[{"key":"name","label":"Name"},{"key":"role","label":"Role"},{"key":"status","label":"Status"}]'></jl-table>
+          <span class="muted pressed-row" aria-live="polite">Press a row, with either button.</span>
+        </div>`,
+      script: `
+        const table = root.querySelector<JlTable<Member>>('jl-table.pressed');
+        table.rows.set(members.slice(0, 4));
+        table.events.register('press', ({ button, event, row }) => {
+          if (button === 'secondary') {
+            event.preventDefault(); // the browser's menu stays away
+            openMenuFor(row, event.clientX, event.clientY);
+            return;
+          }
+          if (button === 'main') {
+            open(row);
+          }
+        });`,
+      setup: wirePresses,
+      title: 'A press on a row',
     },
     {
       description: 'Marked rows, here the properties a search for “title” matches, stand out among the others.',
@@ -599,14 +664,20 @@ For a cell that is more than a value (a person with an avatar, a link, a menu), 
       type: '{ [key in keyof Row]?: (row: Row) => Node }',
     },
   ],
-  styling: [{ description: 'The scrolling frame around the table.', name: 'base' }],
+  styling: [
+    { description: 'The scrolling frame around the table.', name: 'base' },
+    {
+      description: 'The cursor over a row: pointer when a press on a row opens something (see press).',
+      name: '--row-cursor',
+    },
+  ],
   summary:
     'Rows of records under column headings, with sorting, selection, rows that open on their details, formats and a sticky header.',
   tag: 'jl-table',
   typing: {
     code: tableCode,
     description:
-      "Typed by its rows, JlTable<Order> takes rows of the page's own type, an interface included. Its columns (TableColumn<Order>) name fields of an order, and so do rowKey and sortKey: the editor completes them and refuses a misspelt one. Its renderers, its detail and its sort event read an order. In JSX, <JlTable rows={orders} /> reads the type from the rows. A column that is not a field, such as one of actions a renderer draws, is named: JlTable<Order, 'actions'>. Rows and columns written as JSON in HTML are not checked.",
+      "Typed by its rows, JlTable<Order> takes rows of the page's own type, an interface included. Its columns (TableColumn<Order>) name fields of an order, and so do rowKey and sortKey: the editor completes them and refuses a misspelt one. Its renderers, its detail and its sort and press events read an order. In JSX, <JlTable rows={orders} /> reads the type from the rows. A column that is not a field, such as one of actions a renderer draws, is named: JlTable<Order, 'actions'>. Rows and columns written as JSON in HTML are not checked.",
     jsx: tableJsx,
   },
 };

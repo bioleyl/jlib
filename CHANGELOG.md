@@ -60,6 +60,12 @@ merge. Three changes ask for a look before updating.
 
 ### Added
 
+- **`jl-table` and `jl-tree` tell a press on a row or an item**: `press`, with the row (or the item), the button
+  (`main` for a click, `auxiliary` for a middle click, `secondary` for a right click, the keyboard's menu key or a
+  long press) and the browser's event, which says where the pointer is. A page cancels that event to refuse the
+  press: the browser's menu stays away, so the page shows its own; an expandable row stays as it is, a tree's item
+  is not selected. A table whose rows open something on a click says so with `--row-cursor: pointer`. The button is
+  typed `PressButton`.
 - **`jl-copy-button` says when it could not copy** (`failed` on the host, for a moment): without a clipboard (a page
   served without https has none) a press did nothing one could see, and left an unhandled rejection.
 - **An accessibility sweep in the browser tests**: axe-core (WCAG 2, A and AA) on each of the site's 109 pages.

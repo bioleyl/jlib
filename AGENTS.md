@@ -109,6 +109,12 @@ documentation site that shows and tests every component.
   form's state before the input has read the attribute's change: reflecting from there writes `disabled` back for
   good. The e2e test "a disabled control" asks it of every control: add a new one to its list. Style with
   `:host(:disabled)`, true in a disabled fieldset too.
+- **A press on a row or an item the page should hear of** (`jl-table`, `jl-tree`) is a `press` event told with
+  `lib/press.ts`: `PRESS_EVENTS` are the browser's events it comes as, `pressButtonOf` names the button (`main`,
+  `auxiliary`, `secondary`: the `contextmenu` event, which the keyboard's menu key and a long press fire too), and
+  `tellPress` emits and answers whether the page refused. The detail carries the browser's event: the page cancels
+  it to refuse the press, which keeps the browser's menu away and the component from acting. Tell the page before
+  the component acts, and before it cancels the event itself.
 - **A modal** (a `<dialog>` shown with `showModal()`) goes through `lib/modal.ts`: `modalOpened`/`modalClosed`
   around its opening (the toaster moves into the modal on top, where its toasts can be pressed: everything outside
   a modal is inert), `onBackdropPress` for the click outside (a selection dragged out of a field ends its click on
