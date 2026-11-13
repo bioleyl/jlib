@@ -11,7 +11,7 @@ Jadis, typed, tree-shaken, themed by `--jl-*` CSS custom properties, their own t
 An app's views are Jadis components that put jl-* components together. Never bring another UI kit, a CSS framework or
 a second component model on top of it.
 
-Written for `@syware/jlib@0.14.0`, on `@jadis/core` 1.9. Documentation: <https://bioleyl.github.io/jlib/> ·
+Written for `@syware/jlib@0.15.0`, on `@jadis/core` 1.9. Documentation: <https://bioleyl.github.io/jlib/> ·
 Source: <https://github.com/bioleyl/jlib>
 
 ## How to use this skill
