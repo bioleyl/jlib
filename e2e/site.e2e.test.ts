@@ -3436,3 +3436,76 @@ describe('the quietest texts', () => {
     expect(state.errors).toEqual([]);
   });
 });
+
+describe("a press on a table's row", () => {
+  /** A table of two rows, the presses it tells kept in the window, with what the browser's event came to. */
+  const tableOfTwo = async (attributes = ''): Promise<Page> => {
+    const page = await open('/components/table');
+    await mount(page, `<jl-table row-key="id" ${attributes}></jl-table>`);
+    await page.evaluate(async () => {
+      const table = document.querySelector('#test-area jl-table') as JlTable;
+      const told: unknown[] = [];
+      Object.assign(window, { told });
+      table.columns.set([{ key: 'name', label: 'Name' }]);
+      table.rows.set([
+        { id: 'a', name: 'Ada' },
+        { id: 'b', name: 'Bob' },
+      ]);
+      table.events.register('press', ({ button, event, key, row }) => {
+        // The secondary button is refused: the page shows a menu of its own in place of the browser's.
+        if (button === 'secondary' || key === 'b') {
+          event.preventDefault();
+        }
+        told.push({ button, key, name: row.name });
+      });
+      await new Promise((resolve) => setTimeout(resolve, 100));
+    });
+    return page;
+  };
+  const told = (page: Page): Promise<unknown[]> =>
+    page.evaluate(() => (window as unknown as { told: unknown[] }).told);
+  const row = (page: Page, name: string) => page.locator('#test-area jl-table tbody tr', { hasText: name });
+
+  it('tells the row and the button: the main one, the middle one, the one that asks for a menu', async () => {
+    const page = await tableOfTwo();
+    await row(page, 'Ada').click();
+    await row(page, 'Ada').click({ button: 'middle' });
+    const menuKept = page.evaluate(
+      () =>
+        new Promise((resolve) => {
+          document.addEventListener('contextmenu', (event) => resolve(event.defaultPrevented), { once: true });
+        })
+    );
+    await row(page, 'Ada').click({ button: 'right' });
+    expect(await told(page)).toEqual([
+      { button: 'main', key: 'a', name: 'Ada' },
+      { button: 'auxiliary', key: 'a', name: 'Ada' },
+      { button: 'secondary', key: 'a', name: 'Ada' },
+    ]);
+    // Refused by the page: the browser's own menu stays away.
+    expect(await menuKept).toBe(true);
+    expect(state.errors).toEqual([]);
+  });
+
+  it('leaves a press on a control of the row to that control', async () => {
+    const page = await tableOfTwo('selectable');
+    await row(page, 'Ada').locator('input[type="checkbox"]').click();
+    expect(await told(page)).toEqual([]);
+    expect(state.errors).toEqual([]);
+  });
+
+  it('opens an expandable row on a click, unless the page refuses the press', async () => {
+    const page = await tableOfTwo('expandable="single"');
+    await page.evaluate(() => {
+      (document.querySelector('#test-area jl-table') as JlTable).detail = (row) =>
+        document.createTextNode(String(row.name));
+    });
+    await row(page, 'Ada').click();
+    await row(page, 'Bob').click();
+    const expanded = await page.evaluate(() =>
+      (document.querySelector('#test-area jl-table') as JlTable).expanded.get()
+    );
+    expect(expanded).toEqual(['a']);
+    expect(state.errors).toEqual([]);
+  });
+});
