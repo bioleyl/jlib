@@ -5,6 +5,7 @@ import { JlButton } from '../atoms/jl-button';
 import { JlElement } from '../base/jl-element';
 import { oneOf } from '../lib/attributes';
 import { registerIcons } from '../lib/icons';
+import { modalClosed, modalOpened, onBackdropPress, setPersistent } from '../lib/modal';
 import { jlText } from '../lib/texts';
 import { BASE_STYLES } from '../styles/shared';
 import styles from './jl-dialog.css?inline';
@@ -49,6 +50,7 @@ export class JlDialog extends JlElement {
     false,
     (value) => {
       this._refs.close.hidden = value;
+      setPersistent(this._refs.dialog, value);
     },
     { attribute: 'persistent' }
   );
@@ -103,6 +105,7 @@ export class JlDialog extends JlElement {
     const dialog = this._refs.dialog;
     this._refs.close.events.register('press', () => this.close());
     this.on(dialog, 'close', () => {
+      modalClosed(dialog);
       this.open.set(false);
       this.events.emit('close');
     });
@@ -111,14 +114,21 @@ export class JlDialog extends JlElement {
         event.preventDefault();
       }
     });
-    this.on(dialog, 'click', (event) => {
-      if (event.target === dialog && !this.persistent.get()) {
-        this.close();
-      }
-    });
+    onBackdropPress(dialog, () => this.closeUnlessPersistent(), this.killSignal);
     // The first slotchange can come before onConnect: draw the footer now, then follow the changes.
     this.renderFooter();
     this.on(this._refs.actions, 'slotchange', () => this.renderFooter());
+  }
+
+  /** A dialog taken out of the page while it shows is no longer the modal on top. */
+  onDisconnect(): void {
+    modalClosed(this._refs.dialog);
+  }
+
+  private closeUnlessPersistent(): void {
+    if (!this.persistent.get()) {
+      this.close();
+    }
   }
 
   private renderFooter(): void {
@@ -135,10 +145,12 @@ export class JlDialog extends JlElement {
     if (open) {
       this.renderFooter();
       dialog.showModal();
+      modalOpened(dialog);
       this.events.emit('open');
       return;
     }
     dialog.close();
+    modalClosed(dialog);
   }
 }
 

@@ -44,10 +44,12 @@ import type { JlTagInput } from '../src/molecules/jl-tag-input';
 import type { JlTimeline } from '../src/molecules/jl-timeline';
 import type { JlTooltip } from '../src/molecules/jl-tooltip';
 import type { JlCommandPalette } from '../src/organisms/jl-command-palette';
+import type { JlDialog } from '../src/organisms/jl-dialog';
 import type { JlFlow } from '../src/organisms/jl-flow';
 import type { JlPageOutlet } from '../src/organisms/jl-page-outlet';
 import type { JlSideNav } from '../src/organisms/jl-side-nav';
 import type { JlTable } from '../src/organisms/jl-table';
+import type { JlToaster } from '../src/organisms/jl-toaster';
 import type { JlTree } from '../src/organisms/jl-tree';
 
 const ROOT = join(import.meta.dirname, '..');
@@ -91,6 +93,11 @@ const SETTLE_MS = 300;
 const ICON_WARNING = 'jl-icon:';
 // A node's height and the gap below it: the flow's layout puts nodes on rows this far apart.
 const FLOW_ROW = 136;
+// A point of the window no dialog covers: its backdrop.
+const BACKDROP_CORNER = 5;
+// More Escapes in a row than a browser lets a page refuse by cancelling the dialog's cancel event.
+const ESCAPE_PRESSES = 4;
+const ESCAPE_GAP_MS = 150;
 
 const componentPaths = readdirSync(DOCS)
   .filter((file) => file.endsWith('.doc.ts'))
@@ -2859,6 +2866,82 @@ describe('a disabled fieldset', () => {
         ).shadowRoot?.querySelector<HTMLButtonElement>('.browse')?.disabled
     );
     expect(browseDisabled).toBe(true);
+    expect(state.errors).toEqual([]);
+  });
+});
+
+describe('the dialog', () => {
+  const isOpen = (page: Page): Promise<boolean> =>
+    page.evaluate(() => (document.querySelector('#test-area jl-dialog') as JlDialog).open.get());
+
+  it('stays open when a selection dragged out of a field ends on the backdrop, and closes on a press there', async () => {
+    const page = await open('/components/dialog');
+    await mount(
+      page,
+      '<jl-dialog heading="Edit"><input id="typed" value="a text long enough to select" style="width: 300px" /></jl-dialog>'
+    );
+    await page.evaluate(() => (document.querySelector('#test-area jl-dialog') as JlDialog).show());
+    const field = await page.locator('#typed').boundingBox();
+    if (field === null) {
+      throw new Error('The field is not drawn');
+    }
+    await page.mouse.move(field.x + 10, field.y + field.height / 2);
+    await page.mouse.down();
+    await page.mouse.move(BACKDROP_CORNER, BACKDROP_CORNER, { steps: 6 });
+    await page.mouse.up();
+    expect(await isOpen(page)).toBe(true);
+    await page.mouse.click(BACKDROP_CORNER, BACKDROP_CORNER);
+    expect(await isOpen(page)).toBe(false);
+    expect(state.errors).toEqual([]);
+  });
+
+  it('stays open on Escape, however often, while persistent', async () => {
+    const page = await open('/components/dialog');
+    await mount(page, '<jl-dialog heading="Choose" persistent><p>One of the two.</p></jl-dialog>');
+    await page.evaluate(() => (document.querySelector('#test-area jl-dialog') as JlDialog).show());
+    for (let press = 0; press < ESCAPE_PRESSES; press += 1) {
+      await page.keyboard.press('Escape');
+      await page.waitForTimeout(ESCAPE_GAP_MS);
+    }
+    expect(await isOpen(page)).toBe(true);
+    expect(state.errors).toEqual([]);
+  });
+});
+
+// A modal makes what is outside it inert, the top layer included: the toaster sits inside the modal meanwhile.
+describe('the toaster over a modal', () => {
+  it('lets a toast be closed without closing the dialog, and shows the next one after it closed', async () => {
+    const page = await open('/components/toaster');
+    await mount(page, '<jl-dialog heading="Edit"><p>A form.</p></jl-dialog><jl-toaster></jl-toaster>');
+    await page.evaluate(() => {
+      // Kept for later: it moves into the dialog as that one opens, as the page's own toasters do.
+      const toaster = document.querySelector('#test-area jl-toaster') as JlToaster;
+      Object.assign(window, { toaster });
+      (document.querySelector('#test-area jl-dialog') as JlDialog).show();
+      toaster.notify({ heading: 'Could not save', tone: 'danger' });
+    });
+    await page.locator('jl-toast .close').click();
+    await page.waitForTimeout(SETTLE_MS);
+    const overModal = await page.evaluate(() => {
+      const dialog = document.querySelector('#test-area jl-dialog') as JlDialog;
+      return { dialogOpen: dialog.open.get(), toasts: dialog.shadowRoot?.querySelectorAll('jl-toast').length };
+    });
+    expect(overModal).toEqual({ dialogOpen: true, toasts: 0 });
+    const afterClose = await page.evaluate(async () => {
+      const dialog = document.querySelector('#test-area jl-dialog') as JlDialog;
+      const { toaster } = window as unknown as { toaster: JlToaster };
+      const movedIn = toaster.parentNode === dialog.shadowRoot?.querySelector('dialog');
+      toaster.notify({ heading: 'Saved', tone: 'ok' });
+      dialog.close();
+      await new Promise((resolve) => setTimeout(resolve, 100));
+      return {
+        backHome: toaster.parentElement?.id,
+        movedIn,
+        showing: toaster.shadowRoot?.querySelector('.region')?.matches(':popover-open'),
+        toasts: toaster.querySelectorAll('jl-toast').length,
+      };
+    });
+    expect(afterClose).toEqual({ backHome: 'test-area', movedIn: true, showing: true, toasts: 1 });
     expect(state.errors).toEqual([]);
   });
 });
