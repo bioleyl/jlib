@@ -3,6 +3,77 @@
 What changed in each version of [@syware/jlib](https://www.npmjs.com/package/@syware/jlib). Every component is shown
 and documented on [the documentation site](https://bioleyl.github.io/jlib/).
 
+## Unreleased
+
+What a review of the whole project found, fixed: a script that ran in every app's install, states that assistive
+technology never heard, values lost or changed by leaving a field, and modals that closed or blocked what they should
+not. Each fix has its test; the browser tests now also run an accessibility sweep on every page, and CI runs before a
+merge. Three changes ask for a look before updating.
+
+### Fixed
+
+- **Installing jlib no longer runs a script.** 0.14.0 shipped a `postinstall` (`npx skills update`), meant for this
+  repository: npm ran it in every app that installed the package. It is a `prepare` now, which npm runs here only.
+- **ARIA states are said.** A state was written as a bare attribute (`aria-invalid=""`), which browsers read as false:
+  an invalid input, textarea, select, number input, date picker, combobox, tag input or rating was never announced
+  as invalid, nor a required number input, date picker, combobox, tag input, rating, radio group or chip group as
+  required, a disabled tab as disabled, a loading button or search as busy. They are written `"true"`.
+- **`jl-combobox` keeps its value when the field is left without typing.** Tab through it chose the first of two
+  options named alike, and emptied a value whose options were not loaded yet.
+- **`jl-number-input` reads a decimal comma** (`1,5`), as French and German keyboards write it; it went back to the
+  old value without a word.
+- **A `<fieldset disabled>` disables the whole control.** A `jl-button type="submit"` still pressed and submitted, a
+  combobox opened and cleared, a tag input lost tags, a file drop opened the file chooser, a date picker could be
+  enabled from inside, and an input kept its clear button.
+- **`jl-rating`, `jl-number-input` and `jl-calendar` can be enabled again**: removing `disabled` put it back.
+- **Modals close only when asked.** A selection dragged out of a field and released on the backdrop closed
+  `jl-dialog`, `jl-drawer` and the command palette; a `persistent` dialog or drawer gave way to a few Escapes in a row.
+- **Toasts stay within reach over a modal.** A modal makes what is outside it inert: a toast shown over a dialog
+  could not be pressed, and a click on it closed the dialog. The toaster sits inside the open modal meanwhile.
+  `toast()` also finds a `jl-toaster` written in a component's template.
+- **`jl-tooltip`: Escape puts it away without closing the dialog around it.**
+- **Enter in a field respects the form's submit button**: nothing while that button is disabled, or a `jl-button`
+  is `loading`; a native button goes along as the submitter.
+- **`jl-button` shows a text given right after it joined the page**; it stayed icon-only.
+- **`jl-input-list` works after it is taken out of the page and put back** (its rows heard nothing any more), and
+  takes numbers in `values` (`values='[1,2]'` threw).
+- **`jl-field` keeps a label its control was given in code**: a JSX prop writes no attribute, and the field replaced
+  it with its own, empty one.
+- **`jl-select` follows the page's own `<option>`s**: one added later, or written again in another language.
+- **`jl-calendar`, required and without a date, takes the focus and says so**; the form refused to submit without a
+  word.
+- **`jl-table`**: the select-all box no longer offers the rows of before once the table is empty or loading, and a
+  column of numbers that names no `format` sorts them by value.
+- **`jl-menu` stays open when its items are given again while one has the focus.**
+- **`jl-toast`: `show()` after `dismiss()` shows it**; it came back transparent.
+- **`jl-tree` builds its rows once as it appears**, where its five texts each built them again (seven builds).
+- **The command palette's search ignores accents**: `parametres` finds "Paramètres", as the combobox's filter does.
+- **`download()`: a file name with a lone `%` is taken as written**; it threw.
+- **Forced colours** (the contrast themes of Windows): what has the focus is outlined, where the focus ring, a
+  box-shadow, was dropped; a switch shows whether it is on.
+- **Contrast**: placeholders, comments and line numbers in code, a tree's badge and a selected chip's badge were
+  under 4.5:1. `--jl-code-comment` is `--jl-muted`.
+- **Texts in jlib's language**: "(opens in a new tab)" of `jl-link`, an avatar's status, the name of a progress bar or
+  ring without a label, and a flow node's status and + buttons were English in every language.
+
+### Added
+
+- **`jl-copy-button` says when it could not copy** (`failed` on the host, for a moment): without a clipboard (a page
+  served without https has none) a press did nothing one could see, and left an unhandled rejection.
+- **An accessibility sweep in the browser tests**: axe-core (WCAG 2, A and AA) on each of the site's 109 pages.
+- **`npm run check:pack`**: the package is packed and unpacked in a scratch app, which is type-checked and bundled.
+  CI runs it, with the checks and the browser tests, on every pull request.
+
+### Worth a look when you update
+
+- **`JlLoadState.load()` throws what your `draw` throws.** It caught everything and showed "could not load": a
+  mistake in `draw` or `isEmpty` now shows the error state and is thrown on, so the console says what broke. A load
+  that fails (its `fetch` rejects) still resolves `false`.
+- **Enter no longer submits a form whose submit button is disabled.** A page that disabled the button and still
+  counted on Enter must enable it, or submit itself.
+- **A `jl-toaster` moves into the open modal** and back: a page that reads `toaster.parentElement`, or styles it by
+  where it stands, finds it elsewhere while a dialog, a drawer or the palette is open.
+
 ## 0.14.0 (2026-11-11)
 
 A render budget, so a redraw regression is caught the day it appears: the suite now counts, for each component it
