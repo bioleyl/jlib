@@ -6,6 +6,7 @@ import tableJsx from '../typing/jl-table.jsx.tsx?raw';
 import type {
   JlButton,
   JlFacts,
+  JlMenu,
   JlSegmented,
   JlTable,
   PressButton,
@@ -245,17 +246,26 @@ const BUTTON_WORDS: Record<PressButton, string> = {
 
 function wirePresses(root: HTMLElement): void {
   const table = root.querySelector<JlTable<Member>>('jl-table.pressed');
+  const menu = root.querySelector<JlMenu>('jl-menu.row-menu');
   const told = root.querySelector('.pressed-row');
+  const say = (text: string): void => {
+    if (told !== null) {
+      told.textContent = text;
+    }
+  };
+  // The member whose menu shows: the action chosen is for them.
+  const pressed = { name: '' };
   table?.rows.set(USERS.slice(0, 4));
   table?.events.register('press', ({ button, event, row }) => {
-    // The page's own menu would open here, at event.clientX and event.clientY: the browser's stays away.
+    pressed.name = row.name;
+    say(`${row.name}: ${BUTTON_WORDS[button]}`);
     if (button === 'secondary') {
+      // The browser's menu stays away: the page's own opens where the pointer is.
       event.preventDefault();
-    }
-    if (told !== null) {
-      told.textContent = `${row.name}: ${BUTTON_WORDS[button]}`;
+      menu?.showAt(event.clientX, event.clientY);
     }
   });
+  menu?.events.register('select', (action) => say(`${pressed.name}: ${action}`));
 }
 
 function wireUsers(root: HTMLElement): void {
@@ -461,26 +471,31 @@ For a cell that is more than a value (a person with an avatar, a link, a menu), 
     },
     {
       description:
-        "press says which row was pressed and with which button. A click opens a record; a right click, the keyboard's menu key or a long press asks for the row's menu: cancel the event and show your own where the pointer is. --row-cursor: pointer tells people the rows open something. Rows do not take the focus: give the keyboard its own way to what a press does, a link or a button in the row.",
+        "press says which row was pressed and with which button. A click opens a record; a right click, the keyboard's menu key or a long press asks for the row's menu: cancel the event and open a jl-menu where the pointer is, with showAt. --row-cursor: pointer tells people the rows open something. Rows do not take the focus: give the keyboard its own way to what a press does, a link or a button in the row.",
       html: `
         <div class="stack">
           <jl-table class="pressed" row-key="id" style="--row-cursor: pointer"
             columns='[{"key":"name","label":"Name"},{"key":"role","label":"Role"},{"key":"status","label":"Status"}]'></jl-table>
+          <jl-menu class="row-menu" label="Member actions"
+            items='[{"value":"edit","label":"Edit","icon":"pencil"},{"value":"remove","label":"Remove","icon":"trash","danger":true}]'></jl-menu>
           <span class="muted pressed-row" aria-live="polite">Press a row, with either button.</span>
         </div>`,
       script: `
         const table = root.querySelector<JlTable<Member>>('jl-table.pressed');
+        const menu = root.querySelector<JlMenu>('jl-menu.row-menu');
         table.rows.set(members.slice(0, 4));
         table.events.register('press', ({ button, event, row }) => {
           if (button === 'secondary') {
             event.preventDefault(); // the browser's menu stays away
-            openMenuFor(row, event.clientX, event.clientY);
+            pressed = row;
+            menu.showAt(event.clientX, event.clientY);
             return;
           }
           if (button === 'main') {
             open(row);
           }
-        });`,
+        });
+        menu.events.register('select', (action) => run(action, pressed));`,
       setup: wirePresses,
       title: 'A press on a row',
     },

@@ -100,6 +100,8 @@ const BACKDROP_CORNER = 5;
 // More Escapes in a row than a browser lets a page refuse by cancelling the dialog's cancel event.
 const ESCAPE_PRESSES = 4;
 const ESCAPE_GAP_MS = 150;
+// How far into a row a press lands, from its left edge.
+const ROW_PRESS_INSET = 30;
 // A point of the window with room for a menu under it and beside it.
 const MENU_POINT = { x: 320, y: 240 };
 // Longer than a tooltip waits before it shows for the focus.
@@ -3655,6 +3657,26 @@ describe('a menu opened at a point', () => {
     await page.keyboard.press('ArrowDown');
     await page.keyboard.press('Enter');
     expect(await page.evaluate(() => (window as unknown as { chosen: string[] }).chosen)).toEqual(['archive']);
+    expect(state.errors).toEqual([]);
+  });
+});
+
+describe("the menu of a row, on the table's page", () => {
+  it('opens where a right click asked for it, and its action is for that row', async () => {
+    const page = await open('/components/table');
+    const row = page.locator('jl-table.pressed tbody tr', { hasText: 'Ben Okafor' });
+    await row.scrollIntoViewIfNeeded();
+    const box = await row.boundingBox();
+    if (box === null) {
+      throw new Error('The row is not drawn');
+    }
+    const pointer = { x: Math.round(box.x) + ROW_PRESS_INSET, y: Math.round(box.y + box.height / 2) };
+    await page.mouse.click(pointer.x, pointer.y, { button: 'right' });
+    await page.waitForTimeout(SETTLE_MS);
+    const menu = await page.locator('jl-menu.row-menu [role="menu"]').boundingBox();
+    expect({ x: menu?.x, y: menu?.y }).toEqual(pointer);
+    await page.keyboard.press('Enter');
+    await expect.poll(() => page.locator('.pressed-row').textContent()).toBe('Ben Okafor: edit');
     expect(state.errors).toEqual([]);
   });
 });

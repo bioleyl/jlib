@@ -16,6 +16,11 @@ value; Escape closes it the same way, Tab closes it and moves on. Items are { va
 description?, danger?, disabled? }, with { divider: true } for a line and { heading } for a title over the items that
 follow it.
 
+showAt(x, y) opens the menu at a point of the window instead, with no trigger: the menu of a table's row or a tree's
+item, where a right click asked for it (their press event gives the point). It needs a label, and gives the focus
+back to what had it when it closes. Keep the same actions within reach of a button too: not everyone can ask for a
+menu with a right click.
+
 ## Use
 
 ```ts
@@ -63,6 +68,7 @@ In JSX, the `on…` prop, its handler given the detail; in code, `events.registe
 ## Methods
 
 - `show(): void`: Opens the menu and focuses its first item.
+- `showAt(x: number, y: number): void`: Opens the menu at a point of the window, such as a press's event.clientX and event.clientY, and focuses its first item: its corner goes there, above the point when there is no room under it. No trigger is needed; the focus goes back to what had it when the menu closes.
 - `hide(): void`: Closes the menu.
 
 ## Styling
@@ -177,4 +183,26 @@ The trigger can be any button, here a native one.
 <jl-menu items='[{"value":"newest","label":"Newest first"},{"value":"oldest","label":"Oldest first"},{"value":"popular","label":"Most popular"}]'>
   <button slot="trigger" type="button">Sort by</button>
 </jl-menu>
+```
+
+### Where the pointer is
+
+showAt(x, y) opens the menu where the pointer is: here on a right click in the frame (the keyboard's menu key asks for it too, with the focus in it). The menu has no trigger, so its label names it.
+
+```html
+<div class="stack">
+  <div class="demo-zone" tabindex="0" style="padding: 32px; border: 1px dashed var(--jl-line-strong); border-radius: var(--jl-radius); text-align: center">
+    Right-click in this frame
+  </div>
+  <jl-menu class="demo-context" label="Frame actions" items='[{"icon":"pencil","label":"Rename","shortcut":"F2","value":"rename"},{"icon":"copy","label":"Duplicate","shortcut":"⌘D","value":"duplicate"},{"icon":"download","label":"Download","value":"download"},{"icon":"share","label":"Share","value":"share"},{"divider":true},{"danger":true,"icon":"trash","label":"Delete","shortcut":"⌫","value":"delete"}]'></jl-menu>
+  <span class="muted demo-context-chosen">Choose an action</span>
+</div>
+```
+
+```js
+const menu = root.querySelector('jl-menu.demo-context');
+root.querySelector('.demo-zone').addEventListener('contextmenu', (event) => {
+  event.preventDefault(); // the browser's menu stays away
+  menu.showAt(event.clientX, event.clientY);
+});
 ```

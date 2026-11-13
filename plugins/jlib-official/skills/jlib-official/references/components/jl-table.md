@@ -292,29 +292,34 @@ Cells keep to one line and the table scrolls sideways; a column with wrap breaks
 
 ### A press on a row
 
-press says which row was pressed and with which button. A click opens a record; a right click, the keyboard's menu key or a long press asks for the row's menu: cancel the event and show your own where the pointer is. --row-cursor: pointer tells people the rows open something. Rows do not take the focus: give the keyboard its own way to what a press does, a link or a button in the row.
+press says which row was pressed and with which button. A click opens a record; a right click, the keyboard's menu key or a long press asks for the row's menu: cancel the event and open a jl-menu where the pointer is, with showAt. --row-cursor: pointer tells people the rows open something. Rows do not take the focus: give the keyboard its own way to what a press does, a link or a button in the row.
 
 ```html
 <div class="stack">
   <jl-table class="pressed" row-key="id" style="--row-cursor: pointer"
     columns='[{"key":"name","label":"Name"},{"key":"role","label":"Role"},{"key":"status","label":"Status"}]'></jl-table>
+  <jl-menu class="row-menu" label="Member actions"
+    items='[{"value":"edit","label":"Edit","icon":"pencil"},{"value":"remove","label":"Remove","icon":"trash","danger":true}]'></jl-menu>
   <span class="muted pressed-row" aria-live="polite">Press a row, with either button.</span>
 </div>
 ```
 
 ```js
 const table = root.querySelector<JlTable<Member>>('jl-table.pressed');
+const menu = root.querySelector<JlMenu>('jl-menu.row-menu');
 table.rows.set(members.slice(0, 4));
 table.events.register('press', ({ button, event, row }) => {
   if (button === 'secondary') {
     event.preventDefault(); // the browser's menu stays away
-    openMenuFor(row, event.clientX, event.clientY);
+    pressed = row;
+    menu.showAt(event.clientX, event.clientY);
     return;
   }
   if (button === 'main') {
     open(row);
   }
 });
+menu.events.register('select', (action) => run(action, pressed));
 ```
 
 ### Marked rows

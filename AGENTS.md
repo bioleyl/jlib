@@ -199,6 +199,12 @@ there on a component alone: `mount(page, html)` puts it in the page of its own d
 - Writing the same `textContent` again makes a new text node, which the render budget counts: write it only when it
   changed (`jl-button`'s label).
 - happy-dom gives elements no `part` (`jl-flow` toggles one): a test that mounts such a component stands one in.
+- A popover that closes gives the focus back to what had it, but not from a shadow root (the browser looks for the
+  focus in the document's tree): a component returns it itself (`deepActiveElement(document)` before it opens,
+  as `jl-menu`'s `showAt` does).
+- What floats moves a little as it comes in (`jl-float-in`): a test waits for it before it measures where it is.
+- A menu item's icon is drawn when the menu opens: the every-page test does not see an unregistered name in a closed
+  menu, so an example that opens one in a test of its own is what catches it.
 - A press handler that drops a promise (`() => void this.copy()`) hides its rejection: catch where nobody else can,
   and show it (`jl-copy-button`).
 - Link to light-DOM elements from a shadow root with element reflection (`ariaControlsElements`): ids cannot cross.

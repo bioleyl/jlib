@@ -139,26 +139,29 @@ MembersTable.register();
 - `press` says which row was pressed and how: `{ key, row, button, event }`, `button` being `'main'` (a click),
   `'auxiliary'` (a middle click) or `'secondary'` (a right click, the keyboard's menu key, a long press), and `event`
   the browser's own. Check the button before acting: every press arrives here. Cancel the event to refuse the press:
-  `event.preventDefault()` keeps the browser's menu away, so the page shows its own at `event.clientX`,
-  `event.clientY`, and keeps an expandable row closed. A press on a control in the row (a link, a button, its
+  `event.preventDefault()` keeps the browser's menu away, so the page opens its own where the pointer is
+  (`JlMenu`'s `showAt(event.clientX, event.clientY)`, a menu without a trigger, named by its `label`), and keeps an
+  expandable row closed. The same actions stay within reach of a button in the row (its **More** menu): a right
+  click is a shortcut to them, never the only way. A press on a control in the row (a link, a button, its
   checkbox) is that control's and fires none. Rows take no focus: what a click opens also needs a link or a button
   in the row, for the keyboard; `--row-cursor: pointer` on the table says the rows open something.
 
 ```tsx
-<JlTable<Order>
-  rows={orders}
-  columns={COLUMNS}
-  onPress={({ button, event, row }) => {
-    if (button === 'secondary') {
-      event.preventDefault();
-      this.openMenu(row, event);
-      return;
-    }
-    if (button === 'main') {
-      router.goto('order', { id: row.id });
-    }
-  }}
-/>
+// In the template: the table, and the one menu its rows share.
+<JlTable<Order> rows={orders} columns={COLUMNS} onPress={(press) => this.onRowPress(press)} />
+<JlMenu<OrderAction> label="Order actions" items={ORDER_ACTIONS} onSelect={(action) => this.act(action)} />
+
+private onRowPress({ button, event, row }: TablePress<Order>): void {
+  if (button === 'secondary') {
+    event.preventDefault();
+    this._pressed.order = row; // the order the chosen action is for
+    this._refs.menu.showAt(event.clientX, event.clientY);
+    return;
+  }
+  if (button === 'main') {
+    router.goto('order', { id: row.id });
+  }
+}
 ```
 
 ## Search and filters
@@ -213,7 +216,8 @@ tree.loader = async (parent, offset) => fetchLevel(parent, offset, this.killSign
   item and selects it; `reload()` loads the roots again.
 - `press` fires before the tree acts on a press on an item: `{ id, item, button, event }`, as on a table's row, with
   Enter and Space as the main button too. Cancel the event to refuse it: the item is not selected, its folder stays
-  as it is, a link is not followed, and for the secondary button the browser's menu stays away.
+  as it is, a link is not followed, and for the secondary button the browser's menu stays away, for a `JlMenu` opened
+  with `showAt` as on a table.
 - A search in a large tree lists its matches as `JlListItem`s in place of the tree.
 
 ## Split views

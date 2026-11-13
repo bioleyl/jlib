@@ -66,6 +66,9 @@ merge. Three changes ask for a look before updating.
   press: the browser's menu stays away, so the page shows its own; an expandable row stays as it is, a tree's item
   is not selected. A table whose rows open something on a click says so with `--row-cursor: pointer`. The button is
   typed `PressButton`.
+- **`jl-menu` opens where the pointer is**: `showAt(x, y)` opens it at a point of the window, with no trigger, for
+  the menu of a row or an item on the press that asked for it. Its corner goes to the point, above it when there is
+  no room under, and the focus goes back to what had it when the menu closes.
 - **`jl-copy-button` says when it could not copy** (`failed` on the host, for a moment): without a clipboard (a page
   served without https has none) a press did nothing one could see, and left an unhandled rejection.
 - **An accessibility sweep in the browser tests**: axe-core (WCAG 2, A and AA) on each of the site's 109 pages.
