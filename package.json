@@ -75,7 +75,7 @@
     "size": "npm run build:lib && npm run size:report",
     "size:report": "node scripts/size-report.mjs",
     "test": "vitest run",
-    "postinstall": "npx skills update -p -y",
+    "prepare": "node scripts/refresh-skills.mjs",
     "test:watch": "vitest",
     "test:e2e": "npm run build:site && vitest run --config vitest.e2e.config.ts",
     "typecheck": "tsc --noEmit -p tsconfig.json",

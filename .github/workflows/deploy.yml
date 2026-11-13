@@ -23,7 +23,8 @@ jobs:
         with:
           node-version: '24'
           cache: npm
-      - run: npm ci
+      # No install script of a dependency runs with the job's permissions.
+      - run: npm ci --ignore-scripts
       - run: npm run check
       - run: npm run build
       - uses: actions/upload-pages-artifact@v3
