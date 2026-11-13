@@ -35,7 +35,12 @@ In the menu, the arrows move, Home and End jump to the ends, a letter jumps to t
 Enter or Space chooses. Choosing closes the menu, sends the focus back to the trigger and fires select with the item's
 value; Escape closes it the same way, Tab closes it and moves on. Items are { value, label, icon?, shortcut?,
 description?, danger?, disabled? }, with { divider: true } for a line and { heading } for a title over the items that
-follow it.`,
+follow it.
+
+showAt(x, y) opens the menu at a point of the window instead, with no trigger: the menu of a table's row or a tree's
+item, where a right click asked for it (their press event gives the point). It needs a label, and gives the focus
+back to what had it when it closes. Keep the same actions within reach of a button too: not everyone can ask for a
+menu with a right click.`,
   events: [
     { description: 'People chose an item; the detail is its value.', detail: 'Value', name: 'select' },
     { description: 'The menu opened.', detail: 'undefined', name: 'open' },
@@ -83,10 +88,48 @@ follow it.`,
         </jl-menu>`,
       title: 'Any trigger',
     },
+    {
+      description:
+        "showAt(x, y) opens the menu where the pointer is: here on a right click in the frame (the keyboard's menu key asks for it too, with the focus in it). The menu has no trigger, so its label names it.",
+      html: `
+        <div class="stack">
+          <div class="demo-zone" tabindex="0" style="padding: 32px; border: 1px dashed var(--jl-line-strong); border-radius: var(--jl-radius); text-align: center">
+            Right-click in this frame
+          </div>
+          <jl-menu class="demo-context" label="Frame actions" items='${FILE_ACTIONS}'></jl-menu>
+          <span class="muted demo-context-chosen">Choose an action</span>
+        </div>`,
+      script: `
+        const menu = root.querySelector('jl-menu.demo-context');
+        root.querySelector('.demo-zone').addEventListener('contextmenu', (event) => {
+          event.preventDefault(); // the browser's menu stays away
+          menu.showAt(event.clientX, event.clientY);
+        });`,
+      setup: (root) => {
+        const menu = root.querySelector<JlMenu>('jl-menu.demo-context');
+        const chosen = root.querySelector('.demo-context-chosen');
+        root.querySelector<HTMLElement>('.demo-zone')?.addEventListener('contextmenu', (event) => {
+          event.preventDefault();
+          menu?.showAt(event.clientX, event.clientY);
+        });
+        menu?.events.register('select', (value) => {
+          if (chosen !== null) {
+            chosen.textContent = `Chose: ${value}`;
+          }
+        });
+      },
+      title: 'Where the pointer is',
+    },
   ],
   level: 'molecule',
   methods: [
     { description: 'Opens the menu and focuses its first item.', name: 'show', signature: 'show(): void' },
+    {
+      description:
+        "Opens the menu at a point of the window, such as a press's event.clientX and event.clientY, and focuses its first item: its corner goes there, above the point when there is no room under it. No trigger is needed; the focus goes back to what had it when the menu closes.",
+      name: 'showAt',
+      signature: 'showAt(x: number, y: number): void',
+    },
     { description: 'Closes the menu.', name: 'hide', signature: 'hide(): void' },
   ],
   name: 'Menu',

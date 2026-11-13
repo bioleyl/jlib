@@ -7,6 +7,7 @@ import { JlElement } from '../base/jl-element';
 import { jsonOf, oneOf, textOf } from '../lib/attributes';
 import { setOrRemove } from '../lib/dom';
 import { registerIcons } from '../lib/icons';
+import { PRESS_EVENTS, pressButtonOf, tellPress } from '../lib/press';
 import { startedOnControl } from '../lib/surface';
 import {
   columnAlign,
@@ -34,6 +35,7 @@ import type {
   TableDetailRenderer,
   TableExpansion,
   TableField,
+  TablePress,
   TableRenderers,
   TableRow,
   TableRowKey,
@@ -144,7 +146,8 @@ const isOpen = (row: Element): boolean =>
  * rows in place; `selectable` adds a checkbox column. The header stays on top while the rows scroll within
  * `max-height`, and the table scrolls sideways on narrow screens. Cells of a column can be drawn by code with
  * `renderers`. `expandable` rows open on a press to show their `detail` under them, the row staying as it is: one at
- * a time (`single`) or any number (`multiple`).
+ * a time (`single`) or any number (`multiple`). A press on a row fires `press` with the row, the button and the
+ * browser's event, which a page cancels to refuse it: to open a record on a click, its own menu on a right click.
  *
  * Typed by its rows, `JlTable<Order>` checks and completes the fields its columns name, and hands its renderers and
  * `detail` an order; `JlTable<Order, 'actions'>` adds a column that is not a field, which a renderer draws.
@@ -156,6 +159,7 @@ export class JlTable<Row extends object = TableRow, Extra extends string = never
     sort: TableSort<Row, Extra>;
     selection: TableRowKey[];
     toggle: TableToggle;
+    press: TablePress<Row>;
   }>();
 
   readonly columns = this.useChange<TableColumn<Row, Extra>[]>([], () => this.schedule('head', 'body'), {
@@ -311,7 +315,9 @@ export class JlTable<Row extends object = TableRow, Extra extends string = never
         this.changeSelection(event.target);
       }
     });
-    this.on(this._refs.body, 'click', (event) => this.pressRow(event));
+    for (const type of PRESS_EVENTS) {
+      this.on(this._refs.body, type, (event) => this.pressRow(event));
+    }
   }
 
   /** Draws on the next microtask: the inputs set while connecting give one drawing, not one each. */
@@ -374,13 +380,24 @@ export class JlTable<Row extends object = TableRow, Extra extends string = never
   }
 
   /** A press on a row's chevron, or on the row anywhere but its controls and its checkbox, opens or closes it. */
+  /**
+   * A press on a row. The page hears of it first (`press`); then, for a click it did not refuse, an expandable row
+   * opens or closes.
+   */
   private pressRow(event: MouseEvent): void {
-    const row = this.dataRowOf(event);
-    const key = row === undefined ? undefined : this.keyOf(row);
-    if (row === undefined || key === undefined || !this.opensOnPress(event, row)) {
+    const element = this.dataRowOf(event);
+    const drawn = element === undefined ? undefined : this._view.drawn[Number(element.dataset.index)];
+    const button = pressButtonOf(event);
+    if (element === undefined || drawn === undefined || button === null) {
       return;
     }
-    this.toggle(key, !isOpen(row));
+    const onRow = this.isOnRowItself(event, element);
+    const press = { button, event, key: drawn.key, row: drawn.row };
+    const refused = onRow && tellPress(event, () => this.events.emit('press', press));
+    if (refused || button !== 'main' || !this.opensOnPress(event, element, onRow)) {
+      return;
+    }
+    this.toggle(drawn.key, !isOpen(element));
   }
 
   /** The row of data a press is on: one of the table's, not a row in the content of a detail. */
@@ -396,16 +413,20 @@ export class JlTable<Row extends object = TableRow, Extra extends string = never
       );
   }
 
-  private opensOnPress(event: MouseEvent, row: HTMLElement): boolean {
-    const path = event.composedPath();
-    const chevron = row.querySelector('button.expand');
-    if (chevron === null) {
-      return false;
-    }
+  /**
+   * Whether a press is on the row itself: not on a control in it (a link, a button, its chevron), nor in its
+   * selection cell, nor the end of a drag that selected text. Those keep their press for themselves.
+   */
+  private isOnRowItself(event: MouseEvent, row: HTMLElement): boolean {
     const select = row.querySelector('.select-cell');
-    const elsewhere =
-      startedOnControl(event, row) || (select !== null && path.includes(select)) || isSelectingText();
-    return path.includes(chevron) || !elsewhere;
+    const onSelectCell = select !== null && event.composedPath().includes(select);
+    return !(startedOnControl(event, row) || onSelectCell || isSelectingText());
+  }
+
+  /** An expandable row opens on a press on itself, and on its chevron. */
+  private opensOnPress(event: MouseEvent, row: HTMLElement, onRow: boolean): boolean {
+    const chevron = row.querySelector('button.expand');
+    return chevron !== null && (onRow || event.composedPath().includes(chevron));
   }
 
   private renderMaxHeight(value: string): void {
@@ -621,10 +642,6 @@ export class JlTable<Row extends object = TableRow, Extra extends string = never
         </td>
       </tr>
     );
-  }
-
-  private keyOf(row: HTMLElement): TableRowKey | undefined {
-    return this._view.drawn[Number(row.dataset.index)]?.key;
   }
 
   /**

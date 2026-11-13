@@ -223,6 +223,11 @@ code {
   padding-left: 0;
 }
 
+/* A page whose rows open something on a press says so: `--row-cursor: pointer` on the table. */
+tbody tr[data-index] {
+  cursor: var(--row-cursor, auto);
+}
+
 :host([expandable]) tbody tr[data-index] {
   cursor: pointer;
 }

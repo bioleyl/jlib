@@ -51,3 +51,28 @@ describe('computePosition', () => {
     expect(computePosition(anchor, FLOATING, VIEWPORT, 'left', GAP).left).toBe(294);
   });
 });
+
+// A menu opened where the pointer is: its anchor is a point, with no gap.
+describe('computePosition at a point', () => {
+  const at = (left: number, top: number) => ({ height: 0, left, top, width: 0 });
+
+  it('puts the top left corner of the floating element at the point', () => {
+    expect(computePosition(at(300, 200), FLOATING, VIEWPORT, 'bottom-start', 0)).toEqual({
+      left: 300,
+      placement: 'bottom-start',
+      top: 200,
+    });
+  });
+
+  it('goes above the point when there is no room under it', () => {
+    expect(computePosition(at(300, 760), FLOATING, VIEWPORT, 'bottom-start', 0)).toEqual({
+      left: 300,
+      placement: 'top-start',
+      top: 660,
+    });
+  });
+
+  it('stays inside the window near its right edge', () => {
+    expect(computePosition(at(1150, 200), FLOATING, VIEWPORT, 'bottom-start', 0).left).toBe(992);
+  });
+});

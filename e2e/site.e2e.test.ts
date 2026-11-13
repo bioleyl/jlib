@@ -100,6 +100,10 @@ const BACKDROP_CORNER = 5;
 // More Escapes in a row than a browser lets a page refuse by cancelling the dialog's cancel event.
 const ESCAPE_PRESSES = 4;
 const ESCAPE_GAP_MS = 150;
+// How far into a row a press lands, from its left edge.
+const ROW_PRESS_INSET = 30;
+// A point of the window with room for a menu under it and beside it.
+const MENU_POINT = { x: 320, y: 240 };
 // Longer than a tooltip waits before it shows for the focus.
 const TOOLTIP_SHOWN_MS = 900;
 // Longer than the copy button says what a press came to.
@@ -3433,6 +3437,291 @@ describe('the quietest texts', () => {
       };
     });
     expect(inks).toEqual({ comment: inks.muted, muted: inks.muted, placeholder: inks.muted, select: inks.muted });
+    expect(state.errors).toEqual([]);
+  });
+});
+
+describe("a press on a table's row", () => {
+  /** A table of two rows, the presses it tells kept in the window, with what the browser's event came to. */
+  const tableOfTwo = async (attributes = ''): Promise<Page> => {
+    const page = await open('/components/table');
+    await mount(page, `<jl-table row-key="id" ${attributes}></jl-table>`);
+    await page.evaluate(async () => {
+      const table = document.querySelector('#test-area jl-table') as JlTable;
+      const told: unknown[] = [];
+      Object.assign(window, { told });
+      table.columns.set([{ key: 'name', label: 'Name' }]);
+      table.rows.set([
+        { id: 'a', name: 'Ada' },
+        { id: 'b', name: 'Bob' },
+      ]);
+      table.events.register('press', ({ button, event, key, row }) => {
+        // The secondary button is refused: the page shows a menu of its own in place of the browser's.
+        if (button === 'secondary' || key === 'b') {
+          event.preventDefault();
+        }
+        told.push({ button, key, name: row.name });
+      });
+      await new Promise((resolve) => setTimeout(resolve, 100));
+    });
+    return page;
+  };
+  const told = (page: Page): Promise<unknown[]> =>
+    page.evaluate(() => (window as unknown as { told: unknown[] }).told);
+  const row = (page: Page, name: string) => page.locator('#test-area jl-table tbody tr', { hasText: name });
+
+  it('tells the row and the button: the main one, the middle one, the one that asks for a menu', async () => {
+    const page = await tableOfTwo();
+    await row(page, 'Ada').click();
+    await row(page, 'Ada').click({ button: 'middle' });
+    const menuKept = page.evaluate(
+      () =>
+        new Promise((resolve) => {
+          document.addEventListener('contextmenu', (event) => resolve(event.defaultPrevented), { once: true });
+        })
+    );
+    await row(page, 'Ada').click({ button: 'right' });
+    expect(await told(page)).toEqual([
+      { button: 'main', key: 'a', name: 'Ada' },
+      { button: 'auxiliary', key: 'a', name: 'Ada' },
+      { button: 'secondary', key: 'a', name: 'Ada' },
+    ]);
+    // Refused by the page: the browser's own menu stays away.
+    expect(await menuKept).toBe(true);
+    expect(state.errors).toEqual([]);
+  });
+
+  it('leaves a press on a control of the row to that control', async () => {
+    const page = await tableOfTwo('selectable');
+    await row(page, 'Ada').locator('input[type="checkbox"]').click();
+    expect(await told(page)).toEqual([]);
+    expect(state.errors).toEqual([]);
+  });
+
+  it('opens an expandable row on a click, unless the page refuses the press', async () => {
+    const page = await tableOfTwo('expandable="single"');
+    await page.evaluate(() => {
+      (document.querySelector('#test-area jl-table') as JlTable).detail = (row) =>
+        document.createTextNode(String(row.name));
+    });
+    await row(page, 'Ada').click();
+    await row(page, 'Bob').click();
+    const expanded = await page.evaluate(() =>
+      (document.querySelector('#test-area jl-table') as JlTable).expanded.get()
+    );
+    expect(expanded).toEqual(['a']);
+    expect(state.errors).toEqual([]);
+  });
+});
+
+describe("a press on a tree's item", () => {
+  /** A tree of a folder and two items, the presses it tells and the items it selects kept in the window. */
+  const treeOfThree = async (): Promise<Page> => {
+    const page = await open('/components/tree');
+    await mount(page, '<jl-tree label="Files"></jl-tree>');
+    await page.evaluate(() => {
+      const tree = document.querySelector('#test-area jl-tree') as JlTree;
+      const heard = { selected: [] as string[], told: [] as unknown[] };
+      Object.assign(window, { heard });
+      tree.items.set([
+        { children: [{ id: 'a1', label: 'main.ts' }], id: 'a', label: 'Sources' },
+        { id: 'b', label: 'Readme' },
+        { id: 'c', label: 'Licence' },
+      ]);
+      tree.events.register('select', (id) => heard.selected.push(id));
+      tree.events.register('press', ({ button, event, id, item }) => {
+        // The page shows its own menu for the secondary button, and keeps the licence from being chosen.
+        if (button === 'secondary' || id === 'c') {
+          event.preventDefault();
+        }
+        heard.told.push({ button, by: event.type, id, label: item.label });
+      });
+    });
+    return page;
+  };
+  const heard = (page: Page): Promise<{ selected: string[]; told: unknown[] }> =>
+    page.evaluate(() => (window as unknown as { heard: { selected: string[]; told: unknown[] } }).heard);
+  const row = (page: Page, id: string) => page.locator(`#test-area jl-tree [data-id="${id}"] > .row`);
+
+  it('tells the item and the button before it selects, for the pointer and for Enter', async () => {
+    const page = await treeOfThree();
+    await row(page, 'b').click();
+    await page.keyboard.press('Enter');
+    expect(await heard(page)).toEqual({
+      selected: ['b', 'b'],
+      told: [
+        { button: 'main', by: 'click', id: 'b', label: 'Readme' },
+        { button: 'main', by: 'keydown', id: 'b', label: 'Readme' },
+      ],
+    });
+    expect(state.errors).toEqual([]);
+  });
+
+  it("tells the button that asks for a menu, and keeps the browser's away when the page refuses", async () => {
+    const page = await treeOfThree();
+    const menuKept = page.evaluate(
+      () =>
+        new Promise((resolve) => {
+          document.addEventListener('contextmenu', (event) => resolve(event.defaultPrevented), { once: true });
+        })
+    );
+    await row(page, 'b').click({ button: 'right' });
+    expect(await heard(page)).toEqual({
+      selected: [],
+      told: [{ button: 'secondary', by: 'contextmenu', id: 'b', label: 'Readme' }],
+    });
+    expect(await menuKept).toBe(true);
+    expect(state.errors).toEqual([]);
+  });
+
+  it("does not select an item whose press the page refused, nor tell a press on a folder's chevron", async () => {
+    const page = await treeOfThree();
+    await row(page, 'c').click();
+    await row(page, 'a').locator('.chevron').click();
+    const drawn = await page.evaluate(() => {
+      const tree = document.querySelector('#test-area jl-tree') as JlTree;
+      return { expanded: tree.expanded.get(), value: tree.value.get() };
+    });
+    expect(drawn).toEqual({ expanded: ['a'], value: '' });
+    expect(await heard(page)).toEqual({
+      selected: [],
+      told: [{ button: 'main', by: 'click', id: 'c', label: 'Licence' }],
+    });
+    expect(state.errors).toEqual([]);
+  });
+});
+
+describe('a menu opened at a point', () => {
+  /** A menu without a trigger, and a button that has the focus when it opens. */
+  const menuAndButton = async (): Promise<Page> => {
+    const page = await open('/components/menu');
+    await mount(page, '<button type="button" id="before">Before</button><jl-menu label="Row actions"></jl-menu>');
+    await page.evaluate(() => {
+      const menu = document.querySelector('#test-area jl-menu') as JlMenu;
+      const chosen: string[] = [];
+      Object.assign(window, { chosen });
+      menu.items.set([
+        { label: 'Rename', value: 'rename' },
+        { label: 'Archive', value: 'archive' },
+      ]);
+      menu.events.register('select', (value) => chosen.push(value));
+      document.querySelector<HTMLElement>('#before')?.focus();
+    });
+    return page;
+  };
+  /** Where the menu is, whether it shows, and which of its items has the focus. */
+  const drawn = (page: Page) =>
+    page.evaluate(() => {
+      const menu = document.querySelector('#test-area jl-menu') as JlMenu;
+      const panel = menu.shadowRoot?.querySelector<HTMLElement>('[role="menu"]');
+      const box = panel?.getBoundingClientRect();
+      const focused = menu.shadowRoot?.activeElement;
+      return {
+        focused: focused instanceof HTMLElement ? focused.dataset.value : undefined,
+        inWindow: box !== undefined && box.right <= window.innerWidth && box.bottom <= window.innerHeight,
+        left: box?.left,
+        open: panel?.matches(':popover-open'),
+        top: box?.top,
+      };
+    });
+  /** Opens the menu at a point, and waits for it to have come in: it moves a little as it does. */
+  const showAt = async (page: Page, point: { x: number; y: number }): Promise<void> => {
+    await page.evaluate(
+      ({ x, y }) => (document.querySelector('#test-area jl-menu') as JlMenu).showAt(x, y),
+      point
+    );
+    await page.waitForTimeout(SETTLE_MS);
+  };
+
+  it('opens there, the focus on its first item, and gives the focus back when Escape closes it', async () => {
+    const page = await menuAndButton();
+    await showAt(page, MENU_POINT);
+    expect(await drawn(page)).toEqual({
+      focused: 'rename',
+      inWindow: true,
+      left: MENU_POINT.x,
+      open: true,
+      top: MENU_POINT.y,
+    });
+    await page.keyboard.press('Escape');
+    expect(await drawn(page)).toMatchObject({ open: false });
+    expect(await page.evaluate(() => document.activeElement?.id)).toBe('before');
+    expect(state.errors).toEqual([]);
+  });
+
+  it('stays in the window when the point is in its bottom right corner, and tells the action chosen', async () => {
+    const page = await menuAndButton();
+    const corner = await page.evaluate(() => ({ x: window.innerWidth - 4, y: window.innerHeight - 4 }));
+    await showAt(page, corner);
+    expect(await drawn(page)).toMatchObject({ inWindow: true, open: true });
+    await page.keyboard.press('ArrowDown');
+    await page.keyboard.press('Enter');
+    expect(await page.evaluate(() => (window as unknown as { chosen: string[] }).chosen)).toEqual(['archive']);
+    expect(state.errors).toEqual([]);
+  });
+});
+
+describe("the menu of a row, on the table's page", () => {
+  it('opens where a right click asked for it, and its action is for that row', async () => {
+    const page = await open('/components/table');
+    const row = page.locator('jl-table.pressed tbody tr', { hasText: 'Ben Okafor' });
+    await row.scrollIntoViewIfNeeded();
+    const box = await row.boundingBox();
+    if (box === null) {
+      throw new Error('The row is not drawn');
+    }
+    const pointer = { x: Math.round(box.x) + ROW_PRESS_INSET, y: Math.round(box.y + box.height / 2) };
+    await page.mouse.click(pointer.x, pointer.y, { button: 'right' });
+    await page.waitForTimeout(SETTLE_MS);
+    const menu = await page.locator('jl-menu.row-menu [role="menu"]').boundingBox();
+    expect({ x: menu?.x, y: menu?.y }).toEqual(pointer);
+    await page.keyboard.press('Enter');
+    await expect.poll(() => page.locator('.pressed-row').textContent()).toBe('Ben Okafor: edit');
+    expect(state.errors).toEqual([]);
+  });
+});
+
+// Jadis 1.9: a component's listeners hear the events it emitted itself, not one of the same name that bubbles up.
+describe('the tabs and a field in a panel', () => {
+  it('tell a change of tab, not the native change of the field', async () => {
+    const page = await open('/components/tabs');
+    await mount(
+      page,
+      `<jl-tabs>
+         <jl-tab-panel name="a" label="First"><select id="in-panel"><option>1</option><option>2</option></select></jl-tab-panel>
+         <jl-tab-panel name="b" label="Second">Second</jl-tab-panel>
+       </jl-tabs>`
+    );
+    await page.evaluate(() => {
+      const heard: string[] = [];
+      Object.assign(window, { heard });
+      (document.querySelector('#test-area jl-tabs') as JlTabs).events.register('change', (name) =>
+        heard.push(String(name))
+      );
+    });
+    await page.selectOption('#in-panel', '2');
+    await page.locator('#test-area jl-tabs [role="tab"]', { hasText: 'Second' }).click();
+    expect(await page.evaluate(() => (window as unknown as { heard: string[] }).heard)).toEqual(['b']);
+    expect(state.errors).toEqual([]);
+  });
+});
+
+// Jadis 1.9: a component that comes back hears only of the attributes that changed while it was away.
+describe('a field taken out of the page and put back', () => {
+  it('keeps what was typed, over the value it was written with', async () => {
+    const page = await open('/components/input');
+    await mount(page, '<jl-input label="Name" value="written"></jl-input>');
+    await page.locator('#test-area jl-input input').fill('typed');
+    const value = await page.evaluate(async () => {
+      const input = document.querySelector('#test-area jl-input') as JlInput;
+      const area = input.parentElement;
+      input.remove();
+      await new Promise((resolve) => setTimeout(resolve, 50));
+      area?.append(input);
+      await new Promise((resolve) => setTimeout(resolve, 50));
+      return input.value.get();
+    });
+    expect(value).toBe('typed');
     expect(state.errors).toEqual([]);
   });
 });

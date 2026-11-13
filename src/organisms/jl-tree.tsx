@@ -8,12 +8,22 @@ import { jsonOf } from '../lib/attributes';
 import { isModifiedClick, setOrRemove, uniqueId } from '../lib/dom';
 import { registerIcons } from '../lib/icons';
 import { pageLocale } from '../lib/locale';
+import { PRESS_EVENTS, pressButtonOf, tellPress } from '../lib/press';
 import { jlTemplate, jlText } from '../lib/texts';
 import { allItems, childrenOf, isFolder, treeKeyAction, withExpanded, withExtraRows, withPage } from '../lib/tree';
 import { BASE_STYLES } from '../styles/shared';
 import styles from './jl-tree.css?inline';
 
-import type { TreeAction, TreeItem, TreeLevel, TreeLevelEnd, TreeLoader, TreePage } from '../types/jl-tree.types';
+import type {
+  TreeAction,
+  TreeItem,
+  TreeLevel,
+  TreeLevelEnd,
+  TreeLoader,
+  TreePage,
+  TreePress,
+} from '../types/jl-tree.types';
+import type { PressButton } from '../types/press.types';
 
 // The icons it draws itself: a page registers only the names it writes.
 registerIcons({
@@ -58,12 +68,17 @@ const rowsIn = (nodes: readonly Node[]): Rows =>
  * large archive opens without loading everything: the roots first, a `lazy` folder's children when it opens, and
  * the next page of a level from the button that ends it. The keyboard follows the tree pattern: Up and Down move,
  * Right opens or enters a folder, Left closes it or goes to the parent, Home and End jump, Enter selects. Emits
- * `select` and `toggle`; an item with an `href` is a link instead.
+ * `select` and `toggle`; an item with an `href` is a link instead. A press on an item fires `press` first, with
+ * the item, the button and the browser's event, which a page cancels to refuse it: its own menu on a right click.
  */
 export class JlTree extends JlElement {
   static readonly selector = 'jl-tree';
 
-  readonly events = this.useEvents<{ select: string; toggle: { id: string; open: boolean } }>();
+  readonly events = this.useEvents<{
+    select: string;
+    toggle: { id: string; open: boolean };
+    press: TreePress;
+  }>();
 
   readonly items = this.useChange<TreeItem[]>([], () => this.renderItemsUnlessQuiet(), {
     attribute: 'items',
@@ -167,7 +182,9 @@ export class JlTree extends JlElement {
 
   onConnect(): void {
     const tree = this._refs.tree;
-    this.on(tree, 'click', (event) => this.press(event));
+    for (const type of PRESS_EVENTS) {
+      this.on(tree, type, (event) => this.press(event));
+    }
     this.on(tree, 'keydown', (event) => this.handleKey(event));
     this.on(tree, 'focusin', (event) => {
       const id = this.idOf(event.target);
@@ -183,34 +200,68 @@ export class JlTree extends JlElement {
   }
 
   /**
-   * A press selects the item; on a folder it also opens or closes it, and the chevron only does that. A link's row
-   * leaves a modified click (a new tab) to the browser.
+   * A press on a row. The main button selects the item; on a folder it also opens or closes it, and the chevron
+   * only does that. A link's row leaves a modified click (a new tab) to the browser. The page hears of a press on
+   * an item first, whatever its button (`press`), and refuses it by cancelling the event.
    */
   private press(event: MouseEvent): void {
     const id = this.idOf(event.target);
-    if (id !== null && isLevelEnd(id)) {
+    const button = pressButtonOf(event);
+    if (id === null || button === null) {
+      return;
+    }
+    const item = isLevelEnd(id) ? undefined : this.findItem(id);
+    const onChevron = event.target instanceof Element && event.target.closest('.chevron') !== null;
+    if (item === undefined || onChevron) {
+      this.pressOwnControl(event, id, button);
+      return;
+    }
+    const isBrowsers = item.href !== undefined && button === 'main' && isModifiedClick(event);
+    if (isBrowsers || this.tellItemPress({ button, event, id, item }) || button !== 'main') {
+      return;
+    }
+    this.toggleFolder(item);
+    this.select(item);
+    this.moveFocus(id, true);
+  }
+
+  /** A press on what the tree handles alone, with the main button: the row that ends a level, a folder's chevron. */
+  private pressOwnControl(event: MouseEvent, id: string, button: PressButton): void {
+    if (button !== 'main') {
+      return;
+    }
+    if (isLevelEnd(id)) {
       this.loadNextPage(parentOfLevelEnd(id));
       return;
     }
-    const item = id === null ? undefined : this.findItem(id);
-    if (id === null || item === undefined) {
+    const item = this.findItem(id);
+    if (item === undefined) {
       return;
     }
-    const onChevron = event.target instanceof Element && event.target.closest('.chevron') !== null;
-    if (onChevron) {
-      // The chevron opens a link's folder; the link is not followed.
-      event.preventDefault();
-    }
-    if (item.href !== undefined && !onChevron && isModifiedClick(event)) {
-      return;
-    }
-    if (isFolder(item)) {
-      this.toggle(id, !this.expanded.get().includes(id));
-    }
-    if (!onChevron) {
-      this.select(item);
-    }
+    // The chevron opens a link's folder; the link is not followed.
+    event.preventDefault();
+    this.toggleFolder(item);
     this.moveFocus(id, true);
+  }
+
+  private toggleFolder(item: TreeItem): void {
+    if (isFolder(item)) {
+      this.toggle(item.id, !this.expanded.get().includes(item.id));
+    }
+  }
+
+  /**
+   * Tells the page of a press on an item.
+   * @returns Whether the page refused it, by cancelling the event
+   */
+  private tellItemPress(press: TreePress): boolean {
+    return tellPress(press.event, () => this.events.emit('press', press));
+  }
+
+  /** Enter or Space on an item is a press too, of the main button: the page hears of it, and may refuse it. */
+  private tellKeyPress(id: string, event: KeyboardEvent): boolean {
+    const item = isLevelEnd(id) ? undefined : this.findItem(id);
+    return item !== undefined && this.tellItemPress({ button: 'main', event, id, item });
   }
 
   private handleKey(event: KeyboardEvent): void {
@@ -222,7 +273,12 @@ export class JlTree extends JlElement {
     if (action === null) {
       return;
     }
+    // Told before the key is taken from the browser: the page refuses a press by cancelling that same event.
+    const refused = action.kind === 'select' && this.tellKeyPress(action.id, event);
     event.preventDefault();
+    if (refused) {
+      return;
+    }
     const run: Record<TreeAction['kind'], () => void> = {
       focus: () => this.moveFocus(action.id, true),
       select: () => this.activate(action.id),

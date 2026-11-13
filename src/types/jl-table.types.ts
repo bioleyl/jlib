@@ -1,4 +1,5 @@
 import type { Tone } from './options.types';
+import type { PressButton } from './press.types';
 
 /** How a cell shows its value: as it is, a localised number, date or date and time, a badge, or code. */
 export type TableCellFormat = 'text' | 'number' | 'date' | 'datetime' | 'badge' | 'code';
@@ -73,3 +74,15 @@ export type TableDetailRenderer<Row extends object = TableRow> = (row: Row) => N
 
 /** A row opened or closed: its key, and whether it is open now. */
 export type TableToggle = { key: TableRowKey; open: boolean };
+
+/**
+ * A press on a row: which row, with which button, and the browser's event. The event says where the pointer is
+ * (`clientX`, `clientY`); cancelling it (`event.preventDefault()`) refuses the press: the browser's menu does not
+ * show for the secondary button, and an expandable row stays as it is for the main one.
+ */
+export type TablePress<Row extends object = TableRow> = {
+  key: TableRowKey;
+  row: Row;
+  button: PressButton;
+  event: MouseEvent;
+};

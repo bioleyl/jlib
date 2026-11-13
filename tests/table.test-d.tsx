@@ -3,7 +3,8 @@
 import { describe, expectTypeOf, it } from 'vitest';
 
 import type { JlTable } from '../src/organisms/jl-table';
-import type { TableColumn, TableSort } from '../src/types/jl-table.types';
+import type { TableColumn, TablePress, TableSort } from '../src/types/jl-table.types';
+import type { PressButton } from '../src/types/press.types';
 import type { Order } from './types/table.types';
 
 type OrderField = 'id' | 'customer' | 'total' | 'note';
@@ -38,6 +39,15 @@ describe('a table typed by its rows', () => {
     typed.renderers.set({ totl: () => text('') });
     // @ts-expect-error: not a field of an order
     typed.detail = (order) => text(order.custmer);
+  });
+
+  it('says which order was pressed, with which button', () => {
+    typed.events.register('press', (press) => {
+      expectTypeOf(press).toEqualTypeOf<TablePress<Order>>();
+      expectTypeOf(press.row).toEqualTypeOf<Order>();
+      expectTypeOf(press.button).toEqualTypeOf<PressButton>();
+      press.event.preventDefault();
+    });
   });
 
   it('says which column its rows are sorted by', () => {

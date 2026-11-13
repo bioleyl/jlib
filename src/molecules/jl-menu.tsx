@@ -4,13 +4,13 @@ import { JlIcon } from '../atoms/jl-icon';
 import { JlElement } from '../base/jl-element';
 import { jsonOf, oneOf } from '../lib/attributes';
 import { uniqueId } from '../lib/dom';
-import { followAnchor, PLACEMENTS } from '../lib/floating';
+import { followAnchor, PLACEMENTS, placeAtPoint } from '../lib/floating';
 import { firstIndex, lastIndex, letterIndex, stepIndex } from '../lib/roving';
-import { setTriggerAria } from '../lib/trigger';
+import { deepActiveElement, setTriggerAria } from '../lib/trigger';
 import { BASE_STYLES, FLOATING_STYLES } from '../styles/shared';
 import styles from './jl-menu.css?inline';
 
-import type { Placement } from '../types/floating.types';
+import type { Placement, Point } from '../types/floating.types';
 import type { MenuAction, MenuDivider, MenuItem } from '../types/jl-menu.types';
 
 const ICON_SIZE = 16;
@@ -58,6 +58,8 @@ const isTypeahead = (event: KeyboardEvent): boolean =>
 /**
  * A list of actions that opens from its trigger (`slot="trigger"`, any button): on a press or with ArrowDown. Arrows,
  * Home, End and the first letter move through it; Enter chooses, Escape closes. `select` fires with the value.
+ * `showAt(x, y)` opens it at a point of the window instead, with no trigger: the menu of a row, where a right click
+ * asked for it.
  * Typed by its values, `JlMenu<'edit' | 'delete'>` takes actions of those values and gives `select` one of them:
  * a page handles them with a `Record<'edit' | 'delete', () => void>`, which misses none.
  */
@@ -88,6 +90,10 @@ export class JlMenu<Value extends string = string> extends JlElement {
   readonly label = this.useChange('', () => this.renderName(), { attribute: 'label' });
 
   private readonly _state = {
+    /** The point of the window the menu was opened at, when it was not opened by its trigger. */
+    at: undefined as Point | undefined,
+    /** What had the focus when the menu opened at a point: the focus goes back to it. */
+    focusedBefore: null as Element | null,
     following: new AbortController(),
     // Whether the menu was open when the pointer went down on the trigger: the click outside closes it then.
     openAtPointerDown: false,
@@ -104,6 +110,21 @@ export class JlMenu<Value extends string = string> extends JlElement {
   /** Opens the menu and focuses its first item. */
   show(): void {
     this.whenRendered(() => this.open(firstIndex));
+  }
+
+  /**
+   * Opens the menu at a point of the window, such as where the pointer is (`event.clientX`, `event.clientY`), and
+   * focuses its first item. It needs no trigger; give it a `label`. The focus goes back to what had it when the menu
+   * closes.
+   */
+  showAt(x: number, y: number): void {
+    this.whenRendered(() => {
+      const focused = deepActiveElement(document);
+      // Open by its trigger, or at another point: it opens again, here.
+      this.close();
+      this._state.focusedBefore = focused;
+      this.open(firstIndex, { left: x, top: y });
+    });
   }
 
   hide(): void {
@@ -216,7 +237,7 @@ export class JlMenu<Value extends string = string> extends JlElement {
     if (event.key === 'Escape') {
       event.preventDefault();
       this.close();
-      this.triggerElement()?.focus();
+      this.returnFocus();
       return;
     }
     if (isTypeahead(event)) {
@@ -225,9 +246,10 @@ export class JlMenu<Value extends string = string> extends JlElement {
     }
   }
 
-  private open(focusFirst: (enabled: readonly boolean[]) => number): void {
+  private open(focusFirst: (enabled: readonly boolean[]) => number, at?: Point): void {
     const menu = this._refs.menu;
     if (!this.isOpen()) {
+      this._state.at = at;
       this.renderItems();
       menu.showPopover();
       this.follow();
@@ -257,7 +279,7 @@ export class JlMenu<Value extends string = string> extends JlElement {
     }
     const action = this.actionOf(item);
     this.close();
-    this.triggerElement()?.focus();
+    this.returnFocus();
     if (action !== undefined) {
       this.events.emit('select', action.value);
     }
@@ -283,9 +305,26 @@ export class JlMenu<Value extends string = string> extends JlElement {
     return active !== null && this._refs.menu.contains(active);
   }
 
-  /** Keeps the menu by the trigger while it is open. */
+  /**
+   * The focus goes back to the trigger, or, for a menu opened at a point, to what had it then. The browser does that
+   * for a popover that closes, but not for one in a shadow root.
+   */
+  private returnFocus(): void {
+    const { at, focusedBefore } = this._state;
+    const back = at === undefined ? this.triggerElement() : focusedBefore;
+    if (back instanceof HTMLElement) {
+      back.focus();
+    }
+  }
+
+  /** Keeps the menu by the trigger while it is open, or puts it at the point it was opened at. */
   private follow(): void {
     this._state.following.abort();
+    const { at } = this._state;
+    if (this.isOpen() && at !== undefined) {
+      placeAtPoint(at, this._refs.menu);
+      return;
+    }
     const trigger = this.triggerElement();
     if (!this.isOpen() || trigger === null) {
       return;

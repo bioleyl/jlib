@@ -3,12 +3,14 @@
 What changed in each version of [@syware/jlib](https://www.npmjs.com/package/@syware/jlib). Every component is shown
 and documented on [the documentation site](https://bioleyl.github.io/jlib/).
 
-## Unreleased
+## 0.15.0 (2026-11-13)
 
 What a review of the whole project found, fixed: a script that ran in every app's install, states that assistive
 technology never heard, values lost or changed by leaving a field, and modals that closed or blocked what they should
-not. Each fix has its test; the browser tests now also run an accessibility sweep on every page, and CI runs before a
-merge. Three changes ask for a look before updating.
+not. A table's rows and a tree's items now tell a press, with its button, and a menu opens where the pointer is. Each
+fix has its test; the browser tests also run an accessibility sweep on every page, and CI runs before a merge. The
+`@jadis/core` peer moves to 1.9, and five changes ask for a look before updating (a minor version, as jlib is before
+1.0).
 
 ### Fixed
 
@@ -36,7 +38,11 @@ merge. Three changes ask for a look before updating.
   is `loading`; a native button goes along as the submitter.
 - **`jl-button` shows a text given right after it joined the page**; it stayed icon-only.
 - **A component taken out of the page and put back at once does things once**: its listeners were wired twice (one
-  click, two `press`). The `@jadis/core` peer is `^1.8.1`, which fixes it.
+  click, two `press`). Jadis 1.8.1 fixes it.
+- **A field keeps what was typed when it is taken out of the page and put back**: written with a `value`, it went
+  back to that value. Jadis 1.9 tells a returning component only of the attributes that changed meanwhile.
+- **`jl-tabs`' `change` is its own**: the native `change` of a field in a panel called its listeners too, with no
+  detail. With Jadis 1.9 a component's listeners hear its own events only.
 - **`jl-input-list` works after it is taken out of the page and put back** (its rows heard nothing any more), and
   takes numbers in `values` (`values='[1,2]'` threw).
 - **`jl-field` keeps a label its control was given in code**: a JSX prop writes no attribute, and the field replaced
@@ -60,14 +66,32 @@ merge. Three changes ask for a look before updating.
 
 ### Added
 
+- **`jl-table` and `jl-tree` tell a press on a row or an item**: `press`, with the row (or the item), the button
+  (`main` for a click, `auxiliary` for a middle click, `secondary` for a right click, the keyboard's menu key or a
+  long press) and the browser's event, which says where the pointer is. A page cancels that event to refuse the
+  press: the browser's menu stays away, so the page shows its own; an expandable row stays as it is, a tree's item
+  is not selected. A table whose rows open something on a click says so with `--row-cursor: pointer`. The button is
+  typed `PressButton`.
+- **`jl-menu` opens where the pointer is**: `showAt(x, y)` opens it at a point of the window, with no trigger, for
+  the menu of a row or an item on the press that asked for it. Its corner goes to the point, above it when there is
+  no room under, and the focus goes back to what had it when the menu closes.
 - **`jl-copy-button` says when it could not copy** (`failed` on the host, for a moment): without a clipboard (a page
   served without https has none) a press did nothing one could see, and left an unhandled rejection.
 - **An accessibility sweep in the browser tests**: axe-core (WCAG 2, A and AA) on each of the site's 109 pages.
 - **`npm run check:pack`**: the package is packed and unpacked in a scratch app, which is type-checked and bundled.
   CI runs it, with the checks and the browser tests, on every pull request.
 
+### Changed
+
+- **The `@jadis/core` peer is `^1.9.0`** (was `^1.8.0`). Update Jadis with jlib:
+  `npm install @jadis/core@^1.9.0 @syware/jlib@^0.15.0`. A listener now gets the event after the detail,
+  `(detail, event) => …`, and can cancel it.
+
 ### Worth a look when you update
 
+- **Read Jadis 1.9's own notes**: a callback with an optional second parameter now receives the event there, and a
+  camelCase `on…` prop on a component no longer hears events that bubble up from slotted children.
+- **A press on a table's row or a tree's item reaches `press` whatever its button**: check `button` before acting.
 - **`JlLoadState.load()` throws what your `draw` throws.** It caught everything and showed "could not load": a
   mistake in `draw` or `isEmpty` now shows the error state and is thrown on, so the console says what broke. A load
   that fails (its `fetch` rejects) still resolves `false`.
