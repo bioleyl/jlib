@@ -150,7 +150,7 @@ a.row {
 .badge {
   flex: none;
   margin-left: auto;
-  color: var(--jl-faint);
+  color: var(--jl-muted);
   font-size: var(--jl-font-xs);
   font-variant-numeric: tabular-nums;
 }

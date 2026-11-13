@@ -3326,3 +3326,35 @@ describe('forced colours', () => {
     expect(state.errors).toEqual([]);
   });
 });
+
+// The faint ink is for icons: at 3.2:1 it is too light for text, which starts at the muted one.
+describe('the quietest texts', () => {
+  it('are in the muted ink: a placeholder, an unchosen select, a comment in code', async () => {
+    const page = await open('/components/code-block');
+    await mount(
+      page,
+      `<jl-input label="Name" placeholder="Ada"></jl-input>
+       <jl-select label="Size" placeholder="Choose"><option value="s">Small</option></jl-select>
+       <jl-code-block language="ts" code="// A comment"></jl-code-block>`
+    );
+    const inks = await page.evaluate(() => {
+      const area = document.querySelector('#test-area') as HTMLElement;
+      const probe = document.createElement('span');
+      probe.style.color = 'var(--jl-muted)';
+      area.append(probe);
+      const inside = (tag: string, selector: string): Element | null | undefined =>
+        area.querySelector(tag)?.shadowRoot?.querySelector(selector);
+      const input = inside('jl-input', 'input');
+      const select = inside('jl-select', 'select');
+      const comment = inside('jl-code-block', '.tok-comment');
+      return {
+        comment: comment ? getComputedStyle(comment).color : 'missing',
+        muted: getComputedStyle(probe).color,
+        placeholder: input ? getComputedStyle(input, '::placeholder').color : 'missing',
+        select: select ? getComputedStyle(select).color : 'missing',
+      };
+    });
+    expect(inks).toEqual({ comment: inks.muted, muted: inks.muted, placeholder: inks.muted, select: inks.muted });
+    expect(state.errors).toEqual([]);
+  });
+});

@@ -21,7 +21,7 @@
 }
 
 :host([placeholder-shown]) .native {
-  color: var(--jl-faint);
+  color: var(--jl-muted);
 }
 
 /* The list keeps the text colour even while the placeholder greys the closed field. */

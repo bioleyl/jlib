@@ -57,7 +57,7 @@ input {
 }
 
 input::placeholder {
-  color: var(--jl-faint);
+  color: var(--jl-muted);
 }
 
 input:focus-visible {
