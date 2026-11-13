@@ -4,6 +4,7 @@ import { JlElement } from '../base/jl-element';
 import { oneOf } from '../lib/attributes';
 import { parseNumber } from '../lib/numeric';
 import { percentLabel, percentOf, progressRatio } from '../lib/progress';
+import { jlText } from '../lib/texts';
 import { BASE_STYLES } from '../styles/shared';
 import styles from './jl-progress.css?inline';
 
@@ -13,9 +14,6 @@ export const PROGRESS_TONES: readonly ProgressTone[] = ['accent', 'ok', 'warn', 
 export const PROGRESS_SIZES: readonly ProgressSize[] = ['md', 'sm'];
 
 const DEFAULT_MAX = 100;
-// What screen readers call a bar that has no visible label.
-const DEFAULT_NAME = 'Progress';
-
 /**
  * How far a task has gone, as a bar: `value` out of `max`. Without a value, the work has no known end and the bar
  * runs back and forth. A `label` above names it; `show-value` prints the percentage.
@@ -88,6 +86,10 @@ export class JlProgress extends JlElement {
     this._refs.percent.textContent = percentLabel(ratio);
   }
 
+  protected drawTexts(): void {
+    this.renderHeader();
+  }
+
   private renderHeader(): void {
     const label = this.label.get();
     const track = this._refs.track;
@@ -96,7 +98,8 @@ export class JlProgress extends JlElement {
     this._refs.header.hidden = label === '' && !this.showValue.get();
     if (label === '') {
       track.removeAttribute('aria-labelledby');
-      track.setAttribute('aria-label', DEFAULT_NAME);
+      // What screen readers call a bar that has no visible label.
+      track.setAttribute('aria-label', jlText('progress'));
       return;
     }
     track.removeAttribute('aria-label');
