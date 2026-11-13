@@ -99,6 +99,8 @@ const BACKDROP_CORNER = 5;
 // More Escapes in a row than a browser lets a page refuse by cancelling the dialog's cancel event.
 const ESCAPE_PRESSES = 4;
 const ESCAPE_GAP_MS = 150;
+// Longer than the copy button says what a press came to.
+const COPY_SAYS_MS = 1800;
 
 const componentPaths = readdirSync(DOCS)
   .filter((file) => file.endsWith('.doc.ts'))
@@ -3137,6 +3139,28 @@ describe('a toast shown again', () => {
       return drawn ? getComputedStyle(drawn).opacity : 'missing';
     });
     expect(opacity).toBe('1');
+    expect(state.errors).toEqual([]);
+  });
+});
+
+describe('the copy button, where the clipboard refuses', () => {
+  it('says that it could not copy, then is a copy button again', async () => {
+    const page = await open('/components/copy-button');
+    await mount(page, '<jl-copy-button value="abc"></jl-copy-button>');
+    // As on a page served without https: no clipboard at all.
+    await page.evaluate(() =>
+      Object.defineProperty(navigator, 'clipboard', { configurable: true, value: undefined })
+    );
+    await page.locator('#test-area jl-copy-button').click();
+    const hint = (): Promise<string | null | undefined> =>
+      page.evaluate(() => {
+        const button = document.querySelector('#test-area jl-copy-button');
+        const drawn = button?.shadowRoot?.querySelector('jl-button')?.shadowRoot?.querySelector('button');
+        return button?.hasAttribute('failed') ? drawn?.getAttribute('title') : 'not failed';
+      });
+    expect(await hint()).toBe('Could not copy');
+    await page.waitForTimeout(COPY_SAYS_MS);
+    expect(await hint()).toBe('not failed');
     expect(state.errors).toEqual([]);
   });
 });

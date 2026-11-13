@@ -34,6 +34,7 @@ export default defineTranslations(DEFAULT_TEXTS, {
   confirm: 'Confirmer',
   copied: 'Copié',
   copy: 'Copier',
+  copyFailed: 'Copie impossible',
   decrease: 'Diminuer',
   details: 'Détails',
   detailsOf: 'Détails de {name}',

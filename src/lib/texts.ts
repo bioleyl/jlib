@@ -57,6 +57,7 @@ export const DEFAULT_TEXTS = defineTranslations({
   confirm: 'Confirm',
   copied: 'Copied',
   copy: 'Copy',
+  copyFailed: 'Could not copy',
   decrease: 'Decrease',
   details: 'Details',
   detailsOf: 'Details of {name}',
