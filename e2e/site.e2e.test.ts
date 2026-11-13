@@ -30,6 +30,7 @@ import type { JlCodeBlock } from '../src/molecules/jl-code-block';
 import type { JlCombobox } from '../src/molecules/jl-combobox';
 import type { JlDatePicker } from '../src/molecules/jl-date-picker';
 import type { JlField } from '../src/molecules/jl-field';
+import type { JlFileDrop } from '../src/molecules/jl-file-drop';
 import type { JlInputList } from '../src/molecules/jl-input-list';
 import type { JlListItem } from '../src/molecules/jl-list-item';
 import type { JlLoadState } from '../src/molecules/jl-load-state';
@@ -2785,6 +2786,79 @@ describe('the number input', () => {
       (document.querySelector('#test-area jl-number-input') as JlNumberInput).value.get()
     );
     expect(value).toBe(1.5);
+    expect(state.errors).toEqual([]);
+  });
+});
+
+// The element is disabled by the fieldset, not by its own input: nothing inside may act.
+describe('a disabled fieldset', () => {
+  it('keeps a submit button from pressing and submitting', async () => {
+    const page = await open('/components/button');
+    await mount(page, '<form><fieldset disabled><jl-button type="submit">Save</jl-button></fieldset></form>');
+    await page.evaluate(() => {
+      const heard: string[] = [];
+      Object.assign(window, { heard });
+      document.querySelector('#test-area form')?.addEventListener('submit', (event) => {
+        event.preventDefault();
+        heard.push('submit');
+      });
+      (document.querySelector('#test-area jl-button') as JlButton).events.register('press', () =>
+        heard.push('press')
+      );
+    });
+    await page.locator('#test-area jl-button').click({ force: true });
+    expect(await page.evaluate(() => (window as unknown as { heard: string[] }).heard)).toEqual([]);
+    await page.evaluate(() => document.querySelector('#test-area fieldset')?.removeAttribute('disabled'));
+    await page.locator('#test-area jl-button').click();
+    expect(await page.evaluate(() => (window as unknown as { heard: string[] }).heard)).toEqual([
+      'press',
+      'submit',
+    ]);
+    expect(state.errors).toEqual([]);
+  });
+
+  it('keeps a combobox from opening and from being cleared', async () => {
+    const page = await open('/components/combobox');
+    const options = JSON.stringify([
+      { label: 'A', value: 'a' },
+      { label: 'B', value: 'b' },
+    ]);
+    await mount(
+      page,
+      `<fieldset disabled><jl-combobox label="Letter" value="a" clearable options='${options}'></jl-combobox></fieldset>`
+    );
+    const drawn = await page.evaluate(() => {
+      const root = (document.querySelector('#test-area jl-combobox') as JlCombobox).shadowRoot;
+      return {
+        clearHidden: root?.querySelector<HTMLElement>('.clear')?.hidden,
+        toggleDisabled: root?.querySelector<HTMLButtonElement>('.toggle')?.disabled,
+      };
+    });
+    expect(drawn).toEqual({ clearHidden: true, toggleDisabled: true });
+  });
+
+  it('keeps a tag input from losing tags and a file drop from browsing', async () => {
+    const page = await open('/components/tag-input');
+    await mount(
+      page,
+      `<fieldset disabled><jl-tag-input label="Tags" value='["a","b"]'></jl-tag-input></fieldset>`
+    );
+    const removeShown = await page.evaluate(() => {
+      const remove = (document.querySelector('#test-area jl-tag-input') as JlTagInput).shadowRoot?.querySelector(
+        '.tag-remove'
+      );
+      return remove ? getComputedStyle(remove).display : 'missing';
+    });
+    expect(removeShown).toBe('none');
+    await open('/components/file-drop');
+    await mount(page, '<fieldset disabled><jl-file-drop label="Files"></jl-file-drop></fieldset>');
+    const browseDisabled = await page.evaluate(
+      () =>
+        (
+          document.querySelector('#test-area jl-file-drop') as JlFileDrop
+        ).shadowRoot?.querySelector<HTMLButtonElement>('.browse')?.disabled
+    );
+    expect(browseDisabled).toBe(true);
     expect(state.errors).toEqual([]);
   });
 });

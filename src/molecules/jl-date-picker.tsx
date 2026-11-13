@@ -109,6 +109,7 @@ export class JlDatePicker extends JlFormControl {
   private readonly _popupId = uniqueId('jl-date-picker-popup');
 
   private readonly _state = {
+    disabledByForm: false,
     opening: new AbortController(),
     /** Whether a press on the button should open: read before the press closes the calendar by light dismiss. */
     openOnPress: null as boolean | null,
@@ -222,12 +223,14 @@ export class JlDatePicker extends JlFormControl {
   }
 
   protected setDisabledByForm(disabled: boolean): void {
-    const off = disabled || this.disabled.get();
+    this._state.disabledByForm = disabled;
     // A disabled field gets this call as it upgrades, before its template exists: wait for it.
-    this.whenRendered(() => {
-      this._refs.native.disabled = off;
-      this._refs.open.disabled = off;
-    });
+    this.whenRendered(() => this.drawDisabled());
+  }
+
+  /** Disabled by its own input, or by a `<fieldset disabled>` around it. */
+  private isOff(): boolean {
+    return this.disabled.get() || this._state.disabledByForm;
   }
 
   private isOpen(): boolean {
@@ -313,7 +316,7 @@ export class JlDatePicker extends JlFormControl {
   }
 
   private openPopup(): void {
-    if (this.isOpen() || this.disabled.get() || this._refs.native.disabled) {
+    if (this.isOpen() || this.isOff()) {
       return;
     }
     this.commitText();
@@ -437,14 +440,19 @@ export class JlDatePicker extends JlFormControl {
   }
 
   private renderClear(): void {
-    const editable = !this.disabled.get();
+    const editable = !this.isOff();
     this._refs.clear.hidden = !(this.clearable.get() && editable && this._refs.native.value !== '');
   }
 
   private renderDisabled(disabled: boolean): void {
-    this._refs.native.disabled = disabled;
-    this._refs.open.disabled = disabled;
     this.reflect('disabled', disabled);
+    this.drawDisabled();
+  }
+
+  /** Without the attribute: the form says its state before the `disabled` input has taken the attribute's change. */
+  private drawDisabled(): void {
+    this._refs.native.disabled = this.isOff();
+    this._refs.open.disabled = this.isOff();
     this.closePopup();
     this.renderClear();
   }

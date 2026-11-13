@@ -102,6 +102,7 @@ export class JlTagInput extends JlFormControl {
 
   private readonly _state = {
     active: NONE,
+    disabledByForm: false,
     matches: [] as Suggestion[],
     opening: new AbortController(),
   };
@@ -177,10 +178,14 @@ export class JlTagInput extends JlFormControl {
   }
 
   protected setDisabledByForm(disabled: boolean): void {
+    this._state.disabledByForm = disabled;
     // A disabled field gets this call as it upgrades, before its template exists: wait for it.
-    this.whenRendered(() => {
-      this._refs.native.disabled = disabled || this.disabled.get();
-    });
+    this.whenRendered(() => this.drawDisabled());
+  }
+
+  /** Disabled by its own input, or by a `<fieldset disabled>` around it. */
+  private isOff(): boolean {
+    return this.disabled.get() || this._state.disabledByForm;
   }
 
   private onType(): void {
@@ -309,7 +314,7 @@ export class JlTagInput extends JlFormControl {
   private removeAt(index: number): void {
     const tags = this.value.get();
     const removed = tags[index];
-    if (removed === undefined || this.disabled.get()) {
+    if (removed === undefined || this.isOff()) {
       return;
     }
     const next = tags.filter((_, position) => position !== index);
@@ -340,7 +345,7 @@ export class JlTagInput extends JlFormControl {
   private focusLastTag(): boolean {
     const native = this._refs.native;
     const count = this.value.get().length;
-    if (native.selectionStart !== 0 || native.selectionEnd !== 0 || count === 0 || this.disabled.get()) {
+    if (native.selectionStart !== 0 || native.selectionEnd !== 0 || count === 0 || this.isOff()) {
       return false;
     }
     this.focusTag(count - 1);
@@ -572,8 +577,13 @@ export class JlTagInput extends JlFormControl {
   }
 
   private renderDisabled(disabled: boolean): void {
-    this._refs.native.disabled = disabled;
     this.reflect('disabled', disabled);
+    this.drawDisabled();
+  }
+
+  /** Without the attribute: the form says its state before the `disabled` input has taken the attribute's change. */
+  private drawDisabled(): void {
+    this._refs.native.disabled = this.isOff();
     this.closeList();
   }
 }

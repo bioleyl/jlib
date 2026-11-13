@@ -225,7 +225,8 @@ export class JlInput extends JlFormControl {
 
   /** The × shows while an editable field holds text; its SVG is drawn the first time it does. */
   private renderClear(): void {
-    const editable = !this.disabled.get() && !this.readonly.get();
+    // The native field is the one that knows: it is also disabled by a `<fieldset disabled>` around the element.
+    const editable = !this._refs.native.disabled && !this.readonly.get();
     const clear = this._refs.clear;
     clear.hidden = !(this.clearable.get() && editable && this.value.get() !== '');
     if (!clear.hidden) {

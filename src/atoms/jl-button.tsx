@@ -53,9 +53,8 @@ export class JlButton extends JlElement {
   readonly disabled = this.useChange(
     false,
     (value) => {
-      this._refs.button.disabled = value;
-      this.renderLink();
       this.reflect('disabled', value);
+      this.renderDisabled();
     },
     { attribute: 'disabled' }
   );
@@ -83,6 +82,8 @@ export class JlButton extends JlElement {
   readonly download = this.useChange('', () => this.renderLink(), { attribute: 'download' });
 
   private readonly _internals = elementInternals(this);
+  // Kept apart from `disabled`: the browser also says it for the button's own attribute, possibly before it renders.
+  private readonly _form = { disabled: false };
 
   private readonly _refs = this.useRefs((ref) => ({
     button: ref('button'),
@@ -121,6 +122,12 @@ export class JlButton extends JlElement {
     return css`${BASE_STYLES}${styles}`;
   }
 
+  /** Called by the browser when a `<fieldset disabled>` around the button changes: it presses and submits no more. */
+  formDisabledCallback(disabled: boolean): void {
+    this._form.disabled = disabled;
+    this.whenRendered(() => this.renderDisabled());
+  }
+
   onConnect(): void {
     this.on(this._refs.slot, 'slotchange', () => this.renderLabel());
     this.on(this._refs.button, 'click', () => {
@@ -140,7 +147,17 @@ export class JlButton extends JlElement {
   }
 
   private canPress(): boolean {
-    return !(this.disabled.get() || this.loading.get());
+    return !(this.isOff() || this.loading.get());
+  }
+
+  /** Disabled by its own input, or by a `<fieldset disabled>` around it. */
+  private isOff(): boolean {
+    return this.disabled.get() || this._form.disabled;
+  }
+
+  private renderDisabled(): void {
+    this._refs.button.disabled = this.isOff();
+    this.renderLink();
   }
 
   /** The element that takes focus and clicks: the link with an `href`, the button otherwise. */
@@ -157,7 +174,7 @@ export class JlButton extends JlElement {
     const href = this.href.get();
     const isLink = href !== '';
     const target = this.target.get();
-    const off = isLink && this.disabled.get();
+    const off = isLink && this.isOff();
     // Moved only between the button and the link: disabled, target and download leave it where it is.
     const control = this.control();
     if (content.parentNode !== control) {
