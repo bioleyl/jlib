@@ -3000,3 +3000,35 @@ describe('the button', () => {
     expect(state.errors).toEqual([]);
   });
 });
+
+describe('the input list, in the page again', () => {
+  it('still hears its rows after it was taken out and put back', async () => {
+    const page = await open('/components/input-list');
+    await mount(page, `<jl-input-list label="Emails" values='["a","b"]'></jl-input-list>`);
+    await page.evaluate(async () => {
+      const list = document.querySelector('#test-area jl-input-list') as JlInputList;
+      const area = list.parentElement;
+      list.remove();
+      await new Promise((resolve) => setTimeout(resolve, 50));
+      area?.append(list);
+    });
+    await page.waitForTimeout(SETTLE_MS);
+    await page.locator('#test-area jl-input-list jl-input input').first().press('End');
+    await page.keyboard.type('x');
+    const values = await page.evaluate(() =>
+      (document.querySelector('#test-area jl-input-list') as JlInputList).values.get()
+    );
+    expect(values).toEqual(['ax', 'b']);
+    expect(state.errors).toEqual([]);
+  });
+
+  it('takes numbers written in its values', async () => {
+    const page = await open('/components/input-list');
+    await mount(page, `<jl-input-list label="Sizes" type="number" values='[1,2]'></jl-input-list>`);
+    const values = await page.evaluate(() =>
+      (document.querySelector('#test-area jl-input-list') as JlInputList).values.get()
+    );
+    expect(values).toEqual(['1', '2']);
+    expect(state.errors).toEqual([]);
+  });
+});
