@@ -3032,3 +3032,35 @@ describe('the input list, in the page again', () => {
     expect(state.errors).toEqual([]);
   });
 });
+
+describe("the field and its control's label", () => {
+  it('keeps a label the control was given in code, and follows its own on a control without one', async () => {
+    const page = await open('/components/field');
+    const labels = await page.evaluate(async () => {
+      const settle = (): Promise<void> => new Promise((resolve) => setTimeout(resolve, 100));
+      const build = (label: string): { field: JlField; input: JlInput } => {
+        const field = document.createElement('jl-field') as JlField;
+        const input = document.createElement('jl-input') as JlInput;
+        field.label.set('Customer');
+        // As a JSX prop does: the property, no attribute.
+        input.label.set(label);
+        field.append(input);
+        document.body.prepend(field);
+        return { field, input };
+      };
+      const own = build('Search customers');
+      const named = build('');
+      await settle();
+      const first = [own.input.label.get(), named.input.label.get()];
+      own.field.label.set('Client');
+      named.field.label.set('Client');
+      await settle();
+      const second = [own.input.label.get(), named.input.label.get()];
+      own.field.remove();
+      named.field.remove();
+      return { first, second };
+    });
+    expect(labels).toEqual({ first: ['Search customers', 'Customer'], second: ['Search customers', 'Client'] });
+    expect(state.errors).toEqual([]);
+  });
+});

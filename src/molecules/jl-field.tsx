@@ -77,7 +77,11 @@ export class JlField extends JlElement {
     { attribute: 'orientation', parse: oneOf(FIELD_ORIENTATIONS, 'vertical') }
   );
 
-  private readonly _state = { invalidated: null as Element | null };
+  private readonly _state = {
+    invalidated: null as Element | null,
+    /** The control this field named, and with which label: a label of the control's own is told from it. */
+    named: { control: null as Element | null, label: '' },
+  };
 
   private readonly _refs = this.useRefs((ref) => ({
     asterisk: ref('.asterisk'),
@@ -165,15 +169,27 @@ export class JlField extends JlElement {
     }
   }
 
-  /** Names the control for screen readers with the field's label, unless it has a label of its own. */
+  /**
+   * Names the control for screen readers with the field's label, unless it has a label of its own: one written as
+   * an attribute, or given in code (a JSX prop writes no attribute), which is any label this field did not give.
+   */
   private syncLabel(control: HTMLElement): void {
     const input = inputOf<string>(control, 'label');
-    const ownLabel = control.hasAttribute('label') || VISIBLE_LABEL_TAGS.includes(control.localName);
-    // set() runs the control's callback even with the label it has.
-    if (input === null || ownLabel || input.get() === this.label.get()) {
+    const shown = control.hasAttribute('label') || VISIBLE_LABEL_TAGS.includes(control.localName);
+    if (input === null || shown || this.hasOwnLabel(control, input.get())) {
       return;
     }
-    input.set(this.label.get());
+    const label = this.label.get();
+    this._state.named = { control, label };
+    // set() runs the control's callback even with the label it has.
+    if (input.get() !== label) {
+      input.set(label);
+    }
+  }
+
+  private hasOwnLabel(control: HTMLElement, label: string): boolean {
+    const { named } = this._state;
+    return label !== '' && !(named.control === control && named.label === label);
   }
 
   /** Marks the control invalid, remembering it unless the page had marked it already. */
