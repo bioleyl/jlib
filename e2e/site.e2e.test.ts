@@ -3306,3 +3306,23 @@ describe('a required calendar without a date', () => {
     expect(state.errors).toEqual([]);
   });
 });
+
+// The contrast themes of Windows: every box-shadow is dropped and every background painted alike.
+describe('forced colours', () => {
+  it('outline what has the focus, and tell a switch that is on from one that is off', async () => {
+    const page = await open('/components/switch');
+    await page.emulateMedia({ forcedColors: 'active' });
+    await mount(page, '<jl-switch label="Off"></jl-switch><jl-switch label="On" checked></jl-switch>');
+    await page.keyboard.press('Tab');
+    const drawn = await page.evaluate(() => {
+      const [off, on] = [...document.querySelectorAll('#test-area jl-switch')].map((element) => {
+        const native = element.shadowRoot?.querySelector('input') as HTMLInputElement;
+        return { outline: getComputedStyle(native).outlineStyle, track: getComputedStyle(native).backgroundColor };
+      });
+      return { focusOutlined: off?.outline === 'solid', statesDiffer: off?.track !== on?.track };
+    });
+    await page.emulateMedia({ forcedColors: null });
+    expect(drawn).toEqual({ focusOutlined: true, statesDiffer: true });
+    expect(state.errors).toEqual([]);
+  });
+});
