@@ -407,8 +407,14 @@ export class JlCombobox extends JlFormControl {
   private commitText(): void {
     this.closeList();
     const text = this._refs.native.value.trim();
-    const exact = this.optionWithLabel(text);
     this._state.query = '';
+    // Nothing typed: the field still shows its value. Reading that text back would choose the first of two options
+    // named alike, and erase a value whose options are not there yet, which shows no label.
+    if (text === this.displayOf(this.value.get()).trim()) {
+      this.renderValue();
+      return;
+    }
+    const exact = this.optionWithLabel(text);
     if (exact !== undefined) {
       this.commit(exact.value);
       return;

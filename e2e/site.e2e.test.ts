@@ -2734,3 +2734,41 @@ describe('the ARIA states', () => {
     expect(state.errors).toEqual([]);
   });
 });
+
+describe('the combobox, left without typing', () => {
+  const leave = async (html: string): Promise<{ changes: string[]; value: string }> => {
+    const page = await open('/components/combobox');
+    await mount(page, html);
+    await page.evaluate(() => {
+      const combobox = document.querySelector('#test-area jl-combobox') as JlCombobox;
+      const heard: string[] = [];
+      Object.assign(window, { heard });
+      combobox.events.register('change', (value) => heard.push(value));
+    });
+    await page.locator('#test-area jl-combobox input').focus();
+    await page.keyboard.press('Tab');
+    return page.evaluate(() => ({
+      changes: (window as unknown as { heard: string[] }).heard,
+      value: (document.querySelector('#test-area jl-combobox') as JlCombobox).value.get(),
+    }));
+  };
+
+  it('keeps the second of two options named alike', async () => {
+    const options = JSON.stringify([
+      { label: 'Jean Dupont', value: 'u1' },
+      { label: 'Jean Dupont', value: 'u2' },
+    ]);
+    expect(await leave(`<jl-combobox label="Owner" value="u2" options='${options}'></jl-combobox>`)).toEqual({
+      changes: [],
+      value: 'u2',
+    });
+  });
+
+  it('keeps a value whose options are not there yet', async () => {
+    expect(await leave('<jl-combobox label="Owner" value="42"></jl-combobox>')).toEqual({
+      changes: [],
+      value: '42',
+    });
+    expect(state.errors).toEqual([]);
+  });
+});
