@@ -11,6 +11,12 @@ describe('fuzzyMatch', () => {
     expect(fuzzyMatch('OPEN', 'open')?.positions).toEqual([0, 1, 2, 3]);
   });
 
+  it('matches letters with or without their accents, at the positions of the text', () => {
+    expect(fuzzyMatch('parametres', 'Paramètres')?.positions).toEqual([0, 1, 2, 3, 4, 5, 6, 7, 8, 9]);
+    expect(fuzzyMatch('uber', 'Übersicht')?.positions).toEqual([0, 1, 2, 3]);
+    expect(fuzzyMatch('paramètres', 'Parametres')?.positions).toEqual([0, 1, 2, 3, 4, 5, 6, 7, 8, 9]);
+  });
+
   it('does not match letters out of order or missing', () => {
     expect(fuzzyMatch('fo', 'Open file')).toBeNull();
     expect(fuzzyMatch('xyz', 'Open file')).toBeNull();

@@ -7,7 +7,7 @@ const DIACRITICS = /\p{Diacritic}/gu;
 const WORD_CHARACTER = /[\p{L}\p{N}]/u;
 
 /** One character as matching sees it: lower case, without its accents ("É" gives "e"). */
-const foldCharacter = (character: string): string =>
+export const foldCharacter = (character: string): string =>
   character.normalize('NFD').replace(DIACRITICS, '').toLowerCase();
 
 /** A text as matching sees it: "Crème Brûlée" gives "creme brulee". */
