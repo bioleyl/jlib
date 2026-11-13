@@ -142,19 +142,21 @@ export class JlToast extends JlElement {
     }
     this.stopTimer();
     this.reflect('leaving', true);
-    const done = (): void => this.finishLeaving();
     if (!this.isConnected || prefersReducedMotion()) {
-      done();
+      this.finishLeaving();
       return;
     }
     const offset = this.enterOffset();
-    this._refs.toast
-      .animate([{ opacity: 1 }, { opacity: 0, transform: `translateY(${offset}) scale(0.97)` }], {
-        duration: LEAVE_MS,
-        easing: EASE,
-        fill: 'forwards',
-      })
-      .finished.then(done, done);
+    const leaving = this._refs.toast.animate(
+      [{ opacity: 1 }, { opacity: 0, transform: `translateY(${offset}) scale(0.97)` }],
+      { duration: LEAVE_MS, easing: EASE, fill: 'forwards' }
+    );
+    const done = (): void => {
+      this.finishLeaving();
+      // Held on its last frame until the toast is hidden, then let go: shown again, it would stay transparent.
+      leaving.cancel();
+    };
+    leaving.finished.then(done, done);
   }
 
   /** Shows a dismissed toast again, with its time from the start. */

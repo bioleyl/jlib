@@ -42,6 +42,7 @@ import type { JlSteps } from '../src/molecules/jl-steps';
 import type { JlTabs } from '../src/molecules/jl-tabs';
 import type { JlTagInput } from '../src/molecules/jl-tag-input';
 import type { JlTimeline } from '../src/molecules/jl-timeline';
+import type { JlToast } from '../src/molecules/jl-toast';
 import type { JlTooltip } from '../src/molecules/jl-tooltip';
 import type { JlCommandPalette } from '../src/organisms/jl-command-palette';
 import type { JlDialog } from '../src/organisms/jl-dialog';
@@ -3117,6 +3118,25 @@ describe('the menu, given its items again while open', () => {
       };
     });
     expect(refreshed).toEqual({ focused: 'archive', open: true });
+    expect(state.errors).toEqual([]);
+  });
+});
+
+describe('a toast shown again', () => {
+  it('is visible after it was dismissed', async () => {
+    const page = await open('/components/toast');
+    await mount(page, '<jl-toast heading="Saved"></jl-toast>');
+    const opacity = await page.evaluate(async () => {
+      const settle = (): Promise<void> => new Promise((resolve) => setTimeout(resolve, 600));
+      const toast = document.querySelector('#test-area jl-toast') as JlToast;
+      toast.dismiss();
+      await settle();
+      toast.show();
+      await settle();
+      const drawn = toast.shadowRoot?.querySelector('.toast');
+      return drawn ? getComputedStyle(drawn).opacity : 'missing';
+    });
+    expect(opacity).toBe('1');
     expect(state.errors).toEqual([]);
   });
 });
