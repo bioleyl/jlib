@@ -16,6 +16,9 @@ Numbers sort by value, dates by time, text in the language's order; empty values
 checkbox to each row and one in the header that selects them all (a dash when only some are), and emits selection
 with the keys of the selected rows, read from row-key.
 
+A press on a row fires press, with the row, the button and the browser's event: a page opens a record on a click,
+or cancels the event of a right click to show its own menu.
+
 expandable lets rows open: a press on a row, or on its chevron, shows its detail under it, and the row stays as it
 is. single keeps one row open, opening another closes it; multiple opens any number. detail draws what an open row
 shows, from its row; expanded holds the keys of the open rows, and each opening and closing emits toggle.
@@ -76,6 +79,7 @@ In JSX, the `on…` prop, its handler given the detail; in code, `events.registe
 
 - `sort` (`onSort` in JSX), detail `{ key: keyof Row; direction: 'asc' | 'desc' | 'none' }`: A heading was pressed: the column and its new order.
 - `selection` (`onSelection` in JSX), detail `Array<string | number>`: The selection changed: the keys of the selected rows.
+- `press` (`onPress` in JSX), detail `{ key: string | number; row: Row; button: 'main' | 'auxiliary' | 'secondary'; event: MouseEvent }`: A row was pressed, on itself and not on a control in it: its key, the row, the button ('main' for a click, 'auxiliary' for a middle click, 'secondary' for a right click, the keyboard's menu key or a long press) and the browser's event, which says where the pointer is. Cancel that event (event.preventDefault()) to refuse the press: the browser's menu stays away, and an expandable row stays as it is.
 - `toggle` (`onToggle` in JSX), detail `{ key: string | number; open: boolean }`: A row opened or closed: its key and whether it is open now. When rows open one at a time, opening a row emits the close of the other first.
 
 ## Methods
@@ -85,10 +89,11 @@ In JSX, the `on…` prop, its handler given the detail; in code, `events.registe
 ## Styling
 
 - `base` (part, `::part(base)`): The scrolling frame around the table.
+- `--row-cursor` (custom property): The cursor over a row: pointer when a press on a row opens something (see press).
 
 ## Typing
 
-Typed by its rows, JlTable<Order> takes rows of the page's own type, an interface included. Its columns (TableColumn<Order>) name fields of an order, and so do rowKey and sortKey: the editor completes them and refuses a misspelt one. Its renderers, its detail and its sort event read an order. In JSX, <JlTable rows={orders} /> reads the type from the rows. A column that is not a field, such as one of actions a renderer draws, is named: JlTable<Order, 'actions'>. Rows and columns written as JSON in HTML are not checked.
+Typed by its rows, JlTable<Order> takes rows of the page's own type, an interface included. Its columns (TableColumn<Order>) name fields of an order, and so do rowKey and sortKey: the editor completes them and refuses a misspelt one. Its renderers, its detail and its sort and press events read an order. In JSX, <JlTable rows={orders} /> reads the type from the rows. A column that is not a field, such as one of actions a renderer draws, is named: JlTable<Order, 'actions'>. Rows and columns written as JSON in HTML are not checked.
 
 ```ts
 import type { JlTable, TableColumn } from '@syware/jlib';
@@ -283,6 +288,38 @@ Cells keep to one line and the table scrolls sideways; a column with wrap breaks
 <jl-table row-key="field"
   columns='[{"key":"field","label":"Field","width":"28%"},{"key":"value","label":"Value","wrap":true}]'
   rows='[{"field":"title","value":"Minutes of the town council, 1952 to 1957"},{"field":"description","value":"The council\u2019s minutes, bound by year, with the indexes of the decisions and the letters received, as the clerk kept them."},{"field":"storedAt","value":"https://archive.example.com/objects/rr_1622818982000013/i_2/content/minutes-1952-1957.pdf"}]'></jl-table>
+```
+
+### A press on a row
+
+press says which row was pressed and with which button. A click opens a record; a right click, the keyboard's menu key or a long press asks for the row's menu: cancel the event and open a jl-menu where the pointer is, with showAt. --row-cursor: pointer tells people the rows open something. Rows do not take the focus: give the keyboard its own way to what a press does, a link or a button in the row.
+
+```html
+<div class="stack">
+  <jl-table class="pressed" row-key="id" style="--row-cursor: pointer"
+    columns='[{"key":"name","label":"Name"},{"key":"role","label":"Role"},{"key":"status","label":"Status"}]'></jl-table>
+  <jl-menu class="row-menu" label="Member actions"
+    items='[{"value":"edit","label":"Edit","icon":"pencil"},{"value":"remove","label":"Remove","icon":"trash","danger":true}]'></jl-menu>
+  <span class="muted pressed-row" aria-live="polite">Press a row, with either button.</span>
+</div>
+```
+
+```js
+const table = root.querySelector<JlTable<Member>>('jl-table.pressed');
+const menu = root.querySelector<JlMenu>('jl-menu.row-menu');
+table.rows.set(members.slice(0, 4));
+table.events.register('press', ({ button, event, row }) => {
+  if (button === 'secondary') {
+    event.preventDefault(); // the browser's menu stays away
+    pressed = row;
+    menu.showAt(event.clientX, event.clientY);
+    return;
+  }
+  if (button === 'main') {
+    open(row);
+  }
+});
+menu.events.register('select', (action) => run(action, pressed));
 ```
 
 ### Marked rows
