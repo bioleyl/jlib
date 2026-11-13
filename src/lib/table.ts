@@ -52,14 +52,25 @@ export function toTime(value: unknown): number {
   return Number.NaN;
 }
 
-/** What a column orders its values by: numbers for numbers and dates, text for the rest. */
+/**
+ * A value of a column that names no number or date format: a number keeps its value and a `Date` its time, so a
+ * column of numbers left as `text` does not order 10 before 2; anything else is ordered as text.
+ */
+function ownOrder(value: unknown): number | string {
+  if (typeof value === 'number') {
+    return value;
+  }
+  return value instanceof Date ? value.getTime() : String(value);
+}
+
+/** What a column orders its values by: numbers for numbers and dates, the value's own order for the rest. */
 const SORT_VALUES: Record<TableCellFormat, (value: unknown) => number | string> = {
-  badge: String,
-  code: String,
+  badge: ownOrder,
+  code: ownOrder,
   date: toTime,
   datetime: toTime,
   number: toNumber,
-  text: String,
+  text: ownOrder,
 };
 
 const TEXT_ORDERS: Record<TableCellFormat, Intl.CollatorOptions | undefined> = {

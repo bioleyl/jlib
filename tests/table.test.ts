@@ -70,6 +70,12 @@ describe('sortRows', () => {
     expect(ids(sortRows(rows, 'joined', 'asc', 'date'))).toEqual(['b', 'd', 'a', 'c']);
   });
 
+  it('sorts numbers by value in a column that names no format', () => {
+    const sizes = [{ size: 1.5 }, { size: 1.25 }, { size: -3 }, { size: 10 }, { size: 2 }];
+    expect(sortRows(sizes, 'size', 'asc').map(({ size }) => size)).toEqual([-3, 1.25, 1.5, 2, 10]);
+    expect(sortRows(sizes, 'size', 'desc').map(({ size }) => size)).toEqual([10, 2, 1.5, 1.25, -3]);
+  });
+
   it('sorts text ignoring case', () => {
     expect(ids(sortRows(rows, 'name', 'asc', 'text', LOCALE))).toEqual(['b', 'd', 'a', 'c']);
   });

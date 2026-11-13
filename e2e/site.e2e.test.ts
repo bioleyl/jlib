@@ -3064,3 +3064,31 @@ describe("the field and its control's label", () => {
     expect(state.errors).toEqual([]);
   });
 });
+
+describe("the table's select-all box", () => {
+  it('has nothing to select once the rows are gone', async () => {
+    const page = await open('/components/table');
+    await mount(page, '<jl-table selectable row-key="id"></jl-table>');
+    const afterEmptying = await page.evaluate(async () => {
+      const settle = (): Promise<void> => new Promise((resolve) => setTimeout(resolve, 100));
+      const table = document.querySelector('#test-area jl-table') as JlTable;
+      const heard: unknown[] = [];
+      table.events.register('selection', (keys) => heard.push(keys));
+      table.columns.set([{ key: 'name', label: 'Name' }]);
+      table.rows.set([
+        { id: 'a', name: 'A' },
+        { id: 'b', name: 'B' },
+      ]);
+      await settle();
+      table.rows.set([]);
+      await settle();
+      const all = table.shadowRoot?.querySelector<HTMLInputElement>('thead input[type="checkbox"]');
+      const disabled = all?.disabled;
+      all?.click();
+      await settle();
+      return { disabled, heard };
+    });
+    expect(afterEmptying).toEqual({ disabled: true, heard: [] });
+    expect(state.errors).toEqual([]);
+  });
+});

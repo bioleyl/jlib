@@ -512,6 +512,8 @@ export class JlTable<Row extends object = TableRow, Extra extends string = never
   private setView(drawn: DrawnRow<Row>[]): void {
     this._view.drawn = drawn;
     this._view.byKey = Map.groupBy(drawn, ({ key }) => key);
+    // None until they are placed in order: an empty or loading table has no row for the select-all box to take.
+    this._view.keys = [];
     this._view.shown = NO_ROW_STATES();
   }
 
