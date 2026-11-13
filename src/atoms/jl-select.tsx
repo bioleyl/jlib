@@ -101,6 +101,8 @@ export class JlSelect<Value extends string = string> extends JlFormControl {
   // What the options and the choice were drawn from: the callbacks run again at connection with the same values, and
   // onConnect looks for the page's own options once more.
   private readonly _drawn: { light: Element[]; options?: SelectOption<Value>[]; value?: string } = { light: [] };
+  // The page's own options may come after the select, or change: a list fetched later, a label in another language.
+  private readonly _lightWatch = new MutationObserver((records) => this.onLightChange(records));
 
   private readonly _refs = this.useRefs((ref) => ({
     native: ref<HTMLSelectElement>('select'),
@@ -131,6 +133,21 @@ export class JlSelect<Value extends string = string> extends JlFormControl {
       this.events.emit('change', value);
     });
     // Children the parser added after the element connected are there now.
+    this.renderOptions();
+    this._lightWatch.observe(this, { attributes: true, characterData: true, childList: true, subtree: true });
+  }
+
+  onDisconnect(): void {
+    this._lightWatch.disconnect();
+  }
+
+  /** Draws the page's options again when one came, left or changed. The select's own attributes are its inputs. */
+  private onLightChange(records: MutationRecord[]): void {
+    if (records.every((record) => record.target === this && record.type === 'attributes')) {
+      return;
+    }
+    // The same elements may hold another text or value: none of them counts as drawn.
+    this._drawn.light = [];
     this.renderOptions();
   }
 

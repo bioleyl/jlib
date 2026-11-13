@@ -3219,3 +3219,30 @@ describe('Escape on a tooltip in a dialog', () => {
     expect(state.errors).toEqual([]);
   });
 });
+
+describe("the select and the page's own options", () => {
+  it('follows an option added later, and one written again', async () => {
+    const page = await open('/components/select');
+    await mount(
+      page,
+      '<jl-select label="Size"><option value="s">Small</option><option value="m">Medium</option></jl-select>'
+    );
+    const labels = await page.evaluate(async () => {
+      const select = document.querySelector('#test-area jl-select') as JlSelect;
+      const large = document.createElement('option');
+      large.value = 'l';
+      large.textContent = 'Large';
+      select.append(large);
+      const small = select.querySelector('option');
+      if (small) {
+        small.textContent = 'Petit';
+      }
+      await new Promise((resolve) => setTimeout(resolve, 100));
+      return [...(select.shadowRoot?.querySelectorAll('select option') ?? [])].map((option) =>
+        option.textContent?.trim()
+      );
+    });
+    expect(labels).toEqual(['Petit', 'Medium', 'Large']);
+    expect(state.errors).toEqual([]);
+  });
+});
