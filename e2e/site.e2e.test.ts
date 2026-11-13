@@ -1,6 +1,7 @@
 import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
+import axe from 'axe-core';
 import { chromium } from 'playwright-core';
 import { preview } from 'vite';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
@@ -192,14 +193,68 @@ afterAll(async () => {
   await new Promise<void>((resolve) => state.server?.httpServer.close(() => resolve()));
 });
 
+// What the accessibility sweep asks of every page: WCAG 2 at levels A and AA, as axe-core checks them.
+const A11Y_LEVELS = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'];
+// The rules it does not ask yet, each a gap that is known:
+const A11Y_RULES_OFF = {
+  // A row, a card, a tree item or a search button is named by its heading alone while it shows more text.
+  'label-content-name-mismatch': { enabled: false },
+  // A code block that scrolls sideways has no Tab stop where the browser gives it none.
+  'scrollable-region-focusable': { enabled: false },
+};
+/** What a rule cannot know about an element it reports, by what the element is written as. */
+const A11Y_EXEMPT: readonly { rule: string; written: RegExp; why: string }[] = [
+  { rule: 'color-contrast', why: 'the accent a visitor picks on the theming page', written: /accent-preview/ },
+  {
+    rule: 'color-contrast',
+    why: "an app's name in the brand's blue: a logotype",
+    written: /color:\s*var\(--jl-brand\)/,
+  },
+  {
+    rule: 'color-contrast',
+    why: 'the table of inks shows each one, the faint one too',
+    written: /contrast-sample/,
+  },
+];
+
+type A11yFinding = { rule: string; where: string; html: string };
+
+/** What axe-core finds wrong in the page shown, without what is exempt. */
+async function a11yFindings(page: Page): Promise<A11yFinding[]> {
+  await page.evaluate(axe.source);
+  const found = await page.evaluate(
+    async ({ levels, rules }) => {
+      const results = await (window as unknown as { axe: typeof axe }).axe.run(document, {
+        rules,
+        runOnly: { type: 'tag', values: levels },
+      });
+      return results.violations.flatMap((violation) =>
+        violation.nodes.map((node) => ({
+          html: node.html,
+          rule: violation.id,
+          where: node.target.flat().join(' >> '),
+        }))
+      );
+    },
+    { levels: A11Y_LEVELS, rules: A11Y_RULES_OFF }
+  );
+  return found.filter(
+    (finding) =>
+      !A11Y_EXEMPT.some(
+        ({ rule, written }) => rule === finding.rule && written.test(`${finding.where} ${finding.html}`)
+      )
+  );
+}
+
 describe('every page of the site', () => {
   it.each([...GUIDES, ...DESIGN, ...patternPaths, ...componentPaths])(
-    '%s renders without errors, with every tag defined and every field named',
+    '%s renders without errors, with every tag defined, every field named and nothing axe-core finds',
     async (path) => {
       const page = await open(path);
       expect(state.errors).toEqual([]);
       expect(await page.evaluate(UNDEFINED_TAGS)).toEqual([]);
       expect(await page.evaluate(UNNAMED_FIELDS)).toEqual([]);
+      expect(await a11yFindings(page)).toEqual([]);
     }
   );
 });
