@@ -34,6 +34,7 @@ import type { JlInputList } from '../src/molecules/jl-input-list';
 import type { JlListItem } from '../src/molecules/jl-list-item';
 import type { JlLoadState } from '../src/molecules/jl-load-state';
 import type { JlMenu } from '../src/molecules/jl-menu';
+import type { JlNumberInput } from '../src/molecules/jl-number-input';
 import type { JlPagination } from '../src/molecules/jl-pagination';
 import type { JlSegmented } from '../src/molecules/jl-segmented';
 import type { JlSteps } from '../src/molecules/jl-steps';
@@ -2769,6 +2770,21 @@ describe('the combobox, left without typing', () => {
       changes: [],
       value: '42',
     });
+    expect(state.errors).toEqual([]);
+  });
+});
+
+describe('the number input', () => {
+  it('reads a decimal comma', async () => {
+    const page = await open('/components/number-input');
+    await mount(page, '<jl-number-input label="Price" value="1" step="0.1"></jl-number-input>');
+    const field = page.locator('#test-area jl-number-input input');
+    await field.fill('1,5');
+    await field.press('Tab');
+    const value = await page.evaluate(() =>
+      (document.querySelector('#test-area jl-number-input') as JlNumberInput).value.get()
+    );
+    expect(value).toBe(1.5);
     expect(state.errors).toEqual([]);
   });
 });

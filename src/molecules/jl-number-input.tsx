@@ -6,7 +6,7 @@ import { JlFormControl } from '../base/jl-form-control';
 import { oneOf } from '../lib/attributes';
 import { setAriaFlag, setOrRemove } from '../lib/dom';
 import { registerIcons } from '../lib/icons';
-import { clamp, parseNumber, stepValue } from '../lib/numeric';
+import { clamp, parseNumber, parseTypedNumber, stepValue } from '../lib/numeric';
 import { CONTROL_SIZES } from '../lib/options';
 import { jlText } from '../lib/texts';
 import { BASE_STYLES, CONTROL_STYLES } from '../styles/shared';
@@ -177,7 +177,7 @@ export class JlNumberInput extends JlFormControl {
   /** The number typed so far, or the value when the text cannot be read. */
   private typedNumber(): number | null {
     const text = this._refs.native.value;
-    return text.trim() === '' ? null : (parseNumber(text) ?? this.value.get());
+    return text.trim() === '' ? null : (parseTypedNumber(text) ?? this.value.get());
   }
 
   /** Reads what was typed: empty gives null, unreadable text goes back to the value, a number is kept in bounds. */
@@ -187,7 +187,7 @@ export class JlNumberInput extends JlFormControl {
       this.commit(null);
       return;
     }
-    const typed = parseNumber(text);
+    const typed = parseTypedNumber(text);
     if (typed === null) {
       this.renderValue(this.value.get());
       return;
