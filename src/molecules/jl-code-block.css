@@ -59,7 +59,7 @@ pre {
   display: none;
   flex: none;
   padding-right: 4px;
-  color: var(--jl-faint);
+  color: var(--jl-muted);
   text-align: right;
   white-space: pre;
   user-select: none;

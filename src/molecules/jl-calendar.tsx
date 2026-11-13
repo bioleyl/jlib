@@ -419,6 +419,8 @@ export class JlCalendar extends JlFormControl {
 
   /** Without the attribute: the form says its state before the `disabled` input has taken the attribute's change. */
   private drawDisabled(): void {
+    // On the group too: its title and arrows are part of what is off.
+    setAriaFlag(this._refs.base, 'aria-disabled', this.isOff());
     setAriaFlag(this._refs.grid, 'aria-disabled', this.isOff());
     this.renderPage();
   }
