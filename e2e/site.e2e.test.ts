@@ -3246,3 +3246,27 @@ describe("the select and the page's own options", () => {
     expect(state.errors).toEqual([]);
   });
 });
+
+describe('a required calendar without a date', () => {
+  it('takes the focus and shows why the form was not submitted', async () => {
+    const page = await open('/components/calendar');
+    await mount(
+      page,
+      '<form><jl-calendar name="day" label="Day" required></jl-calendar><button id="send">Send</button></form>'
+    );
+    await page.evaluate(() => {
+      Object.assign(window, { submits: 0 });
+      document.querySelector('#test-area form')?.addEventListener('submit', (event) => {
+        event.preventDefault();
+        (window as unknown as { submits: number }).submits += 1;
+      });
+    });
+    await page.locator('#send').click();
+    const refused = await page.evaluate(() => ({
+      focused: document.activeElement?.localName,
+      submits: (window as unknown as { submits: number }).submits,
+    }));
+    expect(refused).toEqual({ focused: 'jl-calendar', submits: 0 });
+    expect(state.errors).toEqual([]);
+  });
+});
