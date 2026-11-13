@@ -3509,3 +3509,80 @@ describe("a press on a table's row", () => {
     expect(state.errors).toEqual([]);
   });
 });
+
+describe("a press on a tree's item", () => {
+  /** A tree of a folder and two items, the presses it tells and the items it selects kept in the window. */
+  const treeOfThree = async (): Promise<Page> => {
+    const page = await open('/components/tree');
+    await mount(page, '<jl-tree label="Files"></jl-tree>');
+    await page.evaluate(() => {
+      const tree = document.querySelector('#test-area jl-tree') as JlTree;
+      const heard = { selected: [] as string[], told: [] as unknown[] };
+      Object.assign(window, { heard });
+      tree.items.set([
+        { children: [{ id: 'a1', label: 'main.ts' }], id: 'a', label: 'Sources' },
+        { id: 'b', label: 'Readme' },
+        { id: 'c', label: 'Licence' },
+      ]);
+      tree.events.register('select', (id) => heard.selected.push(id));
+      tree.events.register('press', ({ button, event, id, item }) => {
+        // The page shows its own menu for the secondary button, and keeps the licence from being chosen.
+        if (button === 'secondary' || id === 'c') {
+          event.preventDefault();
+        }
+        heard.told.push({ button, by: event.type, id, label: item.label });
+      });
+    });
+    return page;
+  };
+  const heard = (page: Page): Promise<{ selected: string[]; told: unknown[] }> =>
+    page.evaluate(() => (window as unknown as { heard: { selected: string[]; told: unknown[] } }).heard);
+  const row = (page: Page, id: string) => page.locator(`#test-area jl-tree [data-id="${id}"] > .row`);
+
+  it('tells the item and the button before it selects, for the pointer and for Enter', async () => {
+    const page = await treeOfThree();
+    await row(page, 'b').click();
+    await page.keyboard.press('Enter');
+    expect(await heard(page)).toEqual({
+      selected: ['b', 'b'],
+      told: [
+        { button: 'main', by: 'click', id: 'b', label: 'Readme' },
+        { button: 'main', by: 'keydown', id: 'b', label: 'Readme' },
+      ],
+    });
+    expect(state.errors).toEqual([]);
+  });
+
+  it("tells the button that asks for a menu, and keeps the browser's away when the page refuses", async () => {
+    const page = await treeOfThree();
+    const menuKept = page.evaluate(
+      () =>
+        new Promise((resolve) => {
+          document.addEventListener('contextmenu', (event) => resolve(event.defaultPrevented), { once: true });
+        })
+    );
+    await row(page, 'b').click({ button: 'right' });
+    expect(await heard(page)).toEqual({
+      selected: [],
+      told: [{ button: 'secondary', by: 'contextmenu', id: 'b', label: 'Readme' }],
+    });
+    expect(await menuKept).toBe(true);
+    expect(state.errors).toEqual([]);
+  });
+
+  it("does not select an item whose press the page refused, nor tell a press on a folder's chevron", async () => {
+    const page = await treeOfThree();
+    await row(page, 'c').click();
+    await row(page, 'a').locator('.chevron').click();
+    const drawn = await page.evaluate(() => {
+      const tree = document.querySelector('#test-area jl-tree') as JlTree;
+      return { expanded: tree.expanded.get(), value: tree.value.get() };
+    });
+    expect(drawn).toEqual({ expanded: ['a'], value: '' });
+    expect(await heard(page)).toEqual({
+      selected: [],
+      told: [{ button: 'main', by: 'click', id: 'c', label: 'Licence' }],
+    });
+    expect(state.errors).toEqual([]);
+  });
+});

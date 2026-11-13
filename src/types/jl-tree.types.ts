@@ -1,3 +1,5 @@
+import type { PressButton } from './press.types';
+
 export type TreeItem = {
   id: string;
   label: string;
@@ -14,6 +16,17 @@ export type TreeItem = {
   /** A count or a short word after the label: how many items a folder holds. */
   badge?: string | number;
 };
+
+/**
+ * A press on an item: which one, with which button, and the browser's event. The main button is a pointer's or the
+ * keyboard's (Enter, Space); the others are always a pointer's event, which says where it is (`clientX`,
+ * `clientY`). Cancelling the event (`event.preventDefault()`) refuses the press: the item is not selected, its
+ * folder stays as it is, a link is not followed, and the browser's menu does not show.
+ */
+export type TreePress = { id: string; item: TreeItem } & (
+  | { button: Extract<PressButton, 'main'>; event: MouseEvent | KeyboardEvent }
+  | { button: Exclude<PressButton, 'main'>; event: MouseEvent }
+);
 
 /** One page of a level, as a loader answers it: some of its items, and how many the level has in all. */
 export type TreePage = {
