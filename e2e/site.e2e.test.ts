@@ -3164,3 +3164,29 @@ describe('the copy button, where the clipboard refuses', () => {
     expect(state.errors).toEqual([]);
   });
 });
+
+describe("the load state and a page's mistake", () => {
+  it('shows the error and lets the exception of draw() through, where a failed fetch only resolves false', async () => {
+    const page = await open('/components/load-state');
+    await mount(page, '<jl-load-state></jl-load-state>');
+    const outcomes = await page.evaluate(async () => {
+      const loadState = document.querySelector('#test-area jl-load-state') as JlLoadState;
+      const failedFetch = await loadState.load({
+        draw: () => undefined,
+        fetch: () => Promise.reject(new Error('offline')),
+      });
+      const mistake = await loadState
+        .load({
+          draw: (items: string[] | null) => (items as string[]).map(String),
+          fetch: () => Promise.resolve(null),
+        })
+        .then(
+          () => 'resolved',
+          (error: unknown) => (error instanceof TypeError ? 'TypeError' : 'another error')
+        );
+      return { failedFetch, mistake, state: loadState.state.get() };
+    });
+    expect(outcomes).toEqual({ failedFetch: false, mistake: 'TypeError', state: 'error' });
+    expect(state.errors).toEqual([]);
+  });
+});
