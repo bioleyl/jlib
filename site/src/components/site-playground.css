@@ -147,7 +147,7 @@
 
 time {
   flex: none;
-  color: var(--jl-faint);
+  color: var(--jl-muted);
   font-family: var(--jl-font-mono);
   font-size: 11px;
 }

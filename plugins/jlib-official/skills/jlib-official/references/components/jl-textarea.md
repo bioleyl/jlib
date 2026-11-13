@@ -114,9 +114,9 @@ The counter turns to the warning colour once the limit is reached.
 
 ```html
 <div class="stack narrow">
-  <jl-textarea value="Read only: it can be selected and copied." readonly rows="2"></jl-textarea>
-  <jl-textarea value="Disabled" disabled rows="2"></jl-textarea>
-  <jl-textarea value="Too short" invalid rows="2"></jl-textarea>
+  <jl-textarea label="Read only" value="Read only: it can be selected and copied." readonly rows="2"></jl-textarea>
+  <jl-textarea label="Disabled" value="Disabled" disabled rows="2"></jl-textarea>
+  <jl-textarea label="Summary" value="Too short" invalid rows="2"></jl-textarea>
 </div>
 ```
 

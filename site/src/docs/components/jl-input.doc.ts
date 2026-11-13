@@ -59,9 +59,9 @@ value.get(), write it with value.set().`,
     {
       html: `
         <div class="stack narrow">
-          <jl-input value="Read only" readonly></jl-input>
-          <jl-input value="Disabled" disabled></jl-input>
-          <jl-input value="not-an-email" invalid></jl-input>
+          <jl-input label="Read only" value="Read only" readonly></jl-input>
+          <jl-input label="Disabled" value="Disabled" disabled></jl-input>
+          <jl-input label="Email" value="not-an-email" invalid></jl-input>
         </div>`,
       title: 'States',
     },

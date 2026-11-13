@@ -20,7 +20,7 @@
 }
 
 .count {
-  color: var(--jl-faint);
+  color: var(--jl-muted);
   font-family: var(--jl-font-mono);
   font-size: var(--jl-font-sm);
 }

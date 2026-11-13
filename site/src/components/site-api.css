@@ -19,7 +19,7 @@ h3 {
 }
 
 .hint {
-  color: var(--jl-faint);
+  color: var(--jl-muted);
   font-size: 12px;
   font-style: italic;
 }
