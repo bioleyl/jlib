@@ -85,15 +85,15 @@ export class JlTree extends JlElement {
     attribute: 'label',
   });
   /** What an empty tree says, such as "No object yet"; none by default. */
-  readonly emptyText = this.useChange('', () => this.renderItems(), { attribute: 'empty-text' });
+  readonly emptyText = this.useChange('', () => this.drawLevelEnds(), { attribute: 'empty-text' });
   /** Said while a page loads; jlib's own text when empty. */
-  readonly loadingText = this.useChange('', () => this.renderItems(), { attribute: 'loading-text' });
+  readonly loadingText = this.useChange('', () => this.drawLevelEnds(), { attribute: 'loading-text' });
   /** The button that loads a level's next page, `{count}` being how many items are left; jlib's own when empty. */
-  readonly moreText = this.useChange('', () => this.renderItems(), { attribute: 'more-text' });
+  readonly moreText = this.useChange('', () => this.drawLevelEnds(), { attribute: 'more-text' });
   /** Said where a page could not be loaded; jlib's own text when empty. */
-  readonly errorText = this.useChange('', () => this.renderItems(), { attribute: 'error-text' });
+  readonly errorText = this.useChange('', () => this.drawLevelEnds(), { attribute: 'error-text' });
   /** The action that loads it again; jlib's own text when empty. */
-  readonly retryLabel = this.useChange('', () => this.renderItems(), { attribute: 'retry-label' });
+  readonly retryLabel = this.useChange('', () => this.drawLevelEnds(), { attribute: 'retry-label' });
 
   // A function cannot be a useChange input: its set() would call it as an updater.
   private readonly _source: { loader: TreeLoader | null } = { loader: null };
@@ -405,7 +405,24 @@ export class JlTree extends JlElement {
   // Drawing: a `render…` method draws every row, a `draw…` method only the rows it is given.
 
   protected drawTexts(): void {
-    this.renderItems();
+    this.drawLevelEnds();
+  }
+
+  /**
+   * The tree's own texts show only in the rows that end a level (a note, a spinner, "show more", an error): those
+   * are drawn again, the items stay. Every input's callback runs as the tree appears: each one building every row,
+   * a tree built its rows seven times.
+   */
+  private drawLevelEnds(): void {
+    // An empty tree is its note, and nothing else to build.
+    if (this.items.get().length === 0) {
+      this.renderItems();
+      return;
+    }
+    const drawnLevels = [...this._loading.levels.keys()].filter((parent) => this.levelContainer(parent) !== null);
+    for (const parent of drawnLevels) {
+      this.redrawLevelEnd(parent);
+    }
   }
 
   private errorLabel(): string {
