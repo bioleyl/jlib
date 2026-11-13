@@ -2983,3 +2983,20 @@ describe('a disabled control', () => {
     expect(state.errors).toEqual([]);
   });
 });
+
+describe('the button', () => {
+  it('shows a text given right after it joined the page', async () => {
+    const page = await open('/components/button');
+    const iconOnly = await page.evaluate(async () => {
+      const button = document.createElement('jl-button');
+      document.body.prepend(button);
+      button.textContent = 'Save changes';
+      await new Promise((resolve) => setTimeout(resolve, 50));
+      const drawnIconOnly = button.hasAttribute('icon-only');
+      button.remove();
+      return drawnIconOnly;
+    });
+    expect(iconOnly).toBe(false);
+    expect(state.errors).toEqual([]);
+  });
+});

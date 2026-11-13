@@ -132,7 +132,7 @@ describe('render budget', () => {
     button.element.label.set('Save');
     button.element.icon.set('save');
     button.element.variant.set('primary');
-    expectBuild(await button.measure(), { changes: 33, nodes: 2, renders: 4 });
+    expectBuild(await button.measure(), { changes: 33, nodes: 1, renders: 4 });
     button.remove();
   });
 

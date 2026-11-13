@@ -129,6 +129,8 @@ export class JlButton extends JlElement {
   }
 
   onConnect(): void {
+    // Text given right after the connection changed the slot before this ran: that slotchange is gone.
+    this.renderLabel();
     this.on(this._refs.slot, 'slotchange', () => this.renderLabel());
     this.on(this._refs.button, 'click', () => {
       if (!this.canPress()) {
@@ -224,7 +226,10 @@ export class JlButton extends JlElement {
     const label = this.label.get();
     const hint = this.hint.get();
     const iconOnly = label === '' && !this.hasSlottedContent();
-    this._refs.label.textContent = label;
+    // Written only when it changed: the same text again is a new node all the same.
+    if (this._refs.label.textContent !== label) {
+      this._refs.label.textContent = label;
+    }
     this.reflect('icon-only', iconOnly);
     for (const control of [this._refs.button, this._refs.link]) {
       setOrRemove(control, 'title', hint);
