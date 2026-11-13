@@ -1,5 +1,5 @@
 import { css } from '@jadis/core';
-import { Check, Copy } from 'lucide';
+import { Check, Copy, X } from 'lucide';
 
 import { JlButton } from '../atoms/jl-button';
 import { JlElement } from '../base/jl-element';
@@ -11,16 +11,27 @@ import { BASE_STYLES } from '../styles/shared';
 import styles from './jl-copy-button.css?inline';
 
 import type { ControlSize } from '../types/options.types';
+import type { JlTextKey } from '../types/texts.types';
 
 // The icons it draws itself: a page registers only the names it writes.
-registerIcons({ check: Check, copy: Copy });
+registerIcons({ check: Check, copy: Copy, x: X });
 
-// How long the button says "Copied" before it goes back to its copy icon.
+// How long the button says "Copied", or that it could not, before it goes back to its copy icon.
 const CONFIRM_MS = 1600;
-const COPY_ICON = 'copy';
-const DONE_ICON = 'check';
 
-/** Copies a text to the clipboard, and says so for a moment. Fires `copy` with the text. */
+/** What the last press came to: nothing to say, the text copied, or the clipboard refusing it. */
+type CopyOutcome = 'idle' | 'copied' | 'failed';
+
+const OUTCOME_LOOKS: Record<CopyOutcome, { icon: string; text: JlTextKey }> = {
+  copied: { icon: 'check', text: 'copied' },
+  failed: { icon: 'x', text: 'copyFailed' },
+  idle: { icon: 'copy', text: 'copy' },
+};
+
+/**
+ * Copies a text to the clipboard, and says so for a moment. Fires `copy` with the text. Where the clipboard refuses
+ * (a page served without https has none, a permission denied), the button says that it could not copy.
+ */
 export class JlCopyButton extends JlElement {
   static readonly selector = 'jl-copy-button';
 
@@ -34,12 +45,12 @@ export class JlCopyButton extends JlElement {
     parse: oneOf(CONTROL_SIZES, 'sm'),
   });
 
-  private readonly _timer = { id: 0 };
+  private readonly _state = { outcome: 'idle' as CopyOutcome, timer: 0 };
 
   private readonly _refs = this.useRefs((ref) => ({ button: ref(JlButton) }));
 
   templateHtml(): Node {
-    return <JlButton variant="ghost" icon={COPY_ICON} />;
+    return <JlButton variant="ghost" icon={OUTCOME_LOOKS.idle.icon} />;
   }
 
   templateCss(): string {
@@ -47,36 +58,46 @@ export class JlCopyButton extends JlElement {
   }
 
   onConnect(): void {
-    this._refs.button.events.register('press', () => void this.copy());
+    this._refs.button.events.register('press', () => void this.copyOnPress());
   }
 
+  /** The timer goes, and what it would have taken back with it: the button returns as a copy button. */
   onDisconnect(): void {
-    window.clearTimeout(this._timer.id);
+    this.say('idle');
   }
 
-  /** Copies the value now; resolves once the clipboard has it. */
+  /** Copies the value now; resolves once the clipboard has it, and rejects when the clipboard refuses. */
   async copy(): Promise<void> {
     const text = this.value.get();
     await navigator.clipboard.writeText(text);
     this.events.emit('copy', text);
-    this.confirm();
+    this.say('copied');
   }
 
   protected drawTexts(): void {
-    this._refs.button.hint.set(jlText(this.hasAttribute('copied') ? 'copied' : 'copy'));
+    this._refs.button.hint.set(jlText(OUTCOME_LOOKS[this._state.outcome].text));
   }
 
-  private confirm(): void {
-    const button = this._refs.button;
-    button.icon.set(DONE_ICON);
-    this.reflect('copied', true);
+  /** A press has no caller to tell of a refusal: the button says it, where `copy()` rejects. */
+  private async copyOnPress(): Promise<void> {
+    try {
+      await this.copy();
+    } catch {
+      this.say('failed');
+    }
+  }
+
+  /** Shows what the press came to, for a moment when there is something to say. */
+  private say(outcome: CopyOutcome): void {
+    this._state.outcome = outcome;
+    this._refs.button.icon.set(OUTCOME_LOOKS[outcome].icon);
+    this.reflect('copied', outcome === 'copied');
+    this.reflect('failed', outcome === 'failed');
     this.drawTexts();
-    window.clearTimeout(this._timer.id);
-    this._timer.id = window.setTimeout(() => {
-      button.icon.set(COPY_ICON);
-      this.reflect('copied', false);
-      this.drawTexts();
-    }, CONFIRM_MS);
+    window.clearTimeout(this._state.timer);
+    if (outcome !== 'idle') {
+      this._state.timer = window.setTimeout(() => this.say('idle'), CONFIRM_MS);
+    }
   }
 }
 

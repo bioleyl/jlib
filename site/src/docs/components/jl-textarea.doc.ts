@@ -49,9 +49,9 @@ after that. A maxlength stops the typing at that length and shows a counter unde
     {
       html: `
         <div class="stack narrow">
-          <jl-textarea value="Read only: it can be selected and copied." readonly rows="2"></jl-textarea>
-          <jl-textarea value="Disabled" disabled rows="2"></jl-textarea>
-          <jl-textarea value="Too short" invalid rows="2"></jl-textarea>
+          <jl-textarea label="Read only" value="Read only: it can be selected and copied." readonly rows="2"></jl-textarea>
+          <jl-textarea label="Disabled" value="Disabled" disabled rows="2"></jl-textarea>
+          <jl-textarea label="Summary" value="Too short" invalid rows="2"></jl-textarea>
         </div>`,
       title: 'States',
     },

@@ -1,3 +1,5 @@
+import { foldCharacter } from './option-filter';
+
 import type { FuzzyMatch, TextSegment } from '../types/fuzzy.types';
 
 /**
@@ -20,6 +22,16 @@ export const FUZZY_SCORE = {
 const NO_MATCH = Number.NEGATIVE_INFINITY;
 const NO_INDEX = -1;
 const WHITESPACE = /\s+/g;
+
+/**
+ * A character as the search compares it: without its accent and in lower case, as the options' filter folds it, so
+ * "parametres" finds "Paramètres". Kept as it is when folding it gives more or fewer characters: a match's
+ * positions are those of the text.
+ */
+function comparable(character: string): string {
+  const folded = foldCharacter(character);
+  return folded.length === 1 ? folded : character.toLowerCase();
+}
 const SEPARATORS = new Set([' ', '-', '_', '/', '.', ':', '(', '[', '\\']);
 
 const isLower = (char: string): boolean => char !== char.toUpperCase() && char === char.toLowerCase();
@@ -106,12 +118,13 @@ function backtrack(rows: readonly Row[], end: number): number[] {
 }
 
 /**
- * Whether the letters of the query appear in the text in order (spaces ignored, any case), and how well: the
- * best placement by contiguity and word starts. `null` when they do not; an empty query matches with 0.
+ * Whether the letters of the query appear in the text in order (spaces ignored, any case, with or without their
+ * accents), and how well: the best placement by contiguity and word starts. `null` when they do not; an empty query
+ * matches with 0.
  */
 export function fuzzyMatch(query: string, text: string): FuzzyMatch | null {
-  const needle = query.replace(WHITESPACE, '').toLowerCase().split('');
-  const haystack = text.split('').map((char) => char.toLowerCase());
+  const needle = query.replace(WHITESPACE, '').split('').map(comparable);
+  const haystack = text.split('').map(comparable);
   const [first, ...rest] = needle;
   if (first === undefined) {
     return { positions: [], score: 0 };

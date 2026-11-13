@@ -75,19 +75,20 @@
     "size": "npm run build:lib && npm run size:report",
     "size:report": "node scripts/size-report.mjs",
     "test": "vitest run",
-    "postinstall": "npx skills update -p -y",
+    "prepare": "node scripts/refresh-skills.mjs",
     "test:watch": "vitest",
     "test:e2e": "npm run build:site && vitest run --config vitest.e2e.config.ts",
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "lint": "biome check .",
     "format": "biome check --write .",
     "check": "npm run generate -- --check && npm run lint && npm run typecheck && npm run test",
+    "check:pack": "node scripts/pack-check.mjs",
     "prepack": "npm run build:lib",
     "prepublishOnly": "npm run check",
     "version": "node scripts/plugin-version.mjs"
   },
   "peerDependencies": {
-    "@jadis/core": "^1.8.0"
+    "@jadis/core": "^1.8.1"
   },
   "dependencies": {
     "lucide": "^1.61.0"
@@ -96,8 +97,9 @@
     "@biomejs/biome": "^2.6.3",
     "@fontsource-variable/jetbrains-mono": "^5.3.0",
     "@fontsource-variable/manrope": "^5.3.0",
-    "@jadis/core": "^1.8.0",
+    "@jadis/core": "^1.8.1",
     "@types/node": "^24.13.3",
+    "axe-core": "^4.14.0",
     "happy-dom": "^21.0.4",
     "playwright-core": "^1.64.1",
     "typescript": "^7.0.2",

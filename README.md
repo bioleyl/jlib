@@ -48,18 +48,22 @@ button.events.register('press', () => save());
 
 ## Components
 
-- **Atoms**: avatar, badge, button, checkbox, chip, divider, icon, input, kbd, link, progress, progress ring, rating,
-  select, skeleton, slider, spinner, switch, textarea.
-- **Molecules**: accordion, alert, avatar group, breadcrumb, calendar, card, code block, combobox, copy button, date
-  picker, empty state, field, file drop, list item, menu, number input, pagination, popover, radio group, search,
-  segmented control, stat, steps, tabs, tag input, timeline, toast, tooltip.
-- **Organisms**: command palette, confirm, dialog, drawer, navbar, page header, side nav, table, toaster, tree.
-- **Templates**: app shell, split view.
+- **Atoms**: app icon, avatar, badge, button, checkbox, chip, divider, icon, input, kbd, link, loading bar,
+  progress, progress ring, rating, select, skeleton, slider, spinner, switch, textarea.
+- **Molecules**: accordion, accordion item, account button, alert, avatar group, breadcrumb, calendar, card, chip
+  group, code block, combobox, copy button, date picker, empty state, facts, field, file drop, input list, list
+  item, load more, load state, menu, number input, pagination, popover, radio group, search, search button,
+  segmented control, stat, steps, tab panel, tabs, tag input, timeline, toast, tooltip.
+- **Organisms**: command palette, confirm, dialog, drawer, flow, navbar, page header, page outlet, side nav, tab
+  bar, table, toaster, tree.
+- **Templates**: app shell, auth layout, page, split view, stack.
 
 ## Icons
 
 Components draw their own icons with no setup. The names a page writes (`<jl-icon name="settings">`,
-`icon="plus"` on a button) are registered once, so a bundle holds only the icons in use:
+`icon="plus"` on a button) are registered once, so a bundle holds only the icons in use: Icons are
+[lucide](https://lucide.dev)'s: an app that imports some by name installs it itself (`npm install lucide`), as a
+strict package manager (pnpm) gives an app only the packages it names.
 
 ```ts
 import { Coffee } from 'lucide';

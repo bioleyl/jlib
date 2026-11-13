@@ -21,7 +21,7 @@ import {
   WEEKS_PER_GRID,
   weekdayNames,
 } from '../lib/calendar';
-import { setOrRemove, uniqueId } from '../lib/dom';
+import { setAriaFlag, setOrRemove, uniqueId } from '../lib/dom';
 import { registerIcons } from '../lib/icons';
 import { pageLocale } from '../lib/locale';
 import { CONTROL_SIZES } from '../lib/options';
@@ -41,6 +41,8 @@ const SUNDAY: Weekday = 0;
 const SATURDAY: Weekday = 6;
 const DAYS_PER_WEEK = 7;
 const SELECT_KEYS = ['Enter', ' '];
+// The day that holds the Tab stop: the only one of the grid in the Tab order.
+const TAB_STOP = '[tabindex="0"]';
 const FULL_DATE: Intl.DateTimeFormatOptions = { dateStyle: 'full' };
 
 /** The first day of the week from its attribute: 0 (Sunday) to 6 (Saturday), Monday when absent. */
@@ -126,7 +128,7 @@ export class JlCalendar extends JlFormControl {
 
   /** Focuses the day the arrows move from: the chosen one, or today, or the first of the month. */
   override focus(options?: FocusOptions): void {
-    this._refs.days.querySelector<HTMLElement>('[tabindex="0"]')?.focus(options);
+    this.tabStop()?.focus(options);
   }
 
   /** Shows the month of a date (ISO), without choosing it. */
@@ -196,7 +198,7 @@ export class JlCalendar extends JlFormControl {
   protected setDisabledByForm(disabled: boolean): void {
     this._state.formDisabled = disabled;
     // A disabled field gets this call as it upgrades, before its template exists: wait for it.
-    this.whenRendered(() => this.renderDisabled(this.disabled.get()));
+    this.whenRendered(() => this.drawDisabled());
   }
 
   private bounds(): { min: CalendarDate | null; max: CalendarDate | null } {
@@ -303,6 +305,13 @@ export class JlCalendar extends JlFormControl {
     this.renderDays(locale);
     this.renderStates(min, max);
     this.renderNavigation(min, max);
+    // The day that holds the Tab stop is where a missing date is said.
+    this.renderValidity();
+  }
+
+  /** The day the Tab key reaches: the one the arrows move from. */
+  private tabStop(): HTMLElement | null {
+    return this._refs.days.querySelector<HTMLElement>(TAB_STOP);
   }
 
   /** The title is a live region: written only when the month changes, so it is announced once. */
@@ -395,7 +404,9 @@ export class JlCalendar extends JlFormControl {
 
   private renderValidity(): void {
     if (this.required.get() && parseIsoDate(this.value.get()) === null) {
-      this.internals.setValidity({ valueMissing: true }, jlText('chooseDateMissing'));
+      // Anchored on a day: the browser focuses it and shows the message there. With nowhere to, it refuses to submit
+      // the form without a word.
+      this.internals.setValidity({ valueMissing: true }, jlText('chooseDateMissing'), this.tabStop() ?? undefined);
       return;
     }
     this.internals.setValidity({});
@@ -403,7 +414,14 @@ export class JlCalendar extends JlFormControl {
 
   private renderDisabled(disabled: boolean): void {
     this.reflect('disabled', disabled);
-    this._refs.grid.toggleAttribute('aria-disabled', this.isOff());
+    this.drawDisabled();
+  }
+
+  /** Without the attribute: the form says its state before the `disabled` input has taken the attribute's change. */
+  private drawDisabled(): void {
+    // On the group too: its title and arrows are part of what is off.
+    setAriaFlag(this._refs.base, 'aria-disabled', this.isOff());
+    setAriaFlag(this._refs.grid, 'aria-disabled', this.isOff());
     this.renderPage();
   }
 }

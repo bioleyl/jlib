@@ -5,6 +5,7 @@ import { JlButton } from '../atoms/jl-button';
 import { JlElement } from '../base/jl-element';
 import { oneOf } from '../lib/attributes';
 import { registerIcons } from '../lib/icons';
+import { modalClosed, modalOpened, onBackdropPress, setPersistent } from '../lib/modal';
 import { jlText } from '../lib/texts';
 import { BASE_STYLES } from '../styles/shared';
 import styles from './jl-drawer.css?inline';
@@ -56,6 +57,7 @@ export class JlDrawer extends JlElement {
     false,
     (value) => {
       this._refs.close.hidden = value;
+      setPersistent(this._refs.dialog, value);
     },
     { attribute: 'persistent' }
   );
@@ -114,6 +116,7 @@ export class JlDrawer extends JlElement {
     const dialog = this._refs.dialog;
     this._refs.close.events.register('press', () => this.close());
     this.on(dialog, 'close', () => {
+      modalClosed(dialog);
       this.reflect('open', false);
       this.open.set(false);
       this.events.emit('close');
@@ -123,15 +126,22 @@ export class JlDrawer extends JlElement {
         event.preventDefault();
       }
     });
-    this.on(dialog, 'click', (event) => {
-      if (event.target === dialog && !this.persistent.get()) {
-        this.close();
-      }
-    });
+    onBackdropPress(dialog, () => this.closeUnlessPersistent(), this.killSignal);
     // The first slotchange can come before onConnect: draw the footer now, then follow the changes.
     this.renderFooter();
     this.on(this._refs.footerSlot, 'slotchange', () => this.renderFooter());
     this.renderOpen(this.open.get());
+  }
+
+  /** A drawer taken out of the page while it shows is no longer the modal on top. */
+  onDisconnect(): void {
+    modalClosed(this._refs.dialog);
+  }
+
+  private closeUnlessPersistent(): void {
+    if (!this.persistent.get()) {
+      this.close();
+    }
   }
 
   private renderFooter(): void {
@@ -145,6 +155,7 @@ export class JlDrawer extends JlElement {
     }
     if (open) {
       dialog.showModal();
+      modalOpened(dialog);
       this.reflect('open', true);
       this.events.emit('open');
       return;
@@ -152,6 +163,7 @@ export class JlDrawer extends JlElement {
     // The attribute follows at once: set back later, by the dialog's close event, it would reopen the drawer.
     this.reflect('open', false);
     dialog.close();
+    modalClosed(dialog);
   }
 }
 

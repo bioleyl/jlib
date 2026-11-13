@@ -13,12 +13,20 @@ describe('dispositionFileName', () => {
     expect(dispositionFileName('attachment')).toBeUndefined();
     expect(dispositionFileName(null)).toBeUndefined();
   });
+
+  it('takes a name with a lone percent sign as it is written', () => {
+    expect(dispositionFileName(`attachment; filename*=UTF-8''100%.pdf`)).toBe('100%.pdf');
+  });
 });
 
 describe('urlFileName', () => {
   it("takes the address's last segment, decoded, or the fallback", () => {
     expect(urlFileName('/api/v1/files/letter%201902.pdf?version=v2', 'download')).toBe('letter 1902.pdf');
     expect(urlFileName('https://example.org/', 'download')).toBe('download');
+  });
+
+  it('takes a segment with a lone percent sign as it is written', () => {
+    expect(urlFileName('/files/100%.pdf', 'download')).toBe('100%.pdf');
   });
 });
 

@@ -1,6 +1,15 @@
 import { describe, expect, it } from 'vitest';
 
-import { clamp, decimalsOf, fractionOf, marksOf, parseNumber, roundTo, stepValue } from '../src/lib/numeric';
+import {
+  clamp,
+  decimalsOf,
+  fractionOf,
+  marksOf,
+  parseNumber,
+  parseTypedNumber,
+  roundTo,
+  stepValue,
+} from '../src/lib/numeric';
 
 describe('parseNumber', () => {
   it('reads numbers, and gives null for empty or unreadable text', () => {
@@ -11,6 +20,24 @@ describe('parseNumber', () => {
     expect(parseNumber(null)).toBeNull();
     expect(parseNumber('12abc')).toBeNull();
     expect(parseNumber('Infinity')).toBeNull();
+  });
+});
+
+describe('parseTypedNumber', () => {
+  it('reads a decimal comma as a point', () => {
+    expect(parseTypedNumber('1,5')).toBe(1.5);
+    expect(parseTypedNumber(' -0,25 ')).toBe(-0.25);
+    expect(parseTypedNumber('1.5')).toBe(1.5);
+    expect(parseTypedNumber('42')).toBe(42);
+  });
+
+  it('gives null for a grouping it cannot tell from decimals, and for other unreadable text', () => {
+    expect(parseTypedNumber('1,000,000')).toBeNull();
+    expect(parseTypedNumber('1,000.5')).toBeNull();
+    expect(parseTypedNumber('1.000,5')).toBeNull();
+    expect(parseTypedNumber(',')).toBeNull();
+    expect(parseTypedNumber('abc')).toBeNull();
+    expect(parseTypedNumber('')).toBeNull();
   });
 });
 

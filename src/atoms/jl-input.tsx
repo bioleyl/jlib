@@ -3,7 +3,7 @@ import { Eye, EyeOff, X } from 'lucide';
 
 import { JlFormControl } from '../base/jl-form-control';
 import { oneOf } from '../lib/attributes';
-import { setOrRemove } from '../lib/dom';
+import { setAriaFlag, setOrRemove } from '../lib/dom';
 import { registerIcons } from '../lib/icons';
 import { CONTROL_SIZES } from '../lib/options';
 import { jlText } from '../lib/texts';
@@ -84,7 +84,7 @@ export class JlInput extends JlFormControl {
     false,
     (value) => {
       this.reflect('invalid', value);
-      this._refs.native.toggleAttribute('aria-invalid', value);
+      setAriaFlag(this._refs.native, 'aria-invalid', value);
     },
     { attribute: 'invalid' }
   );
@@ -225,7 +225,8 @@ export class JlInput extends JlFormControl {
 
   /** The × shows while an editable field holds text; its SVG is drawn the first time it does. */
   private renderClear(): void {
-    const editable = !this.disabled.get() && !this.readonly.get();
+    // The native field is the one that knows: it is also disabled by a `<fieldset disabled>` around the element.
+    const editable = !this._refs.native.disabled && !this.readonly.get();
     const clear = this._refs.clear;
     clear.hidden = !(this.clearable.get() && editable && this.value.get() !== '');
     if (!clear.hidden) {

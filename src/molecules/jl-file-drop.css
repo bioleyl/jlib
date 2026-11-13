@@ -47,7 +47,7 @@
   border-color: var(--jl-danger);
 }
 
-:host([disabled]) .zone {
+:host(:disabled) .zone {
   border-color: var(--jl-line-strong);
   background: var(--jl-surface-2);
   color: var(--jl-muted);

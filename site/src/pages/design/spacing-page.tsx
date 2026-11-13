@@ -105,9 +105,10 @@ export class SpacingPage extends JlElement {
                 </span>
                 <div class="height-controls">
                   <JlButton size={height.size} variant="primary" label="Save" />
-                  <JlInput size={height.size} placeholder="Search" icon="search" />
+                  <JlInput size={height.size} label="Search" placeholder="Search" icon="search" />
                   <JlSelect
                     size={height.size}
+                    label="Period"
                     value="week"
                     options={[
                       { label: 'This week', value: 'week' },

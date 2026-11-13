@@ -1,6 +1,6 @@
 # jlib: notes for working on the code
 
-jlib is a component library on Jadis (`@jadis/core` 1.6) and native Web Components, in atomic design, with a static
+jlib is a component library on Jadis (`@jadis/core` 1.8) and native Web Components, in atomic design, with a static
 documentation site that shows and tests every component.
 
 ## Layout
@@ -101,6 +101,18 @@ documentation site that shows and tests every component.
   are the page's to register, one by one or with `COMMON_ICONS` (`src/lib/icon-set.ts`, registered by `@syware/jlib/all`).
   An unregistered name draws a neutral mark and warns once; the e2e suite fails on that warning.
 - Shared enums: `TONES`, `CONTROL_SIZES`.
+- **An ARIA state is written with `setAriaFlag(element, 'aria-invalid', on)`** (`lib/dom.ts`), never
+  `toggleAttribute('aria-…')`: a bare attribute (`aria-invalid=""`) is one browsers read as false.
+- **A form control is off by its own `disabled` or by a `<fieldset disabled>`**: it keeps the form's state beside
+  the input (`_state.disabledByForm`), asks one `isOff()` everywhere, and draws from two places: `renderDisabled`
+  (the input's callback: reflects, then draws) and `drawDisabled` (the form's: draws only). The browser tells the
+  form's state before the input has read the attribute's change: reflecting from there writes `disabled` back for
+  good. The e2e test "a disabled control" asks it of every control: add a new one to its list. Style with
+  `:host(:disabled)`, true in a disabled fieldset too.
+- **A modal** (a `<dialog>` shown with `showModal()`) goes through `lib/modal.ts`: `modalOpened`/`modalClosed`
+  around its opening (the toaster moves into the modal on top, where its toasts can be pressed: everything outside
+  a modal is inert), `onBackdropPress` for the click outside (a selection dragged out of a field ends its click on
+  the dialog too), `setPersistent` to hold against Escape.
 - **A component that holds the page's values or records is typed by them**: a type parameter with the untyped form
   as default, `JlSelect<Value extends string = string>`, `JlTable<Row extends object = TableRow>`. A field of that
   type bound to an attribute brings its parser (`jsonOf`, `textOf`, `textListOf`: HTML is not checked against the
@@ -132,7 +144,11 @@ not).
 ## Checking a change
 
 `npm run check` (generate --check, lint, types, unit tests), then `npm run test:e2e` (builds the site and opens
-every page in Chromium: no console error, no undefined `jl-*` tag, no unregistered icon). Look at the pages:
+every page in Chromium: no console error, no undefined `jl-*` tag, no unregistered icon, and nothing axe-core finds
+at WCAG 2 A and AA; the rules that are off and what is exempt are named in the test, with why). A behaviour is tested
+there on a component alone: `mount(page, html)` puts it in the page of its own doc, which defines its tag.
+`npm run check:pack` builds and packs the library and type-checks and bundles a scratch app on the tarball. CI
+(`.github/workflows/ci.yml`) runs the three on every pull request. Look at the pages:
 `node scripts/shoot.mjs /components/<name> --out <dir> [--theme dark] [--width 390] [--full] [--eval "…"]`.
 
 ## Gotchas met so far
@@ -171,6 +187,14 @@ every page in Chromium: no console error, no undefined `jl-*` tag, no unregister
   pointerdown or the click reopens it.
 - `setFormValue(FormData)` uses the entries' own names: write them again when `name` changes.
 - `::details-content` is not matched by `*`: give it `box-sizing: inherit` inside details.
+- `child.events.register(…)` stops when the child disconnects. Registered in `onConnect`, it comes back with the
+  parent; registered where the child is built (a row of `jl-input-list`), it is gone after the parent was taken out
+  and put back: listen with `addEventListener` for as long as the child lives.
+- Writing the same `textContent` again makes a new text node, which the render budget counts: write it only when it
+  changed (`jl-button`'s label).
+- happy-dom gives elements no `part` (`jl-flow` toggles one): a test that mounts such a component stands one in.
+- A press handler that drops a promise (`() => void this.copy()`) hides its rejection: catch where nobody else can,
+  and show it (`jl-copy-button`).
 - Link to light-DOM elements from a shadow root with element reflection (`ariaControlsElements`): ids cannot cross.
 - The shoot script's Vite server reloads when files change: an `--eval` failing with "Execution context was
   destroyed" just needs a rerun.
@@ -204,16 +228,14 @@ every page in Chromium: no console error, no undefined `jl-*` tag, no unregister
 
 ## Commands
 
-- `node` and `gh` are not on the default PATH here: node lives in `~/.nvm/versions/node/v26.12.0/bin` (v24.22.1 also installed), `gh` in `~/.local/bin`. Export the PATH before `npm`, `node scripts/shoot.mjs` or `gh`.
-- On this machine node is /usr/bin/node v22.22.1 (no ~/.nvm here). Node 22 cannot import .ts, so `npm run generate` runs as `npx --yes tsx scripts/generate-index.mjs`; vitest and the rest work with node 22.
+- Where `node` and `gh` live depends on the machine (nvm under `~/.nvm/versions/node/*/bin`, `/usr/bin`, `~/.local/bin`): look with `which node gh` before exporting a PATH. Node 22 cannot import .ts: there `npm run generate` runs as `npx --yes tsx scripts/generate-index.mjs`; vitest and the rest work with it.
 - The e2e suite needs a browser: `npx playwright-core install chromium-headless-shell` once, then `npm run test:e2e` (builds the site, serves it with vite preview).
 - `tests/render.test.ts` is the render benchmark (happy-dom): it wraps `Jadis.prototype.renderTemplate` and `useChange` and counts, per component, the template renders, the input callbacks and the DOM nodes added, against budgets (the measured numbers). It runs with `npm run test`; a component that rebuilds its children for every input fails it. The budgets are exact for renders and nodes, a ceiling for the callbacks (attribute callbacks fire at connection, in field order).
 - `gh` was not installed here; installed 2.63.2 into ~/.local/bin and ran `gh auth setup-git` once so `git push` to the https remote authenticates (no credential helper configured).
-- Skills are refreshed by the package's `postinstall`: `npx skills update -p -y` (`-p` project scope, `-y` skips the scope prompt). `.claude/` and `.agents/` stay out of git (both in .gitignore); `.claude-plugin/marketplace.json` is tracked.
+- Skills are refreshed by the package's `prepare` (`scripts/refresh-skills.mjs`: `npx skills update -p -y`, skipped when `CI` is set), never a `postinstall`: npm runs that one in every app that installs the package too. `.claude/` and `.agents/` stay out of git (both in .gitignore); `.claude-plugin/marketplace.json` is tracked.
 
 ## Traps
 
-- `npm run generate --check` is stale on a new day: the calendar and date-picker doc examples hold today's date, so generate rewrites those two skill references every day. Keep a scoped change clean by `git checkout`-ing them after running generate.
 - A scroll area that is a flex item needs `align-content: start` as well as `flex: 1; min-height: 0`: a grid scroller with free space (a short list) otherwise spreads its rows over the room it took (jl-side-nav's `.sections`).
 
 ## Conventions

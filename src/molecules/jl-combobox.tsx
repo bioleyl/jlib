@@ -4,7 +4,7 @@ import { Check, ChevronDown, X } from 'lucide';
 import { JlIcon } from '../atoms/jl-icon';
 import { JlFormControl } from '../base/jl-form-control';
 import { jsonOf, oneOf } from '../lib/attributes';
-import { setOrRemove, uniqueId } from '../lib/dom';
+import { setAriaFlag, setOrRemove, uniqueId } from '../lib/dom';
 import { followAnchor } from '../lib/floating';
 import { registerIcons } from '../lib/icons';
 import { keepInView } from '../lib/keep-in-view';
@@ -76,7 +76,7 @@ export class JlCombobox extends JlFormControl {
   readonly required = this.useChange(
     false,
     (value) => {
-      this._refs.native.toggleAttribute('aria-required', value);
+      setAriaFlag(this._refs.native, 'aria-required', value);
       this.reflect('required', value);
       this.renderValidity();
     },
@@ -88,7 +88,7 @@ export class JlCombobox extends JlFormControl {
     false,
     (value) => {
       this.reflect('invalid', value);
-      this._refs.native.toggleAttribute('aria-invalid', value);
+      setAriaFlag(this._refs.native, 'aria-invalid', value);
     },
     { attribute: 'invalid' }
   );
@@ -103,6 +103,7 @@ export class JlCombobox extends JlFormControl {
     active: NONE,
     /** The option element the arrows reached: it alone is marked, wherever the filter put it. */
     activeItem: null as HTMLElement | null,
+    disabledByForm: false,
     matches: [] as ComboboxOption[],
     opening: new AbortController(),
     /** What people typed since the last choice; empty shows every option. */
@@ -189,10 +190,14 @@ export class JlCombobox extends JlFormControl {
   }
 
   protected setDisabledByForm(disabled: boolean): void {
+    this._state.disabledByForm = disabled;
     // A disabled field gets this call as it upgrades, before its template exists: wait for it.
-    this.whenRendered(() => {
-      this._refs.native.disabled = disabled || this.disabled.get();
-    });
+    this.whenRendered(() => this.drawDisabled());
+  }
+
+  /** Disabled by its own input, or by a `<fieldset disabled>` around it. */
+  private isOff(): boolean {
+    return this.disabled.get() || this._state.disabledByForm;
   }
 
   protected drawTexts(): void {
@@ -318,7 +323,7 @@ export class JlCombobox extends JlFormControl {
    * it; otherwise the chosen option is. With free text allowed and nothing matching, the list stays closed.
    */
   private openList(typing: boolean): void {
-    if (this.disabled.get() || (this.options.get().length === 0 && this._state.query === '')) {
+    if (this.isOff() || (this.options.get().length === 0 && this._state.query === '')) {
       return;
     }
     this.renderOptions();
@@ -407,8 +412,14 @@ export class JlCombobox extends JlFormControl {
   private commitText(): void {
     this.closeList();
     const text = this._refs.native.value.trim();
-    const exact = this.optionWithLabel(text);
     this._state.query = '';
+    // Nothing typed: the field still shows its value. Reading that text back would choose the first of two options
+    // named alike, and erase a value whose options are not there yet, which shows no label.
+    if (text === this.displayOf(this.value.get()).trim()) {
+      this.renderValue();
+      return;
+    }
+    const exact = this.optionWithLabel(text);
     if (exact !== undefined) {
       this.commit(exact.value);
       return;
@@ -546,13 +557,18 @@ export class JlCombobox extends JlFormControl {
 
   private renderClear(): void {
     const native = this._refs.native;
-    this._refs.clear.hidden = !(this.clearable.get() && !this.disabled.get() && native.value !== '');
+    this._refs.clear.hidden = !(this.clearable.get() && !this.isOff() && native.value !== '');
   }
 
   private renderDisabled(disabled: boolean): void {
-    this._refs.native.disabled = disabled;
-    this._refs.toggle.disabled = disabled;
     this.reflect('disabled', disabled);
+    this.drawDisabled();
+  }
+
+  /** Without the attribute: the form says its state before the `disabled` input has taken the attribute's change. */
+  private drawDisabled(): void {
+    this._refs.native.disabled = this.isOff();
+    this._refs.toggle.disabled = this.isOff();
     this.closeList();
     this.renderClear();
   }

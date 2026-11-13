@@ -12,7 +12,7 @@ import { BASE_STYLES } from '../styles/shared';
 import { JlEmpty } from './jl-empty';
 import styles from './jl-load-state.css?inline';
 
-import type { LoadSkeleton, LoadState, LoadTask } from '../types/jl-load-state.types';
+import type { Fetched, LoadSkeleton, LoadState, LoadTask } from '../types/jl-load-state.types';
 
 // The icons it draws itself: a page registers only the names it writes.
 registerIcons({ 'circle-alert': CircleAlert, refresh: RefreshCw });
@@ -92,6 +92,15 @@ function leftLoading(state: JlLoadState, signal: AbortSignal): Promise<void> {
 /** Waits for the components connected meanwhile to run their `onConnect`, a task after connecting. */
 const nextTask = (): Promise<void> => new Promise((resolve) => setTimeout(resolve));
 
+/** Runs a load's fetch. Only its failure is a load that failed: what `draw` throws afterwards is not caught here. */
+async function fetchOf<Value>(task: LoadTask<Value>): Promise<Fetched<Value>> {
+  try {
+    return { failed: false, value: await task.fetch() };
+  } catch {
+    return { failed: true };
+  }
+}
+
 /**
  * What a list or a page shows while its data comes: nothing for a moment, then a skeleton shaped like it; then the
  * data (the default slot), what to say when there is none (slot `empty`, a `jl-empty`), or, when it failed, what
@@ -168,6 +177,7 @@ export class JlLoadState extends JlElement {
    * (a refresh), what is shown stays until the new data is there, and stays too if it fails. Resolves to whether it
    * worked: a refresh that fails says so only here, for the page to tell people. A load overtaken by a later one
    * (a search typed on, a poll during a reload) draws nothing and resolves true: the later one decides.
+   * @throws What `draw` or `isEmpty` throws: a mistake in the page, not a load that failed.
    */
   async load<Value>(task: LoadTask<Value>): Promise<boolean> {
     this._work.latest += 1;
@@ -176,22 +186,36 @@ export class JlLoadState extends JlElement {
     if (!this.isShowing()) {
       this.state.set('loading');
     }
+    const fetched = await fetchOf(task);
+    if (ticket !== this._work.latest) {
+      return true;
+    }
+    if (fetched.failed) {
+      this.showFailure();
+      return false;
+    }
+    this.drawFetched(task, fetched.value);
+    return true;
+  }
+
+  /** A first load that failed shows the error; a refresh that failed leaves what is shown. */
+  private showFailure(): void {
+    if (!this.isShowing()) {
+      this.state.set('error');
+    }
+  }
+
+  /**
+   * Draws what was fetched. A `draw` that throws is a mistake in the page: people see the error state, and the
+   * exception goes on to the page and its console, where a load that failed would have hidden it.
+   */
+  private drawFetched<Value>(task: LoadTask<Value>, value: Value): void {
     try {
-      const value = await task.fetch();
-      if (ticket !== this._work.latest) {
-        return true;
-      }
       task.draw(value);
       this.state.set(task.isEmpty?.(value) === true ? 'empty' : 'ready');
-      return true;
-    } catch {
-      if (ticket !== this._work.latest) {
-        return true;
-      }
-      if (!this.isShowing()) {
-        this.state.set('error');
-      }
-      return false;
+    } catch (error) {
+      this.state.set('error');
+      throw error;
     }
   }
 

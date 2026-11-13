@@ -6,6 +6,7 @@ import { clampedNumber, oneOf } from '../lib/attributes';
 import { answerError, dispositionFileName, readWithProgress, saveBlob, urlFileName } from '../lib/download';
 import { formatFileSize } from '../lib/files';
 import { registerIcons } from '../lib/icons';
+import { modalBus, topModal } from '../lib/modal';
 import { fillText } from '../lib/text';
 import { jlTemplate, jlText } from '../lib/texts';
 import { formatDuration } from '../lib/time';
@@ -66,10 +67,15 @@ function updateToast(toast: JlToast, changes: ToastOptions): void {
   }
 }
 
+// The toasters in the page now. One may sit in a shadow root (an app shell's template, or the modal it moved into),
+// where a search of the document does not look.
+const connectedToasters = new Set<JlToaster>();
+
 /**
  * The corner of the window where notifications stack, newest nearest the edge, at most `max` at a time. It lives in
- * the top layer, so it shows over open dialogs, and its live region reads new toasts to screen readers. Pages
- * usually call `toast({ heading, text, tone })`, which finds or makes the page's toaster.
+ * the top layer, so it shows over open dialogs, and its live region reads new toasts to screen readers. While one of
+ * jlib's modals shows, the toaster sits inside it, where its toasts can be pressed. Pages usually call
+ * `toast({ heading, text, tone })`, which finds or makes the page's toaster.
  */
 export class JlToaster extends JlElement {
   static readonly selector = 'jl-toaster';
@@ -91,6 +97,8 @@ export class JlToaster extends JlElement {
   readonly label = this.useChange('', () => this.drawTexts(), { attribute: 'label' });
 
   private readonly _watched = new WeakSet<JlToast>();
+  /** Where the toaster stood before it moved into a modal: it goes back there. */
+  private readonly _home = { next: null as ChildNode | null, parent: null as ParentNode | null };
 
   private readonly _refs = this.useRefs((ref) => ({
     region: ref('.region'),
@@ -156,13 +164,56 @@ export class JlToaster extends JlElement {
     // The first slotchange can come before onConnect: stack what is there now, then follow the changes.
     this.renderStack();
     this.on(this._refs.slot, 'slotchange', () => this.renderStack());
+    connectedToasters.add(this);
+    this.followModal();
+    this.onBus(modalBus, 'change', () => this.followModal());
   }
 
   onDisconnect(): void {
+    connectedToasters.delete(this);
     const region = this._refs.region;
     if (region.matches(OPEN)) {
       region.hidePopover();
     }
+  }
+
+  /**
+   * A modal makes everything outside it inert, the top layer included: a toast shown over one could not be pressed,
+   * and a click on it reached the modal's backdrop. While a modal shows, the toaster sits inside the one on top; it
+   * goes back to its place when the last one closes.
+   */
+  private followModal(): void {
+    const modal = topModal();
+    if (modal === undefined) {
+      this.moveHome();
+      return;
+    }
+    this.moveInto(modal);
+  }
+
+  private moveInto(modal: HTMLDialogElement): void {
+    if (this.parentNode === modal) {
+      return;
+    }
+    if (this._home.parent === null) {
+      this._home.parent = this.parentNode;
+      this._home.next = this.nextSibling;
+    }
+    modal.append(this);
+    // The move closed the region's popover: it shows again, over the modal.
+    this.renderStack();
+  }
+
+  private moveHome(): void {
+    const { next, parent } = this._home;
+    if (parent === null) {
+      return;
+    }
+    this._home.parent = null;
+    this._home.next = null;
+    // The sibling it stood before may have left since: the end of its parent, then.
+    parent.insertBefore(this, next?.parentNode === parent ? next : null);
+    this.renderStack();
   }
 
   private toasts(): JlToast[] {
@@ -223,9 +274,10 @@ export class JlToaster extends JlElement {
 
 JlToaster.register();
 
-/** The page's toaster: the first one in the document, or a new one at the end of the body. */
+/** The page's toaster: the first one connected, or in the document, or a new one at the end of the body. */
 function pageToaster(): JlToaster {
-  const found = document.querySelector<JlToaster>(JlToaster.selector);
+  const [connected] = connectedToasters;
+  const found = connected ?? document.querySelector<JlToaster>(JlToaster.selector);
   if (found !== null) {
     return found;
   }

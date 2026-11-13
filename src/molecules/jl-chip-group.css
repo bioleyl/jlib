@@ -112,7 +112,8 @@
 
 .chip:is([aria-checked="true"], [aria-pressed="true"]) .badge {
   background: color-mix(in srgb, var(--jl-accent) 14%, transparent);
-  color: var(--jl-accent);
+  /* The strong accent: on this tint the accent itself is 3.9:1, short of what text needs. */
+  color: var(--jl-accent-strong);
 }
 
 /* The chips' icons' size, by the group's: each icon reads --icon-size. */

@@ -6,11 +6,20 @@ const FILE_NAME = /filename\s*=\s*"?([^";]+)"?/;
 const REVOKE_DELAY_MS = 1000;
 const ADDRESS_BASE = 'http://localhost/';
 
+/** A percent-encoded name, decoded; one that is not well formed (a lone `%`) is the name as it is written. */
+function decodedName(name: string): string {
+  try {
+    return decodeURIComponent(name);
+  } catch {
+    return name;
+  }
+}
+
 /** The file name a Content-Disposition header gives (its UTF-8 form first), or none. */
 export function dispositionFileName(header: string | null): string | undefined {
   const utf8 = FILE_NAME_UTF8.exec(header ?? '')?.[1];
   if (utf8 !== undefined) {
-    return decodeURIComponent(utf8.trim());
+    return decodedName(utf8.trim());
   }
   return FILE_NAME.exec(header ?? '')?.[1]?.trim() || undefined;
 }
@@ -18,7 +27,7 @@ export function dispositionFileName(header: string | null): string | undefined {
 /** A file name for an address: its last path segment, or the fallback when it has none. */
 export function urlFileName(url: string, fallback: string): string {
   const segment = new URL(url, ADDRESS_BASE).pathname.split('/').at(-1) ?? '';
-  return segment === '' ? fallback : decodeURIComponent(segment);
+  return segment === '' ? fallback : decodedName(segment);
 }
 
 /** What a failed answer's body says: `{ error: { message } }`, `{ error: "…" }`, `{ message }`, or its status. */

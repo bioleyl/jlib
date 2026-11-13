@@ -9,6 +9,7 @@ import { setOrRemove } from '../lib/dom';
 import { highlightSegments } from '../lib/fuzzy';
 import { hotkeyLabels, isApplePlatform, matchesHotkey, parseHotkey } from '../lib/hotkey';
 import { registerIcons } from '../lib/icons';
+import { modalClosed, modalOpened, onBackdropPress } from '../lib/modal';
 import { groupMatches, matchCommands } from '../lib/palette';
 import { jlText } from '../lib/texts';
 import { BASE_STYLES } from '../styles/shared';
@@ -201,16 +202,18 @@ export class JlCommandPalette<Id extends string = string> extends JlElement {
       }
     });
     this.on(dialog, 'close', () => {
+      modalClosed(dialog);
       this.reflect('open', false);
       this.open.set(false);
       this.events.emit('close');
     });
-    this.on(dialog, 'click', (event) => {
-      if (event.target === dialog) {
-        this.close();
-      }
-    });
+    onBackdropPress(dialog, () => this.close(), this.killSignal);
     this.renderOpen(this.open.get());
+  }
+
+  /** A palette taken out of the page while it shows is no longer the modal on top. */
+  onDisconnect(): void {
+    modalClosed(this._refs.dialog);
   }
 
   private toggleOnHotkey(event: KeyboardEvent): void {
@@ -270,12 +273,14 @@ export class JlCommandPalette<Id extends string = string> extends JlElement {
       // The attribute follows at once: set back later, by the dialog's close event, it would reopen the palette.
       this.reflect('open', false);
       dialog.close();
+      modalClosed(dialog);
       return;
     }
     this._refs.input.value = '';
     this.renderResults();
     this.search('');
     dialog.showModal();
+    modalOpened(dialog);
     this._refs.input.focus();
     this.reflect('open', true);
     this.events.emit('open');

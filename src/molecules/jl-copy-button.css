@@ -6,3 +6,8 @@
   --jl-accent: var(--jl-ok);
   --jl-accent-soft: var(--jl-ok-soft);
 }
+
+:host([failed]) jl-button {
+  --jl-accent: var(--jl-danger);
+  --jl-accent-soft: var(--jl-danger-soft);
+}

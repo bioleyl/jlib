@@ -74,7 +74,7 @@ In JSX, the `on…` prop, its handler given the detail; in code, `events.registe
 
 ## Methods
 
-- `load<Value>(task: { fetch(): Promise<Value>; draw(value: Value): void; isEmpty?(value: Value): boolean }): Promise<boolean>`: Fetches, draws, and shows the right state: the skeleton the first time and after a failure, the content or the empty slot after. Resolves whether it worked.
+- `load<Value>(task: { fetch(): Promise<Value>; draw(value: Value): void; isEmpty?(value: Value): boolean }): Promise<boolean>`: Fetches, draws, and shows the right state: the skeleton the first time and after a failure, the content or the empty slot after. Resolves whether it worked. Only a fetch that fails is a load that failed: what draw or isEmpty throws shows the error state and is thrown on, a mistake in the page that its console should show.
 - `JlLoadState.whenSettled(root: ParentNode, signal?: AbortSignal): Promise<void>`: Static: resolves once every load state under the root that can be seen, in shadow roots too, has left loading, those drawn meanwhile included; or once the signal aborts. A page that shows only once it has its data waits for it, as jl-page-outlet does.
 
 ## Styling

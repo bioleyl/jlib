@@ -63,7 +63,7 @@
 }
 
 .native::placeholder {
-  color: var(--jl-faint);
+  color: var(--jl-muted);
 }
 
 .native:focus-visible {

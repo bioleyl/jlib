@@ -80,13 +80,13 @@
   padding-left: 6px;
 }
 
-:host([disabled]) .tag {
+:host(:disabled) .tag {
   padding-right: 8px;
   color: var(--jl-muted);
 }
 
-/* A disabled field keeps its tags: none can be removed. */
-:host([disabled]) .tag-remove {
+/* A disabled field keeps its tags: none can be removed. `:disabled` is also true in a disabled fieldset. */
+:host(:disabled) .tag-remove {
   display: none;
 }
 

@@ -6,7 +6,7 @@ import { INPUT_TYPES, JlInput } from '../atoms/jl-input';
 import { JlSelect } from '../atoms/jl-select';
 import { JlTextarea } from '../atoms/jl-textarea';
 import { JlElement } from '../base/jl-element';
-import { clampedNumber, jsonOf, oneOf } from '../lib/attributes';
+import { clampedNumber, jsonOf, oneOf, stringList } from '../lib/attributes';
 import { registerIcons } from '../lib/icons';
 import { canAddRow, filledValues, rowsOf, sameValues, withoutRowAt, withRowAt } from '../lib/input-list';
 import { jlText } from '../lib/texts';
@@ -28,6 +28,14 @@ type RowControl = JlSelect | JlTextarea | JlInput;
 type DrawnRow = { control: RowControl; remove: JlButton };
 
 /**
+ * Hears a row's control or button for as long as the row lives. `events.register` stops at the element's
+ * disconnection, and a list taken out of the page and put back keeps its rows: they heard nothing any more.
+ */
+function hear<Detail = string>(element: HTMLElement, name: string, heard: (detail: Detail) => void): void {
+  element.addEventListener(name, (event) => heard((event as CustomEvent<Detail>).detail));
+}
+
+/**
  * A field with several values, each in its own row: typed in an input (or a text area when `multiline`), or picked
  * from `options`. People add a row and remove one; `max` caps how many. `values` holds those filled in, in their
  * order, and `change` fires with them. Put it in a `jl-field` for its label, hint and error.
@@ -40,7 +48,8 @@ export class JlInputList extends JlElement {
   /** The values filled in, in their order; rows left empty are not among them. */
   readonly values = this.useChange<string[]>([], (values) => this.follow(values), {
     attribute: 'values',
-    parse: jsonOf<string[]>([]),
+    // Texts, whatever the JSON holds: `values='[1,2]'` for a list of numbers.
+    parse: stringList,
   });
   /** The input of each row: text, a number, a date, a link… */
   readonly type = this.useChange<InputType>('text', () => this.drawRows(), {
@@ -154,7 +163,7 @@ export class JlInputList extends JlElement {
   private row(value: string, index: number): DrawnRow {
     const control = this.control(value, (text) => this.change(index, text));
     const remove = (<JlButton class="remove" variant="ghost" size="sm" icon="x" />) as JlButton;
-    remove.events.register('press', () => this.removeRow(index));
+    hear<undefined>(remove, 'press', () => this.removeRow(index));
     const row = { control, remove };
     this.drawRow(row);
     return row;
@@ -187,19 +196,19 @@ export class JlInputList extends JlElement {
     const controls: Record<RowKind, () => RowControl> = {
       input: () => {
         const input = (<JlInput type={this.type.get()} value={value} />) as JlInput;
-        input.events.register('input', onInput);
+        hear(input, 'input', onInput);
         return input;
       },
       select: () => {
         // Its options first: the value is chosen among them.
         const select = (<JlSelect options={this.options.get()} />) as JlSelect;
         select.value.set(value);
-        select.events.register('change', onInput);
+        hear(select, 'change', onInput);
         return select;
       },
       textarea: () => {
         const area = (<JlTextarea value={value} autosize />) as JlTextarea;
-        area.events.register('input', onInput);
+        hear(area, 'input', onInput);
         return area;
       },
     };

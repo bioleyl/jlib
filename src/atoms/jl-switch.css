@@ -86,6 +86,35 @@
   transform: translateX(calc(var(--track-width) - var(--track-height)));
 }
 
+/*
+ * Forced colours paint every background alike: on and off looked the same, the thumb lost on its track. System
+ * colours, kept as written, bring them back.
+ */
+@media (forced-colors: active) {
+  .native,
+  .thumb {
+    forced-color-adjust: none;
+  }
+
+  .native {
+    border-color: ButtonText;
+    background: Canvas;
+  }
+
+  .thumb {
+    background: ButtonText;
+  }
+
+  .native:checked {
+    border-color: Highlight;
+    background: Highlight;
+  }
+
+  .native:checked + .thumb {
+    background: HighlightText;
+  }
+}
+
 /* Its baseline is the element's, so a label beside it (a horizontal field) lines up with the text. */
 .text {
   display: grid;

@@ -3,6 +3,7 @@ import { Check, X } from 'lucide';
 
 import { JlElement } from '../base/jl-element';
 import { oneOf } from '../lib/attributes';
+import { setAriaFlag } from '../lib/dom';
 import { registerIcons } from '../lib/icons';
 import { isActivationKey } from '../lib/surface';
 import { jlText } from '../lib/texts';
@@ -159,7 +160,7 @@ export class JlChip extends JlElement {
     }
     main.setAttribute('role', 'button');
     main.setAttribute('aria-pressed', String(this.selected.get()));
-    main.toggleAttribute('aria-disabled', disabled);
+    setAriaFlag(main, 'aria-disabled', disabled);
     if (disabled) {
       main.removeAttribute('tabindex');
       return;

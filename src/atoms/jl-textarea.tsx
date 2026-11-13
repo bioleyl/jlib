@@ -1,7 +1,7 @@
 import { css } from '@jadis/core';
 
 import { JlFormControl } from '../base/jl-form-control';
-import { setOrRemove } from '../lib/dom';
+import { setAriaFlag, setOrRemove } from '../lib/dom';
 import { BASE_STYLES, CONTROL_STYLES } from '../styles/shared';
 import styles from './jl-textarea.css?inline';
 
@@ -60,7 +60,7 @@ export class JlTextarea extends JlFormControl {
     false,
     (value) => {
       this.reflect('invalid', value);
-      this._refs.native.toggleAttribute('aria-invalid', value);
+      setAriaFlag(this._refs.native, 'aria-invalid', value);
     },
     { attribute: 'invalid' }
   );

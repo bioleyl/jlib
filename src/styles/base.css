@@ -61,6 +61,19 @@ pre {
   white-space: nowrap;
 }
 
+/*
+ * Forced colours (the contrast themes of Windows) drop every box-shadow, the focus ring with them: an outline in a
+ * system colour says where the focus is, on whatever element a component drew its ring.
+ */
+@media (forced-colors: active) {
+  :focus-visible {
+    /* biome-ignore lint/complexity/noImportantStyles: over each component's own `outline: none` beside its ring */
+    outline: 2px solid Highlight !important;
+    /* biome-ignore lint/complexity/noImportantStyles: goes with the outline above */
+    outline-offset: 2px !important;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

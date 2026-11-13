@@ -5,6 +5,7 @@ import { oneOf } from '../lib/attributes';
 import { svgElement } from '../lib/dom';
 import { parseNumber } from '../lib/numeric';
 import { percentLabel, percentOf, progressRatio, ringGeometry } from '../lib/progress';
+import { jlText } from '../lib/texts';
 import { BASE_STYLES } from '../styles/shared';
 import { PROGRESS_TONES } from './jl-progress';
 import styles from './jl-progress-ring.css?inline';
@@ -16,7 +17,6 @@ const DEFAULT_SIZE = 40;
 const DEFAULT_THICKNESS = 4;
 // The arc is drawn on a path of length 100, so its dash offset is the part left to do, in percent.
 const PATH_LENGTH = 100;
-const DEFAULT_NAME = 'Progress';
 
 /**
  * How far a task has gone, as a ring: `value` out of `max`, the percentage in its centre with `show-value`.
@@ -48,11 +48,7 @@ export class JlProgressRing extends JlElement {
     { attribute: 'show-value' }
   );
   /** The ring's name for screen readers: what is in progress. */
-  readonly label = this.useChange(
-    '',
-    (value) => this._refs.ring.setAttribute('aria-label', value === '' ? DEFAULT_NAME : value),
-    { attribute: 'label' }
-  );
+  readonly label = this.useChange('', () => this.drawTexts(), { attribute: 'label' });
 
   private readonly _refs = this.useRefs((ref) => ({
     percent: ref('.percent'),
@@ -77,6 +73,11 @@ export class JlProgressRing extends JlElement {
 
   templateCss(): string {
     return css`${BASE_STYLES}${styles}`;
+  }
+
+  /** The ring's name: its label, or what screen readers call a ring without one, in jlib's language. */
+  protected drawTexts(): void {
+    this._refs.ring.setAttribute('aria-label', this.label.get() || jlText('progress'));
   }
 
   private buildSvg(): SVGSVGElement {

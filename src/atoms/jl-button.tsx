@@ -2,7 +2,7 @@ import { css } from '@jadis/core';
 
 import { JlElement } from '../base/jl-element';
 import { oneOf } from '../lib/attributes';
-import { setOrRemove } from '../lib/dom';
+import { setAriaFlag, setOrRemove } from '../lib/dom';
 import { elementInternals } from '../lib/internals';
 import { CONTROL_SIZES } from '../lib/options';
 import { BASE_STYLES } from '../styles/shared';
@@ -53,9 +53,8 @@ export class JlButton extends JlElement {
   readonly disabled = this.useChange(
     false,
     (value) => {
-      this._refs.button.disabled = value;
-      this.renderLink();
       this.reflect('disabled', value);
+      this.renderDisabled();
     },
     { attribute: 'disabled' }
   );
@@ -65,8 +64,8 @@ export class JlButton extends JlElement {
     (value) => {
       this._refs.spinner.hidden = !value;
       this._refs.start.hidden = value || this.icon.get() === '';
-      this._refs.button.toggleAttribute('aria-busy', value);
-      this._refs.link.toggleAttribute('aria-busy', value);
+      setAriaFlag(this._refs.button, 'aria-busy', value);
+      setAriaFlag(this._refs.link, 'aria-busy', value);
       this.reflect('loading', value);
     },
     { attribute: 'loading' }
@@ -83,6 +82,8 @@ export class JlButton extends JlElement {
   readonly download = this.useChange('', () => this.renderLink(), { attribute: 'download' });
 
   private readonly _internals = elementInternals(this);
+  // Kept apart from `disabled`: the browser also says it for the button's own attribute, possibly before it renders.
+  private readonly _form = { disabled: false };
 
   private readonly _refs = this.useRefs((ref) => ({
     button: ref('button'),
@@ -121,7 +122,15 @@ export class JlButton extends JlElement {
     return css`${BASE_STYLES}${styles}`;
   }
 
+  /** Called by the browser when a `<fieldset disabled>` around the button changes: it presses and submits no more. */
+  formDisabledCallback(disabled: boolean): void {
+    this._form.disabled = disabled;
+    this.whenRendered(() => this.renderDisabled());
+  }
+
   onConnect(): void {
+    // Text given right after the connection changed the slot before this ran: that slotchange is gone.
+    this.renderLabel();
     this.on(this._refs.slot, 'slotchange', () => this.renderLabel());
     this.on(this._refs.button, 'click', () => {
       if (!this.canPress()) {
@@ -140,7 +149,17 @@ export class JlButton extends JlElement {
   }
 
   private canPress(): boolean {
-    return !(this.disabled.get() || this.loading.get());
+    return !(this.isOff() || this.loading.get());
+  }
+
+  /** Disabled by its own input, or by a `<fieldset disabled>` around it. */
+  private isOff(): boolean {
+    return this.disabled.get() || this._form.disabled;
+  }
+
+  private renderDisabled(): void {
+    this._refs.button.disabled = this.isOff();
+    this.renderLink();
   }
 
   /** The element that takes focus and clicks: the link with an `href`, the button otherwise. */
@@ -157,7 +176,7 @@ export class JlButton extends JlElement {
     const href = this.href.get();
     const isLink = href !== '';
     const target = this.target.get();
-    const off = isLink && this.disabled.get();
+    const off = isLink && this.isOff();
     // Moved only between the button and the link: disabled, target and download leave it where it is.
     const control = this.control();
     if (content.parentNode !== control) {
@@ -207,7 +226,10 @@ export class JlButton extends JlElement {
     const label = this.label.get();
     const hint = this.hint.get();
     const iconOnly = label === '' && !this.hasSlottedContent();
-    this._refs.label.textContent = label;
+    // Written only when it changed: the same text again is a new node all the same.
+    if (this._refs.label.textContent !== label) {
+      this._refs.label.textContent = label;
+    }
     this.reflect('icon-only', iconOnly);
     for (const control of [this._refs.button, this._refs.link]) {
       setOrRemove(control, 'title', hint);

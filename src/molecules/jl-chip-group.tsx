@@ -4,7 +4,7 @@ import { Check } from 'lucide';
 import { JlIcon } from '../atoms/jl-icon';
 import { JlFormControl } from '../base/jl-form-control';
 import { jsonOf, oneOf, textListOf } from '../lib/attributes';
-import { setOrRemove } from '../lib/dom';
+import { setAriaFlag, setOrRemove } from '../lib/dom';
 import { registerIcons } from '../lib/icons';
 import { CONTROL_SIZES } from '../lib/options';
 import { rovingIndex } from '../lib/roving';
@@ -85,7 +85,7 @@ export class JlChipGroup<Value extends string = string> extends JlFormControl {
     false,
     (value) => {
       this.reflect('required', value);
-      this._refs.group.toggleAttribute('aria-required', value);
+      setAriaFlag(this._refs.group, 'aria-required', value);
       this.renderValidity();
     },
     { attribute: 'required' }
@@ -258,7 +258,7 @@ export class JlChipGroup<Value extends string = string> extends JlFormControl {
     const multiple = this.multiple.get();
     const groupDisabled = this.isDisabled();
     this._refs.group.setAttribute('role', multiple ? 'group' : 'radiogroup');
-    this._refs.group.toggleAttribute('aria-disabled', groupDisabled);
+    setAriaFlag(this._refs.group, 'aria-disabled', groupDisabled);
     for (const chip of this.chips()) {
       const selected = chosen.has(chip.dataset.value ?? '');
       chip.disabled = groupDisabled || chip.dataset.disabled !== undefined;

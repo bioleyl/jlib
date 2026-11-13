@@ -3,7 +3,7 @@ import { css } from '@jadis/core';
 import { JlIcon } from '../atoms/jl-icon';
 import { JlFormControl } from '../base/jl-form-control';
 import { jsonOf, oneOf, textOf } from '../lib/attributes';
-import { setOrRemove } from '../lib/dom';
+import { setAriaFlag, setOrRemove } from '../lib/dom';
 import { followTarget } from '../lib/indicator';
 import { CONTROL_SIZES } from '../lib/options';
 import { firstIndex, lastIndex, stepIndex } from '../lib/roving';
@@ -210,7 +210,7 @@ export class JlSegmented<Value extends string = string> extends JlFormControl {
 
   private renderDisabled(): void {
     const disabled = this.isDisabled();
-    this._refs.group.toggleAttribute('aria-disabled', disabled);
+    setAriaFlag(this._refs.group, 'aria-disabled', disabled);
     for (const segment of this.segments()) {
       segment.disabled = disabled || segment.hasAttribute('data-disabled');
     }

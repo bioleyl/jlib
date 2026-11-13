@@ -1,6 +1,7 @@
 import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
+import axe from 'axe-core';
 import { chromium } from 'playwright-core';
 import { preview } from 'vite';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
@@ -30,22 +31,27 @@ import type { JlCodeBlock } from '../src/molecules/jl-code-block';
 import type { JlCombobox } from '../src/molecules/jl-combobox';
 import type { JlDatePicker } from '../src/molecules/jl-date-picker';
 import type { JlField } from '../src/molecules/jl-field';
+import type { JlFileDrop } from '../src/molecules/jl-file-drop';
 import type { JlInputList } from '../src/molecules/jl-input-list';
 import type { JlListItem } from '../src/molecules/jl-list-item';
 import type { JlLoadState } from '../src/molecules/jl-load-state';
 import type { JlMenu } from '../src/molecules/jl-menu';
+import type { JlNumberInput } from '../src/molecules/jl-number-input';
 import type { JlPagination } from '../src/molecules/jl-pagination';
 import type { JlSegmented } from '../src/molecules/jl-segmented';
 import type { JlSteps } from '../src/molecules/jl-steps';
 import type { JlTabs } from '../src/molecules/jl-tabs';
 import type { JlTagInput } from '../src/molecules/jl-tag-input';
 import type { JlTimeline } from '../src/molecules/jl-timeline';
+import type { JlToast } from '../src/molecules/jl-toast';
 import type { JlTooltip } from '../src/molecules/jl-tooltip';
 import type { JlCommandPalette } from '../src/organisms/jl-command-palette';
+import type { JlDialog } from '../src/organisms/jl-dialog';
 import type { JlFlow } from '../src/organisms/jl-flow';
 import type { JlPageOutlet } from '../src/organisms/jl-page-outlet';
 import type { JlSideNav } from '../src/organisms/jl-side-nav';
 import type { JlTable } from '../src/organisms/jl-table';
+import type { JlToaster } from '../src/organisms/jl-toaster';
 import type { JlTree } from '../src/organisms/jl-tree';
 
 const ROOT = join(import.meta.dirname, '..');
@@ -89,6 +95,15 @@ const SETTLE_MS = 300;
 const ICON_WARNING = 'jl-icon:';
 // A node's height and the gap below it: the flow's layout puts nodes on rows this far apart.
 const FLOW_ROW = 136;
+// A point of the window no dialog covers: its backdrop.
+const BACKDROP_CORNER = 5;
+// More Escapes in a row than a browser lets a page refuse by cancelling the dialog's cancel event.
+const ESCAPE_PRESSES = 4;
+const ESCAPE_GAP_MS = 150;
+// Longer than a tooltip waits before it shows for the focus.
+const TOOLTIP_SHOWN_MS = 900;
+// Longer than the copy button says what a press came to.
+const COPY_SAYS_MS = 1800;
 
 const componentPaths = readdirSync(DOCS)
   .filter((file) => file.endsWith('.doc.ts'))
@@ -178,17 +193,83 @@ afterAll(async () => {
   await new Promise<void>((resolve) => state.server?.httpServer.close(() => resolve()));
 });
 
+// What the accessibility sweep asks of every page: WCAG 2 at levels A and AA, as axe-core checks them.
+const A11Y_LEVELS = ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa'];
+// The rules it does not ask yet, each a gap that is known:
+const A11Y_RULES_OFF = {
+  // A row, a card, a tree item or a search button is named by its heading alone while it shows more text.
+  'label-content-name-mismatch': { enabled: false },
+  // A code block that scrolls sideways has no Tab stop where the browser gives it none.
+  'scrollable-region-focusable': { enabled: false },
+};
+/** What a rule cannot know about an element it reports, by what the element is written as. */
+const A11Y_EXEMPT: readonly { rule: string; written: RegExp; why: string }[] = [
+  { rule: 'color-contrast', why: 'the accent a visitor picks on the theming page', written: /accent-preview/ },
+  {
+    rule: 'color-contrast',
+    why: "an app's name in the brand's blue: a logotype",
+    written: /color:\s*var\(--jl-brand\)/,
+  },
+  {
+    rule: 'color-contrast',
+    why: 'the table of inks shows each one, the faint one too',
+    written: /contrast-sample/,
+  },
+];
+
+type A11yFinding = { rule: string; where: string; html: string };
+
+/** What axe-core finds wrong in the page shown, without what is exempt. */
+async function a11yFindings(page: Page): Promise<A11yFinding[]> {
+  await page.evaluate(axe.source);
+  const found = await page.evaluate(
+    async ({ levels, rules }) => {
+      const results = await (window as unknown as { axe: typeof axe }).axe.run(document, {
+        rules,
+        runOnly: { type: 'tag', values: levels },
+      });
+      return results.violations.flatMap((violation) =>
+        violation.nodes.map((node) => ({
+          html: node.html,
+          rule: violation.id,
+          where: node.target.flat().join(' >> '),
+        }))
+      );
+    },
+    { levels: A11Y_LEVELS, rules: A11Y_RULES_OFF }
+  );
+  return found.filter(
+    (finding) =>
+      !A11Y_EXEMPT.some(
+        ({ rule, written }) => rule === finding.rule && written.test(`${finding.where} ${finding.html}`)
+      )
+  );
+}
+
 describe('every page of the site', () => {
   it.each([...GUIDES, ...DESIGN, ...patternPaths, ...componentPaths])(
-    '%s renders without errors, with every tag defined and every field named',
+    '%s renders without errors, with every tag defined, every field named and nothing axe-core finds',
     async (path) => {
       const page = await open(path);
       expect(state.errors).toEqual([]);
       expect(await page.evaluate(UNDEFINED_TAGS)).toEqual([]);
       expect(await page.evaluate(UNNAMED_FIELDS)).toEqual([]);
+      expect(await a11yFindings(page)).toEqual([]);
     }
   );
 });
+
+/** Puts a component alone in the page shown, in the state a test needs: its page defines its tag. */
+async function mount(page: Page, html: string): Promise<void> {
+  await page.evaluate((markup) => {
+    document.querySelector('#test-area')?.remove();
+    const area = document.createElement('div');
+    area.id = 'test-area';
+    area.innerHTML = markup;
+    document.body.prepend(area);
+  }, html);
+  await page.waitForTimeout(SETTLE_MS);
+}
 
 describe('the forms page', () => {
   it('submits the fields as FormData, like native ones', async () => {
@@ -225,6 +306,42 @@ describe('Enter in a field', () => {
     const output = await page.evaluate(`document.querySelector('site-shell > jl-page-outlet > *').shadowRoot
       .querySelector('jl-code-block.output').code.get()`);
     expect(output).toContain('ada@example.com');
+    expect(state.errors).toEqual([]);
+  });
+
+  const submitsOnEnter = async (form: string): Promise<{ submits: number; submitter: string | null }> => {
+    const page = await open('/components/input');
+    await mount(page, form);
+    await page.evaluate(() => {
+      const heard = { submits: 0, submitter: null as string | null };
+      Object.assign(window, { heard });
+      document.querySelector('#test-area form')?.addEventListener('submit', (event) => {
+        event.preventDefault();
+        heard.submits += 1;
+        heard.submitter = (event as SubmitEvent).submitter?.getAttribute('value') ?? null;
+      });
+    });
+    await page.locator('#test-area jl-input input').press('Enter');
+    return page.evaluate(
+      () => (window as unknown as { heard: { submits: number; submitter: string | null } }).heard
+    );
+  };
+
+  it("submits nothing while the form's submit button is disabled or at work", async () => {
+    const field = '<jl-input name="q" label="Name"></jl-input>';
+    expect(await submitsOnEnter(`<form>${field}<button disabled>Save</button></form>`)).toMatchObject({
+      submits: 0,
+    });
+    expect(
+      await submitsOnEnter(`<form>${field}<jl-button type="submit" loading>Save</jl-button></form>`)
+    ).toMatchObject({ submits: 0 });
+    expect(state.errors).toEqual([]);
+  });
+
+  it("submits with the form's submit button as the submitter", async () => {
+    const form =
+      '<form><jl-input name="q" label="Name"></jl-input><button name="action" value="save">Save</button></form>';
+    expect(await submitsOnEnter(form)).toEqual({ submits: 1, submitter: 'save' });
     expect(state.errors).toEqual([]);
   });
 });
@@ -2690,6 +2807,632 @@ describe('organisms, drawn once', () => {
       afterDrop: { labelsKept: true, moved: true },
       duringDrag: { otherEdge: 0, ownEdgeFollows: true, svgChildren: 0 },
     });
+    expect(state.errors).toEqual([]);
+  });
+});
+
+// A bare attribute (aria-invalid="") is one browsers read as false: a state is said with "true", or not at all.
+describe('the ARIA states', () => {
+  const cases = [
+    { attribute: 'aria-invalid', html: '<jl-input label="Name" invalid></jl-input>', path: '/components/input' },
+    {
+      attribute: 'aria-required',
+      html: '<jl-number-input label="Seats" required></jl-number-input>',
+      path: '/components/number-input',
+    },
+    { attribute: 'aria-busy', html: '<jl-button loading>Save</jl-button>', path: '/components/button' },
+    {
+      attribute: 'aria-disabled',
+      html: '<jl-tabs><jl-tab-panel name="a" label="A"></jl-tab-panel><jl-tab-panel name="b" label="B" disabled></jl-tab-panel></jl-tabs>',
+      path: '/components/tabs',
+    },
+  ];
+
+  it.each(cases)('$attribute is "true" where it is set, in $path', async ({ attribute, html, path }) => {
+    const page = await open(path);
+    await mount(page, html);
+    const values = await page
+      .locator(`#test-area [${attribute}]`)
+      .evaluateAll((elements, name) => elements.map((element) => element.getAttribute(name)), attribute);
+    expect(values.length).toBeGreaterThan(0);
+    expect(new Set(values)).toEqual(new Set(['true']));
+    expect(state.errors).toEqual([]);
+  });
+});
+
+describe('the combobox, left without typing', () => {
+  const leave = async (html: string): Promise<{ changes: string[]; value: string }> => {
+    const page = await open('/components/combobox');
+    await mount(page, html);
+    await page.evaluate(() => {
+      const combobox = document.querySelector('#test-area jl-combobox') as JlCombobox;
+      const heard: string[] = [];
+      Object.assign(window, { heard });
+      combobox.events.register('change', (value) => heard.push(value));
+    });
+    await page.locator('#test-area jl-combobox input').focus();
+    await page.keyboard.press('Tab');
+    return page.evaluate(() => ({
+      changes: (window as unknown as { heard: string[] }).heard,
+      value: (document.querySelector('#test-area jl-combobox') as JlCombobox).value.get(),
+    }));
+  };
+
+  it('keeps the second of two options named alike', async () => {
+    const options = JSON.stringify([
+      { label: 'Jean Dupont', value: 'u1' },
+      { label: 'Jean Dupont', value: 'u2' },
+    ]);
+    expect(await leave(`<jl-combobox label="Owner" value="u2" options='${options}'></jl-combobox>`)).toEqual({
+      changes: [],
+      value: 'u2',
+    });
+  });
+
+  it('keeps a value whose options are not there yet', async () => {
+    expect(await leave('<jl-combobox label="Owner" value="42"></jl-combobox>')).toEqual({
+      changes: [],
+      value: '42',
+    });
+    expect(state.errors).toEqual([]);
+  });
+});
+
+describe('the number input', () => {
+  it('reads a decimal comma', async () => {
+    const page = await open('/components/number-input');
+    await mount(page, '<jl-number-input label="Price" value="1" step="0.1"></jl-number-input>');
+    const field = page.locator('#test-area jl-number-input input');
+    await field.fill('1,5');
+    await field.press('Tab');
+    const value = await page.evaluate(() =>
+      (document.querySelector('#test-area jl-number-input') as JlNumberInput).value.get()
+    );
+    expect(value).toBe(1.5);
+    expect(state.errors).toEqual([]);
+  });
+});
+
+// The element is disabled by the fieldset, not by its own input: nothing inside may act.
+describe('a disabled fieldset', () => {
+  it('keeps a submit button from pressing and submitting', async () => {
+    const page = await open('/components/button');
+    await mount(page, '<form><fieldset disabled><jl-button type="submit">Save</jl-button></fieldset></form>');
+    await page.evaluate(() => {
+      const heard: string[] = [];
+      Object.assign(window, { heard });
+      document.querySelector('#test-area form')?.addEventListener('submit', (event) => {
+        event.preventDefault();
+        heard.push('submit');
+      });
+      (document.querySelector('#test-area jl-button') as JlButton).events.register('press', () =>
+        heard.push('press')
+      );
+    });
+    await page.locator('#test-area jl-button').click({ force: true });
+    expect(await page.evaluate(() => (window as unknown as { heard: string[] }).heard)).toEqual([]);
+    await page.evaluate(() => document.querySelector('#test-area fieldset')?.removeAttribute('disabled'));
+    await page.locator('#test-area jl-button').click();
+    expect(await page.evaluate(() => (window as unknown as { heard: string[] }).heard)).toEqual([
+      'press',
+      'submit',
+    ]);
+    expect(state.errors).toEqual([]);
+  });
+
+  it('keeps a combobox from opening and from being cleared', async () => {
+    const page = await open('/components/combobox');
+    const options = JSON.stringify([
+      { label: 'A', value: 'a' },
+      { label: 'B', value: 'b' },
+    ]);
+    await mount(
+      page,
+      `<fieldset disabled><jl-combobox label="Letter" value="a" clearable options='${options}'></jl-combobox></fieldset>`
+    );
+    const drawn = await page.evaluate(() => {
+      const root = (document.querySelector('#test-area jl-combobox') as JlCombobox).shadowRoot;
+      return {
+        clearHidden: root?.querySelector<HTMLElement>('.clear')?.hidden,
+        toggleDisabled: root?.querySelector<HTMLButtonElement>('.toggle')?.disabled,
+      };
+    });
+    expect(drawn).toEqual({ clearHidden: true, toggleDisabled: true });
+  });
+
+  it('keeps a tag input from losing tags and a file drop from browsing', async () => {
+    const page = await open('/components/tag-input');
+    await mount(
+      page,
+      `<fieldset disabled><jl-tag-input label="Tags" value='["a","b"]'></jl-tag-input></fieldset>`
+    );
+    const removeShown = await page.evaluate(() => {
+      const remove = (document.querySelector('#test-area jl-tag-input') as JlTagInput).shadowRoot?.querySelector(
+        '.tag-remove'
+      );
+      return remove ? getComputedStyle(remove).display : 'missing';
+    });
+    expect(removeShown).toBe('none');
+    await open('/components/file-drop');
+    await mount(page, '<fieldset disabled><jl-file-drop label="Files"></jl-file-drop></fieldset>');
+    const browseDisabled = await page.evaluate(
+      () =>
+        (
+          document.querySelector('#test-area jl-file-drop') as JlFileDrop
+        ).shadowRoot?.querySelector<HTMLButtonElement>('.browse')?.disabled
+    );
+    expect(browseDisabled).toBe(true);
+    expect(state.errors).toEqual([]);
+  });
+});
+
+describe('the dialog', () => {
+  const isOpen = (page: Page): Promise<boolean> =>
+    page.evaluate(() => (document.querySelector('#test-area jl-dialog') as JlDialog).open.get());
+
+  it('stays open when a selection dragged out of a field ends on the backdrop, and closes on a press there', async () => {
+    const page = await open('/components/dialog');
+    await mount(
+      page,
+      '<jl-dialog heading="Edit"><input id="typed" value="a text long enough to select" style="width: 300px" /></jl-dialog>'
+    );
+    await page.evaluate(() => (document.querySelector('#test-area jl-dialog') as JlDialog).show());
+    const field = await page.locator('#typed').boundingBox();
+    if (field === null) {
+      throw new Error('The field is not drawn');
+    }
+    await page.mouse.move(field.x + 10, field.y + field.height / 2);
+    await page.mouse.down();
+    await page.mouse.move(BACKDROP_CORNER, BACKDROP_CORNER, { steps: 6 });
+    await page.mouse.up();
+    expect(await isOpen(page)).toBe(true);
+    await page.mouse.click(BACKDROP_CORNER, BACKDROP_CORNER);
+    expect(await isOpen(page)).toBe(false);
+    expect(state.errors).toEqual([]);
+  });
+
+  it('stays open on Escape, however often, while persistent', async () => {
+    const page = await open('/components/dialog');
+    await mount(page, '<jl-dialog heading="Choose" persistent><p>One of the two.</p></jl-dialog>');
+    await page.evaluate(() => (document.querySelector('#test-area jl-dialog') as JlDialog).show());
+    for (let press = 0; press < ESCAPE_PRESSES; press += 1) {
+      await page.keyboard.press('Escape');
+      await page.waitForTimeout(ESCAPE_GAP_MS);
+    }
+    expect(await isOpen(page)).toBe(true);
+    expect(state.errors).toEqual([]);
+  });
+});
+
+// A modal makes what is outside it inert, the top layer included: the toaster sits inside the modal meanwhile.
+describe('the toaster over a modal', () => {
+  it('lets a toast be closed without closing the dialog, and shows the next one after it closed', async () => {
+    const page = await open('/components/toaster');
+    await mount(page, '<jl-dialog heading="Edit"><p>A form.</p></jl-dialog><jl-toaster></jl-toaster>');
+    await page.evaluate(() => {
+      // Kept for later: it moves into the dialog as that one opens, as the page's own toasters do.
+      const toaster = document.querySelector('#test-area jl-toaster') as JlToaster;
+      Object.assign(window, { toaster });
+      (document.querySelector('#test-area jl-dialog') as JlDialog).show();
+      toaster.notify({ heading: 'Could not save', tone: 'danger' });
+    });
+    await page.locator('jl-toast .close').click();
+    await page.waitForTimeout(SETTLE_MS);
+    const overModal = await page.evaluate(() => {
+      const dialog = document.querySelector('#test-area jl-dialog') as JlDialog;
+      return { dialogOpen: dialog.open.get(), toasts: dialog.shadowRoot?.querySelectorAll('jl-toast').length };
+    });
+    expect(overModal).toEqual({ dialogOpen: true, toasts: 0 });
+    const afterClose = await page.evaluate(async () => {
+      const dialog = document.querySelector('#test-area jl-dialog') as JlDialog;
+      const { toaster } = window as unknown as { toaster: JlToaster };
+      const movedIn = toaster.parentNode === dialog.shadowRoot?.querySelector('dialog');
+      toaster.notify({ heading: 'Saved', tone: 'ok' });
+      dialog.close();
+      await new Promise((resolve) => setTimeout(resolve, 100));
+      return {
+        backHome: toaster.parentElement?.id,
+        movedIn,
+        showing: toaster.shadowRoot?.querySelector('.region')?.matches(':popover-open'),
+        toasts: toaster.querySelectorAll('jl-toast').length,
+      };
+    });
+    expect(afterClose).toEqual({ backHome: 'test-area', movedIn: true, showing: true, toasts: 1 });
+    expect(state.errors).toEqual([]);
+  });
+});
+
+// The browser tells a form control that it is disabled before the `disabled` input has read the attribute's change:
+// a control that writes the attribute back from there can never be enabled again.
+describe('a disabled control', () => {
+  const controls = [
+    'button',
+    'calendar',
+    'checkbox',
+    'chip-group',
+    'combobox',
+    'date-picker',
+    'file-drop',
+    'input',
+    'number-input',
+    'radio-group',
+    'rating',
+    'search',
+    'segmented',
+    'select',
+    'slider',
+    'switch',
+    'tag-input',
+    'textarea',
+  ];
+
+  it.each(controls)('jl-%s is enabled again once its attribute is removed', async (name) => {
+    const page = await open(`/components/${name}`);
+    await mount(page, `<jl-${name} label="Field" disabled></jl-${name}>`);
+    const enabled = await page.evaluate(async () => {
+      const control = document.querySelector('#test-area > *') as HTMLElement;
+      control.removeAttribute('disabled');
+      await new Promise((resolve) => setTimeout(resolve, 50));
+      return !control.hasAttribute('disabled') && !control.matches(':disabled');
+    });
+    expect(enabled).toBe(true);
+    expect(state.errors).toEqual([]);
+  });
+});
+
+describe('the button', () => {
+  // Jadis 1.8.1: the onConnect of a connection that ended before it ran is dropped, where it wired everything twice.
+  it('presses once when it was taken out and put back before it was wired', async () => {
+    const page = await open('/components/button');
+    const presses = await page.evaluate(async () => {
+      const button = document.createElement('jl-button') as JlButton;
+      button.label.set('Save');
+      const heard = { presses: 0 };
+      document.body.prepend(button);
+      button.remove();
+      await Promise.resolve();
+      document.body.prepend(button);
+      await new Promise((resolve) => setTimeout(resolve, 50));
+      button.events.register('press', () => {
+        heard.presses += 1;
+      });
+      button.shadowRoot?.querySelector('button')?.click();
+      button.remove();
+      return heard.presses;
+    });
+    expect(presses).toBe(1);
+    expect(state.errors).toEqual([]);
+  });
+
+  it('shows a text given right after it joined the page', async () => {
+    const page = await open('/components/button');
+    const iconOnly = await page.evaluate(async () => {
+      const button = document.createElement('jl-button');
+      document.body.prepend(button);
+      button.textContent = 'Save changes';
+      await new Promise((resolve) => setTimeout(resolve, 50));
+      const drawnIconOnly = button.hasAttribute('icon-only');
+      button.remove();
+      return drawnIconOnly;
+    });
+    expect(iconOnly).toBe(false);
+    expect(state.errors).toEqual([]);
+  });
+});
+
+describe('the input list, in the page again', () => {
+  it('still hears its rows after it was taken out and put back', async () => {
+    const page = await open('/components/input-list');
+    await mount(page, `<jl-input-list label="Emails" values='["a","b"]'></jl-input-list>`);
+    await page.evaluate(async () => {
+      const list = document.querySelector('#test-area jl-input-list') as JlInputList;
+      const area = list.parentElement;
+      list.remove();
+      await new Promise((resolve) => setTimeout(resolve, 50));
+      area?.append(list);
+    });
+    await page.waitForTimeout(SETTLE_MS);
+    await page.locator('#test-area jl-input-list jl-input input').first().press('End');
+    await page.keyboard.type('x');
+    const values = await page.evaluate(() =>
+      (document.querySelector('#test-area jl-input-list') as JlInputList).values.get()
+    );
+    expect(values).toEqual(['ax', 'b']);
+    expect(state.errors).toEqual([]);
+  });
+
+  it('takes numbers written in its values', async () => {
+    const page = await open('/components/input-list');
+    await mount(page, `<jl-input-list label="Sizes" type="number" values='[1,2]'></jl-input-list>`);
+    const values = await page.evaluate(() =>
+      (document.querySelector('#test-area jl-input-list') as JlInputList).values.get()
+    );
+    expect(values).toEqual(['1', '2']);
+    expect(state.errors).toEqual([]);
+  });
+});
+
+describe("the field and its control's label", () => {
+  it('keeps a label the control was given in code, and follows its own on a control without one', async () => {
+    const page = await open('/components/field');
+    const labels = await page.evaluate(async () => {
+      const settle = (): Promise<void> => new Promise((resolve) => setTimeout(resolve, 100));
+      const build = (label: string): { field: JlField; input: JlInput } => {
+        const field = document.createElement('jl-field') as JlField;
+        const input = document.createElement('jl-input') as JlInput;
+        field.label.set('Customer');
+        // As a JSX prop does: the property, no attribute.
+        input.label.set(label);
+        field.append(input);
+        document.body.prepend(field);
+        return { field, input };
+      };
+      const own = build('Search customers');
+      const named = build('');
+      await settle();
+      const first = [own.input.label.get(), named.input.label.get()];
+      own.field.label.set('Client');
+      named.field.label.set('Client');
+      await settle();
+      const second = [own.input.label.get(), named.input.label.get()];
+      own.field.remove();
+      named.field.remove();
+      return { first, second };
+    });
+    expect(labels).toEqual({ first: ['Search customers', 'Customer'], second: ['Search customers', 'Client'] });
+    expect(state.errors).toEqual([]);
+  });
+});
+
+describe("the table's select-all box", () => {
+  it('has nothing to select once the rows are gone', async () => {
+    const page = await open('/components/table');
+    await mount(page, '<jl-table selectable row-key="id"></jl-table>');
+    const afterEmptying = await page.evaluate(async () => {
+      const settle = (): Promise<void> => new Promise((resolve) => setTimeout(resolve, 100));
+      const table = document.querySelector('#test-area jl-table') as JlTable;
+      const heard: unknown[] = [];
+      table.events.register('selection', (keys) => heard.push(keys));
+      table.columns.set([{ key: 'name', label: 'Name' }]);
+      table.rows.set([
+        { id: 'a', name: 'A' },
+        { id: 'b', name: 'B' },
+      ]);
+      await settle();
+      table.rows.set([]);
+      await settle();
+      const all = table.shadowRoot?.querySelector<HTMLInputElement>('thead input[type="checkbox"]');
+      const disabled = all?.disabled;
+      all?.click();
+      await settle();
+      return { disabled, heard };
+    });
+    expect(afterEmptying).toEqual({ disabled: true, heard: [] });
+    expect(state.errors).toEqual([]);
+  });
+});
+
+describe('the menu, given its items again while open', () => {
+  it('stays open, the focus on the item of the same value', async () => {
+    const page = await open('/components/menu');
+    await mount(page, '<jl-menu label="Actions"><button type="button">Actions</button></jl-menu>');
+    const refreshed = await page.evaluate(async () => {
+      const settle = (): Promise<void> => new Promise((resolve) => setTimeout(resolve, 200));
+      const menu = document.querySelector('#test-area jl-menu') as JlMenu;
+      const items = [
+        { label: 'Rename', value: 'rename' },
+        { label: 'Archive', value: 'archive' },
+      ];
+      menu.items.set(items);
+      menu.show();
+      await settle();
+      menu.shadowRoot?.querySelector<HTMLElement>('[data-value="archive"]')?.focus();
+      menu.items.set([{ label: 'Duplicate', value: 'duplicate' }, ...items]);
+      await settle();
+      const focused = menu.shadowRoot?.activeElement;
+      return {
+        focused: focused instanceof HTMLElement ? focused.dataset.value : undefined,
+        open: menu.shadowRoot?.querySelector('[role="menu"]')?.matches(':popover-open'),
+      };
+    });
+    expect(refreshed).toEqual({ focused: 'archive', open: true });
+    expect(state.errors).toEqual([]);
+  });
+});
+
+describe('a toast shown again', () => {
+  it('is visible after it was dismissed', async () => {
+    const page = await open('/components/toast');
+    await mount(page, '<jl-toast heading="Saved"></jl-toast>');
+    const opacity = await page.evaluate(async () => {
+      const settle = (): Promise<void> => new Promise((resolve) => setTimeout(resolve, 600));
+      const toast = document.querySelector('#test-area jl-toast') as JlToast;
+      toast.dismiss();
+      await settle();
+      toast.show();
+      await settle();
+      const drawn = toast.shadowRoot?.querySelector('.toast');
+      return drawn ? getComputedStyle(drawn).opacity : 'missing';
+    });
+    expect(opacity).toBe('1');
+    expect(state.errors).toEqual([]);
+  });
+});
+
+describe('the copy button, where the clipboard refuses', () => {
+  it('says that it could not copy, then is a copy button again', async () => {
+    const page = await open('/components/copy-button');
+    await mount(page, '<jl-copy-button value="abc"></jl-copy-button>');
+    // As on a page served without https: no clipboard at all.
+    await page.evaluate(() =>
+      Object.defineProperty(navigator, 'clipboard', { configurable: true, value: undefined })
+    );
+    await page.locator('#test-area jl-copy-button').click();
+    const hint = (): Promise<string | null | undefined> =>
+      page.evaluate(() => {
+        const button = document.querySelector('#test-area jl-copy-button');
+        const drawn = button?.shadowRoot?.querySelector('jl-button')?.shadowRoot?.querySelector('button');
+        return button?.hasAttribute('failed') ? drawn?.getAttribute('title') : 'not failed';
+      });
+    expect(await hint()).toBe('Could not copy');
+    await page.waitForTimeout(COPY_SAYS_MS);
+    expect(await hint()).toBe('not failed');
+    expect(state.errors).toEqual([]);
+  });
+});
+
+describe("the load state and a page's mistake", () => {
+  it('shows the error and lets the exception of draw() through, where a failed fetch only resolves false', async () => {
+    const page = await open('/components/load-state');
+    await mount(page, '<jl-load-state></jl-load-state>');
+    const outcomes = await page.evaluate(async () => {
+      const loadState = document.querySelector('#test-area jl-load-state') as JlLoadState;
+      const failedFetch = await loadState.load({
+        draw: () => undefined,
+        fetch: () => Promise.reject(new Error('offline')),
+      });
+      const mistake = await loadState
+        .load({
+          draw: (items: string[] | null) => (items as string[]).map(String),
+          fetch: () => Promise.resolve(null),
+        })
+        .then(
+          () => 'resolved',
+          (error: unknown) => (error instanceof TypeError ? 'TypeError' : 'another error')
+        );
+      return { failedFetch, mistake, state: loadState.state.get() };
+    });
+    expect(outcomes).toEqual({ failedFetch: false, mistake: 'TypeError', state: 'error' });
+    expect(state.errors).toEqual([]);
+  });
+});
+
+describe('Escape on a tooltip in a dialog', () => {
+  it('puts the tooltip away and leaves the dialog open; the next one closes the dialog', async () => {
+    const page = await open('/components/tooltip');
+    await mount(
+      page,
+      '<dialog><jl-tooltip text="Removes the row"><button type="button" id="hinted">Remove</button></jl-tooltip></dialog>'
+    );
+    await page.evaluate(() => document.querySelector<HTMLDialogElement>('#test-area dialog')?.showModal());
+    // The keyboard brings the focus, so the tooltip shows for it.
+    await page.keyboard.press('Shift+Tab');
+    await page.keyboard.press('Tab');
+    await page.waitForTimeout(TOOLTIP_SHOWN_MS);
+    const drawn = (): Promise<{ dialog?: boolean; tooltip?: boolean }> =>
+      page.evaluate(() => ({
+        dialog: document.querySelector<HTMLDialogElement>('#test-area dialog')?.open,
+        tooltip:
+          document.querySelector('#test-area jl-tooltip')?.shadowRoot?.querySelector(':popover-open') !== null,
+      }));
+    expect(await drawn()).toEqual({ dialog: true, tooltip: true });
+    await page.keyboard.press('Escape');
+    expect(await drawn()).toEqual({ dialog: true, tooltip: false });
+    await page.keyboard.press('Escape');
+    expect(await drawn()).toEqual({ dialog: false, tooltip: false });
+    expect(state.errors).toEqual([]);
+  });
+});
+
+describe("the select and the page's own options", () => {
+  it('follows an option added later, and one written again', async () => {
+    const page = await open('/components/select');
+    await mount(
+      page,
+      '<jl-select label="Size"><option value="s">Small</option><option value="m">Medium</option></jl-select>'
+    );
+    const labels = await page.evaluate(async () => {
+      const select = document.querySelector('#test-area jl-select') as JlSelect;
+      const large = document.createElement('option');
+      large.value = 'l';
+      large.textContent = 'Large';
+      select.append(large);
+      const small = select.querySelector('option');
+      if (small) {
+        small.textContent = 'Petit';
+      }
+      await new Promise((resolve) => setTimeout(resolve, 100));
+      return [...(select.shadowRoot?.querySelectorAll('select option') ?? [])].map((option) =>
+        option.textContent?.trim()
+      );
+    });
+    expect(labels).toEqual(['Petit', 'Medium', 'Large']);
+    expect(state.errors).toEqual([]);
+  });
+});
+
+describe('a required calendar without a date', () => {
+  it('takes the focus and shows why the form was not submitted', async () => {
+    const page = await open('/components/calendar');
+    await mount(
+      page,
+      '<form><jl-calendar name="day" label="Day" required></jl-calendar><button id="send">Send</button></form>'
+    );
+    await page.evaluate(() => {
+      Object.assign(window, { submits: 0 });
+      document.querySelector('#test-area form')?.addEventListener('submit', (event) => {
+        event.preventDefault();
+        (window as unknown as { submits: number }).submits += 1;
+      });
+    });
+    await page.locator('#send').click();
+    const refused = await page.evaluate(() => ({
+      focused: document.activeElement?.localName,
+      submits: (window as unknown as { submits: number }).submits,
+    }));
+    expect(refused).toEqual({ focused: 'jl-calendar', submits: 0 });
+    expect(state.errors).toEqual([]);
+  });
+});
+
+// The contrast themes of Windows: every box-shadow is dropped and every background painted alike.
+describe('forced colours', () => {
+  it('outline what has the focus, and tell a switch that is on from one that is off', async () => {
+    const page = await open('/components/switch');
+    await page.emulateMedia({ forcedColors: 'active' });
+    await mount(page, '<jl-switch label="Off"></jl-switch><jl-switch label="On" checked></jl-switch>');
+    await page.keyboard.press('Tab');
+    const drawn = await page.evaluate(() => {
+      const [off, on] = [...document.querySelectorAll('#test-area jl-switch')].map((element) => {
+        const native = element.shadowRoot?.querySelector('input') as HTMLInputElement;
+        return { outline: getComputedStyle(native).outlineStyle, track: getComputedStyle(native).backgroundColor };
+      });
+      return { focusOutlined: off?.outline === 'solid', statesDiffer: off?.track !== on?.track };
+    });
+    await page.emulateMedia({ forcedColors: null });
+    expect(drawn).toEqual({ focusOutlined: true, statesDiffer: true });
+    expect(state.errors).toEqual([]);
+  });
+});
+
+// The faint ink is for icons: at 3.2:1 it is too light for text, which starts at the muted one.
+describe('the quietest texts', () => {
+  it('are in the muted ink: a placeholder, an unchosen select, a comment in code', async () => {
+    const page = await open('/components/code-block');
+    await mount(
+      page,
+      `<jl-input label="Name" placeholder="Ada"></jl-input>
+       <jl-select label="Size" placeholder="Choose"><option value="s">Small</option></jl-select>
+       <jl-code-block language="ts" code="// A comment"></jl-code-block>`
+    );
+    const inks = await page.evaluate(() => {
+      const area = document.querySelector('#test-area') as HTMLElement;
+      const probe = document.createElement('span');
+      probe.style.color = 'var(--jl-muted)';
+      area.append(probe);
+      const inside = (tag: string, selector: string): Element | null | undefined =>
+        area.querySelector(tag)?.shadowRoot?.querySelector(selector);
+      const input = inside('jl-input', 'input');
+      const select = inside('jl-select', 'select');
+      const comment = inside('jl-code-block', '.tok-comment');
+      return {
+        comment: comment ? getComputedStyle(comment).color : 'missing',
+        muted: getComputedStyle(probe).color,
+        placeholder: input ? getComputedStyle(input, '::placeholder').color : 'missing',
+        select: select ? getComputedStyle(select).color : 'missing',
+      };
+    });
+    expect(inks).toEqual({ comment: inks.muted, muted: inks.muted, placeholder: inks.muted, select: inks.muted });
     expect(state.errors).toEqual([]);
   });
 });

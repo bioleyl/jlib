@@ -7,12 +7,14 @@ import { initialsOf, pickStable } from '../lib/avatar';
 import { setOrRemove } from '../lib/dom';
 import { registerIcons } from '../lib/icons';
 import { hasSlotted } from '../lib/slots';
+import { jlText } from '../lib/texts';
 import { BASE_STYLES } from '../styles/shared';
 import styles from './jl-avatar.css?inline';
 import { JlIcon } from './jl-icon';
 
 import type { AvatarShape, AvatarSize, AvatarStatus } from '../types/jl-avatar.types';
 import type { Tone } from '../types/options.types';
+import type { JlTextKey } from '../types/texts.types';
 
 // The icons it draws itself: a page registers only the names it writes.
 registerIcons({ user: User });
@@ -25,11 +27,11 @@ export const AVATAR_STATUSES: readonly AvatarStatus[] = ['online', 'busy', 'away
 const NAME_TONES: readonly [Tone, ...Tone[]] = ['accent', 'ok', 'warn', 'danger', 'neutral'];
 const NO_NAME_TONE: Tone = 'neutral';
 
-const STATUS_LABELS: Record<AvatarStatus, string> = {
-  away: 'away',
-  busy: 'busy',
-  offline: 'offline',
-  online: 'online',
+const STATUS_TEXTS: Record<AvatarStatus, JlTextKey> = {
+  away: 'statusAway',
+  busy: 'statusBusy',
+  offline: 'statusOffline',
+  online: 'statusOnline',
 };
 
 const FALLBACK_ICON = 'user';
@@ -140,10 +142,16 @@ export class JlAvatar extends JlElement {
     this.renderLabel();
   }
 
+  /** The status is said in jlib's language. */
+  protected drawTexts(): void {
+    this.renderLabel();
+  }
+
   private renderLabel(): void {
     const name = this.label.get() || this.name.get().trim();
     const status = this.status.get();
-    const spoken = status === '' ? name : [name, STATUS_LABELS[status]].filter((part) => part !== '').join(', ');
+    const said = status === '' ? '' : jlText(STATUS_TEXTS[status]);
+    const spoken = [name, said].filter((part) => part !== '').join(', ');
     const avatar = this._refs.avatar;
     setOrRemove(avatar, 'aria-label', spoken);
     // Without a name the avatar is decoration: screen readers skip it.

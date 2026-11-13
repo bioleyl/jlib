@@ -62,7 +62,8 @@
     --jl-code-number: #9a5b00;
     --jl-code-function: #3d5a80;
     --jl-code-property: #127a72;
-    --jl-code-comment: #8a9099;
+    /* Comments are text: the lightest ink text may have, not the fainter one of icons. */
+    --jl-code-comment: var(--jl-muted);
 
     --jl-radius-xs: 6px;
     --jl-radius-sm: 8px;
@@ -143,7 +144,7 @@
       --jl-code-number: #e5a54b;
       --jl-code-function: #8fb0d6;
       --jl-code-property: #4fc1b5;
-      --jl-code-comment: #6b727c;
+      --jl-code-comment: var(--jl-muted);
       --jl-shadow-sm: 0 1px 2px rgb(0 0 0 / 0.4);
       --jl-shadow: 0 6px 18px -6px rgb(0 0 0 / 0.6);
       --jl-shadow-lg: 0 18px 44px -12px rgb(0 0 0 / 0.7);
@@ -188,7 +189,7 @@
     --jl-code-number: #e5a54b;
     --jl-code-function: #8fb0d6;
     --jl-code-property: #4fc1b5;
-    --jl-code-comment: #6b727c;
+    --jl-code-comment: var(--jl-muted);
     --jl-shadow-sm: 0 1px 2px rgb(0 0 0 / 0.4);
     --jl-shadow: 0 6px 18px -6px rgb(0 0 0 / 0.6);
     --jl-shadow-lg: 0 18px 44px -12px rgb(0 0 0 / 0.7);

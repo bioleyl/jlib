@@ -7,6 +7,16 @@ export function setOrRemove(element: Element, name: string, value: string): void
   element.setAttribute(name, value);
 }
 
+const ARIA_TRUE = 'true';
+
+/**
+ * Says an ARIA state is on, or removes it: `aria-invalid`, `aria-required`, `aria-disabled`, `aria-busy`. A bare
+ * attribute, as `toggleAttribute` writes it (`aria-invalid=""`), is one browsers read as false.
+ */
+export function setAriaFlag(element: Element, name: `aria-${string}`, on: boolean): void {
+  setOrRemove(element, name, on ? ARIA_TRUE : '');
+}
+
 const sequence = { next: 0 };
 
 /** A unique id within the page, for wiring `aria-controls`, `aria-labelledby` and the like inside a shadow root. */

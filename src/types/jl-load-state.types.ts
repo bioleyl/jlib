@@ -10,3 +10,6 @@ export type LoadTask<Value> = {
   draw: (value: Value) => void;
   isEmpty?: (value: Value) => boolean;
 };
+
+/** What a load's fetch came to: its value, or that it failed. */
+export type Fetched<Value> = { failed: false; value: Value } | { failed: true };

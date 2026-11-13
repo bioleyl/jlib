@@ -42,7 +42,8 @@ jobs:
           cache: npm
       # Trusted publishing needs npm 11.5.1 or later.
       - run: npm install --global npm@latest
-      - run: npm ci
+      # No install script of a dependency runs with the job's permissions.
+      - run: npm ci --ignore-scripts
 
       - name: Check that the tag is the package's version
         id: package

@@ -132,7 +132,7 @@ describe('render budget', () => {
     button.element.label.set('Save');
     button.element.icon.set('save');
     button.element.variant.set('primary');
-    expectBuild(await button.measure(), { changes: 33, nodes: 2, renders: 4 });
+    expectBuild(await button.measure(), { changes: 33, nodes: 1, renders: 4 });
     button.remove();
   });
 
@@ -196,6 +196,24 @@ describe('render budget', () => {
     tree.element.expanded.set(['a']);
     expectBuild(await tree.measure(), { changes: 42, nodes: 2, renders: 8 });
     tree.remove();
+  });
+
+  // Every input's callback runs as a component connects: one that built the rows in each built them seven times.
+  it('jl-tree builds its rows once when it comes with its items', async () => {
+    const tree = document.createElement(JlTree.selector) as JlTree;
+    tree.items.set(TREE_ITEMS);
+    const built = { rows: 0 };
+    const isRow = (node: Node): boolean => node instanceof HTMLElement && node.getAttribute('role') === 'treeitem';
+    const observer = new MutationObserver((records) => {
+      built.rows += records.flatMap((record) => [...record.addedNodes]).filter(isRow).length;
+    });
+    // Watched before it connects: the rows are built during the connection.
+    observer.observe(tree.shadowRoot as ShadowRoot, { childList: true, subtree: true });
+    document.body.append(tree);
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    observer.disconnect();
+    tree.remove();
+    expect(built.rows).toBe(TREE_ITEMS.length);
   });
 });
 

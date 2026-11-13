@@ -50,6 +50,7 @@ import type {
   FlowPort,
   FlowViewport,
 } from '../types/jl-flow.types';
+import type { JlTextKey } from '../types/texts.types';
 
 // The icons it draws itself: a page registers only the names it writes.
 registerIcons({
@@ -96,16 +97,19 @@ const STATUS_ICONS: Record<FlowNodeStatus, string> = {
   waiting: 'hourglass',
 };
 
-const STATUS_LABELS: Record<FlowNodeStatus, string> = {
-  done: 'Done',
-  failed: 'Failed',
-  running: 'Running',
-  waiting: 'Waiting',
+const STATUS_TEXTS: Record<FlowNodeStatus, JlTextKey> = {
+  done: 'flowDone',
+  failed: 'flowFailed',
+  running: 'flowRunning',
+  waiting: 'flowWaiting',
 };
+
+/** How a node did in the run, in jlib's language. */
+const statusText = (status: FlowNodeStatus): string => jlText(STATUS_TEXTS[status]);
 
 /** What screen readers hear after a node's label: how it did in the run, and what to fix. */
 const noteOf = (node: FlowNode): string =>
-  [node.status ? STATUS_LABELS[node.status] : '', node.problem ?? ''].filter((part) => part !== '').join('. ');
+  [node.status ? statusText(node.status) : '', node.problem ?? ''].filter((part) => part !== '').join('. ');
 
 /** What the pointer is on, read from the marks the nodes, exits, edges and buttons carry. */
 type Target = { node?: string; port?: string; add?: string; edge?: string; control: boolean };
@@ -134,7 +138,9 @@ const newId = (prefix: string): string =>
   `${prefix}_${crypto.randomUUID().replaceAll('-', '').slice(0, ID_LENGTH)}`;
 
 const addLabel = (node: FlowNode, port: FlowPort): string =>
-  port.label ? `Add after ${node.label}, ${port.label}` : `Add after ${node.label}`;
+  port.label
+    ? jlText('addAfterPort', { name: node.label, port: port.label })
+    : jlText('addAfter', { name: node.label });
 
 /** A node's element, and what it was last drawn from: its node, and its free exits (those + shows on). */
 interface DrawnNode {
@@ -333,11 +339,29 @@ export class JlFlow extends JlElement {
       button.setAttribute('aria-label', text);
     }
     // Nodes and ports drawn already keep their elements: their texts change in place.
-    for (const { element } of this._nodes.values()) {
+    for (const { element, node } of this._nodes.values()) {
       element.setAttribute('aria-roledescription', jlText('node'));
+      this.drawNodeTexts(element, node);
     }
     for (const port of this._refs.nodes.querySelectorAll<HTMLElement>('.port')) {
       port.title = jlText('dragToConnect');
+    }
+  }
+
+  /** What a drawn node says in jlib's language: how it did in the run, and what each of its + buttons adds after. */
+  private drawNodeTexts(element: HTMLElement, node: FlowNode | undefined): void {
+    if (node === undefined) {
+      return;
+    }
+    setOrRemove(element, 'aria-description', noteOf(node));
+    const status = element.querySelector<HTMLElement>('.status');
+    if (status !== null && node.status) {
+      status.title = statusText(node.status);
+    }
+    const ports = portsOf(node);
+    for (const add of element.querySelectorAll<HTMLElement>('.add')) {
+      const port = ports.find((candidate) => candidate.id === add.dataset.add);
+      add.setAttribute('aria-label', port === undefined ? '' : addLabel(node, port));
     }
   }
 
@@ -749,7 +773,7 @@ export class JlFlow extends JlElement {
             </span>
           ) : null}
           {node.status ? (
-            <span class="status" title={STATUS_LABELS[node.status]} attrs={{ part: 'status' }}>
+            <span class="status" title={statusText(node.status)} attrs={{ part: 'status' }}>
               <JlIcon name={STATUS_ICONS[node.status]} size={STATUS_ICON_SIZE} />
             </span>
           ) : null}

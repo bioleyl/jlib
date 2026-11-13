@@ -11,6 +11,21 @@ export function parseNumber(text: string | null): number | null {
   return Number.isFinite(parsed) ? parsed : null;
 }
 
+const DECIMAL_COMMA = ',';
+const DECIMAL_POINT = '.';
+
+/**
+ * A number as people type it: with a point, or with the decimal comma of French and German keyboards ("1,5"). Several
+ * commas, or a comma beside a point, would be a grouping this cannot tell from decimals: unreadable, so null.
+ */
+export function parseTypedNumber(text: string): number | null {
+  const commas = text.split(DECIMAL_COMMA).length - 1;
+  if (commas !== 1 || text.includes(DECIMAL_POINT)) {
+    return parseNumber(text);
+  }
+  return parseNumber(text.replace(DECIMAL_COMMA, DECIMAL_POINT));
+}
+
 /** A number kept within bounds; a null bound does not limit that side. */
 export function clamp(value: number, min: number | null, max: number | null): number {
   const floored = min === null ? value : Math.max(min, value);

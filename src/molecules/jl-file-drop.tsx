@@ -96,7 +96,12 @@ export class JlFileDrop extends JlFormControl {
 
   private readonly _ids = { hint: uniqueId('jl-file-drop-hint'), text: uniqueId('jl-file-drop-text') };
 
-  private readonly _state = { depth: 0, files: [] as File[], refused: [] as RefusedFile<File>[] };
+  private readonly _state = {
+    depth: 0,
+    disabledByForm: false,
+    files: [] as File[],
+    refused: [] as RefusedFile<File>[],
+  };
 
   // The form's entries carry the field's name: they are written again when it changes.
   private readonly _nameWatch = new MutationObserver(() => this.renderFormValue());
@@ -124,7 +129,7 @@ export class JlFileDrop extends JlFormControl {
   /** Opens the file chooser. */
   browse(): void {
     this.whenRendered(() => {
-      if (!this.disabled.get()) {
+      if (!this.isOff()) {
         this._refs.picker.click();
       }
     });
@@ -195,14 +200,18 @@ export class JlFileDrop extends JlFormControl {
   }
 
   protected setDisabledByForm(disabled: boolean): void {
+    this._state.disabledByForm = disabled;
     // A disabled field gets this call as it upgrades, before its template exists: wait for it.
-    this.whenRendered(() => {
-      this._refs.browse.disabled = disabled || this.disabled.get();
-    });
+    this.whenRendered(() => this.drawDisabled());
+  }
+
+  /** Disabled by its own input, or by a `<fieldset disabled>` around it. */
+  private isOff(): boolean {
+    return this.disabled.get() || this._state.disabledByForm;
   }
 
   private canDrop(event: DragEvent): boolean {
-    return hasFiles(event) && !this.disabled.get();
+    return hasFiles(event) && !this.isOff();
   }
 
   private onDragEnter(event: DragEvent): void {
@@ -236,7 +245,7 @@ export class JlFileDrop extends JlFormControl {
     event.preventDefault();
     this._state.depth = 0;
     this.reflect('dragging', false);
-    if (this.disabled.get()) {
+    if (this.isOff()) {
       return;
     }
     this.take([...(event.dataTransfer?.files ?? [])]);
@@ -302,7 +311,7 @@ export class JlFileDrop extends JlFormControl {
 
   private renderFiles(): void {
     const files = this._state.files;
-    const editable = !this.disabled.get();
+    const editable = !this.isOff();
     const locale = pageLocale();
     this._refs.files.hidden = files.length === 0;
     this._refs.files.replaceChildren(
@@ -396,8 +405,13 @@ export class JlFileDrop extends JlFormControl {
   }
 
   private renderDisabled(disabled: boolean): void {
-    this._refs.browse.disabled = disabled;
     this.reflect('disabled', disabled);
+    this.drawDisabled();
+  }
+
+  /** Without the attribute: the form says its state before the `disabled` input has taken the attribute's change. */
+  private drawDisabled(): void {
+    this._refs.browse.disabled = this.isOff();
     this.renderFiles();
   }
 }

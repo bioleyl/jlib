@@ -88,7 +88,7 @@ pattern.`,
   methods: [
     {
       description:
-        'Fetches, draws, and shows the right state: the skeleton the first time and after a failure, the content or the empty slot after. Resolves whether it worked.',
+        'Fetches, draws, and shows the right state: the skeleton the first time and after a failure, the content or the empty slot after. Resolves whether it worked. Only a fetch that fails is a load that failed: what draw or isEmpty throws shows the error state and is thrown on, a mistake in the page that its console should show.',
       name: 'load',
       signature:
         'load<Value>(task: { fetch(): Promise<Value>; draw(value: Value): void; isEmpty?(value: Value): boolean }): Promise<boolean>',

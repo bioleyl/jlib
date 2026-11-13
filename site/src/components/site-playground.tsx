@@ -175,7 +175,10 @@ export class SitePlayground extends JlElement {
     const set = (next: string | boolean): void => this.changeAttribute(prop.attribute, next);
     const makers: Record<Control['kind'], () => HTMLElement> = {
       boolean: () => {
-        const toggle = (<JlSwitch size="sm" checked={value === true} />) as JlSwitch;
+        // Named by its attribute for screen readers: the row already shows that name beside it.
+        const toggle = (
+          <JlSwitch size="sm" checked={value === true} label={prop.attribute} hideLabel />
+        ) as JlSwitch;
         toggle.events.register('change', (checked) => set(checked));
         return toggle;
       },

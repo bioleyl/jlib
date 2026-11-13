@@ -5,6 +5,7 @@ import { JlElement } from '../base/jl-element';
 import { oneOf } from '../lib/attributes';
 import { setOrRemove } from '../lib/dom';
 import { registerIcons } from '../lib/icons';
+import { jlText } from '../lib/texts';
 import { BASE_STYLES } from '../styles/shared';
 import { JlIcon } from './jl-icon';
 import styles from './jl-link.css?inline';
@@ -78,9 +79,7 @@ export class JlLink extends JlElement {
         <span class="label" />
         <slot />
         <JlIcon size={ICON_SIZE} hidden />
-        <span class="new-tab sr-only" hidden>
-          (opens in a new tab)
-        </span>
+        <span class="new-tab sr-only" hidden />
       </a>
     );
   }
@@ -102,6 +101,10 @@ export class JlLink extends JlElement {
         this.events.emit('press');
       }
     });
+  }
+
+  protected drawTexts(): void {
+    this._refs.newTab.textContent = jlText('opensInNewTab');
   }
 
   /** An interactive link without an address fires `press`; one with an address leaves it to the browser. */
