@@ -1,4 +1,4 @@
-import type { JlButton, JlTree, TreeItem, TreePage } from '@syware/jlib';
+import type { JlButton, JlMenu, JlTree, TreeItem, TreePage } from '@syware/jlib';
 import type { ComponentDoc } from '../../types/docs.types';
 
 const PROJECT: TreeItem[] = [
@@ -78,10 +78,20 @@ without firing select, since the page that follows the address shows it.
 The keyboard follows the tree pattern: Up and Down move, Right opens a folder then enters it, Left closes it or goes
 to the parent, Home and End jump to the first and last items, Enter or Space selects (or follows the link, or loads
 the next page). A press on a row selects it and opens or closes a folder; a press on the chevron only opens or
-closes. Tab enters and leaves the tree as one stop.`,
+closes. Tab enters and leaves the tree as one stop.
+
+Every press on an item fires press first, with the item, the button and the browser's event: a page that shows its
+own menu on a right click, or keeps an item from being chosen, cancels that event.`,
   events: [
     { description: 'An item was selected: its id.', detail: 'string', name: 'select' },
     { description: 'A folder opened or closed.', detail: '{ id: string; open: boolean }', name: 'toggle' },
+    {
+      description:
+        "An item was pressed, before the tree acts on it: its id, the item, the button ('main' for a click, Enter or Space, 'auxiliary' for a middle click, 'secondary' for a right click, the keyboard's menu key or a long press) and the browser's event: a pointer's, which says where it is, or the keyboard's for Enter and Space. Cancel that event (event.preventDefault()) to refuse the press: the item is not selected, its folder stays as it is, a link is not followed, and the browser's menu stays away. A folder's chevron fires none.",
+      detail:
+        "{ id: string; item: TreeItem; button: 'main' | 'auxiliary' | 'secondary'; event: MouseEvent | KeyboardEvent }",
+      name: 'press',
+    },
   ],
   examples: [
     {
@@ -190,6 +200,56 @@ closes. Tab enters and leaves the tree as one stop.`,
         <jl-tree class="narrow" label="Documents" expanded='["reports"]'
           items='[{"id":"reports","label":"Reports","children":[{"id":"q3","label":"Q3 report.pdf","href":"#q3","hint":"Reports/Q3 report.pdf"},{"id":"q4","label":"Q4 report.pdf","href":"#q4","hint":"Reports/Q4 report.pdf"}]}]'></jl-tree>`,
       title: 'Links',
+    },
+    {
+      description:
+        "press says which item was pressed and with which button, before the tree acts on it. A right click, the keyboard's menu key or a long press asks for the item's menu: cancel the event and open a jl-menu where the pointer is, with showAt. A press the page refuses selects nothing: here the archive cannot be chosen.",
+      html: `
+        <div class="stack">
+          <jl-tree class="narrow pressed" label="Mailboxes" expanded='["inbox"]'
+            items='[{"id":"inbox","label":"Inbox","children":[{"id":"todo","label":"To do"},{"id":"waiting","label":"Waiting"}]},{"id":"archive","label":"Archive"}]'></jl-tree>
+          <jl-menu class="item-menu" label="Mailbox actions"
+            items='[{"value":"rename","label":"Rename","icon":"pencil"},{"value":"empty","label":"Empty","icon":"trash","danger":true}]'></jl-menu>
+          <span class="muted pressed-item" aria-live="polite">Press an item, with either button.</span>
+        </div>`,
+      script: `
+        const tree = root.querySelector('jl-tree.pressed');
+        const menu = root.querySelector('jl-menu.item-menu');
+        tree.events.register('press', ({ button, event, item }) => {
+          if (button === 'secondary') {
+            event.preventDefault(); // the browser's menu stays away
+            menu.showAt(event.clientX, event.clientY);
+            return;
+          }
+          if (item.id === 'archive') {
+            event.preventDefault(); // not selected
+          }
+        });`,
+      setup: (root) => {
+        const tree = root.querySelector<JlTree>('jl-tree.pressed');
+        const menu = root.querySelector<JlMenu>('jl-menu.item-menu');
+        const told = root.querySelector('.pressed-item');
+        const say = (text: string): void => {
+          if (told !== null) {
+            told.textContent = text;
+          }
+        };
+        // The mailbox whose menu shows: the action chosen is for it.
+        const pressed = { label: '' };
+        tree?.events.register('press', ({ button, event, item }) => {
+          pressed.label = item.label;
+          // The archive cannot be chosen; the secondary button opens the page's own menu, not the browser's.
+          if (button === 'secondary' || item.id === 'archive') {
+            event.preventDefault();
+          }
+          if (button === 'secondary') {
+            menu?.showAt(event.clientX, event.clientY);
+          }
+          say(`${item.label}: the ${button} button${event.defaultPrevented ? ', refused' : ''}`);
+        });
+        menu?.events.register('select', (action) => say(`${pressed.label}: ${action}`));
+      },
+      title: 'A press on an item',
     },
   ],
   level: 'organism',
