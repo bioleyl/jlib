@@ -108,7 +108,7 @@ export class JlSideNav<Id extends string = string> extends JlElement {
   /**
    * What people fold the side nav into its rail with, and unfold it: `none` (the app's own control, setting
    * `collapsed`), an icon `button` at its bottom, a `handle` along its edge, or a round `knob` on its edge line, under
-   * the header. The handle folds on a press, and when people drag it towards the fold.
+   * the header. The handle is dragged towards the fold, and back; from the keyboard, Enter folds it.
    */
   readonly collapsible = this.useChange<SideNavCollapsible>(
     'none',
@@ -153,8 +153,8 @@ export class JlSideNav<Id extends string = string> extends JlElement {
     sections: undefined,
   };
 
-  /** Where a drag of the handle began, and whether it folded the side nav: the click that ends it then does nothing. */
-  private readonly _drag = { folded: false, from: 0 };
+  /** Where the drag of the handle counts from: where it began, then where it last folded or turned back. */
+  private readonly _drag = { from: 0 };
 
   // The sections change height when the header does: the knob follows where they start.
   private readonly _sizes = watchSizes(() => this.placeKnob());
@@ -193,7 +193,7 @@ export class JlSideNav<Id extends string = string> extends JlElement {
 
   onConnect(): void {
     this._sizes.observe(this._refs.sections);
-    this.on(this._refs.fold, 'click', () => this.foldOnPress());
+    this.on(this._refs.fold, 'click', (event) => this.foldOnKeyboardClick(event));
     this.on(this._refs.fold, 'pointerdown', (event) => this.startDrag(event));
     this.on(this._refs.fold, 'pointermove', (event) => this.foldOnDrag(event));
     document.addEventListener('keydown', (event) => this.foldOnHotkey(event), { signal: this.killSignal });
@@ -245,33 +245,36 @@ export class JlSideNav<Id extends string = string> extends JlElement {
     return this.collapsed.get() && !this.inDrawer.get();
   }
 
-  /** A press on the handle folds it, unless the drag that ends there already did. */
-  private foldOnPress(): void {
-    const dragged = this._drag.folded;
-    this._drag.folded = false;
-    if (!dragged) {
+  /** The handle is dragged, not pressed: only the keyboard's Enter or Space, a click with no pointer, folds it. */
+  private foldOnKeyboardClick(event: MouseEvent): void {
+    if (event.detail === 0) {
       this.fold();
     }
   }
 
   /** The handle keeps the pointer for the drag, wherever it goes. */
   private startDrag(event: PointerEvent): void {
-    Object.assign(this._drag, { folded: false, from: event.clientX });
+    this._drag.from = event.clientX;
     this._refs.fold.setPointerCapture(event.pointerId);
   }
 
-  /** Dragged far enough towards the fold (or away from it, as a rail), the side nav follows, once per drag. */
+  /**
+   * Dragged far enough towards the fold (or away from it, as a rail), the side nav follows; the drag goes on from
+   * there, so coming back the same distance undoes it. A move the other way only takes the starting point along.
+   */
   private foldOnDrag(event: PointerEvent): void {
-    if (this._drag.folded || !this._refs.fold.hasPointerCapture(event.pointerId)) {
+    if (!this._refs.fold.hasPointerCapture(event.pointerId)) {
       return;
     }
     const moved = event.clientX - this._drag.from;
     const towardsNext = this.isRail() ? moved : -moved;
-    if (towardsNext < FOLD_DRAG_PX) {
+    if (towardsNext > 0 && towardsNext < FOLD_DRAG_PX) {
       return;
     }
-    this._drag.folded = true;
-    this.fold();
+    this._drag.from = event.clientX;
+    if (towardsNext >= FOLD_DRAG_PX) {
+      this.fold();
+    }
   }
 
   /** The keys fold it wherever the focus is, unless the page used them or a drawer shows it whole. */

@@ -13,8 +13,8 @@ the parents above it open to show it.
 
 collapsed turns it into a rail of icons, for when the content needs the room: the labels become tooltips (and stay
 for screen readers), badges become dots, and a parent leads to its first child. collapsible lets people do it: handle
-makes the side nav's edge the control, a short grip that lights the whole edge under the pointer, to press or to drag
-towards the fold; button puts a quiet
+makes the side nav's edge the control, a short grip that lights the whole edge under the pointer, to drag towards the
+fold and back in one move (a press alone does nothing; from the keyboard, Enter folds it); button puts a quiet
 icon button at its bottom; knob stands a small round button on the edge line, under the header, its chevron pointing
 where the side nav will go. none, the default, gives no control: the app folds it with one of its own, setting collapsed. Whatever
 collapsible is, hotkey names keys that fold and unfold it from anywhere in the page (mod+b: Ctrl+B, ⌘B on a Mac);
@@ -162,7 +162,7 @@ Badges, a nested group, and the active item inside it; a label too long for the 
 
 ### Collapsed rail
 
-collapsible="handle" with hotkey="mod+b": a press on its edge, a drag of it, or Ctrl+B folds it into a rail of icons (hover one for its label), and unfolds it. The second has collapsible="button": an icon button at its bottom instead; the third collapsible="knob": a round button on its edge line, under the header. The page hides the header’s name in the rail.
+collapsible="handle" with hotkey="mod+b": a drag of its edge, or Ctrl+B, folds it into a rail of icons (hover one for its label), and unfolds it. The second has collapsible="button": an icon button at its bottom instead; the third collapsible="knob": a round button on its edge line, under the header. The page hides the header’s name in the rail.
 
 ```html
 <style>

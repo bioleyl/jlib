@@ -16,8 +16,8 @@ and documented on [the documentation site](https://bioleyl.github.io/jlib/).
 - **`jl-side-nav`'s `collapsible` names the control**, where it was a flag: `none` (the default: the app folds it,
   setting `collapsed`), `button` (a quiet icon button at the bottom), `handle` (the nav's edge: a short grip, the
   whole edge lit under the pointer or the focus) or `knob` (a round button on the edge line, under the header; in
-  a `jl-app-shell` it stands half over the main area). The "Collapse the menu" row is gone. The handle folds on a
-  press and on a drag towards the fold. `hotkey` names keys that fold it from anywhere in the page, in every mode
+  a `jl-app-shell` it stands half over the main area). The "Collapse the menu" row is gone. The handle is
+  dragged: towards the fold, and back in the same move (a press alone does nothing; Enter folds it from the keyboard). `hotkey` names keys that fold it from anywhere in the page, in every mode
   (`hotkey="mod+b"` for Ctrl+B; none by default). The attribute written bare, as before, gives the
   handle; in JSX, write `collapsible="handle"`. `collapse-label` and `expand-label` are the control's hint and
   spoken name.

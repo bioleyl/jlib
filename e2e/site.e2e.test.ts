@@ -3822,7 +3822,7 @@ describe("a side nav's fold handle", () => {
     });
   const handle = (page: Page) => page.locator('#test-area jl-side-nav .fold');
 
-  it('folds and unfolds on a press of its edge, and says which way it goes next', async () => {
+  it('folds and unfolds on Enter from the keyboard, and says which way it goes next', async () => {
     const page = await foldable();
     expect(await state(page)).toEqual({
       expanded: 'true',
@@ -3830,7 +3830,8 @@ describe("a side nav's fold handle", () => {
       rail: false,
       told: [],
     });
-    await handle(page).click();
+    await handle(page).focus();
+    await page.keyboard.press('Enter');
     await page.waitForTimeout(SETTLE_MS);
     expect(await state(page)).toEqual({
       expanded: 'false',
@@ -3838,9 +3839,16 @@ describe("a side nav's fold handle", () => {
       rail: true,
       told: [true],
     });
-    await handle(page).click();
+    await page.keyboard.press('Enter');
     await page.waitForTimeout(SETTLE_MS);
     expect((await state(page)).told).toEqual([true, false]);
+  });
+
+  it('does nothing on a press alone: the handle is dragged', async () => {
+    const page = await foldable();
+    await handle(page).click();
+    await page.waitForTimeout(SETTLE_MS);
+    expect(await state(page)).toMatchObject({ rail: false, told: [] });
   });
 
   it('keeps to the edge, over no row', async () => {
@@ -3903,7 +3911,7 @@ describe("a side nav's fold handle", () => {
     expect(await state(page)).toMatchObject({ rail: true, told: [true] });
   });
 
-  it('follows its handle dragged towards the fold, once, and back when dragged away', async () => {
+  it('follows its handle dragged towards the fold, and back the other way in the same drag', async () => {
     const page = await foldable();
     const box = await handle(page).boundingBox();
     const at = { x: (box?.x ?? 0) + (box?.width ?? 0) / 2, y: (box?.y ?? 0) + 60 };
@@ -3911,18 +3919,15 @@ describe("a side nav's fold handle", () => {
     await page.mouse.down();
     await page.mouse.move(at.x - 10, at.y);
     expect((await state(page)).told).toEqual([]);
-    await page.mouse.move(at.x - 80, at.y, { steps: 4 });
-    await page.mouse.up();
-    await page.waitForTimeout(SETTLE_MS * 3);
-    expect(await state(page)).toMatchObject({ rail: true, told: [true] });
-    const rail = await handle(page).boundingBox();
-    const from = { x: (rail?.x ?? 0) + (rail?.width ?? 0) / 2, y: (rail?.y ?? 0) + 60 };
-    await page.mouse.move(from.x, from.y);
-    await page.mouse.down();
-    await page.mouse.move(from.x + 60, from.y, { steps: 4 });
+    await page.mouse.move(at.x - 80, at.y, { steps: 8 });
+    expect((await state(page)).told).toEqual([true]);
+    await page.mouse.move(at.x - 70, at.y);
+    expect((await state(page)).told).toEqual([true]);
+    await page.mouse.move(at.x - 40, at.y, { steps: 4 });
+    expect((await state(page)).told).toEqual([true, false]);
     await page.mouse.up();
     await page.waitForTimeout(SETTLE_MS);
-    expect((await state(page)).told).toEqual([true, false]);
+    expect(await state(page)).toMatchObject({ rail: false, told: [true, false] });
   });
 
   it('stands a round knob on its edge line, under the header, with collapsible="knob"', async () => {
