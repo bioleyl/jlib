@@ -108,11 +108,20 @@
  * the page scrolls. The room around a page is the page's (global.css).
  */
 main {
+  display: flex;
+  flex-direction: column;
   min-width: 0;
   padding-bottom: 40px;
 }
 
+/*
+ * The outlet takes the room the credit leaves, so a short page keeps the credit at the foot of the window. Its own
+ * `min-height: 100%` would be the whole of main: the credit would then hang under the frame, past the side
+ * navigation's column, which scrolled away with it.
+ */
 ::slotted(jl-page-outlet) {
+  flex: 1 0 auto;
+  min-height: 0;
   --line-top: var(--top);
 }
 
