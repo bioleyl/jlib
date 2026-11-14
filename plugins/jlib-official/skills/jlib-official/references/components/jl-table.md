@@ -24,6 +24,7 @@ is. single keeps one row open, opening another closes it; multiple opens any num
 shows, from its row; expanded holds the keys of the open rows, and each opening and closing emits toggle.
 
 The header stays on top while the rows scroll within max-height, and the table scrolls sideways on narrow screens.
+What goes with the rows (the pages, a count) sits in the footer slot, a bar inside the frame that stays under them.
 For a cell that is more than a value (a person with an avatar, a link, a menu), give the column a renderer.
 
 ## Use
@@ -82,13 +83,18 @@ In JSX, the `on…` prop, its handler given the detail; in code, `events.registe
 - `press` (`onPress` in JSX), detail `{ key: string | number; row: Row; button: 'main' | 'auxiliary' | 'secondary'; event: MouseEvent }`: A row was pressed, on itself and not on a control in it: its key, the row, the button ('main' for a click, 'auxiliary' for a middle click, 'secondary' for a right click, the keyboard's menu key or a long press) and the browser's event, which says where the pointer is. Cancel that event (event.preventDefault()) to refuse the press: the browser's menu stays away, and an expandable row stays as it is.
 - `toggle` (`onToggle` in JSX), detail `{ key: string | number; open: boolean }`: A row opened or closed: its key and whether it is open now. When rows open one at a time, opening a row emits the close of the other first.
 
+## Slots
+
+- `footer`: What goes with the rows, in a bar under them inside the frame: a jl-pagination, a count, a jl-load-more. One element goes to the end of the bar; several spread from its start to its end. The bar stays while the rows scroll.
+
 ## Methods
 
 - `toggle(key: string | number, open: boolean): void`: Opens or closes a row, as a press on it would, and emits toggle. When rows open one at a time, opening one closes the other.
 
 ## Styling
 
-- `base` (part, `::part(base)`): The scrolling frame around the table.
+- `base` (part, `::part(base)`): The frame around the rows and the footer.
+- `footer` (part, `::part(footer)`): The bar under the rows, which holds the footer slot.
 - `--row-cursor` (custom property): The cursor over a row: pointer when a press on a row opens something (see press).
 
 ## Typing
@@ -257,6 +263,30 @@ Dense and striped, the header held on top while the rows scroll within 260 pixel
 
 ```js
 root.querySelector('jl-table.deploys').rows.set(deployments);
+```
+
+### Pages, in the footer
+
+What goes with the rows sits in the footer slot, inside the frame: here the pages at the end and a count at the start. The page sets the rows of the page people chose.
+
+```html
+<jl-table class="paged" label="Deployments" columns='[{"format":"code","key":"commit","label":"Commit","width":110},{"key":"branch","label":"Branch","sortable":true},{"format":"badge","key":"state","label":"State","tones":{"Failed":"danger","Live":"ok","Queued":"neutral"}},{"format":"number","key":"duration","label":"Seconds","sortable":true},{"format":"date","key":"at","label":"Date","sortable":true}]'>
+  <span slot="footer" class="count"></span>
+  <jl-pagination slot="footer" size="sm" pages="4" label="Pages of deployments"></jl-pagination>
+</jl-table>
+```
+
+```js
+const table = root.querySelector('jl-table.paged');
+const show = (page) => {
+  const first = (page - 1) * PAGE_SIZE;
+  const rows = deployments.slice(first, first + PAGE_SIZE);
+  table.rows.set(rows);
+  table.querySelector('.count').textContent =
+    `${first + 1} to ${first + rows.length} of ${deployments.length}`;
+};
+table.querySelector('jl-pagination').events.register('change', show);
+show(1);
 ```
 
 ### Loading and empty

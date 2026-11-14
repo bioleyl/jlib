@@ -8,6 +8,7 @@ import { jsonOf, oneOf, textOf } from '../lib/attributes';
 import { setOrRemove } from '../lib/dom';
 import { registerIcons } from '../lib/icons';
 import { PRESS_EVENTS, pressButtonOf, tellPress } from '../lib/press';
+import { hasSlotted } from '../lib/slots';
 import { startedOnControl } from '../lib/surface';
 import {
   columnAlign,
@@ -260,6 +261,8 @@ export class JlTable<Row extends object = TableRow, Extra extends string = never
 
   private readonly _refs = this.useRefs((ref) => ({
     body: ref('tbody'),
+    foot: ref('.foot'),
+    footSlot: ref<HTMLSlotElement>('slot[name="footer"]'),
     head: ref('thead'),
     table: ref('table'),
   }));
@@ -290,11 +293,16 @@ export class JlTable<Row extends object = TableRow, Extra extends string = never
 
   templateHtml(): Node {
     return (
-      <div class="scroll" attrs={{ part: 'base' }}>
-        <table>
-          <thead />
-          <tbody />
-        </table>
+      <div class="frame" attrs={{ part: 'base' }}>
+        <div class="scroll">
+          <table>
+            <thead />
+            <tbody />
+          </table>
+        </div>
+        <div class="foot" attrs={{ part: 'footer' }} hidden>
+          <slot name="footer" />
+        </div>
       </div>
     );
   }
@@ -304,6 +312,9 @@ export class JlTable<Row extends object = TableRow, Extra extends string = never
   }
 
   onConnect(): void {
+    // The first slotchange can come before onConnect: draw the bar now, then follow the changes.
+    this.drawFoot();
+    this.on(this._refs.footSlot, 'slotchange', () => this.drawFoot());
     this.on(this._refs.head, 'click', (event) => {
       const key = (event.target as Element).closest<HTMLElement>('button.sort')?.dataset.key;
       if (key !== undefined) {
@@ -318,6 +329,13 @@ export class JlTable<Row extends object = TableRow, Extra extends string = never
     for (const type of PRESS_EVENTS) {
       this.on(this._refs.body, type, (event) => this.pressRow(event));
     }
+  }
+
+  /** The bar under the rows shows when the page put something in it; what stands there alone goes to its end. */
+  private drawFoot(): void {
+    const foot = this._refs.foot;
+    foot.hidden = !hasSlotted(this._refs.footSlot);
+    foot.classList.toggle('alone', this._refs.footSlot.assignedElements({ flatten: true }).length === 1);
   }
 
   /** Draws on the next microtask: the inputs set while connecting give one drawing, not one each. */

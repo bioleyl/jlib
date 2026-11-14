@@ -3725,3 +3725,64 @@ describe('a field taken out of the page and put back', () => {
     expect(state.errors).toEqual([]);
   });
 });
+
+describe("a table's footer", () => {
+  /** Where the bar under the rows is, against the frame and what it holds. */
+  const footOf = (page: Page): Promise<{ shown: boolean; inFrame: boolean; atEnd: boolean; atStart: boolean }> =>
+    page.evaluate(() => {
+      const table = document.querySelector('#test-area jl-table') as JlTable;
+      const root = table.shadowRoot as ShadowRoot;
+      const foot = root.querySelector('.foot') as HTMLElement;
+      const frame = (root.querySelector('.frame') as HTMLElement).getBoundingClientRect();
+      const bar = foot.getBoundingClientRect();
+      const held = [...table.querySelectorAll('[slot="footer"]')].map((element) =>
+        element.getBoundingClientRect()
+      );
+      const room = Number.parseFloat(getComputedStyle(foot).paddingLeft) + 1;
+      return {
+        atEnd: Math.abs(bar.right - (held.at(-1)?.right ?? 0)) <= room,
+        atStart: Math.abs((held[0]?.left ?? 0) - bar.left) <= room,
+        inFrame: bar.height > 0 && bar.bottom <= frame.bottom && bar.top >= frame.top,
+        shown: bar.height > 0,
+      };
+    });
+
+  it('takes no room while the page puts nothing in it', async () => {
+    const page = await open('/components/table');
+    await mount(
+      page,
+      '<jl-table columns=\'[{"key":"name","label":"Name"}]\' rows=\'[{"id":1,"name":"Ada"}]\'></jl-table>'
+    );
+    expect((await footOf(page)).shown).toBe(false);
+  });
+
+  it('holds the pages inside the frame, at the end of the bar when they are alone', async () => {
+    const page = await open('/components/table');
+    await mount(
+      page,
+      `<jl-table columns='[{"key":"name","label":"Name"}]' rows='[{"id":1,"name":"Ada"}]'>
+        <jl-pagination slot="footer" size="sm" pages="4"></jl-pagination>
+      </jl-table>`
+    );
+    expect(await footOf(page)).toEqual({ atEnd: true, atStart: false, inFrame: true, shown: true });
+  });
+
+  it('spreads a count and the pages over the two ends, and closes when they are taken away', async () => {
+    const page = await open('/components/table');
+    await mount(
+      page,
+      `<jl-table columns='[{"key":"name","label":"Name"}]' rows='[{"id":1,"name":"Ada"}]'>
+        <span slot="footer">1 of 4</span>
+        <jl-pagination slot="footer" size="sm" pages="4"></jl-pagination>
+      </jl-table>`
+    );
+    expect(await footOf(page)).toEqual({ atEnd: true, atStart: true, inFrame: true, shown: true });
+    await page.evaluate(() => {
+      for (const held of document.querySelectorAll('#test-area [slot="footer"]')) {
+        held.remove();
+      }
+    });
+    await page.waitForTimeout(SETTLE_MS);
+    expect((await footOf(page)).shown).toBe(false);
+  });
+});

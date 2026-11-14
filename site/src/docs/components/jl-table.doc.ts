@@ -7,6 +7,7 @@ import type {
   JlButton,
   JlFacts,
   JlMenu,
+  JlPagination,
   JlSegmented,
   JlTable,
   PressButton,
@@ -244,6 +245,26 @@ const BUTTON_WORDS: Record<PressButton, string> = {
   secondary: 'a right click, the menu key or a long press',
 };
 
+const PAGE_SIZE = 6;
+const DEPLOY_PAGES = Math.ceil(DEPLOY_COUNT / PAGE_SIZE);
+
+/** Shows one page of the deployments, and says which rows they are in the bar under them. */
+function wirePages(root: HTMLElement): void {
+  const table = root.querySelector<JlTable>('jl-table.paged');
+  const pagination = root.querySelector<JlPagination>('jl-table.paged jl-pagination');
+  const count = root.querySelector('jl-table.paged .count');
+  const show = (page: number): void => {
+    const first = (page - 1) * PAGE_SIZE;
+    const rows = DEPLOYS.slice(first, first + PAGE_SIZE);
+    table?.rows.set(rows);
+    if (count !== null) {
+      count.textContent = `${first + 1} to ${first + rows.length} of ${DEPLOY_COUNT}`;
+    }
+  };
+  pagination?.events.register('change', show);
+  show(1);
+}
+
 function wirePresses(root: HTMLElement): void {
   const table = root.querySelector<JlTable<Member>>('jl-table.pressed');
   const menu = root.querySelector<JlMenu>('jl-menu.row-menu');
@@ -308,6 +329,7 @@ is. single keeps one row open, opening another closes it; multiple opens any num
 shows, from its row; expanded holds the keys of the open rows, and each opening and closing emits toggle.
 
 The header stays on top while the rows scroll within max-height, and the table scrolls sideways on narrow screens.
+What goes with the rows (the pages, a count) sits in the footer slot, a bar inside the frame that stays under them.
 For a cell that is more than a value (a person with an avatar, a link, a menu), give the column a renderer.`,
   events: [
     {
@@ -442,6 +464,28 @@ For a cell that is more than a value (a person with an avatar, a link, a menu), 
         root.querySelector('jl-table.deploys').rows.set(deployments);`,
       setup: (root) => root.querySelector<JlTable>('jl-table.deploys')?.rows.set(DEPLOYS),
       title: 'Dense, striped, scrolling',
+    },
+    {
+      description:
+        'What goes with the rows sits in the footer slot, inside the frame: here the pages at the end and a count at the start. The page sets the rows of the page people chose.',
+      html: `
+        <jl-table class="paged" label="Deployments" columns='${JSON.stringify(DEPLOY_COLUMNS)}'>
+          <span slot="footer" class="count"></span>
+          <jl-pagination slot="footer" size="sm" pages="${DEPLOY_PAGES}" label="Pages of deployments"></jl-pagination>
+        </jl-table>`,
+      script: `
+        const table = root.querySelector('jl-table.paged');
+        const show = (page) => {
+          const first = (page - 1) * PAGE_SIZE;
+          const rows = deployments.slice(first, first + PAGE_SIZE);
+          table.rows.set(rows);
+          table.querySelector('.count').textContent =
+            \`\${first + 1} to \${first + rows.length} of \${deployments.length}\`;
+        };
+        table.querySelector('jl-pagination').events.register('change', show);
+        show(1);`,
+      setup: wirePages,
+      title: 'Pages, in the footer',
     },
     {
       description: 'Placeholder rows while the data loads, and a sentence when there is none.',
@@ -679,8 +723,16 @@ For a cell that is more than a value (a person with an avatar, a link, a menu), 
       type: '{ [key in keyof Row]?: (row: Row) => Node }',
     },
   ],
+  slots: [
+    {
+      description:
+        'What goes with the rows, in a bar under them inside the frame: a jl-pagination, a count, a jl-load-more. One element goes to the end of the bar; several spread from its start to its end. The bar stays while the rows scroll.',
+      name: 'footer',
+    },
+  ],
   styling: [
-    { description: 'The scrolling frame around the table.', name: 'base' },
+    { description: 'The frame around the rows and the footer.', name: 'base' },
+    { description: 'The bar under the rows, which holds the footer slot.', name: 'footer' },
     {
       description: 'The cursor over a row: pointer when a press on a row opens something (see press).',
       name: '--row-cursor',

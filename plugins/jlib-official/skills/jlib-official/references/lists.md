@@ -191,6 +191,17 @@ more.loading.set(true);     // the next page is on its way
 SyWare's lists load 30 at a time with **Show more** and "30 of 120" beside it. `JlPagination` (`page`, `pages`,
 `change`) is for results people page through by number.
 
+What goes with a table's rows sits in its `footer` slot, a bar inside the frame that stays while the rows scroll:
+one element goes to its end, several spread from its start to its end. Never put the pagination under the table,
+outside its frame.
+
+```tsx
+<JlTable columns={COLUMNS} rows={pageRows}>
+  <span slot="footer">1 to 30 of 120</span>
+  <JlPagination slot="footer" size="sm" pages={4} onChange={(page) => this.showPage(page)} />
+</JlTable>
+```
+
 ## Rows: `JlListItem`
 
 ```tsx

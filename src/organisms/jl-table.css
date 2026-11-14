@@ -5,6 +5,7 @@
   --max-height: none;
   --cell-y: 10px;
   --cell-x: 14px;
+  --foot-y: 8px;
   --select-width: 44px;
   --expand-width: 36px;
   /* The width of the checkbox and chevron cells, after which the details of open rows start. */
@@ -23,6 +24,15 @@
 :host([dense]) {
   --cell-y: 6px;
   --cell-x: 12px;
+  --foot-y: 6px;
+}
+
+/* The frame holds the rows, which scroll, and the bar under them, which stays. */
+.frame {
+  overflow: hidden;
+  border: 1px solid var(--jl-line);
+  border-radius: var(--jl-radius);
+  background: var(--jl-surface);
 }
 
 .scroll {
@@ -31,10 +41,24 @@
   position: relative;
   max-height: var(--max-height);
   overflow: auto;
-  border: 1px solid var(--jl-line);
-  border-radius: var(--jl-radius);
-  background: var(--jl-surface);
   overscroll-behavior-x: contain;
+}
+
+/* What goes with the rows: the pages, a count, a "load more". A count and the pages take the two ends. */
+.foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 16px;
+  padding: var(--foot-y) var(--cell-x);
+  border-top: 1px solid var(--jl-line);
+  color: var(--jl-muted);
+  font-size: var(--jl-font-sm);
+}
+
+.foot.alone {
+  justify-content: flex-end;
 }
 
 /* The details of open rows take the width of the frame, not of the table. */

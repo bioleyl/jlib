@@ -3,6 +3,19 @@
 What changed in each version of [@syware/jlib](https://www.npmjs.com/package/@syware/jlib). Every component is shown
 and documented on [the documentation site](https://bioleyl.github.io/jlib/).
 
+## Unreleased
+
+### Added
+
+- **`jl-table` has a `footer` slot**, a bar inside the frame under the rows, which stays while they scroll: the place
+  of a `jl-pagination`, a count or a `jl-load-more`, which sat loose under the frame before. One element goes to the
+  end of the bar; several spread from its start to its end. The bar is the `footer` part.
+
+### Changed
+
+- **`jl-table`'s `base` part is the frame around the rows and the footer**; the rows scroll in an element inside
+  it. A page that set a height or an overflow through `::part(base)` uses `max-height` instead.
+
 ## 0.15.0 (2026-11-13)
 
 What a review of the whole project found, fixed: a script that ran in every app's install, states that assistive

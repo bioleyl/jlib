@@ -109,7 +109,7 @@ Tabs (`jl-tabs`) split one thing into parts that are not the same list: the deta
 ## Long collections
 
 - Load 30 to 50 items, then a **Show more** button under them, with "30 of 120" beside it (`jl-load-more`). Feeds and histories grow at the bottom this way.
-- A table of a fixed set, where the position of a row matters, takes `jl-pagination`.
+- A table of a fixed set, where the position of a row matters, takes `jl-pagination`, in the table's `footer` slot: the pages at the end of the bar under the rows, the count ("1 to 30 of 120") at its start.
 - A large tree (an archive, a file store) loads a level when it opens and a page at a time: `jl-tree` with a `loader` ends each level with its **Show 75 more** row.
 - A list never stops at a limit without saying so: "The last 100 runs", and a way to see more.
 

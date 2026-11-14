@@ -208,6 +208,8 @@ there on a component alone: `mount(page, html)` puts it in the page of its own d
 - A press handler that drops a promise (`() => void this.copy()`) hides its rejection: catch where nobody else can,
   and show it (`jl-copy-button`).
 - Link to light-DOM elements from a shadow root with element reflection (`ariaControlsElements`): ids cannot cross.
+- The e2e suite has one browser page for all its tests (`open()` navigates it): a test never closes it, or every
+  test after it fails at once.
 - The shoot script's Vite server reloads when files change: an `--eval` failing with "Execution context was
   destroyed" just needs a rerun.
 - The SyWare logo SVGs in `site/public/` are the designer's paths, cropped. Shown small (under 64px), the site uses
