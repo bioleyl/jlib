@@ -47,9 +47,11 @@ and items with children that open with a chevron. value is the active item: it i
 the parents above it open to show it.
 
 collapsed turns it into a rail of icons, for when the content needs the room: the labels become tooltips (and stay
-for screen readers), badges become dots, and a parent leads to its first child. collapsible lets people do it: a
-button at the bottom folds the side nav into its rail and unfolds it, and collapse says so for the app to remember it
-on the device. In the drawer of a narrow jl-app-shell, the side nav shows whole and the button hides. While it shows
+for screen readers), badges become dots, and a parent leads to its first child. collapsible lets people do it: its
+edge becomes a handle, a short grip that lights the whole edge under the pointer, and a press on it folds the side nav
+into its rail or unfolds it; so do the keys of hotkey (Ctrl+B, ⌘B on a Mac), from anywhere in the page. collapse says
+so for the app to remember it on the device. In the drawer of a narrow jl-app-shell, the side nav shows whole, without
+the handle or the keys. While it shows
 as a rail, the host carries the rail attribute, for styles around it: jl-side-nav[rail].
 
 Every item is a link (with an href) or a button, so the Tab key reaches it; Up and Down move between the visible
@@ -59,7 +61,8 @@ stay in place.`,
   events: [
     { description: 'An item was chosen: its id.', detail: 'Id', name: 'select' },
     {
-      description: 'People folded the side nav into its rail (true) or unfolded it (false), with its button.',
+      description:
+        'People folded the side nav into its rail (true) or unfolded it (false), with its handle or its keys.',
       detail: 'boolean',
       name: 'collapse',
     },
@@ -76,7 +79,7 @@ stay in place.`,
     },
     {
       description:
-        'collapsible: the button at the bottom folds it into a rail of icons (hover one for its label), and unfolds it.',
+        'collapsible: a press on the handle at its edge, or Ctrl+B, folds it into a rail of icons (hover one for its label), and unfolds it.',
       html: `
         <div style="${FRAME}">
           <jl-side-nav collapsible collapsed value="inbox" sections='${SECTIONS}'></jl-side-nav>
@@ -158,7 +161,8 @@ stay in place.`,
       attribute: 'collapsible',
       control: { kind: 'boolean' },
       default: 'false',
-      description: 'A button at the bottom that folds the side nav into its rail and unfolds it.',
+      description:
+        'Makes its edge a handle that folds the side nav into its rail and unfolds it, as the hotkey does.',
       name: 'collapsible',
       type: 'boolean',
     },
@@ -166,15 +170,23 @@ stay in place.`,
       attribute: 'collapse-label',
       default: "''",
       description:
-        "The fold button’s text while the side nav is open. Empty: jlib's own text, in the language shown.",
+        "What the handle says (its hint, and to screen readers) while the side nav is open. Empty: jlib's own text, in the language shown.",
       name: 'collapseLabel',
       type: 'string',
     },
     {
       attribute: 'expand-label',
       default: "''",
-      description: "Its hint while the side nav is a rail. Empty: jlib's own text, in the language shown.",
+      description: "What it says while the side nav is a rail. Empty: jlib's own text, in the language shown.",
       name: 'expandLabel',
+      type: 'string',
+    },
+    {
+      attribute: 'hotkey',
+      default: "'mod+b'",
+      description:
+        'The keys that fold and unfold a collapsible side nav from anywhere in the page: mod is ⌘ on a Mac and Ctrl elsewhere. none for no keys. Of several collapsible side navs in a page, the first takes the press.',
+      name: 'hotkey',
       type: 'string',
     },
     {

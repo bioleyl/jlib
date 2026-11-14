@@ -3786,3 +3786,99 @@ describe("a table's footer", () => {
     expect((await footOf(page)).shown).toBe(false);
   });
 });
+
+describe("a side nav's fold handle", () => {
+  /** A collapsible side nav, what it told of its folding kept in the window. */
+  const foldable = async (attributes = ''): Promise<Page> => {
+    const page = await open('/components/side-nav');
+    await mount(
+      page,
+      `<div style="height: 240px"><jl-side-nav collapsible ${attributes}
+        sections='[{"items":[{"id":"home","label":"Home","icon":"home"}]}]'></jl-side-nav></div>`
+    );
+    await page.evaluate(() => {
+      // The page's own examples fold on the keys too, and the first to take a press keeps it: they step aside.
+      const examples = document.querySelector('jl-page-outlet > *')?.shadowRoot;
+      for (const example of examples?.querySelectorAll('jl-side-nav[collapsible]') ?? []) {
+        example.removeAttribute('collapsible');
+      }
+      const nav = document.querySelector('#test-area jl-side-nav') as JlSideNav;
+      const told: boolean[] = [];
+      Object.assign(window, { told });
+      nav.events.register('collapse', (collapsed) => told.push(collapsed));
+    });
+    return page;
+  };
+  const state = (page: Page): Promise<{ told: boolean[]; rail: boolean; expanded: string | null; hint: string }> =>
+    page.evaluate(() => {
+      const nav = document.querySelector('#test-area jl-side-nav') as JlSideNav;
+      const handle = nav.shadowRoot?.querySelector('.fold') as HTMLElement;
+      return {
+        expanded: handle.getAttribute('aria-expanded'),
+        hint: handle.title,
+        rail: nav.hasAttribute('rail'),
+        told: (window as unknown as { told: boolean[] }).told,
+      };
+    });
+  const handle = (page: Page) => page.locator('#test-area jl-side-nav .fold');
+
+  it('folds and unfolds on a press of its edge, and says which way it goes next', async () => {
+    const page = await foldable();
+    expect(await state(page)).toEqual({
+      expanded: 'true',
+      hint: 'Collapse the menu (Ctrl+B)',
+      rail: false,
+      told: [],
+    });
+    await handle(page).click();
+    await page.waitForTimeout(SETTLE_MS);
+    expect(await state(page)).toEqual({
+      expanded: 'false',
+      hint: 'Expand the menu (Ctrl+B)',
+      rail: true,
+      told: [true],
+    });
+    await handle(page).click();
+    await page.waitForTimeout(SETTLE_MS);
+    expect((await state(page)).told).toEqual([true, false]);
+  });
+
+  it('keeps to the edge, over no row', async () => {
+    const page = await foldable();
+    const overlap = await page.evaluate(() => {
+      const root = (document.querySelector('#test-area jl-side-nav') as JlSideNav).shadowRoot as ShadowRoot;
+      const edge = (root.querySelector('.fold') as HTMLElement).getBoundingClientRect();
+      const row = (root.querySelector('.item') as HTMLElement).getBoundingClientRect();
+      return row.right - edge.left;
+    });
+    expect(overlap).toBeLessThanOrEqual(0);
+  });
+
+  it('folds on its keys from anywhere in the page, unless the page used them', async () => {
+    const page = await foldable();
+    await page.keyboard.press('Control+b');
+    await page.waitForTimeout(SETTLE_MS);
+    expect((await state(page)).told).toEqual([true]);
+    // The page takes the next B for itself, before the side nav hears it.
+    await page.evaluate(() =>
+      document.addEventListener('keydown', (event) => event.key === 'b' && event.preventDefault(), {
+        capture: true,
+      })
+    );
+    await page.keyboard.press('Control+b');
+    await page.waitForTimeout(SETTLE_MS);
+    expect((await state(page)).told).toEqual([true]);
+  });
+
+  it('has no keys with hotkey="none", and neither handle nor keys in a drawer', async () => {
+    const page = await foldable('hotkey="none"');
+    await page.keyboard.press('Control+b');
+    await page.waitForTimeout(SETTLE_MS);
+    expect(await state(page)).toMatchObject({ hint: 'Collapse the menu', told: [] });
+    const inDrawer = await foldable('in-drawer');
+    await inDrawer.keyboard.press('Control+b');
+    await inDrawer.waitForTimeout(SETTLE_MS);
+    expect((await state(inDrawer)).told).toEqual([]);
+    expect(await handle(inDrawer).isVisible()).toBe(false);
+  });
+});

@@ -11,6 +11,7 @@
 }
 
 nav {
+  position: relative;
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -22,7 +23,7 @@ nav {
   font-size: var(--jl-font-md);
 }
 
-/* The footer and the fold button keep to the bottom. */
+/* The footer keeps to the bottom. */
 .bottom {
   display: flex;
   flex: none;
@@ -35,23 +36,81 @@ nav {
   flex: none;
 }
 
-/* The fold button spans the nav like a row, its icon and label where the rows have theirs; centred in the rail. */
-.fold::part(base) {
-  justify-content: flex-start;
-  gap: 10px;
-  /* With the button's 1px border, the rows' 10px. */
-  padding: 0 9px;
+/*
+ * The handle: the nav's own edge, as wide as its padding so it covers no row. A short grip says it is there; under
+ * the pointer or the focus the whole edge lights, and the cursor says which way it goes.
+ */
+.fold {
+  position: absolute;
+  inset: 0 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  width: 8px;
+  padding: 0;
+  border: none;
+  background: none;
+  cursor: w-resize;
 }
 
-/* A side nav that does not fold, or that a drawer shows whole, has no fold button. */
+:host([rail]) .fold {
+  cursor: e-resize;
+}
+
+.fold::after {
+  position: absolute;
+  inset: 0 0 0 auto;
+  width: 2px;
+  background: var(--jl-accent);
+  content: "";
+  opacity: 0;
+  transition: opacity var(--jl-fast) var(--jl-ease);
+}
+
+.grip {
+  width: 4px;
+  height: 28px;
+  margin-right: 2px;
+  border-radius: var(--jl-radius-pill);
+  background: var(--jl-line-strong);
+  transition:
+    height var(--jl-fast) var(--jl-ease),
+    background var(--jl-fast) var(--jl-ease);
+}
+
+.fold:hover::after,
+.fold:focus-visible::after {
+  opacity: 1;
+}
+
+.fold:hover .grip,
+.fold:focus-visible .grip {
+  height: 44px;
+  background: var(--jl-accent);
+}
+
+/* The lit edge is its focus mark: a ring around a strip this thin would run over the rows. */
+.fold:focus-visible {
+  box-shadow: none;
+}
+
+/* A side nav that does not fold, or that a drawer shows whole, has no handle. */
 :host(:not([collapsible])) .fold,
 :host([in-drawer]) .fold {
   display: none;
 }
 
-:host([rail]) .fold::part(base) {
-  justify-content: center;
-  padding: 0;
+/* Forced colours drop backgrounds: the grip and the lit edge keep a system colour. */
+@media (forced-colors: active) {
+  .grip {
+    background: ButtonText;
+  }
+
+  .fold::after,
+  .fold:hover .grip,
+  .fold:focus-visible .grip {
+    background: Highlight;
+  }
 }
 
 .sections {

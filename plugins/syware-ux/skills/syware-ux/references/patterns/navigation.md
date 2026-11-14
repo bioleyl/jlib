@@ -42,7 +42,7 @@ The product and its company, the search, the destinations with their counts, the
 
 What people need everywhere lives in the frame, not in icons scattered in a corner of the page. A basket, notifications or an inbox are destinations with a count: they have a name screen readers can say, and the same place in every app.
 
-People fold the side nav into a rail of icons with the button at its bottom (`collapsible`), and the app remembers it on the device; a phone keeps the drawer whole. A work surface that needs the width (an editor, a canvas) folds it too, and gives it back when people leave.
+People fold the side nav into a rail of icons with the handle on its edge or with Ctrl+B (`collapsible`), and the app remembers it on the device; a phone keeps the drawer whole. A work surface that needs the width (an editor, a canvas) folds it too, and gives it back when people leave.
 
 ## The frame on a phone
 

@@ -13,6 +13,10 @@ and documented on [the documentation site](https://bioleyl.github.io/jlib/).
 
 ### Changed
 
+- **`jl-side-nav` folds by its edge.** The "Collapse the menu" button at the bottom of a `collapsible` side nav is
+  gone: the nav's edge is a handle (a short grip, the whole edge lit under the pointer or the focus), and `hotkey`
+  (`mod+b`, `none` for no keys) folds it from anywhere in the page. `collapse-label` and `expand-label` are now the
+  handle's hint and spoken name.
 - **`jl-table`'s `base` part is the frame around the rows and the footer**; the rows scroll in an element inside
   it. A page that set a height or an overflow through `::part(base)` uses `max-height` instead.
 

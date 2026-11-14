@@ -1,11 +1,11 @@
 import { css } from '@jadis/core';
-import { ChevronRight, PanelLeftClose, PanelLeftOpen } from 'lucide';
+import { ChevronRight } from 'lucide';
 
-import { JlButton } from '../atoms/jl-button';
 import { JlIcon } from '../atoms/jl-icon';
 import { JlElement } from '../base/jl-element';
 import { jsonOf, textOf } from '../lib/attributes';
 import { setOrRemove, uniqueId } from '../lib/dom';
+import { hotkeyLabels, isApplePlatform, matchesHotkey, parseHotkey } from '../lib/hotkey';
 import { registerIcons } from '../lib/icons';
 import { findItem, firstLeaf, pathInSections } from '../lib/nav-tree';
 import { jlText } from '../lib/texts';
@@ -15,16 +15,13 @@ import styles from './jl-side-nav.css?inline';
 import type { SideNavItem, SideNavSection } from '../types/jl-side-nav.types';
 
 // The icons it draws itself: a page registers only the names it writes.
-registerIcons({
-  'chevron-right': ChevronRight,
-  'panel-left-close': PanelLeftClose,
-  'panel-left-open': PanelLeftOpen,
-});
+registerIcons({ 'chevron-right': ChevronRight });
 
 const ICON_SIZE = 16;
 const CHEVRON_SIZE = 14;
-const COLLAPSE_ICON = 'panel-left-close';
-const EXPAND_ICON = 'panel-left-open';
+const DEFAULT_HOTKEY = 'mod+b';
+// `hotkey="none"` folds with no key.
+const NO_HOTKEY = 'none';
 const ROW_SELECTOR = '.item';
 const NEW_TAB = '_blank';
 // A page opened in a new tab gets no handle on this one.
@@ -37,6 +34,17 @@ const parseSections = <Id extends string>(value: string | null): SideNavSection<
   return Array.isArray(parsed) ? (parsed as SideNavSection<Id>[]) : [];
 };
 
+/** Whether keys fold the side nav: an empty `hotkey` and `none` name no keys. */
+const hasKeys = (hotkey: string): boolean => hotkey !== '' && hotkey !== NO_HOTKEY;
+
+const onApple = (): boolean => isApplePlatform(navigator.platform);
+
+/** A fold label with its keys: "Collapse the menu (Ctrl+B)", "(⌘B)" on a Mac. */
+const withKeys = (label: string, hotkey: string): string => {
+  const apple = onApple();
+  return `${label} (${hotkeyLabels(hotkey, apple).join(apple ? '' : '+')})`;
+};
+
 const hasChildren = (item: SideNavItem): boolean => (item.children?.length ?? 0) > 0;
 
 /** A row is reachable when no closed list hides it. */
@@ -45,7 +53,7 @@ const isReachable = (row: HTMLElement): boolean => row.closest('[hidden]') === n
 /**
  * The navigation of an app, down its side: sections of items with icons, badges and nested items that open with
  * a chevron. `value` is the active item (its parents open to show it); `collapsed` makes it a rail of icons, with
- * the labels as tooltips, and `collapsible` lets people fold and unfold it with a button at its bottom. Items with
+ * the labels as tooltips, and `collapsible` lets people fold and unfold it with the handle on its edge, or with `hotkey`. Items with
  * an `href` are links; the others fire `select`. Typed by its ids, `JlSideNav<'jobs' | 'people'>` takes items of
  * those ids and gives `select` one of them.
  */
@@ -73,17 +81,19 @@ export class JlSideNav<Id extends string = string> extends JlElement {
     },
     { attribute: 'collapsed' }
   );
-  /** Adds a button at the bottom that folds the side nav into its rail and unfolds it. */
+  /** Makes its edge a handle that folds the side nav into its rail and unfolds it. */
   readonly collapsible = this.useChange(false, (value) => this.reflect('collapsible', value), {
     attribute: 'collapsible',
   });
-  /** The fold button's text while the side nav is open; jlib's own when empty. */
+  /** What the handle says while the side nav is open; jlib's own when empty. */
   readonly collapseLabel = this.useChange('', () => this.schedule(), { attribute: 'collapse-label' });
-  /** Its hint while the side nav is a rail; jlib's own when empty. */
+  /** What it says while the side nav is a rail; jlib's own when empty. */
   readonly expandLabel = this.useChange('', () => this.schedule(), { attribute: 'expand-label' });
+  /** The keys that fold and unfold a `collapsible` side nav, from anywhere in the page; `none` for no keys. */
+  readonly hotkey = this.useChange(DEFAULT_HOTKEY, () => this.schedule(), { attribute: 'hotkey' });
   /**
    * Set by `jl-app-shell` while the side nav is its drawer, on a narrow screen: the drawer shows it whole, and its
-   * fold button hides, `collapsed` waiting for a wide screen again.
+   * handle hides, `collapsed` waiting for a wide screen again.
    */
   readonly inDrawer = this.useChange(
     false,
@@ -108,7 +118,7 @@ export class JlSideNav<Id extends string = string> extends JlElement {
   };
 
   private readonly _refs = this.useRefs((ref) => ({
-    fold: ref(JlButton),
+    fold: ref<HTMLButtonElement>('.fold'),
     nav: ref('nav'),
     sections: ref('.sections'),
   }));
@@ -120,8 +130,10 @@ export class JlSideNav<Id extends string = string> extends JlElement {
         <div class="sections" />
         <div class="bottom">
           <slot name="footer" />
-          <JlButton class="fold" variant="ghost" block />
         </div>
+        <button type="button" class="fold">
+          <span class="grip" />
+        </button>
       </nav>
     );
   }
@@ -131,7 +143,8 @@ export class JlSideNav<Id extends string = string> extends JlElement {
   }
 
   onConnect(): void {
-    this._refs.fold.events.register('press', () => this.fold());
+    this.on(this._refs.fold, 'click', () => this.fold());
+    document.addEventListener('keydown', (event) => this.foldOnHotkey(event), { signal: this.killSignal });
     this.on(this._refs.sections, 'click', (event) => this.onClick(event));
     this.on(this._refs.sections, 'keydown', (event) => this.onKey(event));
   }
@@ -170,6 +183,17 @@ export class JlSideNav<Id extends string = string> extends JlElement {
   /** Whether it shows as the rail now: folded, and not in a drawer. */
   private isRail(): boolean {
     return this.collapsed.get() && !this.inDrawer.get();
+  }
+
+  /** The keys fold it wherever the focus is, unless the page used them or a drawer shows it whole. */
+  private foldOnHotkey(event: KeyboardEvent): void {
+    const hotkey = this.hotkey.get();
+    const folds = this.collapsible.get() && !this.inDrawer.get() && hasKeys(hotkey);
+    if (!folds || event.defaultPrevented || !matchesHotkey(event, parseHotkey(hotkey), onApple())) {
+      return;
+    }
+    event.preventDefault();
+    this.fold();
   }
 
   private fold(): void {
@@ -219,13 +243,17 @@ export class JlSideNav<Id extends string = string> extends JlElement {
     this._refs.nav.setAttribute('aria-label', this.label.get() || jlText('mainNavigation'));
   }
 
-  /** The fold button's icon and text; the CSS hides it unless `collapsible`, and in a drawer. */
+  /** What the handle says and does next; the CSS hides it unless `collapsible`, and in a drawer. */
   private renderFold(): void {
     const fold = this._refs.fold;
     const rail = this.isRail();
-    fold.icon.set(rail ? EXPAND_ICON : COLLAPSE_ICON);
-    fold.label.set(rail ? '' : this.collapseLabel.get() || jlText('collapseMenu'));
-    fold.hint.set(rail ? this.expandLabel.get() || jlText('expandMenu') : '');
+    const hotkey = this.hotkey.get();
+    const label = rail
+      ? this.expandLabel.get() || jlText('expandMenu')
+      : this.collapseLabel.get() || jlText('collapseMenu');
+    fold.setAttribute('aria-label', label);
+    fold.setAttribute('aria-expanded', String(!rail));
+    fold.title = hasKeys(hotkey) ? withKeys(label, hotkey) : label;
   }
 
   private choose(id: Id): void {
