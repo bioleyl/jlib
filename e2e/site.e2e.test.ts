@@ -108,6 +108,8 @@ const MENU_POINT = { x: 320, y: 240 };
 const TOOLTIP_SHOWN_MS = 900;
 // Longer than the copy button says what a press came to.
 const COPY_SAYS_MS = 1800;
+// The most a closed toast may take to leave, its animation drawn late on a busy machine.
+const TOAST_LEFT_MS = 2000;
 
 const componentPaths = readdirSync(DOCS)
   .filter((file) => file.endsWith('.doc.ts'))
@@ -3061,7 +3063,12 @@ describe('the toaster over a modal', () => {
       toaster.notify({ heading: 'Could not save', tone: 'danger' });
     });
     await page.locator('jl-toast .close').click();
-    await page.waitForTimeout(SETTLE_MS);
+    // It leaves with an animation, which a busy machine draws late: waited for, rather than a fixed time.
+    await page.waitForFunction(
+      () => document.querySelector('#test-area jl-dialog')?.shadowRoot?.querySelector('jl-toast') === null,
+      undefined,
+      { timeout: TOAST_LEFT_MS }
+    );
     const overModal = await page.evaluate(() => {
       const dialog = document.querySelector('#test-area jl-dialog') as JlDialog;
       return { dialogOpen: dialog.open.get(), toasts: dialog.shadowRoot?.querySelectorAll('jl-toast').length };
