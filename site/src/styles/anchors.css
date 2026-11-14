@@ -1,0 +1,30 @@
+/* The link beside a title, to the title itself: it shows with the pointer or the focus, and always on a phone. */
+:is(h2, h3)[id] {
+  /* Under the site's bar, with some air, when a link brings the title into view. */
+  scroll-margin-top: 80px;
+}
+
+.anchor {
+  margin-left: 0.4em;
+  border-radius: var(--jl-radius-xs);
+  color: var(--jl-muted);
+  font-weight: 500;
+  text-decoration: none;
+  opacity: 0;
+  transition: opacity var(--jl-fast) var(--jl-ease);
+}
+
+:is(h2, h3):hover > .anchor,
+.anchor:focus-visible {
+  opacity: 1;
+}
+
+.anchor:hover {
+  color: var(--jl-accent);
+}
+
+@media (hover: none) {
+  .anchor {
+    opacity: 1;
+  }
+}

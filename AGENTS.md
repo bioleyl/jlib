@@ -28,6 +28,10 @@ documentation site that shows and tests every component.
   classes of the jl-* tags it writes (`scripts/define-written-tags.ts`), so a component comes with the page that
   shows it. Write a tag whole (`<jl-table`, `'jl-button'`): one put together in code (`'jl-' + name`) is not seen,
   and the e2e suite fails on the undefined tag.
+  Every `h2` and `h3` of a page gets a name and a `#` link once the page shows (`services/anchors.tsx`): a subtitle's
+  name starts with its title's (`/components/table#api-events`, `/changelog#0-16-0-added`). A title's `textContent`
+  ends with that link's mark: read its first text node. An example's own headings (`.example-root`, a pattern's
+  `.preview-area`, the playground) are left alone.
   The **Changelog** page (`/changelog`) draws `CHANGELOG.md` as it is (`lib/changelog.ts`): headings, paragraphs
   and `- ` lists (a line indented under an item continues it), with `code`, **strong** and [links]; no other
   Markdown.

@@ -5,6 +5,7 @@ import { COMMON_ICONS, JlPageOutlet, registerIcons } from '@syware/jlib';
 
 import { SiteShell } from './components/site-shell';
 import { mountRouter } from './router';
+import { followAnchors } from './services/anchors';
 import { holdHashLinks } from './services/navigation';
 import { applyTheme } from './services/theme';
 
@@ -12,12 +13,13 @@ import { applyTheme } from './services/theme';
 registerIcons(COMMON_ICONS);
 applyTheme();
 // The page lives as long as the tab: its link handling never needs to stop. The router follows the other links.
-holdHashLinks(new AbortController().signal);
+const forever = new AbortController().signal;
+holdHashLinks(forever);
 
 const shell = new SiteShell();
 const outlet = new JlPageOutlet();
 shell.append(outlet);
 document.body.append(shell);
-// A new page starts at the top, once it shows: until then the current one stays as it was.
-outlet.events.register('show', () => window.scrollTo({ top: 0 }));
+// A new page starts at the top, once it shows, or at the place its address names: until then the current one stays.
+followAnchors(outlet, forever);
 mountRouter(outlet);

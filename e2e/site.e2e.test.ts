@@ -1354,7 +1354,8 @@ describe('the changelog page', () => {
       return {
         markup: prose.textContent.includes('**') || prose.textContent.includes('\`'),
         strongCode: root.querySelector('.release strong code') !== null,
-        versions: [...root.querySelectorAll('.release h2')].map((heading) => heading.textContent),
+        // The version as written: the first text of the title, before its anchor link.
+        versions: [...root.querySelectorAll('.release h2')].map((heading) => heading.firstChild.textContent),
       };
     })()`);
     expect(shown).toEqual({ markup: false, strongCode: true, versions: CHANGELOG_VERSIONS });
@@ -4005,5 +4006,70 @@ describe("a side nav's fold handle", () => {
     await inDrawer.waitForTimeout(SETTLE_MS);
     expect((await state(inDrawer)).told).toEqual([]);
     expect(await handle(inDrawer).isVisible()).toBe(false);
+  });
+});
+
+describe("a page's anchors", () => {
+  /** A title of the page that shows, by its name, through the shadow roots, and where it stands in the window. */
+  const place = (page: Page, name: string): Promise<{ top: number; link: string | null } | null> =>
+    page.evaluate((id) => {
+      const titles: HTMLElement[] = [];
+      const walk = (parent: ParentNode): void => {
+        for (const child of parent.children) {
+          if (child instanceof HTMLElement && child.id === id) {
+            titles.push(child);
+          }
+          walk(child.shadowRoot ?? child);
+          walk(child);
+        }
+      };
+      walk(document.querySelector('jl-page-outlet') as Element);
+      const title = titles[0];
+      return title === undefined
+        ? null
+        : {
+            link: title.querySelector('a.anchor')?.getAttribute('href') ?? null,
+            top: Math.round(title.getBoundingClientRect().top),
+          };
+    }, name);
+
+  it('opens a link to a subtitle on it: an example of a component, under the bar', async () => {
+    const page = await open('/components/table#examples-pages-in-the-footer');
+    await page.waitForTimeout(SETTLE_MS * 3);
+    const title = await place(page, 'examples-pages-in-the-footer');
+    expect(title?.link).toBe('#examples-pages-in-the-footer');
+    expect(title?.top).toBeGreaterThan(0);
+    expect(title?.top).toBeLessThan(await page.evaluate(() => window.innerHeight));
+  });
+
+  it('names the place in the address when its link is pressed, and stays on the page', async () => {
+    const page = await open('/components/table');
+    await page.waitForTimeout(SETTLE_MS * 3);
+    await page.locator('h2#api a.anchor').click({ force: true });
+    await page.waitForTimeout(SETTLE_MS);
+    expect(new URL(page.url()).hash).toBe('#api');
+    expect(new URL(page.url()).pathname.endsWith('/components/table')).toBe(true);
+    const title = await place(page, 'api');
+    expect(title?.top).toBeGreaterThanOrEqual(0);
+    expect(title?.top).toBeLessThan(200);
+  });
+
+  it('gives a subtitle the name of its title, so the same word under two titles makes two places', async () => {
+    const page = await open('/changelog');
+    await page.waitForTimeout(SETTLE_MS * 3);
+    expect(await place(page, '0-16-0-added')).not.toBeNull();
+    expect(await place(page, '0-15-0-added')).not.toBeNull();
+  });
+
+  it("leaves an example's own headings alone", async () => {
+    const page = await open('/components/app-shell');
+    await page.waitForTimeout(SETTLE_MS * 3);
+    const inExamples = await page.evaluate(() => {
+      const root = document.querySelector('jl-page-outlet > *')?.shadowRoot;
+      return [...(root?.querySelectorAll('.example-root :is(h1, h2, h3)') ?? [])].filter(
+        (heading) => heading.id !== '' || heading.querySelector('a.anchor') !== null
+      ).length;
+    });
+    expect(inExamples).toBe(0);
   });
 });
