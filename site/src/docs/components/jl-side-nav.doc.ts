@@ -210,6 +210,7 @@ stay in place.`,
     },
     {
       attribute: 'hotkey',
+      control: { kind: 'text' },
       default: "''",
       description:
         'Keys that fold and unfold it from anywhere in the page, whatever collapsible is: mod+b is ⌘B on a Mac and Ctrl+B elsewhere. Empty (or none): no keys. The control’s hint names them. Of several side navs with keys in a page, the first takes the press.',
