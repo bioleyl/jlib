@@ -100,6 +100,10 @@ documentation site that shows and tests every component.
   menus; Escape closes what floats; Enter/Space activate), focus rings come from `BASE_STYLES` (`:focus-visible`).
 - What floats goes in the top layer: `popover="auto"` (light dismiss) or `"manual"`, class `floating`, placed with
   `followAnchor(anchor, floating, placement, signal)` from `lib/floating.ts` with an `AbortController` per opening.
+  Placing tells it the height it has on its side as `--room`: what may be taller than that (a popover's content, a
+  menu, a list) caps itself with it (`max-height: var(--room, …)`) and scrolls, or it runs off the window. The
+  element that caps itself is the floating one, or a part of fixed chrome around (the lists' 10px of padding and
+  border): placing measures the floating element's height again after telling it the room.
 - Icons are tree-shaken: the registry (`src/lib/icons.ts`) starts empty. A component registers the lucide icons it
   draws itself at module level (`registerIcons({ x: X })`, below its imports); names a page writes (`icon="plus"`)
   are the page's to register, one by one or with `COMMON_ICONS` (`src/lib/icon-set.ts`, registered by `@syware/jlib/all`).
@@ -203,6 +207,13 @@ there on a component alone: `mount(page, html)` puts it in the page of its own d
 - Writing the same `textContent` again makes a new text node, which the render budget counts: write it only when it
   changed (`jl-button`'s label).
 - happy-dom gives elements no `part` (`jl-flow` toggles one): a test that mounts such a component stands one in.
+- An element's `scroll` event does not bubble, and one in a shadow root (`jl-app-shell`'s main area) never leaves
+  it: a listener on the window, even capturing, does not hear it. What follows an anchor listens on the anchor's
+  ancestors in the flat tree, slots and hosts included (`whenAnchorMoves` in `lib/floating.ts`).
+- Chrome's customizable select (`appearance: base-select`) moves the focus to an option while its list is open,
+  where `:focus-within` on the frame around it is false (`jl-select` lights it with `:has(.native:open)`), and the
+  pointer does not move that focus: `jl-select` focuses the option under it, or the hovered row and the focused one
+  would both look chosen.
 - A popover that closes gives the focus back to what had it, but not from a shadow root (the browser looks for the
   focus in the document's tree): a component returns it itself (`deepActiveElement(document)` before it opens,
   as `jl-menu`'s `showAt` does).

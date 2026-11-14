@@ -22,7 +22,7 @@
 
 .listbox {
   position: relative;
-  max-height: 264px;
+  max-height: min(264px, var(--room, 100dvh) - 10px);
   margin: 0;
   padding: 0;
   overflow-y: auto;

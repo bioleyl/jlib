@@ -66,9 +66,22 @@ function overflowOn(point: Point, floating: Size, viewport: Size, side: Side): n
 const clamp = (value: number, min: number, max: number): number =>
   Math.min(Math.max(value, min), Math.max(min, max));
 
+/** The height a floating element can take on a side of its anchor without leaving the window. */
+function roomOn(anchor: Rect, viewport: Size, side: Side, gap: number): number {
+  const besideRoom = viewport.height - 2 * VIEWPORT_MARGIN;
+  const rooms: Record<Side, number> = {
+    bottom: viewport.height - VIEWPORT_MARGIN - (anchor.top + anchor.height + gap),
+    left: besideRoom,
+    right: besideRoom,
+    top: anchor.top - gap - VIEWPORT_MARGIN,
+  };
+  return Math.max(0, Math.floor(rooms[side]));
+}
+
 /**
  * Where to put a floating element next to its anchor, in window coordinates: on the asked side when it fits,
- * otherwise on the opposite side if that leaves more of it visible; then kept inside the window.
+ * otherwise on the opposite side if that leaves more of it visible; then kept inside the window. `room` is the
+ * height it can take there without leaving the window.
  */
 export function computePosition(
   anchor: Rect,
@@ -76,7 +89,7 @@ export function computePosition(
   viewport: Size,
   placement: Placement,
   gap = DEFAULT_GAP
-): Point & { placement: Placement } {
+): Point & { placement: Placement; room: number } {
   const { side, align } = splitPlacement(placement);
   const wanted = pointFor(anchor, floating, side, align, gap);
   const flipped = pointFor(anchor, floating, OPPOSITE[side], align, gap);
@@ -90,6 +103,7 @@ export function computePosition(
   return {
     left: isVertical(finalSide) ? clamp(point.left, VIEWPORT_MARGIN, maxLeft) : point.left,
     placement: joinPlacement(finalSide, align),
+    room: roomOn(anchor, viewport, finalSide, gap),
     top: isVertical(finalSide) ? point.top : clamp(point.top, VIEWPORT_MARGIN, maxTop),
   };
 }
@@ -109,7 +123,13 @@ export function positionFloating(
   return { anchor: rect, ...positionBy(rect, floating, placement, gap) };
 }
 
-/** Puts a fixed-position element next to a rectangle of the window, and gives where it went. */
+/** The room on its side, told to the floating element: a panel that may be taller caps its height with it, and scrolls. */
+const ROOM = '--room';
+
+/**
+ * Puts a fixed-position element next to a rectangle of the window, and gives where it went. It tells the element
+ * the room it has there (`--room`); one whose height follows it is placed again by its new height, on the side it got.
+ */
 function positionBy(
   rect: Rect,
   floating: HTMLElement,
@@ -118,7 +138,16 @@ function positionBy(
 ): { floating: Rect; placement: Placement } {
   const viewport = { height: window.innerHeight, width: document.documentElement.clientWidth };
   const size = { height: floating.offsetHeight, width: floating.offsetWidth };
-  const result = computePosition(rect, size, viewport, placement, gap);
+  let result = computePosition(rect, size, viewport, placement, gap);
+  const room = `${result.room}px`;
+  if (floating.style.getPropertyValue(ROOM) !== room) {
+    floating.style.setProperty(ROOM, room);
+    const height = floating.offsetHeight;
+    if (height !== size.height) {
+      size.height = height;
+      result = computePosition(rect, size, viewport, result.placement, gap);
+    }
+  }
   const left = Math.round(result.left);
   const top = Math.round(result.top);
   floating.style.left = `${left}px`;
@@ -135,7 +164,16 @@ const NO_GAP = 0;
  * left corner there, above the point when there is no room under it, and kept inside the window.
  */
 export function placeAtPoint(point: Point, floating: HTMLElement): void {
+  forgetRoom(floating);
   positionBy({ ...point, height: 0, width: 0 }, floating, AT_POINT, NO_GAP);
+}
+
+/**
+ * Lets an element that opens again take its whole height before it is measured: capped by the room of its last
+ * opening, it would look as if it fitted on a side with less room than the other.
+ */
+function forgetRoom(floating: HTMLElement): void {
+  floating.style.removeProperty(ROOM);
 }
 
 /** Puts a fixed-position element next to its anchor; returns the placement it got after flipping. */
@@ -146,6 +184,37 @@ export function placeFloating(
   gap?: number
 ): Placement {
   return positionFloating(anchor, floating, placement, gap).placement;
+}
+
+/**
+ * The elements a node is drawn in, up to the root element: a slotted element's parent is its slot, a shadow root's
+ * is its host.
+ */
+function flatAncestors(node: Node): Element[] {
+  const ancestors: Element[] = [];
+  let current: Node | null = node;
+  while (current !== null) {
+    const parent: Node | null = (current instanceof Element ? current.assignedSlot : null) ?? current.parentNode;
+    current = parent instanceof ShadowRoot ? parent.host : parent;
+    if (current instanceof Element) {
+      ancestors.push(current);
+    }
+  }
+  return ancestors;
+}
+
+/**
+ * Calls `update` whenever the anchor may have moved in the window, until the signal aborts: the window resized, the
+ * page scrolled, or one of the elements the anchor is drawn in did. An element's `scroll` event does not bubble, and
+ * one in a shadow root (an app shell's main area) never leaves it: the window does not hear it, its element does.
+ */
+export function whenAnchorMoves(anchor: Element, update: () => void, signal: AbortSignal): void {
+  const options = { passive: true, signal };
+  window.addEventListener('scroll', update, options);
+  window.addEventListener('resize', update, options);
+  for (const ancestor of flatAncestors(anchor)) {
+    ancestor.addEventListener('scroll', update, options);
+  }
 }
 
 /** Keeps a floating element by its anchor while the page scrolls or resizes, until the signal aborts. */
@@ -159,7 +228,7 @@ export function followAnchor(
   const update = (): void => {
     placeFloating(anchor, floating, placement, gap);
   };
-  window.addEventListener('scroll', update, { capture: true, passive: true, signal });
-  window.addEventListener('resize', update, { passive: true, signal });
+  whenAnchorMoves(anchor, update, signal);
+  forgetRoom(floating);
   update();
 }

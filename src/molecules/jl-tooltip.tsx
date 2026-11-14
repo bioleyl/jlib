@@ -3,7 +3,7 @@ import { css } from '@jadis/core';
 import { JlElement } from '../base/jl-element';
 import { arrowOffset } from '../lib/arrow';
 import { clampedNumber, oneOf } from '../lib/attributes';
-import { PLACEMENTS, positionFloating } from '../lib/floating';
+import { PLACEMENTS, positionFloating, whenAnchorMoves } from '../lib/floating';
 import { accessibleTarget, deepActiveElement } from '../lib/trigger';
 import { BASE_STYLES, FLOATING_STYLES } from '../styles/shared';
 import styles from './jl-tooltip.css?inline';
@@ -313,12 +313,7 @@ export class JlTooltip extends JlElement {
     const following = new AbortController();
     this._state.following = following;
     // The bubble follows its trigger while the page scrolls or resizes.
-    window.addEventListener('scroll', () => this.place(), {
-      capture: true,
-      passive: true,
-      signal: following.signal,
-    });
-    window.addEventListener('resize', () => this.place(), { passive: true, signal: following.signal });
+    whenAnchorMoves(this.trigger(), () => this.place(), following.signal);
     // A tap or a click elsewhere puts it away: on a touch screen, nothing else would.
     document.addEventListener(
       'pointerdown',

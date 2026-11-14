@@ -3,6 +3,27 @@
 What changed in each version of [@syware/jlib](https://www.npmjs.com/package/@syware/jlib). Every component is shown
 and documented on [the documentation site](https://bioleyl.github.io/jlib/).
 
+## Unreleased
+
+### Fixed
+
+- **What floats stays by its anchor in a scroller of a shadow root.** The lists of `jl-combobox`, `jl-date-picker`
+  and `jl-tag-input`, a `jl-menu`, a `jl-popover` and a `jl-tooltip` followed the window's scrolling only: in an
+  area that scrolls inside a shadow root, such as `jl-app-shell`'s main area, they stayed where they opened while
+  the field went on with the page. That area's `scroll` events never leave its shadow root; they now listen on every
+  element their anchor is drawn in. `followAnchor` does it too. (`jl-select` already held, its list being placed by
+  the browser.)
+- **What floats stays inside the window, however tall.** A `jl-popover` taller than the room around its trigger ran
+  off the window, out of reach: it now takes the side with more room, fits there and scrolls. A `jl-menu` does the
+  same (it was capped by the window's height, not by the room on its side), and so do the lists of `jl-combobox`,
+  `jl-tag-input`, `jl-select` and `jl-date-picker`'s calendar in a short window, where neither side has room for
+  all of them. `followAnchor` tells what it places the height it has on its side, as `--room`: a panel of an app's
+  own caps itself with `max-height: var(--room)`.
+- **`jl-select`'s open list lights one row, and its field stays lit**, as the combobox's. Where the page draws the
+  list (Chrome's customizable select), the row under the pointer and the row the arrows reached were both lit, and
+  Enter took the second: the pointer now moves the focus, so the arrows go on from the row it rests on. The field
+  lost its accent frame while the list was open, the focus being in the list.
+
 ## 0.16.0 (2026-11-14)
 
 The side nav folds in the way an app chooses, a table holds its pagination, and scrollbars are quiet. Two changes

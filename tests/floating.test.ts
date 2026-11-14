@@ -12,6 +12,7 @@ describe('computePosition', () => {
     expect(computePosition(anchor, FLOATING, VIEWPORT, 'bottom', GAP)).toEqual({
       left: 450,
       placement: 'bottom',
+      room: 646,
       top: 146,
     });
   });
@@ -27,6 +28,23 @@ describe('computePosition', () => {
     const result = computePosition(anchor, FLOATING, VIEWPORT, 'bottom-start', GAP);
     expect(result.placement).toBe('top-start');
     expect(result.top).toBe(634);
+    expect(result.room).toBe(726);
+  });
+
+  it('takes the side with more room for what is taller than both, and tells that room', () => {
+    const tall = { height: 900, width: 200 };
+    const high = { height: 40, left: 500, top: 300, width: 100 };
+    expect(computePosition(high, tall, VIEWPORT, 'bottom', GAP)).toMatchObject({ placement: 'bottom', room: 446 });
+    const low = { height: 40, left: 500, top: 500, width: 100 };
+    expect(computePosition(low, tall, VIEWPORT, 'bottom', GAP)).toMatchObject({ placement: 'top', room: 486 });
+    // Capped by that room, it reaches the window's margin, and stays clear of the anchor.
+    const capped = { height: 486, width: 200 };
+    expect(computePosition(low, capped, VIEWPORT, 'top', GAP)).toMatchObject({ placement: 'top', top: 8 });
+  });
+
+  it('tells no room, rather than less than none, by an anchor that covers the window', () => {
+    const covering = { height: 2000, left: 500, top: -600, width: 100 };
+    expect(computePosition(covering, FLOATING, VIEWPORT, 'bottom', GAP).room).toBe(0);
   });
 
   it('stays on the asked side when the other side is worse', () => {
@@ -46,6 +64,7 @@ describe('computePosition', () => {
     expect(computePosition(anchor, FLOATING, VIEWPORT, 'right', GAP)).toEqual({
       left: 606,
       placement: 'right',
+      room: 784,
       top: 270,
     });
     expect(computePosition(anchor, FLOATING, VIEWPORT, 'left', GAP).left).toBe(294);
@@ -60,6 +79,7 @@ describe('computePosition at a point', () => {
     expect(computePosition(at(300, 200), FLOATING, VIEWPORT, 'bottom-start', 0)).toEqual({
       left: 300,
       placement: 'bottom-start',
+      room: 592,
       top: 200,
     });
   });
@@ -68,6 +88,7 @@ describe('computePosition at a point', () => {
     expect(computePosition(at(300, 760), FLOATING, VIEWPORT, 'bottom-start', 0)).toEqual({
       left: 300,
       placement: 'top-start',
+      room: 752,
       top: 660,
     });
   });

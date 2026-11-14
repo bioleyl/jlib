@@ -20,6 +20,17 @@
   cursor: not-allowed;
 }
 
+/* An open list takes the focus to its options, out of `:focus-within`'s reach: the frame stays lit, as the combobox's. */
+.control:has(.native:open) {
+  border-color: var(--jl-accent);
+  box-shadow: var(--jl-focus-ring);
+}
+
+:host([invalid]) .control:has(.native:open) {
+  border-color: var(--jl-danger);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--jl-danger) 25%, transparent);
+}
+
 :host([placeholder-shown]) .native {
   color: var(--jl-muted);
 }
@@ -45,6 +56,22 @@ optgroup {
 
 :host([disabled]) .chevron {
   color: var(--jl-faint);
+}
+
+/*
+ * The list's last places, where neither side of the field has room for all of it: it takes the room of one side,
+ * 8px short of the window's edge (14px with its 6px gap), and scrolls. Below holds only with as much room as above:
+ * its least height is half of what the field leaves of the window, gap and edge taken off.
+ */
+@position-try --jl-fit-below {
+  position-area: self-end span-self-end;
+  min-block-size: calc(50dvh - anchor-size(self-block) / 2 - 12px);
+  max-block-size: calc(100% - 14px);
+}
+
+@position-try --jl-fit-above {
+  position-area: self-start span-self-end;
+  max-block-size: calc(100% - 14px);
 }
 
 /*
@@ -82,8 +109,17 @@ optgroup {
 
     .native::picker(select) {
       position-anchor: --frame;
-      /* Under the field when it fits there, as the combobox's list. */
+      /*
+       * Under the field when it fits there, as the combobox's list, else above; where neither side has room for the
+       * whole list, on the side with more, fitted to it.
+       */
       position-try-order: normal;
+      position-try-fallbacks:
+        self-start span-self-end,
+        self-end span-self-start,
+        self-start span-self-start,
+        --jl-fit-below,
+        --jl-fit-above;
       box-sizing: border-box;
       min-inline-size: anchor-size(self-inline);
       max-block-size: 274px;
@@ -126,7 +162,8 @@ optgroup {
       cursor: pointer;
     }
 
-    option:enabled:is(:hover, :focus-visible) {
+    /* One row is lit, as in the combobox: the focused one, which the pointer moves too (`focusOptionAt`). */
+    option:enabled:focus {
       background: var(--jl-surface-3);
       box-shadow: none;
     }

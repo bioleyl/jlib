@@ -79,7 +79,7 @@ installed declarations are the last word: `node_modules/@syware/jlib/dist/index.
 | `oneOf` | `oneOf(allowed, fallback)` | An attribute parser for an enum: `useChange('md', …, { attribute: 'size', parse: oneOf(SIZES, 'md') })` |
 | `jsonOf` | `jsonOf(fallback)` | An attribute parser for a list or an object written as JSON |
 | `clampedNumber` | `clampedNumber(fallback, min, max)` | An attribute parser for a number within bounds |
-| `followAnchor` | `followAnchor(anchor, floating, placement, signal, gap?)` | Keeps what floats beside its anchor until the signal aborts; `PLACEMENTS` lists the placements |
+| `followAnchor` | `followAnchor(anchor, floating, placement, signal, gap?)` | Keeps what floats beside its anchor until the signal aborts, scrollers in shadow roots included, and tells it the height it has on its side as `--room`: a panel that may be taller sets `max-height: var(--room)` and scrolls; `PLACEMENTS` lists the placements |
 | `computePosition`, `placeFloating` | | The same, once |
 | `adoptTokens` | `adoptTokens(): void` | Gives the document jlib's tokens now (a component's registration does it) |
 | `BASE_STYLES`, `CONTROL_STYLES`, `FLOATING_STYLES`, `TOKEN_STYLES` | CSS text | jlib's shared styles: box sizing, focus ring, `hidden`, `.sr-only`; a text field's frame; what floats; the tokens themselves (for a `data-theme` inside a shadow root) |

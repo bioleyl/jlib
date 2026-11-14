@@ -14,7 +14,9 @@
 }
 
 .popup {
+  max-height: var(--room, none);
   padding: 0;
+  overflow-y: auto;
 }
 
 /* The panel draws the frame: the calendar inside drops its own. */

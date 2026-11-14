@@ -737,6 +737,45 @@ describe('the select', () => {
       shown: '',
     });
   });
+
+  it('lights one row in its open list, the one the pointer or the arrows reached, and its frame', async () => {
+    const page = await open('/components/select');
+    await mount(
+      page,
+      `<jl-select label="Time zone" value="zrh" options='[{"value":"lon","label":"London"},{"value":"zrh","label":"Zurich"},{"value":"tyo","label":"Tokyo"}]'></jl-select>`
+    );
+    const select = page.locator('#test-area jl-select');
+    /** The rows lit, and whether the frame is. */
+    const lit = () =>
+      select.evaluate((element) => {
+        const root = element.shadowRoot;
+        // A row that is not lit has the surface of the frame.
+        const frame = getComputedStyle(root?.querySelector('.control') ?? element);
+        const plain = frame.backgroundColor;
+        const options = [...(root?.querySelectorAll('option') ?? [])];
+        return {
+          frame: frame.boxShadow !== 'none',
+          rows: options.filter((option) => getComputedStyle(option).backgroundColor !== plain).map((o) => o.value),
+        };
+      });
+    // The keys open it, so the focus is seen on the chosen row; then the pointer rests on another.
+    await select.locator('select').focus();
+    await page.keyboard.press('Space');
+    await page.waitForTimeout(SETTLE_MS);
+    expect(await lit()).toEqual({ frame: true, rows: ['zrh'] });
+    await select.locator('option[value="lon"]').hover();
+    expect(await lit()).toEqual({ frame: true, rows: ['lon'] });
+    await page.keyboard.press('ArrowDown');
+    expect(await lit()).toEqual({ frame: true, rows: ['zrh'] });
+    await page.keyboard.press('Enter');
+    expect(await select.evaluate((element) => (element as JlSelect).value.get())).toBe('zrh');
+    // A click on a row still takes it.
+    await select.locator('select').click();
+    await page.waitForTimeout(SETTLE_MS);
+    await select.locator('option[value="tyo"]').click();
+    expect(await select.evaluate((element) => (element as JlSelect).value.get())).toBe('tyo');
+    expect(state.errors).toEqual([]);
+  });
 });
 
 describe('the tree', () => {
@@ -4087,4 +4126,172 @@ describe("a page's anchors", () => {
     });
     expect(inExamples).toBe(0);
   });
+});
+
+describe('what floats, by an anchor in a scroller of a shadow root', () => {
+  /** A scroller inside a shadow root, as an app shell's main area is: its `scroll` events never leave that root. */
+  const inShadowScroller = async (page: Page, html: string): Promise<void> => {
+    await page.evaluate((markup) => {
+      document.querySelector('#test-area')?.remove();
+      const area = document.createElement('div');
+      area.id = 'test-area';
+      area.style.cssText = 'position: fixed; z-index: 1000; top: 80px; left: 80px';
+      area.attachShadow({ mode: 'open' }).innerHTML =
+        `<div class="scroller" style="width: 420px; height: 320px; overflow: auto">`
+        + `<div style="padding: 40px 20px 900px">${markup}</div></div>`;
+      document.body.prepend(area);
+    }, html);
+    await page.waitForTimeout(SETTLE_MS);
+  };
+  /** Where the open floating element is from its component's corner, which moves as its anchor does. */
+  const offset = (page: Page, tag: string) =>
+    page.evaluate((selector) => {
+      const host = document.querySelector('#test-area')?.shadowRoot?.querySelector(selector);
+      const floating = host?.shadowRoot?.querySelector('.floating:popover-open');
+      if (host === undefined || host === null || floating === undefined || floating === null) {
+        return null;
+      }
+      const [anchor, placed] = [host.getBoundingClientRect(), floating.getBoundingClientRect()];
+      return { left: Math.round(placed.left - anchor.left), top: Math.round(placed.top - anchor.top) };
+    }, tag);
+
+  it.each([
+    {
+      html: `<jl-combobox label="Fruit" options='[{"value":"apple","label":"Apple"},{"value":"pear","label":"Pear"}]'></jl-combobox>`,
+      path: '/components/combobox',
+      show: (page: Page) => page.locator('#test-area jl-combobox .toggle').click(),
+      tag: 'jl-combobox',
+    },
+    {
+      html: '<jl-date-picker label="Due"></jl-date-picker>',
+      path: '/components/date-picker',
+      show: (page: Page) => page.locator('#test-area jl-date-picker .open').click(),
+      tag: 'jl-date-picker',
+    },
+    {
+      html: `<jl-menu label="Actions" items='[{"label":"Rename","value":"rename"}]'><jl-button slot="trigger" label="Actions"></jl-button></jl-menu>`,
+      path: '/components/menu',
+      show: (page: Page) => page.locator('#test-area jl-menu jl-button').click(),
+      tag: 'jl-menu',
+    },
+    {
+      html: '<jl-popover heading="Shipping"><jl-button slot="trigger" label="Delivery"></jl-button><p>Same day.</p></jl-popover>',
+      path: '/components/popover',
+      show: (page: Page) => page.locator('#test-area jl-popover jl-button').click(),
+      tag: 'jl-popover',
+    },
+    {
+      html: `<jl-tag-input label="Topics" suggestions='["design tokens","web components"]'></jl-tag-input>`,
+      path: '/components/tag-input',
+      show: async (page: Page) => {
+        await page.locator('#test-area jl-tag-input input').click();
+        await page.keyboard.type('de');
+      },
+      tag: 'jl-tag-input',
+    },
+    {
+      html: '<button type="button" id="before">Before</button><jl-tooltip text="Removes the row"><button type="button">Remove</button></jl-tooltip>',
+      path: '/components/tooltip',
+      // The keyboard brings the focus, so the tooltip shows for it.
+      show: async (page: Page) => {
+        await page.locator('#test-area #before').focus();
+        await page.keyboard.press('Tab');
+        await page.waitForTimeout(TOOLTIP_SHOWN_MS);
+      },
+      tag: 'jl-tooltip',
+    },
+  ])('$tag keeps its place by its anchor while the scroller scrolls', async ({ html, path, show, tag }) => {
+    const page = await open(path);
+    await inShadowScroller(page, html);
+    await show(page);
+    // It moves a little as it comes in.
+    await page.waitForTimeout(SETTLE_MS);
+    const before = await offset(page, tag);
+    expect(before).not.toBeNull();
+    await page.evaluate(() => {
+      const scroller = document.querySelector('#test-area')?.shadowRoot?.querySelector('.scroller');
+      scroller?.scrollBy(0, 60);
+    });
+    await page.waitForTimeout(SETTLE_MS);
+    expect(await offset(page, tag)).toEqual(before);
+    expect(state.errors).toEqual([]);
+  });
+});
+
+describe('what floats, taller than the room around its anchor', () => {
+  const ShortWindow = { height: 420, width: 900 };
+  const Rows = JSON.stringify(
+    Array.from({ length: 20 }, (_, index) => ({ label: `Row ${index}`, value: `r${index}` }))
+  );
+  const Paragraphs = Array.from(
+    { length: 12 },
+    (_, index) => `<p>Preset ${index}: a model on a machine.</p>`
+  ).join('');
+
+  it.each([
+    [
+      'jl-popover',
+      '/components/popover',
+      `<jl-popover heading="Presets"><jl-button slot="trigger" label="Presets"></jl-button>${Paragraphs}</jl-popover>`,
+      'jl-button',
+    ],
+    [
+      'jl-menu',
+      '/components/menu',
+      `<jl-menu label="Rows" items='${Rows}'><jl-button slot="trigger" label="Rows"></jl-button></jl-menu>`,
+      'jl-button',
+    ],
+    [
+      'jl-combobox',
+      '/components/combobox',
+      `<jl-combobox label="Row" options='${Rows}'></jl-combobox>`,
+      '.toggle',
+    ],
+  ])(
+    '%s keeps inside the window and clear of its trigger, high or low in it',
+    async (tag, path, html, trigger) => {
+      const page = await open(path);
+      const size = page.viewportSize();
+      await page.setViewportSize(ShortWindow);
+      try {
+        // More room under the trigger, then more above it: it takes the bigger side, and scrolls there.
+        for (const top of [150, 250]) {
+          await page.evaluate(
+            ([markup, offset]) => {
+              document.querySelector('#test-area')?.remove();
+              const area = document.createElement('div');
+              area.id = 'test-area';
+              area.style.cssText = `position: fixed; z-index: 1000; top: ${offset}px; left: 300px; width: 300px`;
+              area.innerHTML = markup;
+              document.body.prepend(area);
+            },
+            [html, top] as const
+          );
+          await page.waitForTimeout(SETTLE_MS);
+          await page.locator(`#test-area ${tag} ${trigger}`).click();
+          // It moves a little as it comes in.
+          await page.waitForTimeout(SETTLE_MS);
+          const drawn = await page.evaluate((selector) => {
+            const host = document.querySelector(`#test-area ${selector}`);
+            const floating = host?.shadowRoot?.querySelector('.floating:popover-open');
+            if (host === null || host === undefined || floating === null || floating === undefined) {
+              return null;
+            }
+            const [anchor, box] = [host.getBoundingClientRect(), floating.getBoundingClientRect()];
+            return {
+              clear: box.bottom <= anchor.top || box.top >= anchor.bottom,
+              inWindow: Math.round(box.top) >= 8 && Math.round(box.bottom) <= window.innerHeight - 8,
+            };
+          }, tag);
+          expect({ drawn, top }).toEqual({ drawn: { clear: true, inWindow: true }, top });
+          await page.keyboard.press('Escape');
+        }
+      } finally {
+        if (size !== null) {
+          await page.setViewportSize(size);
+        }
+      }
+      expect(state.errors).toEqual([]);
+    }
+  );
 });

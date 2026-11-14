@@ -17,6 +17,11 @@
   animation: jl-float-in var(--jl-fast) var(--jl-ease);
 }
 
+/*
+ * Placed, a floating element is told the height it can take on its side of the anchor without leaving the window:
+ * `--room` (lib/floating.ts). One that may be taller caps itself with it, and scrolls.
+ */
+
 /* The look of a floating panel: menus, popovers and lists of options share it. */
 .panel {
   border: 1px solid var(--jl-line);

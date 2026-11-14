@@ -132,6 +132,7 @@ export class JlSelect<Value extends string = string> extends JlFormControl {
       this.value.set(value);
       this.events.emit('change', value);
     });
+    this.on(native, 'pointermove', (event) => this.focusOptionAt(event));
     // Children the parser added after the element connected are there now.
     this.renderOptions();
     this._lightWatch.observe(this, { attributes: true, characterData: true, childList: true, subtree: true });
@@ -139,6 +140,18 @@ export class JlSelect<Value extends string = string> extends JlFormControl {
 
   onDisconnect(): void {
     this._lightWatch.disconnect();
+  }
+
+  /**
+   * In a list the page draws (customizable select), the pointer takes the focus to the option under it, as in the
+   * combobox and the platform's own lists: one row is lit, the one Enter takes and the arrows go on from. The browser
+   * leaves the focus where the keys put it, and a row lit on hover as well made two.
+   */
+  private focusOptionAt(event: PointerEvent): void {
+    const option = event.target instanceof Element ? event.target.closest('option') : null;
+    if (option !== null && !option.disabled && !option.matches(':focus')) {
+      option.focus({ preventScroll: true });
+    }
   }
 
   /** Draws the page's options again when one came, left or changed. The select's own attributes are its inputs. */

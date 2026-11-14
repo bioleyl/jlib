@@ -6,7 +6,7 @@
 .menu {
   min-width: 200px;
   max-width: min(320px, calc(100vw - 16px));
-  max-height: min(420px, calc(100dvh - 16px));
+  max-height: min(420px, var(--room, calc(100dvh - 16px)));
   padding: 4px;
   overflow-y: auto;
 }

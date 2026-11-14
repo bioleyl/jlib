@@ -97,7 +97,7 @@
 
 .listbox {
   position: relative;
-  max-height: 240px;
+  max-height: min(240px, var(--room, 100dvh) - 10px);
   margin: 0;
   padding: 0;
   overflow-y: auto;

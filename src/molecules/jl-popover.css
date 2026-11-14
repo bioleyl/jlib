@@ -7,7 +7,9 @@
   width: max-content;
   min-width: 200px;
   max-width: min(360px, calc(100vw - 16px));
+  max-height: var(--room, calc(100dvh - 16px));
   padding: 14px 16px;
+  overflow-y: auto;
   font-size: var(--jl-font-md);
   line-height: 1.5;
 }
