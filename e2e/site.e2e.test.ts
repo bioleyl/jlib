@@ -2702,7 +2702,7 @@ describe('organisms, drawn once', () => {
           { items: [{ id: 'settings', label: 'Settings' }], label: 'Admin' },
         ])
       );
-      nav.setAttribute('collapsible', '');
+      nav.setAttribute('collapsible', 'handle');
       nav.setAttribute('value', 'staff');
       document.body.append(nav);
       await wait(50);
@@ -3789,11 +3789,11 @@ describe("a table's footer", () => {
 
 describe("a side nav's fold handle", () => {
   /** A collapsible side nav, what it told of its folding kept in the window. */
-  const foldable = async (attributes = ''): Promise<Page> => {
+  const foldable = async (attributes = '', control = 'handle'): Promise<Page> => {
     const page = await open('/components/side-nav');
     await mount(
       page,
-      `<div style="height: 240px"><jl-side-nav collapsible ${attributes}
+      `<div style="height: 240px"><jl-side-nav collapsible="${control}" ${attributes}
         sections='[{"items":[{"id":"home","label":"Home","icon":"home"}]}]'></jl-side-nav></div>`
     );
     await page.evaluate(() => {
@@ -3868,6 +3868,68 @@ describe("a side nav's fold handle", () => {
     await page.keyboard.press('Control+b');
     await page.waitForTimeout(SETTLE_MS);
     expect((await state(page)).told).toEqual([true]);
+  });
+
+  it('folds by an icon button at its bottom with collapsible="button", its edge then at rest', async () => {
+    const page = await foldable('', 'button');
+    const button = page.locator('#test-area jl-side-nav .fold-button');
+    expect(await handle(page).isVisible()).toBe(false);
+    expect(await button.evaluate((element: JlButton) => [element.icon.get(), element.hint.get()])).toEqual([
+      'panel-left-close',
+      'Collapse the menu (Ctrl+B)',
+    ]);
+    await button.click();
+    await page.waitForTimeout(SETTLE_MS);
+    expect(await state(page)).toMatchObject({ rail: true, told: [true] });
+    expect(await button.evaluate((element: JlButton) => element.icon.get())).toBe('panel-left-open');
+  });
+
+  it('has no control and no keys with collapsible="none", and folds as the app says', async () => {
+    const page = await foldable('', 'none');
+    expect(await handle(page).isVisible()).toBe(false);
+    expect(await page.locator('#test-area jl-side-nav .fold-button').count()).toBe(0);
+    await page.keyboard.press('Control+b');
+    await page.waitForTimeout(SETTLE_MS);
+    expect(await state(page)).toMatchObject({ rail: false, told: [] });
+    await page.evaluate(() => (document.querySelector('#test-area jl-side-nav') as JlSideNav).collapsed.set(true));
+    await page.waitForTimeout(SETTLE_MS);
+    expect((await state(page)).rail).toBe(true);
+  });
+
+  it('takes the attribute written bare as the handle', async () => {
+    const page = await open('/components/side-nav');
+    await mount(page, '<div style="height: 240px"><jl-side-nav collapsible></jl-side-nav></div>');
+    expect(await handle(page).isVisible()).toBe(true);
+  });
+
+  it('glides a parent open and closed once people open one', async () => {
+    const page = await open('/components/side-nav');
+    await mount(
+      page,
+      `<div style="height: 240px"><jl-side-nav sections='[{"items":[{"id":"work","label":"Work","children":[
+        {"id":"a","label":"A"},{"id":"b","label":"B"},{"id":"c","label":"C"}]}]}]'></jl-side-nav></div>`
+    );
+    const heights = await page.evaluate(async () => {
+      const root = (document.querySelector('#test-area jl-side-nav') as JlSideNav).shadowRoot as ShadowRoot;
+      const list = root.querySelector('.children') as HTMLElement;
+      const height = (): number => list.getBoundingClientRect().height;
+      const later = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+      (root.querySelector('.item') as HTMLElement).click();
+      await later(60);
+      const opening = height();
+      await later(400);
+      const opened = height();
+      (root.querySelector('.item') as HTMLElement).click();
+      await later(60);
+      const closing = height();
+      await later(400);
+      return { closed: height(), closing, opened, opening };
+    });
+    expect(heights.opening).toBeGreaterThan(0);
+    expect(heights.opening).toBeLessThan(heights.opened);
+    expect(heights.closing).toBeGreaterThan(0);
+    expect(heights.closing).toBeLessThan(heights.opened);
+    expect(heights.closed).toBe(0);
   });
 
   it('has no keys with hotkey="none", and neither handle nor keys in a drawer', async () => {

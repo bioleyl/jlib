@@ -27,7 +27,7 @@ export class AppNav extends Jadis {
         slot="nav"
         sections={SECTIONS}
         value="jobs"
-        collapsible
+        collapsible="handle"
         onSelect={(place) => goTo(place)}
       />
     );

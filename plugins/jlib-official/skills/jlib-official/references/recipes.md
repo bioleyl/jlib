@@ -212,7 +212,7 @@ export class AppFrame extends Jadis {
           slot="nav"
           sections={NAV_SECTIONS}
           label="Main navigation"
-          collapsible
+          collapsible="handle"
           collapsed={readCollapsed()}
           onCollapse={storeCollapsed}
         >

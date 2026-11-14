@@ -1,3 +1,5 @@
+import { SIDE_NAV_COLLAPSIBLES } from '@syware/jlib';
+
 import sideNavCode from '../typing/jl-side-nav.code.ts?raw';
 import sideNavJsx from '../typing/jl-side-nav.jsx.tsx?raw';
 
@@ -47,9 +49,10 @@ and items with children that open with a chevron. value is the active item: it i
 the parents above it open to show it.
 
 collapsed turns it into a rail of icons, for when the content needs the room: the labels become tooltips (and stay
-for screen readers), badges become dots, and a parent leads to its first child. collapsible lets people do it: its
-edge becomes a handle, a short grip that lights the whole edge under the pointer, and a press on it folds the side nav
-into its rail or unfolds it; so do the keys of hotkey (Ctrl+B, ⌘B on a Mac), from anywhere in the page. collapse says
+for screen readers), badges become dots, and a parent leads to its first child. collapsible lets people do it: handle
+makes the side nav's edge the control, a short grip that lights the whole edge under the pointer; button puts a quiet
+icon button at its bottom. With either, the keys of hotkey (Ctrl+B, ⌘B on a Mac) fold and unfold it too, from anywhere
+in the page. none, the default, gives no control: the app folds it with one of its own, setting collapsed. collapse says
 so for the app to remember it on the device. In the drawer of a narrow jl-app-shell, the side nav shows whole, without
 the handle or the keys. While it shows
 as a rail, the host carries the rail attribute, for styles around it: jl-side-nav[rail].
@@ -79,10 +82,15 @@ stay in place.`,
     },
     {
       description:
-        'collapsible: a press on the handle at its edge, or Ctrl+B, folds it into a rail of icons (hover one for its label), and unfolds it.',
+        'collapsible="handle": a press on its edge, or Ctrl+B, folds it into a rail of icons (hover one for its label), and unfolds it. The second has collapsible="button": an icon button at its bottom instead.',
       html: `
-        <div style="${FRAME}">
-          <jl-side-nav collapsible collapsed value="inbox" sections='${SECTIONS}'></jl-side-nav>
+        <div class="row" style="align-items: start">
+          <div style="${FRAME}">
+            <jl-side-nav collapsible="handle" collapsed value="inbox" sections='${SECTIONS}'></jl-side-nav>
+          </div>
+          <div style="${FRAME}">
+            <jl-side-nav collapsible="button" hotkey="none" value="inbox" sections='${SECTIONS}'></jl-side-nav>
+          </div>
         </div>`,
       title: 'Collapsed rail',
     },
@@ -159,12 +167,12 @@ stay in place.`,
     },
     {
       attribute: 'collapsible',
-      control: { kind: 'boolean' },
-      default: 'false',
+      control: { kind: 'select', options: SIDE_NAV_COLLAPSIBLES },
+      default: "'none'",
       description:
-        'Makes its edge a handle that folds the side nav into its rail and unfolds it, as the hotkey does.',
+        'What people fold the side nav into its rail with: none (the app sets collapsed itself), an icon button at its bottom, or a handle along its edge. The attribute written bare gives the handle.',
       name: 'collapsible',
-      type: 'boolean',
+      type: "'none' | 'button' | 'handle'",
     },
     {
       attribute: 'collapse-label',
@@ -185,7 +193,7 @@ stay in place.`,
       attribute: 'hotkey',
       default: "'mod+b'",
       description:
-        'The keys that fold and unfold a collapsible side nav from anywhere in the page: mod is ⌘ on a Mac and Ctrl elsewhere. none for no keys. Of several collapsible side navs in a page, the first takes the press.',
+        'The keys that fold and unfold it from anywhere in the page, when collapsible gives a control: mod is ⌘ on a Mac and Ctrl elsewhere. none for no keys. Of several such side navs in a page, the first takes the press.',
       name: 'hotkey',
       type: 'string',
     },

@@ -1,9 +1,10 @@
 import { css } from '@jadis/core';
-import { ChevronRight } from 'lucide';
+import { ChevronRight, PanelLeftClose, PanelLeftOpen } from 'lucide';
 
+import { JlButton } from '../atoms/jl-button';
 import { JlIcon } from '../atoms/jl-icon';
 import { JlElement } from '../base/jl-element';
-import { jsonOf, textOf } from '../lib/attributes';
+import { jsonOf, oneOf, textOf } from '../lib/attributes';
 import { setOrRemove, uniqueId } from '../lib/dom';
 import { hotkeyLabels, isApplePlatform, matchesHotkey, parseHotkey } from '../lib/hotkey';
 import { registerIcons } from '../lib/icons';
@@ -12,17 +13,28 @@ import { jlText } from '../lib/texts';
 import { BASE_STYLES } from '../styles/shared';
 import styles from './jl-side-nav.css?inline';
 
-import type { SideNavItem, SideNavSection } from '../types/jl-side-nav.types';
+import type { SideNavCollapsible, SideNavItem, SideNavSection } from '../types/jl-side-nav.types';
 
 // The icons it draws itself: a page registers only the names it writes.
-registerIcons({ 'chevron-right': ChevronRight });
+registerIcons({
+  'chevron-right': ChevronRight,
+  'panel-left-close': PanelLeftClose,
+  'panel-left-open': PanelLeftOpen,
+});
+
+export const SIDE_NAV_COLLAPSIBLES: readonly SideNavCollapsible[] = ['none', 'button', 'handle'];
 
 const ICON_SIZE = 16;
 const CHEVRON_SIZE = 14;
+const COLLAPSE_ICON = 'panel-left-close';
+const EXPAND_ICON = 'panel-left-open';
+const FOLD_BUTTON = 'fold-button';
 const DEFAULT_HOTKEY = 'mod+b';
 // `hotkey="none"` folds with no key.
 const NO_HOTKEY = 'none';
 const ROW_SELECTOR = '.item';
+// On the sections once people opened a parent: the CSS animates the lists of children only then.
+const GLIDING = 'gliding';
 const NEW_TAB = '_blank';
 // A page opened in a new tab gets no handle on this one.
 const SAFE_REL = 'noopener noreferrer';
@@ -45,6 +57,10 @@ const withKeys = (label: string, hotkey: string): string => {
   return `${label} (${hotkeyLabels(hotkey, apple).join(apple ? '' : '+')})`;
 };
 
+/** The attribute written bare (`<jl-side-nav collapsible>`, as before it took a value) gives the handle. */
+const parseCollapsible = (value: string | null): SideNavCollapsible =>
+  value === '' ? 'handle' : oneOf(SIDE_NAV_COLLAPSIBLES, 'none')(value);
+
 const hasChildren = (item: SideNavItem): boolean => (item.children?.length ?? 0) > 0;
 
 /** A row is reachable when no closed list hides it. */
@@ -53,7 +69,7 @@ const isReachable = (row: HTMLElement): boolean => row.closest('[hidden]') === n
 /**
  * The navigation of an app, down its side: sections of items with icons, badges and nested items that open with
  * a chevron. `value` is the active item (its parents open to show it); `collapsed` makes it a rail of icons, with
- * the labels as tooltips, and `collapsible` lets people fold and unfold it with the handle on its edge, or with `hotkey`. Items with
+ * the labels as tooltips, and `collapsible` lets people fold and unfold it, with a button at its bottom or a handle along its edge, and with `hotkey`. Items with
  * an `href` are links; the others fire `select`. Typed by its ids, `JlSideNav<'jobs' | 'people'>` takes items of
  * those ids and gives `select` one of them.
  */
@@ -81,15 +97,23 @@ export class JlSideNav<Id extends string = string> extends JlElement {
     },
     { attribute: 'collapsed' }
   );
-  /** Makes its edge a handle that folds the side nav into its rail and unfolds it. */
-  readonly collapsible = this.useChange(false, (value) => this.reflect('collapsible', value), {
-    attribute: 'collapsible',
-  });
+  /**
+   * What people fold the side nav into its rail with, and unfold it: `none` (the app's own control, setting
+   * `collapsed`), an icon `button` at its bottom, or a `handle` along its edge. The last two fold on `hotkey` too.
+   */
+  readonly collapsible = this.useChange<SideNavCollapsible>(
+    'none',
+    (value) => {
+      this.reflect('collapsible', value);
+      this.schedule();
+    },
+    { attribute: 'collapsible', parse: parseCollapsible }
+  );
   /** What the handle says while the side nav is open; jlib's own when empty. */
   readonly collapseLabel = this.useChange('', () => this.schedule(), { attribute: 'collapse-label' });
   /** What it says while the side nav is a rail; jlib's own when empty. */
   readonly expandLabel = this.useChange('', () => this.schedule(), { attribute: 'expand-label' });
-  /** The keys that fold and unfold a `collapsible` side nav, from anywhere in the page; `none` for no keys. */
+  /** The keys that fold and unfold it too when `collapsible` gives a control, from anywhere in the page; `none` for no keys. */
   readonly hotkey = this.useChange(DEFAULT_HOTKEY, () => this.schedule(), { attribute: 'hotkey' });
   /**
    * Set by `jl-app-shell` while the side nav is its drawer, on a narrow screen: the drawer shows it whole, and its
@@ -118,6 +142,7 @@ export class JlSideNav<Id extends string = string> extends JlElement {
   };
 
   private readonly _refs = this.useRefs((ref) => ({
+    bottom: ref('.bottom'),
     fold: ref<HTMLButtonElement>('.fold'),
     nav: ref('nav'),
     sections: ref('.sections'),
@@ -157,7 +182,11 @@ export class JlSideNav<Id extends string = string> extends JlElement {
     } else {
       this._state.open.delete(id);
     }
-    this.whenRendered(() => this.renderOpen());
+    this.whenRendered(() => {
+      // From the first parent people open, the lists glide; the ones open as the items are drawn just show.
+      this._refs.sections.classList.add(GLIDING);
+      this.renderOpen();
+    });
   }
 
   private onClick(event: MouseEvent): void {
@@ -188,7 +217,7 @@ export class JlSideNav<Id extends string = string> extends JlElement {
   /** The keys fold it wherever the focus is, unless the page used them or a drawer shows it whole. */
   private foldOnHotkey(event: KeyboardEvent): void {
     const hotkey = this.hotkey.get();
-    const folds = this.collapsible.get() && !this.inDrawer.get() && hasKeys(hotkey);
+    const folds = this.collapsible.get() !== 'none' && !this.inDrawer.get() && hasKeys(hotkey);
     if (!folds || event.defaultPrevented || !matchesHotkey(event, parseHotkey(hotkey), onApple())) {
       return;
     }
@@ -243,7 +272,7 @@ export class JlSideNav<Id extends string = string> extends JlElement {
     this._refs.nav.setAttribute('aria-label', this.label.get() || jlText('mainNavigation'));
   }
 
-  /** What the handle says and does next; the CSS hides it unless `collapsible`, and in a drawer. */
+  /** What the handle or the button says and does next; the CSS shows the one `collapsible` names, none in a drawer. */
   private renderFold(): void {
     const fold = this._refs.fold;
     const rail = this.isRail();
@@ -251,9 +280,29 @@ export class JlSideNav<Id extends string = string> extends JlElement {
     const label = rail
       ? this.expandLabel.get() || jlText('expandMenu')
       : this.collapseLabel.get() || jlText('collapseMenu');
+    const hint = hasKeys(hotkey) ? withKeys(label, hotkey) : label;
     fold.setAttribute('aria-label', label);
     fold.setAttribute('aria-expanded', String(!rail));
-    fold.title = hasKeys(hotkey) ? withKeys(label, hotkey) : label;
+    fold.title = hint;
+    if (this.collapsible.get() === 'button') {
+      const button = this.foldButton();
+      button.icon.set(rail ? EXPAND_ICON : COLLAPSE_ICON);
+      button.hint.set(hint);
+    }
+  }
+
+  /** The button at the bottom, made the first time `collapsible` asks for it. */
+  private foldButton(): JlButton {
+    const bottom = this._refs.bottom;
+    const made = bottom.querySelector<JlButton>(`.${FOLD_BUTTON}`);
+    if (made !== null) {
+      return made;
+    }
+    const button = (<JlButton class={FOLD_BUTTON} variant="ghost" />) as JlButton;
+    // For as long as the button lives: a registration would end the first time the side nav leaves the page.
+    button.addEventListener('press', () => this.fold());
+    bottom.append(button);
+    return button;
   }
 
   private choose(id: Id): void {
@@ -308,6 +357,7 @@ export class JlSideNav<Id extends string = string> extends JlElement {
     for (const id of pathInSections(this.sections.get(), this.value.get()).slice(0, -1)) {
       this._state.open.add(id);
     }
+    this._refs.sections.classList.remove(GLIDING);
     this._refs.sections.replaceChildren(
       ...this.sections.get().map((section, index) => this.sectionNode(section, index))
     );

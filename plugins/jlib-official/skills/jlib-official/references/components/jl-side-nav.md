@@ -12,9 +12,10 @@ and items with children that open with a chevron. value is the active item: it i
 the parents above it open to show it.
 
 collapsed turns it into a rail of icons, for when the content needs the room: the labels become tooltips (and stay
-for screen readers), badges become dots, and a parent leads to its first child. collapsible lets people do it: its
-edge becomes a handle, a short grip that lights the whole edge under the pointer, and a press on it folds the side nav
-into its rail or unfolds it; so do the keys of hotkey (Ctrl+B, ⌘B on a Mac), from anywhere in the page. collapse says
+for screen readers), badges become dots, and a parent leads to its first child. collapsible lets people do it: handle
+makes the side nav's edge the control, a short grip that lights the whole edge under the pointer; button puts a quiet
+icon button at its bottom. With either, the keys of hotkey (Ctrl+B, ⌘B on a Mac) fold and unfold it too, from anywhere
+in the page. none, the default, gives no control: the app folds it with one of its own, setting collapsed. collapse says
 so for the app to remember it on the device. In the drawer of a narrow jl-app-shell, the side nav shows whole, without
 the handle or the keys. While it shows
 as a rail, the host carries the rail attribute, for styles around it: jl-side-nav[rail].
@@ -51,10 +52,10 @@ Inputs: a JSX prop sets one, code calls `.set(value)` and `.get()`, HTML writes 
 - `sections` (attribute `sections`): `SideNavSection<Id>[]`, default `[]`. The sections: an optional label, and items with id, label, icon, href (and target: _blank for a new tab), badge and children.
 - `value` (attribute `value`): `Id | ''`, default `''`. The id of the active item.
 - `collapsed` (attribute `collapsed`): `boolean`, default `false`. A narrow rail of icons, with the labels as tooltips.
-- `collapsible` (attribute `collapsible`): `boolean`, default `false`. Makes its edge a handle that folds the side nav into its rail and unfolds it, as the hotkey does.
+- `collapsible` (attribute `collapsible`): `'none' | 'button' | 'handle'`, default `'none'`. What people fold the side nav into its rail with: none (the app sets collapsed itself), an icon button at its bottom, or a handle along its edge. The attribute written bare gives the handle.
 - `collapseLabel` (attribute `collapse-label`): `string`, default `''`. What the handle says (its hint, and to screen readers) while the side nav is open. Empty: jlib's own text, in the language shown.
 - `expandLabel` (attribute `expand-label`): `string`, default `''`. What it says while the side nav is a rail. Empty: jlib's own text, in the language shown.
-- `hotkey` (attribute `hotkey`): `string`, default `'mod+b'`. The keys that fold and unfold a collapsible side nav from anywhere in the page: mod is ⌘ on a Mac and Ctrl elsewhere. none for no keys. Of several collapsible side navs in a page, the first takes the press.
+- `hotkey` (attribute `hotkey`): `string`, default `'mod+b'`. The keys that fold and unfold it from anywhere in the page, when collapsible gives a control: mod is ⌘ on a Mac and Ctrl elsewhere. none for no keys. Of several such side navs in a page, the first takes the press.
 - `inDrawer` (attribute `in-drawer`): `boolean`, default `false`. Set by jl-app-shell while the side nav is its drawer: it shows whole there, and its fold button hides.
 - `label` (attribute `label`): `string`, default `''`. The name of the navigation for screen readers. Empty: jlib's own text, in the language shown.
 
@@ -132,7 +133,7 @@ export class AppNav extends Jadis {
         slot="nav"
         sections={SECTIONS}
         value="jobs"
-        collapsible
+        collapsible="handle"
         onSelect={(place) => goTo(place)}
       />
     );
@@ -158,11 +159,16 @@ Badges, a nested group, and the active item inside it; a label too long for the 
 
 ### Collapsed rail
 
-collapsible: a press on the handle at its edge, or Ctrl+B, folds it into a rail of icons (hover one for its label), and unfolds it.
+collapsible="handle": a press on its edge, or Ctrl+B, folds it into a rail of icons (hover one for its label), and unfolds it. The second has collapsible="button": an icon button at its bottom instead.
 
 ```html
-<div style="height: 540px; border: 1px solid var(--jl-line); border-radius: var(--jl-radius-lg)">
-  <jl-side-nav collapsible collapsed value="inbox" sections='[{"items":[{"icon":"house","id":"home","label":"Home"},{"badge":12,"icon":"inbox","id":"inbox","label":"Inbox"},{"icon":"bell","id":"activity","label":"Activity"}]},{"items":[{"children":[{"id":"website","label":"Website"},{"badge":"New","id":"mobile-app","label":"Mobile app"},{"id":"design-system","label":"Design system and its documentation site"}],"icon":"folder","id":"projects","label":"Projects"},{"icon":"chart","id":"reports","label":"Reports"},{"icon":"users","id":"team","label":"Team"}],"label":"Workspace"},{"items":[{"icon":"settings","id":"settings","label":"Settings"},{"icon":"credit-card","id":"billing","label":"Billing"}],"label":"Account"}]'></jl-side-nav>
+<div class="row" style="align-items: start">
+  <div style="height: 540px; border: 1px solid var(--jl-line); border-radius: var(--jl-radius-lg)">
+    <jl-side-nav collapsible="handle" collapsed value="inbox" sections='[{"items":[{"icon":"house","id":"home","label":"Home"},{"badge":12,"icon":"inbox","id":"inbox","label":"Inbox"},{"icon":"bell","id":"activity","label":"Activity"}]},{"items":[{"children":[{"id":"website","label":"Website"},{"badge":"New","id":"mobile-app","label":"Mobile app"},{"id":"design-system","label":"Design system and its documentation site"}],"icon":"folder","id":"projects","label":"Projects"},{"icon":"chart","id":"reports","label":"Reports"},{"icon":"users","id":"team","label":"Team"}],"label":"Workspace"},{"items":[{"icon":"settings","id":"settings","label":"Settings"},{"icon":"credit-card","id":"billing","label":"Billing"}],"label":"Account"}]'></jl-side-nav>
+  </div>
+  <div style="height: 540px; border: 1px solid var(--jl-line); border-radius: var(--jl-radius-lg)">
+    <jl-side-nav collapsible="button" hotkey="none" value="inbox" sections='[{"items":[{"icon":"house","id":"home","label":"Home"},{"badge":12,"icon":"inbox","id":"inbox","label":"Inbox"},{"icon":"bell","id":"activity","label":"Activity"}]},{"items":[{"children":[{"id":"website","label":"Website"},{"badge":"New","id":"mobile-app","label":"Mobile app"},{"id":"design-system","label":"Design system and its documentation site"}],"icon":"folder","id":"projects","label":"Projects"},{"icon":"chart","id":"reports","label":"Reports"},{"icon":"users","id":"team","label":"Team"}],"label":"Workspace"},{"items":[{"icon":"settings","id":"settings","label":"Settings"},{"icon":"credit-card","id":"billing","label":"Billing"}],"label":"Account"}]'></jl-side-nav>
+  </div>
 </div>
 ```
 

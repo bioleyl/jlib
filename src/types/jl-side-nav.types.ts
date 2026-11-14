@@ -16,6 +16,12 @@ export type SideNavItem<Id extends string = string> = {
   children?: SideNavItem<Id>[];
 };
 
+/**
+ * What people fold a side nav with: `none` (it folds only as the app sets `collapsed`), a quiet icon `button` at its
+ * bottom, or a `handle` along its edge.
+ */
+export type SideNavCollapsible = 'none' | 'button' | 'handle';
+
 /** A group of items under an optional heading. */
 export type SideNavSection<Id extends string = string> = {
   label?: string;

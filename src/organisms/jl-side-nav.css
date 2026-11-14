@@ -94,9 +94,26 @@ nav {
   box-shadow: none;
 }
 
-/* A side nav that does not fold, or that a drawer shows whole, has no handle. */
-:host(:not([collapsible])) .fold,
-:host([in-drawer]) .fold {
+/* The button at the bottom: an icon alone, quiet, under the rows' icons; centred in the rail. */
+.fold-button {
+  align-self: flex-start;
+  color: var(--jl-muted);
+}
+
+:host([rail]) .fold-button {
+  align-self: center;
+}
+
+/* In the rail, the bottom keeps the room the rows' scrollbar keeps: what it centres stands under their icons. */
+:host([rail]) .bottom {
+  overflow: hidden;
+  scrollbar-gutter: stable;
+}
+
+/* Only the control `collapsible` names shows, and none in a drawer, which shows the side nav whole. */
+:host([in-drawer]) :is(.fold, .fold-button),
+:host(:not([collapsible="handle"])) .fold,
+:host(:not([collapsible="button"])) .fold-button {
   display: none;
 }
 
@@ -162,6 +179,34 @@ nav {
 
 .children {
   margin-top: 2px;
+}
+
+/*
+ * A parent people open or close glides: its list grows from nothing and fades in, and goes the same way. `display`
+ * waits for the end of the closing; a browser that cannot animate to `auto` fades only.
+ */
+.gliding .children {
+  overflow: clip;
+  interpolate-size: allow-keywords;
+  transition:
+    height var(--jl-slow) var(--jl-ease),
+    opacity var(--jl-slow) var(--jl-ease),
+    margin-top var(--jl-slow) var(--jl-ease),
+    display var(--jl-slow) allow-discrete;
+}
+
+.gliding .children[hidden] {
+  height: 0;
+  margin-top: 0;
+  opacity: 0;
+}
+
+@starting-style {
+  .gliding .children:not([hidden]) {
+    height: 0;
+    margin-top: 0;
+    opacity: 0;
+  }
 }
 
 .entry {
