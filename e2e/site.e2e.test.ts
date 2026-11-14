@@ -4061,6 +4061,21 @@ describe("a page's anchors", () => {
     expect(await place(page, '0-15-0-added')).not.toBeNull();
   });
 
+  it('reaches a page that loads late, which holds the real page as its child: the design system', async () => {
+    const page = await open('/design/colour');
+    await page.waitForTimeout(SETTLE_MS * 3);
+    const titles = await page.evaluate(() => {
+      const real = document.querySelector('jl-page-outlet > * > *')?.shadowRoot;
+      const all = [...(real?.querySelectorAll('h2, h3') ?? [])];
+      return {
+        anchored: all.filter((title) => title.querySelector('a.anchor') !== null).length,
+        count: all.length,
+      };
+    });
+    expect(titles.count).toBeGreaterThan(0);
+    expect(titles.anchored).toBe(titles.count);
+  });
+
   it("leaves an example's own headings alone", async () => {
     const page = await open('/components/app-shell');
     await page.waitForTimeout(SETTLE_MS * 3);

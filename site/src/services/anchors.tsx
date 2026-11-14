@@ -56,8 +56,9 @@ function anchor(title: HTMLElement, slug: string): void {
 /** Gives every title and subtitle of the page its name and its link, in the order the page shows them. */
 function anchorPage(page: HTMLElement): void {
   places.clear();
-  // A page draws in its shadow root; one without draws its own children.
-  const titles = shownElements(page.shadowRoot ?? page).filter(
+  // A page draws in its shadow root, and one that loads late holds the real page as its child.
+  const drawn = [...(page.shadowRoot === null ? [] : shownElements(page.shadowRoot)), ...shownElements(page)];
+  const titles = drawn.filter(
     (element): element is HTMLElement => element instanceof HTMLElement && element.matches(PLACES)
   );
   // The title the subtitles that follow stand under.
