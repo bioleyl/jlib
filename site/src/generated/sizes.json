@@ -1,7 +1,7 @@
 {
   "all": {
-    "gzip": 118331,
-    "raw": 468611
+    "gzip": 118822,
+    "raw": 470124
   },
   "baseline": {
     "gzip": 9019,
@@ -208,12 +208,12 @@
       "level": "atoms",
       "tag": "jl-select",
       "added": {
-        "gzip": 5195,
-        "raw": 16269
+        "gzip": 5383,
+        "raw": 17091
       },
       "total": {
-        "gzip": 14214,
-        "raw": 42012
+        "gzip": 14402,
+        "raw": 42834
       }
     },
     {
@@ -416,12 +416,12 @@
       "level": "molecules",
       "tag": "jl-combobox",
       "added": {
-        "gzip": 7862,
-        "raw": 23565
+        "gzip": 8104,
+        "raw": 24221
       },
       "total": {
-        "gzip": 16881,
-        "raw": 49308
+        "gzip": 17123,
+        "raw": 49964
       }
     },
     {
@@ -442,12 +442,12 @@
       "level": "molecules",
       "tag": "jl-date-picker",
       "added": {
-        "gzip": 9880,
-        "raw": 31113
+        "gzip": 10134,
+        "raw": 31780
       },
       "total": {
-        "gzip": 18899,
-        "raw": 56856
+        "gzip": 19153,
+        "raw": 57523
       }
     },
     {
@@ -507,12 +507,12 @@
       "level": "molecules",
       "tag": "jl-input-list",
       "added": {
-        "gzip": 10189,
-        "raw": 36893
+        "gzip": 10377,
+        "raw": 37715
       },
       "total": {
-        "gzip": 19208,
-        "raw": 62636
+        "gzip": 19396,
+        "raw": 63458
       }
     },
     {
@@ -559,12 +559,12 @@
       "level": "molecules",
       "tag": "jl-menu",
       "added": {
-        "gzip": 5511,
-        "raw": 16074
+        "gzip": 5748,
+        "raw": 16721
       },
       "total": {
-        "gzip": 14530,
-        "raw": 41817
+        "gzip": 14767,
+        "raw": 42464
       }
     },
     {
@@ -598,12 +598,12 @@
       "level": "molecules",
       "tag": "jl-popover",
       "added": {
-        "gzip": 3213,
-        "raw": 8729
+        "gzip": 3467,
+        "raw": 9409
       },
       "total": {
-        "gzip": 12232,
-        "raw": 34472
+        "gzip": 12486,
+        "raw": 35152
       }
     },
     {
@@ -715,12 +715,12 @@
       "level": "molecules",
       "tag": "jl-tag-input",
       "added": {
-        "gzip": 8245,
-        "raw": 24127
+        "gzip": 8481,
+        "raw": 24783
       },
       "total": {
-        "gzip": 17264,
-        "raw": 49870
+        "gzip": 17500,
+        "raw": 50526
       }
     },
     {
@@ -754,12 +754,12 @@
       "level": "molecules",
       "tag": "jl-tooltip",
       "added": {
-        "gzip": 3892,
-        "raw": 11385
+        "gzip": 4115,
+        "raw": 11950
       },
       "total": {
-        "gzip": 12911,
-        "raw": 37128
+        "gzip": 13134,
+        "raw": 37693
       }
     },
     {

@@ -3,7 +3,11 @@
 What changed in each version of [@syware/jlib](https://www.npmjs.com/package/@syware/jlib). Every component is shown
 and documented on [the documentation site](https://bioleyl.github.io/jlib/).
 
-## Unreleased
+## 0.16.1 (2026-11-14)
+
+What floats keeps by its anchor and inside the window: in an app shell's scrolling area, and when it is taller than
+the room around its trigger. The select's open list lights one row, as the combobox's. Nothing asks for a look
+before updating.
 
 ### Fixed
 
