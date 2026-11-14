@@ -28,7 +28,7 @@ this way (frame, list, detail page, settings form).
     <a class="brand" href="/"><JlAppIcon icon={APP_ICON} size={24} /> {APP_NAME}</a>
     <JlSearchButton compact onPress={() => this._refs.palette.show()} />
   </div>
-  <JlSideNav<Place> slot="nav" sections={NAV_SECTIONS} collapsible="handle" label="Main navigation">
+  <JlSideNav<Place> slot="nav" sections={NAV_SECTIONS} collapsible="handle" hotkey="mod+b" label="Main navigation">
     <div slot="header" class="nav-header">
       <a class="brand" href="/"><JlAppIcon icon={APP_ICON} size={24} /> {APP_NAME}</a>
       <JlSearchButton onPress={() => this._refs.palette.show()} />

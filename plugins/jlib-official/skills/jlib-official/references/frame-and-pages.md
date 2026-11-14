@@ -51,10 +51,12 @@ export const NAV_SECTIONS: SideNavSection<Place>[] = [
   `select` with their id. `children` nest items under a parent that opens with a chevron.
 - `value` is the current place, drawn in the accent colour: the frame sets it from the route, on both the side nav and
   the tab bar.
-- `collapsible` lets people fold the side nav into a rail of icons: `"handle"` along its edge, a round `"knob"`
-  on its edge line or an icon `"button"` at its bottom, and `hotkey="mod+b"` adds Ctrl+B in any of them; `"none"`, the default, leaves it to the app (`collapsed`); `collapse` says so, for the app to
-  remember it on the device (`localStorage`), and `collapsed` starts it folded. While folded, the host carries the
-  `rail` attribute: style its header with `jl-side-nav[rail] …`.
+- `collapsible` lets people fold the side nav into a rail of icons: `"handle"` along its edge (dragged towards the
+  fold), a round `"knob"` on its edge line or an icon `"button"` at its bottom; `"none"`, the default, leaves it to
+  the app (`collapsed`). `hotkey="mod+b"` adds Ctrl+B in any of them. `collapse` says so, for the app to remember it
+  on the device (`localStorage`), and `collapsed` starts it folded. While folded, the host carries the `rail`
+  attribute: style its header with `jl-side-nav[rail] …`. The handle and the knob stand over the nav's edge:
+  `JlAppShell` lets them show; a frame of your own must not clip the nav's column.
 - Slots `header` (the app's icon and name, the search button) and `footer` (the person signed in). They stay in
   place: a long list scrolls in the sections between them, so no app styles the nav's shadow root for it.
 - The tab bar takes the main places only (an icon each); its `more` label adds a last button that opens the drawer

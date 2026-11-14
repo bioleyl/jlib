@@ -3,30 +3,46 @@
 What changed in each version of [@syware/jlib](https://www.npmjs.com/package/@syware/jlib). Every component is shown
 and documented on [the documentation site](https://bioleyl.github.io/jlib/).
 
-## Unreleased
+## 0.16.0 (2026-11-14)
+
+The side nav folds in the way an app chooses, a table holds its pagination, and scrollbars are quiet. Two changes
+ask for a look before updating (a minor version, as jlib is before 1.0): `collapsible` on `jl-side-nav` now takes a
+value, and `jl-table`'s `base` part is no longer the element that scrolls.
 
 ### Added
 
 - **`jl-table` has a `footer` slot**, a bar inside the frame under the rows, which stays while they scroll: the place
   of a `jl-pagination`, a count or a `jl-load-more`, which sat loose under the frame before. One element goes to the
   end of the bar; several spread from its start to its end. The bar is the `footer` part.
+- **`jl-side-nav` folds by a handle, a knob or a button.** `collapsible` names the control: `handle` (the nav's
+  edge: a short grip, the whole edge lit under the pointer or the focus, dragged towards the fold and back in the
+  same move), `knob` (a round button on the edge line, under the header, its chevron pointing where the nav goes)
+  or `button` (a quiet icon button at the bottom).
+- **`jl-side-nav` has a `hotkey`**: keys that fold and unfold it from anywhere in the page, whatever `collapsible`
+  is (`hotkey="mod+b"` for Ctrl+B, ⌘B on a Mac). None by default; the control's hint names them.
+- **A parent of `jl-side-nav` glides open and closed**: its list of children grows and fades in, where it appeared
+  at once.
 
 ### Changed
 
-- **`jl-side-nav`'s `collapsible` names the control**, where it was a flag: `none` (the default: the app folds it,
-  setting `collapsed`), `button` (a quiet icon button at the bottom), `handle` (the nav's edge: a short grip, the
-  whole edge lit under the pointer or the focus) or `knob` (a round button on the edge line, under the header; in
-  a `jl-app-shell` it stands half over the main area). The "Collapse the menu" row is gone. The handle is
-  dragged: towards the fold, and back in the same move (a press alone does nothing; Enter folds it from the keyboard). `hotkey` names keys that fold it from anywhere in the page, in every mode
-  (`hotkey="mod+b"` for Ctrl+B; none by default). The attribute written bare, as before, gives the
-  handle; in JSX, write `collapsible="handle"`. `collapse-label` and `expand-label` are the control's hint and
-  spoken name.
-- **A parent of `jl-side-nav` glides open and closed**: its list of children grows and fades in, where it appeared
-  at once.
+- **`jl-side-nav`'s `collapsible` takes a value**, where it was a flag: `none` (the default: the app folds it,
+  setting `collapsed`), `button`, `handle` or `knob`. The "Collapse the menu" row is gone. The attribute written
+  bare, as before, gives the handle; in JSX, write `collapsible="handle"`. `collapse-label` and `expand-label` are
+  the control's hint and spoken name.
+- **The handle and the knob stand over the side nav's edge**, half beside it: a container that scrolls or hides
+  its overflow cuts them. `jl-app-shell` lets its side nav's column overflow; an app with a frame of its own does
+  the same.
+- **A folded side nav scrolls without a bar**, so its header's icon, its rows and its button share one centre.
 - **Scrollbars are quiet**: a thin bar inside components, a soft thumb on no track everywhere the tokens reach,
   the page's own bar included (`--jl-scrollbar`).
 - **`jl-table`'s `base` part is the frame around the rows and the footer**; the rows scroll in an element inside
   it. A page that set a height or an overflow through `::part(base)` uses `max-height` instead.
+
+### Documentation
+
+- Every page lists the methods its component has: `focus()` on nine more components, `checkValidity()` on the chip
+  group, and `reportValidity()` on the thirteen form controls that validate.
+- The site's credit stays inside the page's frame: the side navigation no longer scrolls up at the end of a page.
 
 ## 0.15.0 (2026-11-13)
 
