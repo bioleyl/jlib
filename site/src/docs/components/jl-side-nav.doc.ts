@@ -40,6 +40,12 @@ const SECTIONS = JSON.stringify([
   },
 ]);
 
+// A header for the side navs that fold: the page hides its name in the rail (jl-side-nav[rail]).
+const BRAND = `
+              <div slot="header" class="brand">
+                <jl-icon name="rocket" size="18"></jl-icon><span class="brand-name">Launchpad</span>
+              </div>
+            `;
 const FRAME = 'height: 540px; border: 1px solid var(--jl-line); border-radius: var(--jl-radius-lg)';
 
 export const doc: ComponentDoc = {
@@ -50,9 +56,12 @@ the parents above it open to show it.
 
 collapsed turns it into a rail of icons, for when the content needs the room: the labels become tooltips (and stay
 for screen readers), badges become dots, and a parent leads to its first child. collapsible lets people do it: handle
-makes the side nav's edge the control, a short grip that lights the whole edge under the pointer; button puts a quiet
-icon button at its bottom. With either, the keys of hotkey (Ctrl+B, ⌘B on a Mac) fold and unfold it too, from anywhere
-in the page. none, the default, gives no control: the app folds it with one of its own, setting collapsed. collapse says
+makes the side nav's edge the control, a short grip that lights the whole edge under the pointer, to press or to drag
+towards the fold; button puts a quiet
+icon button at its bottom; knob stands a small round button on the edge line, under the header, its chevron pointing
+where the side nav will go. none, the default, gives no control: the app folds it with one of its own, setting collapsed. Whatever
+collapsible is, hotkey names keys that fold and unfold it from anywhere in the page (mod+b: Ctrl+B, ⌘B on a Mac);
+there are none until the app names some. collapse says
 so for the app to remember it on the device. In the drawer of a narrow jl-app-shell, the side nav shows whole, without
 the handle or the keys. While it shows
 as a rail, the host carries the rail attribute, for styles around it: jl-side-nav[rail].
@@ -82,14 +91,24 @@ stay in place.`,
     },
     {
       description:
-        'collapsible="handle": a press on its edge, or Ctrl+B, folds it into a rail of icons (hover one for its label), and unfolds it. The second has collapsible="button": an icon button at its bottom instead.',
+        'collapsible="handle" with hotkey="mod+b": a press on its edge, a drag of it, or Ctrl+B folds it into a rail of icons (hover one for its label), and unfolds it. The second has collapsible="button": an icon button at its bottom instead; the third collapsible="knob": a round button on its edge line, under the header. The page hides the header’s name in the rail.',
       html: `
+        <style>
+          /* A set height: the items stand at the same place whether the name shows or not. */
+          .brand { display: flex; align-items: center; gap: 8px; height: 36px; padding: 0 10px; font-weight: 700; }
+          /* Folded into its rail, the side nav keeps the brand's icon alone, over the items' icons. */
+          jl-side-nav[rail] .brand { justify-content: center; padding-inline: 0; }
+          jl-side-nav[rail] .brand-name { display: none; }
+        </style>
         <div class="row" style="align-items: start">
           <div style="${FRAME}">
-            <jl-side-nav collapsible="handle" collapsed value="inbox" sections='${SECTIONS}'></jl-side-nav>
+            <jl-side-nav collapsible="handle" hotkey="mod+b" collapsed value="inbox" sections='${SECTIONS}'>${BRAND}</jl-side-nav>
           </div>
           <div style="${FRAME}">
-            <jl-side-nav collapsible="button" hotkey="none" value="inbox" sections='${SECTIONS}'></jl-side-nav>
+            <jl-side-nav collapsible="button" value="inbox" sections='${SECTIONS}'>${BRAND}</jl-side-nav>
+          </div>
+          <div style="${FRAME}">
+            <jl-side-nav collapsible="knob" value="inbox" sections='${SECTIONS}'>${BRAND}</jl-side-nav>
           </div>
         </div>`,
       title: 'Collapsed rail',
@@ -170,9 +189,9 @@ stay in place.`,
       control: { kind: 'select', options: SIDE_NAV_COLLAPSIBLES },
       default: "'none'",
       description:
-        'What people fold the side nav into its rail with: none (the app sets collapsed itself), an icon button at its bottom, or a handle along its edge. The attribute written bare gives the handle.',
+        'What people fold the side nav into its rail with: none (the app sets collapsed itself), an icon button at its bottom, a handle along its edge, or a round knob on its edge line under the header. The attribute written bare gives the handle.',
       name: 'collapsible',
-      type: "'none' | 'button' | 'handle'",
+      type: "'none' | 'button' | 'handle' | 'knob'",
     },
     {
       attribute: 'collapse-label',
@@ -191,9 +210,9 @@ stay in place.`,
     },
     {
       attribute: 'hotkey',
-      default: "'mod+b'",
+      default: "''",
       description:
-        'The keys that fold and unfold it from anywhere in the page, when collapsible gives a control: mod is ⌘ on a Mac and Ctrl elsewhere. none for no keys. Of several such side navs in a page, the first takes the press.',
+        'Keys that fold and unfold it from anywhere in the page, whatever collapsible is: mod+b is ⌘B on a Mac and Ctrl+B elsewhere. Empty (or none): no keys. The control’s hint names them. Of several side navs with keys in a page, the first takes the press.',
       name: 'hotkey',
       type: 'string',
     },

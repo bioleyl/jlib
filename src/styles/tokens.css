@@ -105,6 +105,10 @@
     --jl-ease: cubic-bezier(0.2, 0.7, 0.2, 1);
     --jl-fast: 120ms;
     --jl-slow: 240ms;
+
+    /* Scrollbars: a quiet thumb on no track, in both themes. The colour is inherited, into every shadow root. */
+    --jl-scrollbar: color-mix(in srgb, var(--jl-muted) 45%, transparent);
+    scrollbar-color: var(--jl-scrollbar) transparent;
   }
 
   @media (prefers-color-scheme: dark) {

@@ -9,6 +9,7 @@ import { setOrRemove, uniqueId } from '../lib/dom';
 import { hotkeyLabels, isApplePlatform, matchesHotkey, parseHotkey } from '../lib/hotkey';
 import { registerIcons } from '../lib/icons';
 import { findItem, firstLeaf, pathInSections } from '../lib/nav-tree';
+import { watchSizes } from '../lib/resize';
 import { jlText } from '../lib/texts';
 import { BASE_STYLES } from '../styles/shared';
 import styles from './jl-side-nav.css?inline';
@@ -22,16 +23,23 @@ registerIcons({
   'panel-left-open': PanelLeftOpen,
 });
 
-export const SIDE_NAV_COLLAPSIBLES: readonly SideNavCollapsible[] = ['none', 'button', 'handle'];
+export const SIDE_NAV_COLLAPSIBLES: readonly SideNavCollapsible[] = ['none', 'button', 'handle', 'knob'];
 
 const ICON_SIZE = 16;
 const CHEVRON_SIZE = 14;
 const COLLAPSE_ICON = 'panel-left-close';
 const EXPAND_ICON = 'panel-left-open';
 const FOLD_BUTTON = 'fold-button';
-const DEFAULT_HOTKEY = 'mod+b';
-// `hotkey="none"` folds with no key.
+const KNOB = 'knob';
+const KNOB_ICON_SIZE = 12;
+// The knob's centre stands in the gap over the first section; never higher than this, without a header.
+const KNOB_SIZE = 24;
+const KNOB_MIN_TOP = 4;
+const SECTIONS_GAP = 8;
+// No keys fold it until the app names some; `hotkey="none"` says so too.
 const NO_HOTKEY = 'none';
+// How far the handle is dragged, towards the fold or away from it, before the side nav follows.
+const FOLD_DRAG_PX = 24;
 const ROW_SELECTOR = '.item';
 // On the sections once people opened a parent: the CSS animates the lists of children only then.
 const GLIDING = 'gliding';
@@ -69,7 +77,7 @@ const isReachable = (row: HTMLElement): boolean => row.closest('[hidden]') === n
 /**
  * The navigation of an app, down its side: sections of items with icons, badges and nested items that open with
  * a chevron. `value` is the active item (its parents open to show it); `collapsed` makes it a rail of icons, with
- * the labels as tooltips, and `collapsible` lets people fold and unfold it, with a button at its bottom or a handle along its edge, and with `hotkey`. Items with
+ * the labels as tooltips, and `collapsible` lets people fold and unfold it, with a button at its bottom, a handle along its edge or a knob on its edge line; the keys of `hotkey` do it too. Items with
  * an `href` are links; the others fire `select`. Typed by its ids, `JlSideNav<'jobs' | 'people'>` takes items of
  * those ids and gives `select` one of them.
  */
@@ -99,7 +107,8 @@ export class JlSideNav<Id extends string = string> extends JlElement {
   );
   /**
    * What people fold the side nav into its rail with, and unfold it: `none` (the app's own control, setting
-   * `collapsed`), an icon `button` at its bottom, or a `handle` along its edge. The last two fold on `hotkey` too.
+   * `collapsed`), an icon `button` at its bottom, a `handle` along its edge, or a round `knob` on its edge line, under
+   * the header. The handle folds on a press, and when people drag it towards the fold.
    */
   readonly collapsible = this.useChange<SideNavCollapsible>(
     'none',
@@ -113,8 +122,11 @@ export class JlSideNav<Id extends string = string> extends JlElement {
   readonly collapseLabel = this.useChange('', () => this.schedule(), { attribute: 'collapse-label' });
   /** What it says while the side nav is a rail; jlib's own when empty. */
   readonly expandLabel = this.useChange('', () => this.schedule(), { attribute: 'expand-label' });
-  /** The keys that fold and unfold it too when `collapsible` gives a control, from anywhere in the page; `none` for no keys. */
-  readonly hotkey = this.useChange(DEFAULT_HOTKEY, () => this.schedule(), { attribute: 'hotkey' });
+  /**
+   * The keys that fold and unfold it from anywhere in the page, whatever `collapsible` is: `mod+b` for ⌘B on a Mac
+   * and Ctrl+B elsewhere. None until the app names some.
+   */
+  readonly hotkey = this.useChange('', () => this.schedule(), { attribute: 'hotkey' });
   /**
    * Set by `jl-app-shell` while the side nav is its drawer, on a narrow screen: the drawer shows it whole, and its
    * handle hides, `collapsed` waiting for a wide screen again.
@@ -141,25 +153,37 @@ export class JlSideNav<Id extends string = string> extends JlElement {
     sections: undefined,
   };
 
+  /** Where a drag of the handle began, and whether it folded the side nav: the click that ends it then does nothing. */
+  private readonly _drag = { folded: false, from: 0 };
+
+  // The sections change height when the header does: the knob follows where they start.
+  private readonly _sizes = watchSizes(() => this.placeKnob());
+
   private readonly _refs = this.useRefs((ref) => ({
     bottom: ref('.bottom'),
     fold: ref<HTMLButtonElement>('.fold'),
     nav: ref('nav'),
+    over: ref('.over'),
     sections: ref('.sections'),
   }));
 
   templateHtml(): Node {
     return (
-      <nav attrs={{ part: 'base' }}>
-        <slot name="header" />
-        <div class="sections" />
-        <div class="bottom">
-          <slot name="footer" />
+      <>
+        <nav attrs={{ part: 'base' }}>
+          <slot name="header" />
+          <div class="sections" />
+          <div class="bottom">
+            <slot name="footer" />
+          </div>
+        </nav>
+        {/* What stands over the edge, where the nav cannot clip it: the handle, and the knob once asked for. */}
+        <div class="over">
+          <button type="button" class="fold">
+            <span class="grip" />
+          </button>
         </div>
-        <button type="button" class="fold">
-          <span class="grip" />
-        </button>
-      </nav>
+      </>
     );
   }
 
@@ -168,10 +192,17 @@ export class JlSideNav<Id extends string = string> extends JlElement {
   }
 
   onConnect(): void {
-    this.on(this._refs.fold, 'click', () => this.fold());
+    this._sizes.observe(this._refs.sections);
+    this.on(this._refs.fold, 'click', () => this.foldOnPress());
+    this.on(this._refs.fold, 'pointerdown', (event) => this.startDrag(event));
+    this.on(this._refs.fold, 'pointermove', (event) => this.foldOnDrag(event));
     document.addEventListener('keydown', (event) => this.foldOnHotkey(event), { signal: this.killSignal });
     this.on(this._refs.sections, 'click', (event) => this.onClick(event));
     this.on(this._refs.sections, 'keydown', (event) => this.onKey(event));
+  }
+
+  onDisconnect(): void {
+    this._sizes.disconnect();
   }
 
   /** Opens or closes a parent item. */
@@ -214,10 +245,39 @@ export class JlSideNav<Id extends string = string> extends JlElement {
     return this.collapsed.get() && !this.inDrawer.get();
   }
 
+  /** A press on the handle folds it, unless the drag that ends there already did. */
+  private foldOnPress(): void {
+    const dragged = this._drag.folded;
+    this._drag.folded = false;
+    if (!dragged) {
+      this.fold();
+    }
+  }
+
+  /** The handle keeps the pointer for the drag, wherever it goes. */
+  private startDrag(event: PointerEvent): void {
+    Object.assign(this._drag, { folded: false, from: event.clientX });
+    this._refs.fold.setPointerCapture(event.pointerId);
+  }
+
+  /** Dragged far enough towards the fold (or away from it, as a rail), the side nav follows, once per drag. */
+  private foldOnDrag(event: PointerEvent): void {
+    if (this._drag.folded || !this._refs.fold.hasPointerCapture(event.pointerId)) {
+      return;
+    }
+    const moved = event.clientX - this._drag.from;
+    const towardsNext = this.isRail() ? moved : -moved;
+    if (towardsNext < FOLD_DRAG_PX) {
+      return;
+    }
+    this._drag.folded = true;
+    this.fold();
+  }
+
   /** The keys fold it wherever the focus is, unless the page used them or a drawer shows it whole. */
   private foldOnHotkey(event: KeyboardEvent): void {
     const hotkey = this.hotkey.get();
-    const folds = this.collapsible.get() !== 'none' && !this.inDrawer.get() && hasKeys(hotkey);
+    const folds = !this.inDrawer.get() && hasKeys(hotkey);
     if (!folds || event.defaultPrevented || !matchesHotkey(event, parseHotkey(hotkey), onApple())) {
       return;
     }
@@ -281,14 +341,45 @@ export class JlSideNav<Id extends string = string> extends JlElement {
       ? this.expandLabel.get() || jlText('expandMenu')
       : this.collapseLabel.get() || jlText('collapseMenu');
     const hint = hasKeys(hotkey) ? withKeys(label, hotkey) : label;
-    fold.setAttribute('aria-label', label);
-    fold.setAttribute('aria-expanded', String(!rail));
-    fold.title = hint;
-    if (this.collapsible.get() === 'button') {
+    const mode = this.collapsible.get();
+    const natives = mode === 'knob' ? [fold, this.knob()] : [fold];
+    for (const control of natives) {
+      control.setAttribute('aria-label', label);
+      control.setAttribute('aria-expanded', String(!rail));
+      control.title = hint;
+    }
+    if (mode === 'button') {
       const button = this.foldButton();
       button.icon.set(rail ? EXPAND_ICON : COLLAPSE_ICON);
       button.hint.set(hint);
     }
+  }
+
+  /** The knob on the edge line, made the first time `collapsible` asks for it. */
+  private knob(): HTMLElement {
+    const over = this._refs.over;
+    const made = over.querySelector<HTMLElement>(`.${KNOB}`);
+    if (made !== null) {
+      return made;
+    }
+    const knob = (
+      <button type="button" class={KNOB} onClick={() => this.fold()}>
+        <JlIcon class="knob-icon" name="chevron-right" size={KNOB_ICON_SIZE} />
+      </button>
+    ) as HTMLElement;
+    over.append(knob);
+    this.placeKnob();
+    return knob;
+  }
+
+  /** Puts the knob's centre in the gap between the header and the first section, wherever the header ends. */
+  private placeKnob(): void {
+    const knob = this._refs.over.querySelector<HTMLElement>(`.${KNOB}`);
+    if (knob === null) {
+      return;
+    }
+    const gapCentre = this._refs.sections.offsetTop - SECTIONS_GAP / 2;
+    knob.style.top = `${Math.max(KNOB_MIN_TOP, gapCentre - KNOB_SIZE / 2)}px`;
   }
 
   /** The button at the bottom, made the first time `collapsible` asks for it. */

@@ -13,9 +13,12 @@ the parents above it open to show it.
 
 collapsed turns it into a rail of icons, for when the content needs the room: the labels become tooltips (and stay
 for screen readers), badges become dots, and a parent leads to its first child. collapsible lets people do it: handle
-makes the side nav's edge the control, a short grip that lights the whole edge under the pointer; button puts a quiet
-icon button at its bottom. With either, the keys of hotkey (Ctrl+B, ⌘B on a Mac) fold and unfold it too, from anywhere
-in the page. none, the default, gives no control: the app folds it with one of its own, setting collapsed. collapse says
+makes the side nav's edge the control, a short grip that lights the whole edge under the pointer, to press or to drag
+towards the fold; button puts a quiet
+icon button at its bottom; knob stands a small round button on the edge line, under the header, its chevron pointing
+where the side nav will go. none, the default, gives no control: the app folds it with one of its own, setting collapsed. Whatever
+collapsible is, hotkey names keys that fold and unfold it from anywhere in the page (mod+b: Ctrl+B, ⌘B on a Mac);
+there are none until the app names some. collapse says
 so for the app to remember it on the device. In the drawer of a narrow jl-app-shell, the side nav shows whole, without
 the handle or the keys. While it shows
 as a rail, the host carries the rail attribute, for styles around it: jl-side-nav[rail].
@@ -52,10 +55,10 @@ Inputs: a JSX prop sets one, code calls `.set(value)` and `.get()`, HTML writes 
 - `sections` (attribute `sections`): `SideNavSection<Id>[]`, default `[]`. The sections: an optional label, and items with id, label, icon, href (and target: _blank for a new tab), badge and children.
 - `value` (attribute `value`): `Id | ''`, default `''`. The id of the active item.
 - `collapsed` (attribute `collapsed`): `boolean`, default `false`. A narrow rail of icons, with the labels as tooltips.
-- `collapsible` (attribute `collapsible`): `'none' | 'button' | 'handle'`, default `'none'`. What people fold the side nav into its rail with: none (the app sets collapsed itself), an icon button at its bottom, or a handle along its edge. The attribute written bare gives the handle.
+- `collapsible` (attribute `collapsible`): `'none' | 'button' | 'handle' | 'knob'`, default `'none'`. What people fold the side nav into its rail with: none (the app sets collapsed itself), an icon button at its bottom, a handle along its edge, or a round knob on its edge line under the header. The attribute written bare gives the handle.
 - `collapseLabel` (attribute `collapse-label`): `string`, default `''`. What the handle says (its hint, and to screen readers) while the side nav is open. Empty: jlib's own text, in the language shown.
 - `expandLabel` (attribute `expand-label`): `string`, default `''`. What it says while the side nav is a rail. Empty: jlib's own text, in the language shown.
-- `hotkey` (attribute `hotkey`): `string`, default `'mod+b'`. The keys that fold and unfold it from anywhere in the page, when collapsible gives a control: mod is ⌘ on a Mac and Ctrl elsewhere. none for no keys. Of several such side navs in a page, the first takes the press.
+- `hotkey` (attribute `hotkey`): `string`, default `''`. Keys that fold and unfold it from anywhere in the page, whatever collapsible is: mod+b is ⌘B on a Mac and Ctrl+B elsewhere. Empty (or none): no keys. The control’s hint names them. Of several side navs with keys in a page, the first takes the press.
 - `inDrawer` (attribute `in-drawer`): `boolean`, default `false`. Set by jl-app-shell while the side nav is its drawer: it shows whole there, and its fold button hides.
 - `label` (attribute `label`): `string`, default `''`. The name of the navigation for screen readers. Empty: jlib's own text, in the language shown.
 
@@ -159,15 +162,37 @@ Badges, a nested group, and the active item inside it; a label too long for the 
 
 ### Collapsed rail
 
-collapsible="handle": a press on its edge, or Ctrl+B, folds it into a rail of icons (hover one for its label), and unfolds it. The second has collapsible="button": an icon button at its bottom instead.
+collapsible="handle" with hotkey="mod+b": a press on its edge, a drag of it, or Ctrl+B folds it into a rail of icons (hover one for its label), and unfolds it. The second has collapsible="button": an icon button at its bottom instead; the third collapsible="knob": a round button on its edge line, under the header. The page hides the header’s name in the rail.
 
 ```html
+<style>
+  /* A set height: the items stand at the same place whether the name shows or not. */
+  .brand { display: flex; align-items: center; gap: 8px; height: 36px; padding: 0 10px; font-weight: 700; }
+  /* Folded into its rail, the side nav keeps the brand's icon alone, over the items' icons. */
+  jl-side-nav[rail] .brand { justify-content: center; padding-inline: 0; }
+  jl-side-nav[rail] .brand-name { display: none; }
+</style>
 <div class="row" style="align-items: start">
   <div style="height: 540px; border: 1px solid var(--jl-line); border-radius: var(--jl-radius-lg)">
-    <jl-side-nav collapsible="handle" collapsed value="inbox" sections='[{"items":[{"icon":"house","id":"home","label":"Home"},{"badge":12,"icon":"inbox","id":"inbox","label":"Inbox"},{"icon":"bell","id":"activity","label":"Activity"}]},{"items":[{"children":[{"id":"website","label":"Website"},{"badge":"New","id":"mobile-app","label":"Mobile app"},{"id":"design-system","label":"Design system and its documentation site"}],"icon":"folder","id":"projects","label":"Projects"},{"icon":"chart","id":"reports","label":"Reports"},{"icon":"users","id":"team","label":"Team"}],"label":"Workspace"},{"items":[{"icon":"settings","id":"settings","label":"Settings"},{"icon":"credit-card","id":"billing","label":"Billing"}],"label":"Account"}]'></jl-side-nav>
+    <jl-side-nav collapsible="handle" hotkey="mod+b" collapsed value="inbox" sections='[{"items":[{"icon":"house","id":"home","label":"Home"},{"badge":12,"icon":"inbox","id":"inbox","label":"Inbox"},{"icon":"bell","id":"activity","label":"Activity"}]},{"items":[{"children":[{"id":"website","label":"Website"},{"badge":"New","id":"mobile-app","label":"Mobile app"},{"id":"design-system","label":"Design system and its documentation site"}],"icon":"folder","id":"projects","label":"Projects"},{"icon":"chart","id":"reports","label":"Reports"},{"icon":"users","id":"team","label":"Team"}],"label":"Workspace"},{"items":[{"icon":"settings","id":"settings","label":"Settings"},{"icon":"credit-card","id":"billing","label":"Billing"}],"label":"Account"}]'>
+      <div slot="header" class="brand">
+        <jl-icon name="rocket" size="18"></jl-icon><span class="brand-name">Launchpad</span>
+      </div>
+    </jl-side-nav>
   </div>
   <div style="height: 540px; border: 1px solid var(--jl-line); border-radius: var(--jl-radius-lg)">
-    <jl-side-nav collapsible="button" hotkey="none" value="inbox" sections='[{"items":[{"icon":"house","id":"home","label":"Home"},{"badge":12,"icon":"inbox","id":"inbox","label":"Inbox"},{"icon":"bell","id":"activity","label":"Activity"}]},{"items":[{"children":[{"id":"website","label":"Website"},{"badge":"New","id":"mobile-app","label":"Mobile app"},{"id":"design-system","label":"Design system and its documentation site"}],"icon":"folder","id":"projects","label":"Projects"},{"icon":"chart","id":"reports","label":"Reports"},{"icon":"users","id":"team","label":"Team"}],"label":"Workspace"},{"items":[{"icon":"settings","id":"settings","label":"Settings"},{"icon":"credit-card","id":"billing","label":"Billing"}],"label":"Account"}]'></jl-side-nav>
+    <jl-side-nav collapsible="button" value="inbox" sections='[{"items":[{"icon":"house","id":"home","label":"Home"},{"badge":12,"icon":"inbox","id":"inbox","label":"Inbox"},{"icon":"bell","id":"activity","label":"Activity"}]},{"items":[{"children":[{"id":"website","label":"Website"},{"badge":"New","id":"mobile-app","label":"Mobile app"},{"id":"design-system","label":"Design system and its documentation site"}],"icon":"folder","id":"projects","label":"Projects"},{"icon":"chart","id":"reports","label":"Reports"},{"icon":"users","id":"team","label":"Team"}],"label":"Workspace"},{"items":[{"icon":"settings","id":"settings","label":"Settings"},{"icon":"credit-card","id":"billing","label":"Billing"}],"label":"Account"}]'>
+      <div slot="header" class="brand">
+        <jl-icon name="rocket" size="18"></jl-icon><span class="brand-name">Launchpad</span>
+      </div>
+    </jl-side-nav>
+  </div>
+  <div style="height: 540px; border: 1px solid var(--jl-line); border-radius: var(--jl-radius-lg)">
+    <jl-side-nav collapsible="knob" value="inbox" sections='[{"items":[{"icon":"house","id":"home","label":"Home"},{"badge":12,"icon":"inbox","id":"inbox","label":"Inbox"},{"icon":"bell","id":"activity","label":"Activity"}]},{"items":[{"children":[{"id":"website","label":"Website"},{"badge":"New","id":"mobile-app","label":"Mobile app"},{"id":"design-system","label":"Design system and its documentation site"}],"icon":"folder","id":"projects","label":"Projects"},{"icon":"chart","id":"reports","label":"Reports"},{"icon":"users","id":"team","label":"Team"}],"label":"Workspace"},{"items":[{"icon":"settings","id":"settings","label":"Settings"},{"icon":"credit-card","id":"billing","label":"Billing"}],"label":"Account"}]'>
+      <div slot="header" class="brand">
+        <jl-icon name="rocket" size="18"></jl-icon><span class="brand-name">Launchpad</span>
+      </div>
+    </jl-side-nav>
   </div>
 </div>
 ```

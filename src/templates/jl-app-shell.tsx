@@ -14,6 +14,8 @@ registerIcons({ menu: Menu });
 
 const MENU_ICON_SIZE = 18;
 const HIDDEN = 'none';
+// A side nav scrolls its own items, and may stand a knob over its edge: its column must not clip it.
+const SIDE_NAV_TAG = 'jl-side-nav';
 // What the shell covers along the bottom of the window (its tab bar), for the toasts and floating bars of a page.
 const SHELL_BOTTOM = '--jl-shell-bottom';
 
@@ -222,6 +224,10 @@ export class JlAppShell extends JlElement {
     }
     const navElements = this._refs.navSlot.assignedElements();
     this.reflect('has-nav', navElements.length > 0);
+    this.reflect(
+      'has-side-nav',
+      navElements.some((element) => element.localName === SIDE_NAV_TAG)
+    );
     this._state.navListeners.abort();
     this._state.navListeners = new AbortController();
     const signal = this._state.navListeners.signal;

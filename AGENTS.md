@@ -210,6 +210,10 @@ there on a component alone: `mount(page, html)` puts it in the page of its own d
 - Link to light-DOM elements from a shadow root with element reflection (`ariaControlsElements`): ids cannot cross.
 - The e2e suite has one browser page for all its tests (`open()` navigates it): a test never closes it, or every
   test after it fails at once.
+- `biome check --write` on a file that does not parse (an unescaped quote in a string) takes the imports the broken
+  code no longer seems to use: fix the syntax first, then look at the file's imports in the diff.
+- What a component stands over its own edge (`jl-side-nav`'s handle and knob) is clipped by a container that
+  scrolls or hides overflow: `jl-app-shell` lets its side nav's column overflow (`has-side-nav`).
 - The shoot script's Vite server reloads when files change: an `--eval` failing with "Execution context was
   destroyed" just needs a rerun.
 - The SyWare logo SVGs in `site/public/` are the designer's paths, cropped. Shown small (under 64px), the site uses

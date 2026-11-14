@@ -1,4 +1,5 @@
 :host {
+  position: relative;
   display: block;
   width: var(--width, 248px);
   height: 100%;
@@ -37,20 +38,21 @@ nav {
 }
 
 /*
- * The handle: the nav's own edge, as wide as its padding so it covers no row. A short grip says it is there; under
- * the pointer or the focus the whole edge lights, and the cursor says which way it goes.
+ * The handle: a strip over the nav's edge line, mostly beside the nav so it covers no row and is wide enough to
+ * press. A short grip on the line says it is there; under the pointer or the focus the whole line lights, and the
+ * cursor says which way it goes.
  */
 .fold {
   position: absolute;
-  inset: 0 0 0 auto;
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  width: 8px;
+  inset: 0 -14px 0 auto;
+  z-index: 1;
+  width: 16px;
   padding: 0;
   border: none;
   background: none;
   cursor: w-resize;
+  /* A finger drags the handle, not the page. */
+  touch-action: none;
 }
 
 :host([rail]) .fold {
@@ -59,7 +61,7 @@ nav {
 
 .fold::after {
   position: absolute;
-  inset: 0 0 0 auto;
+  inset: 0 13px 0 auto;
   width: 2px;
   background: var(--jl-accent);
   content: "";
@@ -68,11 +70,14 @@ nav {
 }
 
 .grip {
+  position: absolute;
+  top: 50%;
+  right: 12px;
   width: 4px;
   height: 28px;
-  margin-right: 2px;
   border-radius: var(--jl-radius-pill);
   background: var(--jl-line-strong);
+  translate: 0 -50%;
   transition:
     height var(--jl-fast) var(--jl-ease),
     background var(--jl-fast) var(--jl-ease);
@@ -97,21 +102,64 @@ nav {
 /* The button at the bottom: an icon alone, quiet, under the rows' icons; centred in the rail. */
 .fold-button {
   align-self: flex-start;
+}
+
+/* As quiet as a row's icon, where a ghost button takes the accent. */
+.fold-button::part(base) {
   color: var(--jl-muted);
+}
+
+.fold-button::part(base):hover {
+  background: var(--jl-surface-3);
+  color: var(--jl-text);
 }
 
 :host([rail]) .fold-button {
   align-self: center;
 }
 
-/* In the rail, the bottom keeps the room the rows' scrollbar keeps: what it centres stands under their icons. */
-:host([rail]) .bottom {
-  overflow: hidden;
-  scrollbar-gutter: stable;
+/*
+ * The knob: a round button whose centre is on the nav's edge line, half over what stands beside the nav, under the
+ * header. Its chevron points where the nav will go.
+ */
+.knob {
+  position: absolute;
+  top: 4px;
+  right: -12px;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: 1px solid var(--jl-line-strong);
+  border-radius: 50%;
+  background: var(--jl-surface);
+  color: var(--jl-muted);
+  cursor: pointer;
+  transition:
+    border-color var(--jl-fast) var(--jl-ease),
+    color var(--jl-fast) var(--jl-ease);
+}
+
+.knob:hover {
+  border-color: var(--jl-muted);
+  color: var(--jl-text);
+}
+
+.knob-icon {
+  transform: rotate(180deg);
+  transition: transform var(--jl-slow) var(--jl-ease);
+}
+
+:host([rail]) .knob-icon {
+  transform: none;
 }
 
 /* Only the control `collapsible` names shows, and none in a drawer, which shows the side nav whole. */
-:host([in-drawer]) :is(.fold, .fold-button),
+:host([in-drawer]) :is(.fold, .fold-button, .knob),
+:host(:not([collapsible="knob"])) .knob,
 :host(:not([collapsible="handle"])) .fold,
 :host(:not([collapsible="button"])) .fold-button {
   display: none;
@@ -360,6 +408,13 @@ nav {
 }
 
 /* The rail: icons only, centred; labels stay for screen readers, and show as tooltips. */
+/* A rail is too narrow for a bar beside its icons: it scrolls without one, and its icons stand in its middle, under
+   the header's and over the bottom's. */
+:host([rail]) .sections {
+  scrollbar-gutter: auto;
+  scrollbar-width: none;
+}
+
 :host([rail]) .section-label {
   height: 1px;
   margin: 4px 10px;

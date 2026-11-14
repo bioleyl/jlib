@@ -3789,7 +3789,7 @@ describe("a table's footer", () => {
 
 describe("a side nav's fold handle", () => {
   /** A collapsible side nav, what it told of its folding kept in the window. */
-  const foldable = async (attributes = '', control = 'handle'): Promise<Page> => {
+  const foldable = async (attributes = 'hotkey="mod+b"', control = 'handle'): Promise<Page> => {
     const page = await open('/components/side-nav');
     await mount(
       page,
@@ -3799,8 +3799,8 @@ describe("a side nav's fold handle", () => {
     await page.evaluate(() => {
       // The page's own examples fold on the keys too, and the first to take a press keeps it: they step aside.
       const examples = document.querySelector('jl-page-outlet > *')?.shadowRoot;
-      for (const example of examples?.querySelectorAll('jl-side-nav[collapsible]') ?? []) {
-        example.removeAttribute('collapsible');
+      for (const example of examples?.querySelectorAll('jl-side-nav[hotkey]') ?? []) {
+        example.removeAttribute('hotkey');
       }
       const nav = document.querySelector('#test-area jl-side-nav') as JlSideNav;
       const told: boolean[] = [];
@@ -3871,7 +3871,7 @@ describe("a side nav's fold handle", () => {
   });
 
   it('folds by an icon button at its bottom with collapsible="button", its edge then at rest', async () => {
-    const page = await foldable('', 'button');
+    const page = await foldable('hotkey="mod+b"', 'button');
     const button = page.locator('#test-area jl-side-nav .fold-button');
     expect(await handle(page).isVisible()).toBe(false);
     expect(await button.evaluate((element: JlButton) => [element.icon.get(), element.hint.get()])).toEqual([
@@ -3884,7 +3884,7 @@ describe("a side nav's fold handle", () => {
     expect(await button.evaluate((element: JlButton) => element.icon.get())).toBe('panel-left-open');
   });
 
-  it('has no control and no keys with collapsible="none", and folds as the app says', async () => {
+  it('has no control with collapsible="none", and folds as the app says, or on keys the app named', async () => {
     const page = await foldable('', 'none');
     expect(await handle(page).isVisible()).toBe(false);
     expect(await page.locator('#test-area jl-side-nav .fold-button').count()).toBe(0);
@@ -3894,6 +3894,64 @@ describe("a side nav's fold handle", () => {
     await page.evaluate(() => (document.querySelector('#test-area jl-side-nav') as JlSideNav).collapsed.set(true));
     await page.waitForTimeout(SETTLE_MS);
     expect((await state(page)).rail).toBe(true);
+  });
+
+  it('folds on the keys the app named in every mode, "none" included', async () => {
+    const page = await foldable('hotkey="mod+b"', 'none');
+    await page.keyboard.press('Control+b');
+    await page.waitForTimeout(SETTLE_MS);
+    expect(await state(page)).toMatchObject({ rail: true, told: [true] });
+  });
+
+  it('follows its handle dragged towards the fold, once, and back when dragged away', async () => {
+    const page = await foldable();
+    const box = await handle(page).boundingBox();
+    const at = { x: (box?.x ?? 0) + (box?.width ?? 0) / 2, y: (box?.y ?? 0) + 60 };
+    await page.mouse.move(at.x, at.y);
+    await page.mouse.down();
+    await page.mouse.move(at.x - 10, at.y);
+    expect((await state(page)).told).toEqual([]);
+    await page.mouse.move(at.x - 80, at.y, { steps: 4 });
+    await page.mouse.up();
+    await page.waitForTimeout(SETTLE_MS * 3);
+    expect(await state(page)).toMatchObject({ rail: true, told: [true] });
+    const rail = await handle(page).boundingBox();
+    const from = { x: (rail?.x ?? 0) + (rail?.width ?? 0) / 2, y: (rail?.y ?? 0) + 60 };
+    await page.mouse.move(from.x, from.y);
+    await page.mouse.down();
+    await page.mouse.move(from.x + 60, from.y, { steps: 4 });
+    await page.mouse.up();
+    await page.waitForTimeout(SETTLE_MS);
+    expect((await state(page)).told).toEqual([true, false]);
+  });
+
+  it('stands a round knob on its edge line, under the header, with collapsible="knob"', async () => {
+    const page = await open('/components/side-nav');
+    await mount(
+      page,
+      `<div style="height: 240px; width: 248px"><jl-side-nav collapsible="knob"
+        sections='[{"items":[{"id":"home","label":"Home","icon":"home"}]}]'>
+        <div slot="header" style="height: 40px">Acme</div></jl-side-nav></div>`
+    );
+    const knob = page.locator('#test-area jl-side-nav .knob');
+    const place = await page.evaluate(() => {
+      const nav = document.querySelector('#test-area jl-side-nav') as JlSideNav;
+      const root = nav.shadowRoot as ShadowRoot;
+      const round = (root.querySelector('.knob') as HTMLElement).getBoundingClientRect();
+      const header = (nav.querySelector('[slot="header"]') as HTMLElement).getBoundingClientRect();
+      const first = (root.querySelector('.sections') as HTMLElement).getBoundingClientRect();
+      const centre = { x: round.left + round.width / 2, y: round.top + round.height / 2 };
+      return {
+        betweenHeaderAndItems: centre.y >= header.bottom && centre.y <= first.top,
+        onTheEdge: Math.abs(centre.x - nav.getBoundingClientRect().right) <= 1,
+      };
+    });
+    expect(place).toEqual({ betweenHeaderAndItems: true, onTheEdge: true });
+    await knob.click();
+    await page.waitForTimeout(SETTLE_MS);
+    expect(await page.locator('#test-area jl-side-nav').getAttribute('rail')).not.toBeNull();
+    expect(await knob.getAttribute('aria-expanded')).toBe('false');
+    expect(await knob.getAttribute('title')).toBe('Expand the menu');
   });
 
   it('takes the attribute written bare as the handle', async () => {
@@ -3932,12 +3990,12 @@ describe("a side nav's fold handle", () => {
     expect(heights.closed).toBe(0);
   });
 
-  it('has no keys with hotkey="none", and neither handle nor keys in a drawer', async () => {
-    const page = await foldable('hotkey="none"');
+  it('has no keys until the app names some, and neither handle nor keys in a drawer', async () => {
+    const page = await foldable('');
     await page.keyboard.press('Control+b');
     await page.waitForTimeout(SETTLE_MS);
     expect(await state(page)).toMatchObject({ hint: 'Collapse the menu', told: [] });
-    const inDrawer = await foldable('in-drawer');
+    const inDrawer = await foldable('in-drawer hotkey="mod+b"');
     await inDrawer.keyboard.press('Control+b');
     await inDrawer.waitForTimeout(SETTLE_MS);
     expect((await state(inDrawer)).told).toEqual([]);

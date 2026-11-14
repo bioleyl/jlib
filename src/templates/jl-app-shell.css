@@ -108,6 +108,17 @@
   display: none;
 }
 
+/*
+ * Wide, a jl-side-nav scrolls its own items: its column lets what it stands over its edge (its knob) show, above
+ * the main area.
+ */
+@container jl-app-shell (width >= 960px) {
+  :host([has-side-nav]) .nav {
+    z-index: 1;
+    overflow: visible;
+  }
+}
+
 /* Narrow: the sidebar slides over the content as a drawer, the menu button opens it, the panel steps aside. */
 @container jl-app-shell (width < 960px) {
   .shell {

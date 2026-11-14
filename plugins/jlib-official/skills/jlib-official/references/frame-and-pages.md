@@ -21,7 +21,7 @@ where the router shows the pages. Each page is a `JlPage`. The whole of it, file
 ```tsx
 <JlAppShell narrowHeader>
   <div slot="header" class="top-bar">…the app's name, a compact search button…</div>
-  <JlSideNav<Place> slot="nav" sections={NAV_SECTIONS} collapsible="handle" />
+  <JlSideNav<Place> slot="nav" sections={NAV_SECTIONS} collapsible="handle" hotkey="mod+b" />
   <JlPageOutlet />
   <JlTabBar<Place> slot="tabs" items={TAB_ITEMS} />
 </JlAppShell>
@@ -51,8 +51,8 @@ export const NAV_SECTIONS: SideNavSection<Place>[] = [
   `select` with their id. `children` nest items under a parent that opens with a chevron.
 - `value` is the current place, drawn in the accent colour: the frame sets it from the route, on both the side nav and
   the tab bar.
-- `collapsible` lets people fold the side nav into a rail of icons: `"handle"` along its edge or an icon `"button"`
-  at its bottom, both with Ctrl+B (`hotkey`); `"none"`, the default, leaves it to the app (`collapsed`); `collapse` says so, for the app to
+- `collapsible` lets people fold the side nav into a rail of icons: `"handle"` along its edge, a round `"knob"`
+  on its edge line or an icon `"button"` at its bottom, and `hotkey="mod+b"` adds Ctrl+B in any of them; `"none"`, the default, leaves it to the app (`collapsed`); `collapse` says so, for the app to
   remember it on the device (`localStorage`), and `collapsed` starts it folded. While folded, the host carries the
   `rail` attribute: style its header with `jl-side-nav[rail] …`.
 - Slots `header` (the app's icon and name, the search button) and `footer` (the person signed in). They stay in

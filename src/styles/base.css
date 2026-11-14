@@ -17,6 +17,11 @@
   box-sizing: inherit;
 }
 
+/* What scrolls inside a component gets a thin bar; its colour comes from the tokens (`scrollbar-color`). */
+* {
+  scrollbar-width: thin;
+}
+
 [hidden] {
   /* biome-ignore lint/complexity/noImportantStyles: hidden must win over every component's own display rule */
   display: none !important;
