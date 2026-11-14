@@ -55,6 +55,10 @@ In JSX, the `on…` prop, its handler given the detail; in code, `events.registe
 
 - `change` (`onChange` in JSX), detail `Value`: People chose another option; the detail is its value.
 
+## Methods
+
+- `focus(options?: FocusOptions): void`: Focuses the chosen option, or the first one that can be chosen.
+
 ## Styling
 
 - `base` (part, `::part(base)`): The track that holds the options and the thumb.

@@ -92,6 +92,11 @@ while it is empty. Decimal steps (0.1, 0.25) add up without float noise.`,
       name: 'checkValidity',
       signature: 'checkValidity(): boolean',
     },
+    {
+      description: 'The same check; when it fails, the browser shows its message on the control.',
+      name: 'reportValidity',
+      signature: 'reportValidity(): boolean',
+    },
   ],
   name: 'Number input',
   playground: {

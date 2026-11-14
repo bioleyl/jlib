@@ -106,6 +106,11 @@ line of explanation.`,
       name: 'checkValidity',
       signature: 'checkValidity(): boolean',
     },
+    {
+      description: 'The same check; when it fails, the browser shows its message on the control.',
+      name: 'reportValidity',
+      signature: 'reportValidity(): boolean',
+    },
   ],
   name: 'Radio group',
   playground: {

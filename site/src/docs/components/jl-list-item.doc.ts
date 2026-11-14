@@ -127,6 +127,13 @@ when they form a list for screen readers.`,
     },
   ],
   level: 'molecule',
+  methods: [
+    {
+      description: 'Focuses the item, or its link when it has an href.',
+      name: 'focus',
+      signature: 'focus(options?: FocusOptions): void',
+    },
+  ],
   name: 'List item',
   playground: {
     attributes: {

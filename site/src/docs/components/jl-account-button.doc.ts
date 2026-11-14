@@ -31,6 +31,9 @@ With an href it is a link to their account page; without one it is a button that
     },
   ],
   level: 'molecule',
+  methods: [
+    { description: 'Focuses the button.', name: 'focus', signature: 'focus(options?: FocusOptions): void' },
+  ],
   name: 'Account button',
   playground: {
     attributes: { compact: false, description: 'Administrator', href: '#', name: 'Marie Rochat', src: '' },

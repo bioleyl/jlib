@@ -67,6 +67,7 @@ In JSX, the `on…` prop, its handler given the detail; in code, `events.registe
 
 - `focus(options?: FocusOptions): void`: Focuses the text field.
 - `checkValidity(): boolean`: Whether a required combobox has a value.
+- `reportValidity(): boolean`: The same check; when it fails, the browser shows its message on the control.
 
 ## Styling
 

@@ -100,6 +100,13 @@ card: screen readers read it as one button. padding="none" leaves the body edge 
     },
   ],
   level: 'molecule',
+  methods: [
+    {
+      description: 'Focuses the card, or its link when it has an href.',
+      name: 'focus',
+      signature: 'focus(options?: FocusOptions): void',
+    },
+  ],
   name: 'Card',
   playground: {
     attributes: { description: 'Sent every Monday at 9:00', heading: 'Weekly report' },

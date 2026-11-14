@@ -71,6 +71,7 @@ In JSX, the `on…` prop, its handler given the detail; in code, `events.registe
 - `focus(options?: FocusOptions): void`: Focuses the native field.
 - `select(): void`: Selects the whole text.
 - `checkValidity(): boolean`: Whether the value meets its constraints (required, pattern…).
+- `reportValidity(): boolean`: The same check; when it fails, the browser shows its message on the control.
 
 ## Styling
 

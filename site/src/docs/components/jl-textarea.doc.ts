@@ -91,6 +91,11 @@ after that. A maxlength stops the typing at that length and shows a counter unde
       name: 'checkValidity',
       signature: 'checkValidity(): boolean',
     },
+    {
+      description: 'The same check; when it fails, the browser shows its message on the control.',
+      name: 'reportValidity',
+      signature: 'reportValidity(): boolean',
+    },
   ],
   name: 'Textarea',
   playground: {

@@ -61,6 +61,10 @@ In JSX, the `on…` prop, its handler given the detail; in code, `events.registe
 
 - The default slot: Rich content for the label, when text is not enough.
 
+## Methods
+
+- `focus(options?: FocusOptions): void`: Focuses the button, or the link when it has an href.
+
 ## Styling
 
 - `base` (part, `::part(base)`): The native button inside, or the link with an href.

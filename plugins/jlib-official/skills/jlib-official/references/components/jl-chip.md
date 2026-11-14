@@ -52,6 +52,7 @@ In JSX, the `on…` prop, its handler given the detail; in code, `events.registe
 
 ## Methods
 
+- `focus(options?: FocusOptions): void`: Focuses the chip, or its dismiss button when it cannot be selected.
 - `toggle(): void`: Turns a selectable chip on or off as a press would, and fires change.
 
 ## Styling

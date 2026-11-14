@@ -66,6 +66,10 @@ In JSX, the `on…` prop, its handler given the detail; in code, `events.registe
 - `start`: An avatar or another picture at the start, instead of the icon.
 - `end`: Controls at the end: buttons, a badge, a switch.
 
+## Methods
+
+- `focus(options?: FocusOptions): void`: Focuses the item, or its link when it has an href.
+
 ## Styling
 
 - `base` (part, `::part(base)`): The row.

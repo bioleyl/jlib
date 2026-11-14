@@ -118,6 +118,11 @@ In a form, each tag is its own entry under the field's name, like checkboxes sha
       name: 'checkValidity',
       signature: 'checkValidity(): boolean',
     },
+    {
+      description: 'The same check; when it fails, the browser shows its message on the control.',
+      name: 'reportValidity',
+      signature: 'reportValidity(): boolean',
+    },
   ],
   name: 'Tag input',
   playground: {

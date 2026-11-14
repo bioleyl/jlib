@@ -122,6 +122,23 @@ refuses a form while nothing is chosen.`,
     },
   ],
   level: 'molecule',
+  methods: [
+    {
+      description: 'Focuses the chosen chip, or the first one that can be chosen.',
+      name: 'focus',
+      signature: 'focus(options?: FocusOptions): void',
+    },
+    {
+      description: 'Whether a required group has a choice.',
+      name: 'checkValidity',
+      signature: 'checkValidity(): boolean',
+    },
+    {
+      description: 'The same check; when it fails, the browser shows its message on the control.',
+      name: 'reportValidity',
+      signature: 'reportValidity(): boolean',
+    },
+  ],
   name: 'Chip group',
   playground: {
     attributes: { label: 'Status', options: STATUSES, value: 'open' },

@@ -48,6 +48,9 @@ button only shows them, and fires press when clicked. See the Search and shortcu
     },
   ],
   level: 'molecule',
+  methods: [
+    { description: 'Focuses the button.', name: 'focus', signature: 'focus(options?: FocusOptions): void' },
+  ],
   name: 'Search button',
   playground: { attributes: { compact: false, hotkey: 'mod+k', label: 'Search' }, width: 240 },
   props: [

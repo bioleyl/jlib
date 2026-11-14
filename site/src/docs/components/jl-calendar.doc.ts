@@ -94,6 +94,11 @@ locale (the page's language by default); first-day sets the day weeks start on. 
       name: 'checkValidity',
       signature: 'checkValidity(): boolean',
     },
+    {
+      description: 'The same check; when it fails, the browser shows its message on the control.',
+      name: 'reportValidity',
+      signature: 'reportValidity(): boolean',
+    },
   ],
   name: 'Calendar',
   playground: { attributes: { value: SELECTED } },

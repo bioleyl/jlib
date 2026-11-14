@@ -52,6 +52,10 @@ In JSX, the `on…` prop, its handler given the detail; in code, `events.registe
 
 - `press` (`onPress` in JSX), detail `undefined`: It was pressed, or its link followed.
 
+## Methods
+
+- `focus(options?: FocusOptions): void`: Focuses the button.
+
 ## Styling
 
 - `base` (part, `::part(base)`): The button, or the link.

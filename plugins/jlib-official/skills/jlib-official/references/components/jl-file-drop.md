@@ -57,6 +57,7 @@ In JSX, the `on…` prop, its handler given the detail; in code, `events.registe
 - `clear(): void`: Takes every file back and empties the list of refused ones; fires nothing.
 - `focus(options?: FocusOptions): void`: Focuses the Browse button.
 - `checkValidity(): boolean`: Whether a required field has a file.
+- `reportValidity(): boolean`: The same check; when it fails, the browser shows its message on the control.
 
 ## Styling
 

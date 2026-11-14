@@ -77,6 +77,7 @@ or Enter, it fires press, and the app goes there. It stays a link to the keyboar
     },
   ],
   level: 'atom',
+  methods: [{ description: 'Focuses the link.', name: 'focus', signature: 'focus(options?: FocusOptions): void' }],
   name: 'Link',
   playground: { attributes: { href: 'https://github.com/bioleyl/jadis', label: 'Read the docs' } },
   props: [

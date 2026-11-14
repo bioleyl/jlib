@@ -107,6 +107,11 @@ while nothing is chosen and cannot be picked back; with required, it stops the s
       name: 'checkValidity',
       signature: 'checkValidity(): boolean',
     },
+    {
+      description: 'The same check; when it fails, the browser shows its message on the control.',
+      name: 'reportValidity',
+      signature: 'reportValidity(): boolean',
+    },
   ],
   name: 'Select',
   playground: {

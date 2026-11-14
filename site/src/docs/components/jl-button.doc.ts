@@ -98,6 +98,13 @@ site, or a data: or blob: URL, since browsers open the others.`,
     },
   ],
   level: 'atom',
+  methods: [
+    {
+      description: 'Focuses the button, or the link when it has an href.',
+      name: 'focus',
+      signature: 'focus(options?: FocusOptions): void',
+    },
+  ],
   name: 'Button',
   playground: {
     attributes: { label: 'Save changes', variant: 'primary' },

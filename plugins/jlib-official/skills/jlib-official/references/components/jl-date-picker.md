@@ -61,6 +61,7 @@ In JSX, the `on…` prop, its handler given the detail; in code, `events.registe
 - `hide(): void`: Closes the calendar.
 - `focus(options?: FocusOptions): void`: Focuses the text field.
 - `checkValidity(): boolean`: Whether the date is there when required, and within min and max.
+- `reportValidity(): boolean`: The same check; when it fails, the browser shows its message on the control.
 
 ## Styling
 

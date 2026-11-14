@@ -65,6 +65,10 @@ In JSX, the `on…` prop, its handler given the detail; in code, `events.registe
 - `actions`: Buttons at the top right, beside the heading.
 - `footer`: Buttons or a note under a line, at the bottom.
 
+## Methods
+
+- `focus(options?: FocusOptions): void`: Focuses the card, or its link when it has an href.
+
 ## Styling
 
 - `base` (part, `::part(base)`): The card.

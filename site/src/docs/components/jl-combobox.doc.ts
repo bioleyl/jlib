@@ -163,6 +163,11 @@ becomes the value. Listen to input to load options from a server as people type,
       name: 'checkValidity',
       signature: 'checkValidity(): boolean',
     },
+    {
+      description: 'The same check; when it fails, the browser shows its message on the control.',
+      name: 'reportValidity',
+      signature: 'reportValidity(): boolean',
+    },
   ],
   name: 'Combobox',
   playground: {

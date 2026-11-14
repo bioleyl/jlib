@@ -55,6 +55,7 @@ In JSX, the `on…` prop, its handler given the detail; in code, `events.registe
 - `stepBy(count: number): void`: Adds count steps (negative to go down), within the bounds, and fires change.
 - `focus(options?: FocusOptions): void`: Focuses the field.
 - `checkValidity(): boolean`: Whether a required field has a number.
+- `reportValidity(): boolean`: The same check; when it fails, the browser shows its message on the control.
 
 ## Styling
 

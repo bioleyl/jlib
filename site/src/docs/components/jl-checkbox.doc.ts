@@ -106,6 +106,11 @@ dash, for a box that stands for a list whose items are partly checked; the next 
       name: 'checkValidity',
       signature: 'checkValidity(): boolean',
     },
+    {
+      description: 'The same check; when it fails, the browser shows its message on the control.',
+      name: 'reportValidity',
+      signature: 'reportValidity(): boolean',
+    },
   ],
   name: 'Checkbox',
   playground: {

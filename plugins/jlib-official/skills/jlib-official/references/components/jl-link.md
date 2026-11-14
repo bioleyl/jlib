@@ -52,6 +52,10 @@ In JSX, the `on…` prop, its handler given the detail; in code, `events.registe
 
 - The default slot: The text, with markup if needed.
 
+## Methods
+
+- `focus(options?: FocusOptions): void`: Focuses the link.
+
 ## Styling
 
 - `base` (part, `::part(base)`): The <a> inside.

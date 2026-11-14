@@ -132,6 +132,11 @@ from a native file input, so a multipart submission sends them. Read them with t
       name: 'checkValidity',
       signature: 'checkValidity(): boolean',
     },
+    {
+      description: 'The same check; when it fails, the browser shows its message on the control.',
+      name: 'reportValidity',
+      signature: 'reportValidity(): boolean',
+    },
   ],
   name: 'File drop',
   playground: {

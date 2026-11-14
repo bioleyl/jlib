@@ -80,6 +80,13 @@ people pick.`,
     },
   ],
   level: 'molecule',
+  methods: [
+    {
+      description: 'Focuses the chosen option, or the first one that can be chosen.',
+      name: 'focus',
+      signature: 'focus(options?: FocusOptions): void',
+    },
+  ],
   name: 'Segmented control',
   playground: {
     attributes: { label: 'Period', options: PERIODS, value: 'week' },

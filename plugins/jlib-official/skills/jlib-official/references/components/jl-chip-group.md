@@ -61,6 +61,12 @@ In JSX, the `on…` prop, its handler given the detail; in code, `events.registe
 
 - `change` (`onChange` in JSX), detail `Value[]`: People changed the choice: the chosen values, in the order of the options.
 
+## Methods
+
+- `focus(options?: FocusOptions): void`: Focuses the chosen chip, or the first one that can be chosen.
+- `checkValidity(): boolean`: Whether a required group has a choice.
+- `reportValidity(): boolean`: The same check; when it fails, the browser shows its message on the control.
+
 ## Styling
 
 - `base` (part, `::part(base)`): The row of chips.

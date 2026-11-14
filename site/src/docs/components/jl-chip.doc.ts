@@ -85,6 +85,11 @@ Delete on a focused selectable chip do the same.`,
   level: 'atom',
   methods: [
     {
+      description: 'Focuses the chip, or its dismiss button when it cannot be selected.',
+      name: 'focus',
+      signature: 'focus(options?: FocusOptions): void',
+    },
+    {
       description: 'Turns a selectable chip on or off as a press would, and fires change.',
       name: 'toggle',
       signature: 'toggle(): void',
