@@ -3,6 +3,25 @@
 What changed in each version of [@syware/jlib](https://www.npmjs.com/package/@syware/jlib). Every component is shown
 and documented on [the documentation site](https://bioleyl.github.io/jlib/).
 
+## 0.17.1 (2026-11-18)
+
+### Fixed
+
+- **`jl-popover` is placed again when its content changes size.** The panel followed the window's resizing and the
+  page's scrolling only: a panel that grows after opening (a form that shows a second group of fields, a menu given
+  other items, a list that filters) kept the place computed for its smaller size and ran off the window. `followAnchor`
+  watches the floating element's own size now, so it takes the side with room again; `place()` asks for a re-place by
+  hand. The menu, the combobox, the date picker's calendar and the tag input's list follow it too.
+- **`jl-input-list` keeps `values` and `origins()` in step.** A blank value set from outside stayed among the values
+  while `origins()` left its row out, so the two lists had different lengths and the origin at an index named the
+  wrong value: the list keeps the filled ones now, as it does at its own changes. A list given the values its rows
+  already holds kept the origins of the values set before, so a form that saves and shows the values again sent
+  origins counting in the values of before: the rows take the origins of the values set, and the list's own
+  `values.set` no longer redraws them.
+- **A form control under jsdom submits nothing, not a `TypeError`.** jsdom's `attachInternals()` gives its internals
+  no `form` (undefined, where a browser gives null), so Enter in a one-line field of no form threw on
+  `form.elements`; the internals of a DOM without the form methods get a form of none beside them.
+
 ## 0.17.0 (2026-11-18)
 
 ### Added
