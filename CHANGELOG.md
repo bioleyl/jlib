@@ -3,6 +3,22 @@
 What changed in each version of [@syware/jlib](https://www.npmjs.com/package/@syware/jlib). Every component is shown
 and documented on [the documentation site](https://bioleyl.github.io/jlib/).
 
+## 0.17.0 (2026-11-18)
+
+### Added
+
+- **`jl-input-list` tells which value a row came from.** `values` and `change` stay a list of texts, and `origins()`
+  gives, beside them, the index each value had in the values last set from outside — `undefined` for a row added
+  since. A row keeps its origin while it is typed in, a removed row takes it away, so a form that keeps a record per
+  value (a date with its certainty) knows which record a corrected value belongs to, and a correction beside a
+  removal is not taken for the other way round.
+
+### Changed
+
+- **The skill types a kept JSX element on its variable.** `@jadis/core` types a JSX expression as `any`, so
+  `const save: JlButton = <JlButton label="Save" />;` needs no cast; the reference and the library's own code now
+  write it that way.
+
 ## 0.16.1 (2026-11-14)
 
 What floats keeps by its anchor and inside the window: in an app shell's scrolling area, and when it is taller than
