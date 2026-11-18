@@ -8,7 +8,16 @@ import { JlTextarea } from '../atoms/jl-textarea';
 import { JlElement } from '../base/jl-element';
 import { clampedNumber, jsonOf, oneOf, stringList } from '../lib/attributes';
 import { registerIcons } from '../lib/icons';
-import { canAddRow, filledValues, rowsOf, sameValues, withoutRowAt, withRowAt } from '../lib/input-list';
+import {
+  canAddRow,
+  emptyRow,
+  filledOrigins,
+  filledValues,
+  rowsOf,
+  sameValues,
+  withoutRowAt,
+  withRowAt,
+} from '../lib/input-list';
 import { jlText } from '../lib/texts';
 import { BASE_STYLES } from '../styles/shared';
 import styles from './jl-input-list.css?inline';
@@ -80,7 +89,7 @@ export class JlInputList extends JlElement {
   });
 
   // The rows shown, those left empty included: `values` keeps the filled ones.
-  private readonly _state = { rows: [''] };
+  private readonly _state = { rows: rowsOf([]) };
   // The rows as drawn and their kind of control: the inputs change them in place.
   private readonly _drawn: { kind: RowKind | undefined; rows: DrawnRow[] } = { kind: undefined, rows: [] };
 
@@ -99,6 +108,15 @@ export class JlInputList extends JlElement {
 
   templateCss(): string {
     return css`${BASE_STYLES}${styles}`;
+  }
+
+  /**
+   * The origin of each value of `values`: the index it had in the values last set from outside, and undefined for a
+   * row added since. A row keeps it while it is typed in, a removed row takes it away, so a corrected value is not
+   * taken for a removal beside an addition.
+   */
+  origins(): (number | undefined)[] {
+    return filledOrigins(this._state.rows);
   }
 
   onConnect(): void {
@@ -133,10 +151,10 @@ export class JlInputList extends JlElement {
     this.renderAdd();
   }
 
-  /** Builds every row again, from the values in `_state`. */
+  /** Builds every row again, from the rows in `_state`. */
   private renderRows(): void {
     this._drawn.kind = this.rowKind();
-    this._drawn.rows = this._state.rows.map((value, index) => this.row(value, index));
+    this._drawn.rows = this._state.rows.map((row, index) => this.row(row.value, index));
     this._refs.rows.replaceChildren(
       ...this._drawn.rows.map(({ control, remove }) => (
         <div class="row">
@@ -162,7 +180,7 @@ export class JlInputList extends JlElement {
 
   private row(value: string, index: number): DrawnRow {
     const control = this.control(value, (text) => this.change(index, text));
-    const remove = (<JlButton class="remove" variant="ghost" size="sm" icon="x" />) as JlButton;
+    const remove: JlButton = <JlButton class="remove" variant="ghost" size="sm" icon="x" />;
     hear<undefined>(remove, 'press', () => this.removeRow(index));
     const row = { control, remove };
     this.drawRow(row);
@@ -195,19 +213,19 @@ export class JlInputList extends JlElement {
   private control(value: string, onInput: (text: string) => void): RowControl {
     const controls: Record<RowKind, () => RowControl> = {
       input: () => {
-        const input = (<JlInput type={this.type.get()} value={value} />) as JlInput;
+        const input: JlInput = <JlInput type={this.type.get()} value={value} />;
         hear(input, 'input', onInput);
         return input;
       },
       select: () => {
         // Its options first: the value is chosen among them.
-        const select = (<JlSelect options={this.options.get()} />) as JlSelect;
+        const select: JlSelect = <JlSelect options={this.options.get()} />;
         select.value.set(value);
         hear(select, 'change', onInput);
         return select;
       },
       textarea: () => {
-        const area = (<JlTextarea value={value} autosize />) as JlTextarea;
+        const area: JlTextarea = <JlTextarea value={value} autosize />;
         hear(area, 'input', onInput);
         return area;
       },
@@ -224,7 +242,7 @@ export class JlInputList extends JlElement {
     if (!canAddRow(this._state.rows.length, this.max.get())) {
       return;
     }
-    this._state.rows = [...this._state.rows, ''];
+    this._state.rows = [...this._state.rows, emptyRow()];
     this.renderRows();
     const added = this._refs.rows.lastElementChild?.firstElementChild;
     if (added instanceof HTMLElement) {

@@ -1,3 +1,4 @@
+import type { JlInputList } from '@syware/jlib';
 import type { ComponentDoc } from '../../types/docs.types';
 
 export const doc: ComponentDoc = {
@@ -5,7 +6,9 @@ export const doc: ComponentDoc = {
   description: `A field that takes several values, each in a row of its own: a record's titles, the dates of an event,
 several descriptions. People type in each row (an input of any type, or a text area with multiline), or pick each
 value from options; Add a value adds a row and each row has its remove button. max caps how many rows there are.
-values holds the rows filled in, in their order, and change fires with them. It goes in a jl-field, which gives it
+values holds the rows filled in, in their order, and change fires with them. origins() tells, for each value, the row
+it started from in the values last set from outside, so a form keeps the rest of a record when a row is corrected,
+removed or added. It goes in a jl-field, which gives it
 its label, hint and error. For short words people pick or type, such as keywords, a jl-tag-input is lighter.`,
   events: [{ description: 'A value was typed, picked, added or removed.', detail: 'string[]', name: 'change' }],
   examples: [
@@ -47,8 +50,57 @@ its label, hint and error. For short words people pick or type, such as keywords
         </jl-field>`,
       title: 'Other words',
     },
+    {
+      description:
+        'Each value is a record of its own here, with a certainty kept beside it. origins() gives the index each value '
+        + 'came from, so removing a row and correcting the next keeps each certainty on its own value: a row added since '
+        + 'has no index at all.',
+      html: `
+        <div class="stack narrow">
+          <jl-field label="Dates" hint="Each date with its certainty.">
+            <jl-input-list class="demo-dates" label="Date" type="date" values='["1890","1895","1900"]'></jl-input-list>
+          </jl-field>
+          <p class="muted demo-dates-out">
+            Keep the certainty of each date: the list says which value a row came from.
+          </p>
+        </div>`,
+      script: `
+// The record of each value, by the index it came from: the certainty of 1895 stays with 1895.
+const certainties = ['certain', 'probable', 'certain'];
+const list = root.querySelector('.demo-dates');
+const out = root.querySelector('.demo-dates-out');
+list?.addEventListener('change', () => {
+  const parts = list.values.get().map((value, at) => \`\${value} (\${certainties[list.origins()[at]] ?? 'new'})\`);
+  out.textContent = parts.join(', ') || 'No date yet.';
+});`,
+      setup: (root) => {
+        const certainties = ['certain', 'probable', 'certain'];
+        const list = root.querySelector<JlInputList>('.demo-dates');
+        const out = root.querySelector('.demo-dates-out');
+        list?.events.register('change', () => {
+          if (out !== null) {
+            const origins = list.origins();
+            const parts = list.values
+              .get()
+              .map((value, at) => `${value} (${certainties[origins[at] as number] ?? 'new'})`);
+            out.textContent = parts.join(', ') || 'No date yet.';
+          }
+        });
+      },
+      title: 'Which value a row came from',
+    },
   ],
   level: 'molecule',
+  methods: [
+    {
+      description:
+        'The origin of each value of `values`, in its order: the index it had in the values last set from outside, and '
+        + 'undefined for a row added since. A row keeps it while it is typed in, a removed row takes it away, so a '
+        + 'corrected value is not taken for a removal beside an addition.',
+      name: 'origins',
+      signature: 'origins(): (number | undefined)[]',
+    },
+  ],
   name: 'Input list',
   playground: { attributes: { label: 'Title', values: '["First","Second"]' } },
   props: [

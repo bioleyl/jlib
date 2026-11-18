@@ -3201,6 +3201,30 @@ describe('the input list, in the page again', () => {
     expect(values).toEqual(['1', '2']);
     expect(state.errors).toEqual([]);
   });
+
+  it('tells which value a row came from, beside a removal and an addition', async () => {
+    const page = await open('/components/input-list');
+    await mount(page, `<jl-input-list label="Dates" values='["1890","1895","1900"]'></jl-input-list>`);
+    const read = (): Promise<{ origins: (number | undefined)[]; values: string[] }> =>
+      page.evaluate(() => {
+        const list = document.querySelector('#test-area jl-input-list') as JlInputList;
+        return { origins: list.origins(), values: list.values.get() };
+      });
+
+    // The second row removed, the third corrected: the same values as the other way round, other origins.
+    await page.locator('#test-area jl-input-list jl-button.remove').nth(1).click();
+    await page.waitForTimeout(SETTLE_MS);
+    await page.locator('#test-area jl-input-list jl-input input').nth(1).press('End');
+    await page.keyboard.type('1');
+    expect(await read()).toEqual({ origins: [0, 2], values: ['1890', '19001'] });
+
+    // A row added has no origin, and a row typed in keeps the one it had.
+    await page.locator('#test-area jl-input-list jl-button.add').click();
+    await page.waitForTimeout(SETTLE_MS);
+    await page.locator('#test-area jl-input-list jl-input input').nth(2).type('1905');
+    expect(await read()).toEqual({ origins: [0, 2, undefined], values: ['1890', '19001', '1905'] });
+    expect(state.errors).toEqual([]);
+  });
 });
 
 describe("the field and its control's label", () => {
