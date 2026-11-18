@@ -84,6 +84,26 @@ HTML as the site renders it, with its layout classes (`row`, `stack`, `narrow`, 
 </jl-popover>
 ```
 
+### Content that grows
+
+The panel is placed again when its content changes size: a wider panel takes the side with room and stays inside the window.
+
+```html
+<jl-popover placement="bottom-end">
+  <jl-button slot="trigger" icon="settings" label="Options"></jl-button>
+  <div class="stack demo-fields">
+    <jl-segmented block label="Layout" value="one" options='[{"value":"one","label":"One column"},{"value":"two","label":"Two columns"}]'></jl-segmented>
+  </div>
+</jl-popover>
+```
+
+```js
+const fields = root.querySelector('.demo-fields');
+root.querySelector('jl-segmented').events.register('change', (value) => {
+  fields.style.width = value === 'two' ? '480px' : '240px';
+});
+```
+
 ### A settings form
 
 A small settings form: the focus moves to the first field, Save closes the panel.

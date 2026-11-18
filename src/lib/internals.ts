@@ -1,6 +1,11 @@
 /** What a form control asks of its internals that jsdom's lack: with them, a page's unit tests can create it. */
-const FORM_METHODS: Pick<ElementInternals, 'checkValidity' | 'reportValidity' | 'setFormValue' | 'setValidity'> = {
+const FORM_METHODS: Pick<
+  ElementInternals,
+  'checkValidity' | 'form' | 'reportValidity' | 'setFormValue' | 'setValidity'
+> = {
   checkValidity: () => true,
+  // jsdom leaves it undefined for a control in no form, where a browser gives null.
+  form: null,
   reportValidity: () => true,
   setFormValue: () => undefined,
   setValidity: () => undefined,

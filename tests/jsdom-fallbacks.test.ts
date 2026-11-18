@@ -48,6 +48,11 @@ describe('formInternals', () => {
     expect(() => internals.setValidity({})).not.toThrow();
     expect(internals.checkValidity()).toBe(true);
   });
+
+  it('gives internals whose form is undefined (jsdom) a form of none', () => {
+    const internals = formInternals(elementWith({ form: undefined, setFormValue: undefined }));
+    expect(internals.form).toBeNull();
+  });
 });
 
 describe('elementInternals', () => {

@@ -1,4 +1,4 @@
-import type { JlButton, JlPopover } from '@syware/jlib';
+import type { JlButton, JlPopover, JlSegmented } from '@syware/jlib';
 import type { ComponentDoc } from '../../types/docs.types';
 
 /** Closes the example's popover when its Save button is pressed. */
@@ -32,6 +32,33 @@ around stays usable: keep a popover for small things, a form of a few fields or 
           <p class="muted">Orders placed before 2 pm ship the same day. Delivery takes one to three working days in Switzerland.</p>
         </jl-popover>`,
       title: 'Details on demand',
+    },
+    {
+      description:
+        'The panel is placed again when its content changes size: a wider panel takes the side with room and '
+        + 'stays inside the window.',
+      html: `
+        <jl-popover placement="bottom-end">
+          <jl-button slot="trigger" icon="settings" label="Options"></jl-button>
+          <div class="stack demo-fields">
+            <jl-segmented block label="Layout" value="one" options='[{"value":"one","label":"One column"},{"value":"two","label":"Two columns"}]'></jl-segmented>
+          </div>
+        </jl-popover>`,
+      script: `
+        const fields = root.querySelector('.demo-fields');
+        root.querySelector('jl-segmented').events.register('change', (value) => {
+          fields.style.width = value === 'two' ? '480px' : '240px';
+        });`,
+      setup: (root: HTMLElement): void => {
+        const fields = root.querySelector<HTMLElement>('.demo-fields');
+        const segmented = root.querySelector<JlSegmented>('.demo-fields jl-segmented');
+        segmented?.events.register('change', (value) => {
+          if (fields) {
+            fields.style.width = value === 'two' ? '480px' : '240px';
+          }
+        });
+      },
+      title: 'Content that grows',
     },
     {
       description: 'A small settings form: the focus moves to the first field, Save closes the panel.',

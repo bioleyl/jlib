@@ -1,3 +1,5 @@
+import { watchSizes } from './resize';
+
 import type { Align, Placement, Point, Rect, Side, Size } from '../types/floating.types';
 
 export const PLACEMENTS: readonly Placement[] = [
@@ -217,7 +219,11 @@ export function whenAnchorMoves(anchor: Element, update: () => void, signal: Abo
   }
 }
 
-/** Keeps a floating element by its anchor while the page scrolls or resizes, until the signal aborts. */
+/**
+ * Keeps a floating element by its anchor while the page scrolls or resizes, until the signal aborts. The element's
+ * own size is watched too: a panel whose content grows (a form that opens a second group of fields, a list that
+ * filters) is placed again with its new size, so it takes the side with room and stays inside the window.
+ */
 export function followAnchor(
   anchor: Element,
   floating: HTMLElement,
@@ -229,6 +235,9 @@ export function followAnchor(
     placeFloating(anchor, floating, placement, gap);
   };
   whenAnchorMoves(anchor, update, signal);
+  const sizes = watchSizes(update);
+  signal.addEventListener('abort', () => sizes.disconnect(), { once: true });
+  sizes.observe(floating);
   forgetRoom(floating);
   update();
 }

@@ -13,8 +13,8 @@ import {
   emptyRow,
   filledOrigins,
   filledValues,
+  filledValuesOf,
   rowsOf,
-  sameValues,
   withoutRowAt,
   withRowAt,
 } from '../lib/input-list';
@@ -92,6 +92,8 @@ export class JlInputList extends JlElement {
   private readonly _state = { rows: rowsOf([]) };
   // The rows as drawn and their kind of control: the inputs change them in place.
   private readonly _drawn: { kind: RowKind | undefined; rows: DrawnRow[] } = { kind: undefined, rows: [] };
+  // Set around the list's own `values.set`, so `follow` knows the rows need no work.
+  private readonly _publishing = { on: false };
 
   private readonly _refs = this.useRefs((ref) => ({ add: ref<JlButton>('.add'), rows: ref('.rows') }));
 
@@ -123,12 +125,17 @@ export class JlInputList extends JlElement {
     this._refs.add.events.register('press', () => this.addRow());
   }
 
-  /** Values set from outside start the rows again; those the rows themselves gave change nothing. */
+  /**
+   * Values set from outside start the rows again, the blank ones left out of `values`; those the rows themselves
+   * gave change nothing. A list given the values its rows already holds takes their origins, so a page that saves
+   * and shows the values again gets origins that count in what it saved.
+   */
   private follow(values: string[]): void {
-    if (sameValues(values, filledValues(this._state.rows))) {
+    if (this._publishing.on) {
       return;
     }
     this._state.rows = rowsOf(values);
+    this.setValues(filledValuesOf(values));
     this.renderRows();
   }
 
@@ -257,9 +264,15 @@ export class JlInputList extends JlElement {
   }
 
   private publish(): void {
-    const values = filledValues(this._state.rows);
+    this.setValues(filledValues(this._state.rows));
+    this.events.emit('change', this.values.get());
+  }
+
+  /** Keeps `values` without drawing the rows again: the list's own, and the filled ones of those set from outside. */
+  private setValues(values: string[]): void {
+    this._publishing.on = true;
     this.values.set(values);
-    this.events.emit('change', values);
+    this._publishing.on = false;
   }
 }
 

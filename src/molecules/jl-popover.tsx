@@ -56,6 +56,11 @@ export class JlPopover extends JlElement {
     this.open.set((open) => !open);
   }
 
+  /** Places the panel again by its trigger: for content whose size changes, the panel follows it as it opens. */
+  place(): void {
+    this.follow();
+  }
+
   templateHtml(): Node {
     return (
       <>

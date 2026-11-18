@@ -276,3 +276,10 @@ there on a component alone: `mount(page, html)` puts it in the page of its own d
 ## Conventions
 
 - A component's own CSS is minified into its shadow root, so a probe cannot override it by appending a `<style>` to the shadow root (same specificity, later `@layer` order loses): to measure the previous behaviour, check out the old CSS file and run again.
+
+## Gotchas
+
+- jsdom's `attachInternals()` returns internals with no `form` (undefined, where a browser gives null): `formInternals` now gives them `form: null` beside the form methods, so `submitImplicitly` in a field outside a `<form>` submits nothing instead of throwing.
+- happy-dom does not bubble a native input's `input` event up to the custom element's host (Chromium does): a unit test that types in `jl-input`'s native field dispatches the event on the host, with the value as the CustomEvent `detail` (the e2e suite drives the real bubbling).
+- `followAnchor` watches the floating element with a `ResizeObserver` (`watchSizes`), so a panel whose content grows is placed again; `--room` capping fires it once more, which is the extra placement seen per opening. `jl-popover.place()` asks for a re-place by hand (a grid moving its columns is one layout step, so the observer sees no size change).
+- `jl-input-list`: `follow(values)` keeps the blank values set from outside in the rows (their origin is the index in the list given) and stores the filled ones in `values`, so `values.get()` and `origins()` always have one entry per value; the rows are redrawn only for a set from outside, told from the list's own `publish()` by a `_publishing` flag around `values.set`.

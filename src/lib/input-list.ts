@@ -27,6 +27,10 @@ export const withoutRowAt = (rows: readonly InputListRow[], index: number): Inpu
 export const filledRows = (rows: readonly InputListRow[]): InputListRow[] =>
   rows.filter((row) => row.value.trim() !== '');
 
+/** The values kept from a list given from outside: the blank ones left out, as the rows left empty are. */
+export const filledValuesOf = (values: readonly string[]): string[] =>
+  values.filter((value) => value.trim() !== '');
+
 /** The values kept: the rows people filled in. */
 export const filledValues = (rows: readonly InputListRow[]): string[] => filledRows(rows).map((row) => row.value);
 
