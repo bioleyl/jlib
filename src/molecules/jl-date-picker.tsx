@@ -296,7 +296,7 @@ export class JlDatePicker extends JlFormControl {
     if (shown !== null) {
       return shown;
     }
-    const calendar = (
+    const calendar: JlCalendar = (
       <JlCalendar
         class="calendar"
         locale={this.locale.get()}
@@ -305,7 +305,7 @@ export class JlDatePicker extends JlFormControl {
         max={this.max.get()}
         value={this.validIso()}
       />
-    ) as JlCalendar;
+    );
     calendar.events.register('pick', (iso) => this.onPick(iso));
     this._refs.popup.append(calendar);
     return calendar;

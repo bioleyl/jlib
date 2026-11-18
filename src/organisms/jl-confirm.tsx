@@ -137,7 +137,7 @@ JlConfirm.register();
  * ```
  */
 export function confirmDialog(options: ConfirmOptions): Promise<boolean> {
-  const element = (
+  const element: JlConfirm = (
     <JlConfirm
       heading={options.heading}
       text={options.text}
@@ -145,7 +145,7 @@ export function confirmDialog(options: ConfirmOptions): Promise<boolean> {
       cancelLabel={options.cancelLabel}
       tone={options.tone}
     />
-  ) as JlConfirm;
+  );
   document.body.append(element);
   return element.ask().finally(() => element.remove());
 }

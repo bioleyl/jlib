@@ -110,7 +110,7 @@ export class JlToaster extends JlElement {
    * it has a close button unless told not to.
    */
   notify(options: ToastOptions): ToastHandle {
-    const toast = (
+    const toast: JlToast = (
       <JlToast
         heading={options.heading}
         text={options.text}
@@ -122,7 +122,7 @@ export class JlToaster extends JlElement {
         working={options.working}
         progress={options.progress}
       />
-    ) as JlToast;
+    );
     // The action may change while the toast shows (a download's Cancel, gone once it is saved).
     const actions = { onAction: options.onAction };
     toast.addEventListener('action', () => actions.onAction?.());

@@ -132,6 +132,7 @@ documentation site that shows and tests every component.
   type bound to an attribute brings its parser (`jsonOf`, `textOf`, `textListOf`: HTML is not checked against the
   type); a value read back from the DOM (`dataset.value`) is looked up in the options, not cast. Its type tests go
   in `tests/<name>.test-d.tsx` (checked by `npm run typecheck`, never run), and its doc gets a `typing`.
+- `jl-input-list` keeps `{ value, origin }` per row (`lib/input-list.ts`): the origin is the index the value had in the `values` last set from outside, undefined for a row added since. `origins()` reads it beside `values.get()`, so a form keeps the rest of a record when a row is corrected, removed or added. `rowsOf` numbers from 0, `withRowAt` keeps the origin, `withoutRowAt` drops only the removed row's.
 
 ## Documenting a component
 
@@ -184,8 +185,8 @@ there on a component alone: `mount(page, html)` puts it in the page of its own d
   form's state apart and draw it with `whenRendered` (see `jl-input`).
 - `this.on()` is typed for HTMLElement targets: for `document`, `window` or a `MediaQueryList`, use
   `addEventListener(…, { signal: this.killSignal })`.
-- A JSX expression is typed as a plain element: cast it to its class to use its inputs
-  (`(<JlSwitch />) as JlSwitch`).
+- A JSX expression is typed `any` (`JSX.Element` in `@jadis/core`): type the variable to use its inputs
+  (`const switch_: JlSwitch = <JlSwitch />`).
 - `useRefs` only holds HTML elements: keep SVG nodes in a private holder object.
 - A cached `<img>` can fire `load` before `onConnect`: wire `onLoad`/`onError` in the template.
 - A `<slot>` in a grid container makes every slotted node its own grid item: wrap the label and slot in a span.
@@ -266,6 +267,7 @@ there on a component alone: `mount(page, html)` puts it in the page of its own d
 - `tests/render.test.ts` is the render benchmark (happy-dom): it wraps `Jadis.prototype.renderTemplate` and `useChange` and counts, per component, the template renders, the input callbacks and the DOM nodes added, against budgets (the measured numbers). It runs with `npm run test`; a component that rebuilds its children for every input fails it. The budgets are exact for renders and nodes, a ceiling for the callbacks (attribute callbacks fire at connection, in field order).
 - `gh` was not installed here; installed 2.63.2 into ~/.local/bin and ran `gh auth setup-git` once so `git push` to the https remote authenticates (no credential helper configured).
 - Skills are refreshed by the package's `prepare` (`scripts/refresh-skills.mjs`: `npx skills update -p -y`, skipped when `CI` is set), never a `postinstall`: npm runs that one in every app that installs the package too. `.claude/` and `.agents/` stay out of git (both in .gitignore); `.claude-plugin/marketplace.json` is tracked.
+- A fresh clone needs `npm install` before `npm run check`: with node_modules missing, typecheck fails on `axe-core` (used by the e2e suite) while lint and the unit tests pass.
 
 ## Traps
 

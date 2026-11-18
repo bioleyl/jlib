@@ -24,7 +24,7 @@ import '@syware/jlib/tokens.css';
 define(JlBadge);
 registerIcons({});
 
-const dialog = (<JlDialog heading="Edit">A form.</JlDialog>) as JlDialog;
+const dialog: JlDialog = <JlDialog heading="Edit">A form.</JlDialog>;
 document.body.append(<JlButton variant="primary" onPress={() => dialog.show()}>Edit</JlButton>, dialog);
 `;
 

@@ -176,14 +176,12 @@ export class SitePlayground extends JlElement {
     const makers: Record<Control['kind'], () => HTMLElement> = {
       boolean: () => {
         // Named by its attribute for screen readers: the row already shows that name beside it.
-        const toggle = (
-          <JlSwitch size="sm" checked={value === true} label={prop.attribute} hideLabel />
-        ) as JlSwitch;
+        const toggle: JlSwitch = <JlSwitch size="sm" checked={value === true} label={prop.attribute} hideLabel />;
         toggle.events.register('change', (checked) => set(checked));
         return toggle;
       },
       json: () => {
-        const area = (
+        const area: JlTextarea = (
           <JlTextarea
             class="json"
             value={prettyJson(text)}
@@ -192,7 +190,7 @@ export class SitePlayground extends JlElement {
             maxRows={14}
             label={prop.attribute}
           />
-        ) as JlTextarea;
+        );
         area.events.register('input', (json) => {
           const valid = json.trim() === '' || isValidJson(json);
           area.invalid.set(!valid);
@@ -203,7 +201,7 @@ export class SitePlayground extends JlElement {
         return area;
       },
       number: () => {
-        const input = (<JlInput type="number" size="sm" value={text} label={prop.attribute} />) as JlInput;
+        const input: JlInput = <JlInput type="number" size="sm" value={text} label={prop.attribute} />;
         if (prop.control.kind === 'number') {
           input.min.set(prop.control.min === undefined ? '' : String(prop.control.min));
           input.max.set(prop.control.max === undefined ? '' : String(prop.control.max));
@@ -214,19 +212,19 @@ export class SitePlayground extends JlElement {
       },
       select: () => {
         const options = prop.control.kind === 'select' ? prop.control.options : [];
-        const select = (
+        const select: JlSelect = (
           <JlSelect
             size="sm"
             value={text}
             label={prop.attribute}
             options={options.map((option) => ({ label: option, value: option }))}
           />
-        ) as JlSelect;
+        );
         select.events.register('change', (next) => set(next));
         return select;
       },
       text: () => {
-        const input = (<JlInput size="sm" value={text} label={prop.attribute} />) as JlInput;
+        const input: JlInput = <JlInput size="sm" value={text} label={prop.attribute} />;
         input.events.register('input', (next) => set(next));
         return input;
       },

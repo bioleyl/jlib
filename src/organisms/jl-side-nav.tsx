@@ -392,7 +392,7 @@ export class JlSideNav<Id extends string = string> extends JlElement {
     if (made !== null) {
       return made;
     }
-    const button = (<JlButton class={FOLD_BUTTON} variant="ghost" />) as JlButton;
+    const button: JlButton = <JlButton class={FOLD_BUTTON} variant="ghost" />;
     // For as long as the button lives: a registration would end the first time the side nav leaves the page.
     button.addEventListener('press', () => this.fold());
     bottom.append(button);

@@ -64,8 +64,8 @@ templateHtml(): Node {
   `createElement(JlField, { attrs: { part: 'field' }, props: { label: 'Name' } })`, or the tag with `define()`.
 - A JSX prop sets the **property**: `label="Save"` calls `button.label.set('Save')`. A hyphenated name
   (`data-id`, `aria-label`) sets the attribute.
-- A JSX expression is typed as a plain element: to keep one and use its inputs, cast it,
-  `const save = (<JlButton label="Save" />) as JlButton;`, or find it with a ref.
+- A JSX expression is typed `any`: to keep one and use its inputs, type the variable,
+  `const save: JlButton = <JlButton label="Save" />;`, or find it with a ref.
 
 ## Inputs
 
