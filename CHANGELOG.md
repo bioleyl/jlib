@@ -3,7 +3,12 @@
 What changed in each version of [@syware/jlib](https://www.npmjs.com/package/@syware/jlib). Every component is shown
 and documented on [the documentation site](https://bioleyl.github.io/jlib/).
 
-## Unreleased
+## 0.18.0 (2026-11-23)
+
+Tables and comboboxes for data a server holds. A table can leave its sort to the server, let people choose its
+columns, and keep some in view at its sides; a combobox shows the options the server finds while they load, and
+`jl-multi-combobox` holds several values. Nothing asks for a look before updating: what follows under "Worth a look"
+is what a page can now drop or set.
 
 ### Added
 
@@ -32,6 +37,12 @@ and documented on [the documentation site](https://bioleyl.github.io/jlib/).
   chip's × or Backspace in the empty field takes it out. It narrows its list, or shows what the page found, as
   `jl-combobox` does (`filter`, `loading`, `debounce`), keeps each value's label when the options change, and gives
   the form each value under the field's name. `jl-tag-input` stays for texts people write.
+
+### Fixed
+
+- **`jl-table` keeps its checkbox and chevron columns at their width when its box squeezes it.** A selectable table
+  that opens its rows, narrower than its content (on a phone, in a narrow panel), shrank both columns until the
+  checkbox touched the chevron: closer than people can press one without the other.
 
 ### Changed
 
