@@ -1,9 +1,11 @@
+import { Bus } from '@jadis/core';
 import { JlLoadState } from '@syware/jlib';
 
 import { freeSlug, slugOf, subtitleSlug } from '../lib/anchors';
 import styles from '../styles/anchors.css?inline';
 
 import type { JlPageOutlet } from '@syware/jlib';
+import type { PagePlace } from '../types/anchors.types';
 
 // The titles a link can point at; the page's own title (h1) is the page.
 const TITLE = 'h2';
@@ -21,6 +23,9 @@ sheet.replaceSync(styles);
 
 /** The places of the page that shows, by name. A page's titles live in several shadow roots: no id lookup finds them. */
 const places = new Map<string, HTMLElement>();
+
+/** Says, once a page that shows has its anchors, its titles and subtitles in its order: the page's outline lists them. */
+export const placesBus = new Bus<{ change: PagePlace[] }>();
 
 /** The elements under a node as the page shows them, shadow roots first, without what shows other markup. */
 function shownElements(parent: ParentNode): Element[] {
@@ -63,6 +68,7 @@ function anchorPage(page: HTMLElement): void {
   );
   // The title the subtitles that follow stand under.
   const under = { title: '' };
+  const named: PagePlace[] = [];
   for (const title of titles) {
     // Drawn again for a page shown again: the link of the last time is not part of the title.
     title.querySelector(`.${ANCHOR}`)?.remove();
@@ -72,9 +78,11 @@ function anchorPage(page: HTMLElement): void {
     if (slug !== '' && text.trim() !== '') {
       const free = freeSlug(slug, new Set(places.keys()));
       anchor(title, free);
+      named.push({ element: title, kind: isTitle ? 'title' : 'subtitle', slug: free, text: text.trim() });
       under.title = isTitle ? free : under.title;
     }
   }
+  placesBus.emit('change', named);
 }
 
 /** Brings the place the address names into view; an address that names none, or one the page lacks, moves nothing. */
@@ -84,13 +92,22 @@ function showNamedPlace(): boolean {
   return place !== undefined;
 }
 
-/** A press on a title's link names the place in the address, to copy and send, and brings it into view. */
+/** The place a link points at (`#api-events`), or nothing for a link elsewhere, or to `#` alone. */
+function placeOfLink(link: HTMLAnchorElement): string {
+  const href = link.getAttribute('href') ?? '';
+  return href.startsWith(HASH) ? decodeURIComponent(href.slice(HASH.length)) : '';
+}
+
+/**
+ * A press on a link to a place of the page, a title's own or the outline's, names the place in the address, to copy
+ * and send, and brings it into view.
+ */
 function followAnchor(event: MouseEvent): void {
   const link = event
     .composedPath()
     .find(
       (target): target is HTMLAnchorElement =>
-        target instanceof HTMLAnchorElement && target.classList.contains(ANCHOR)
+        target instanceof HTMLAnchorElement && places.has(placeOfLink(target))
     );
   if (link === undefined) {
     return;

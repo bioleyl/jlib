@@ -29,7 +29,11 @@ documentation site that shows and tests every component.
   shows it. Write a tag whole (`<jl-table`, `'jl-button'`): one put together in code (`'jl-' + name`) is not seen,
   and the e2e suite fails on the undefined tag.
   Every `h2` and `h3` of a page gets a name and a `#` link once the page shows (`services/anchors.tsx`): a subtitle's
-  name starts with its title's (`/components/table#api-events`, `/changelog#0-16-0-added`). A title's `textContent`
+  name starts with its title's (`/components/table#api-events`, `/changelog#0-16-0-added`). Once a page has them, `placesBus` (same
+  module) gives its titles and subtitles in order; the shell hands them to `site-toc`, the page's outline on the right
+  from 1280px wide (hidden on a page without titles), which lights the title being read. Its reading line is where a
+  link brings a title (html's `scroll-padding-top` plus a title's `scroll-margin-top`), read from the styles: a
+  followed link lights its own entry. Any link to `#<place>` is followed there, a title's `#` and the outline's alike. A title's `textContent`
   ends with that link's mark: read its first text node. An example's own headings (`.example-root`, a pattern's
   `.preview-area`, the playground) are left alone.
   The **Changelog** page (`/changelog`) draws `CHANGELOG.md` as it is (`lib/changelog.ts`): headings, paragraphs

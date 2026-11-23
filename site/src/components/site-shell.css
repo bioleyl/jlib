@@ -2,6 +2,7 @@
   display: block;
   --top: 60px;
   --side: 272px;
+  --outline: 224px;
 }
 
 .app {
@@ -151,6 +152,30 @@ main {
 
 .credit strong {
   color: var(--jl-text-2);
+}
+
+/* The page's outline: on the right of a window wide enough, beside a page that has titles, in view as it scrolls. */
+.outline {
+  display: none;
+}
+
+@media (min-width: 1280px) {
+  :host([has-outline]) .app {
+    grid-template-columns: var(--side) minmax(0, 1fr) var(--outline);
+  }
+
+  :host([has-outline]) .outline {
+    position: sticky;
+    top: var(--top);
+    display: block;
+    grid-row: 2;
+    grid-column: 3;
+    align-self: start;
+    max-height: calc(100dvh - var(--top));
+    padding: 40px 24px 24px 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
 }
 
 @media (max-width: 960px) {

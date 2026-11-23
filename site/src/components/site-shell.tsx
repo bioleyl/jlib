@@ -7,6 +7,7 @@ import { githubMark, REPOSITORY_URL } from '../lib/project';
 import { actionOf, searchCommands } from '../lib/search-commands';
 import { LOGO_MIN_HEIGHT } from '../lib/syware-logo';
 import { router } from '../router';
+import { placesBus } from '../services/anchors';
 import { pageHref } from '../services/navigation';
 import { setTheme } from '../services/theme';
 import { SiteBrand } from './site-brand';
@@ -14,14 +15,18 @@ import { SiteLogo } from './site-logo';
 import { SiteNav } from './site-nav';
 import styles from './site-shell.css?inline';
 import { SiteThemeSwitch } from './site-theme-switch';
+import { SiteToc } from './site-toc';
+
+import type { PagePlace } from '../types/anchors.types';
 
 // The published version, read from package.json when the site is built: it follows every release.
 const VERSION = `v${version}`;
 const GITHUB_MARK_SIZE = 17;
 
 /**
- * The frame of the site: the top bar, the side navigation (a drawer on small screens) and the page, slotted.
- * The router mounts pages inside it, so the frame keeps its state between pages.
+ * The frame of the site: the top bar, the side navigation (a drawer on small screens), the page, slotted, and the
+ * page's outline on the right of a wide window. The router mounts pages inside it, so the frame keeps its state
+ * between pages.
  */
 export class SiteShell extends JlElement {
   static readonly selector = 'site-shell';
@@ -31,6 +36,7 @@ export class SiteShell extends JlElement {
     palette: ref(JlCommandPalette),
     scrim: ref('.scrim'),
     search: ref('.search'),
+    toc: ref(SiteToc),
   }));
 
   templateHtml(): Node {
@@ -81,6 +87,9 @@ export class SiteShell extends JlElement {
             </p>
           </footer>
         </main>
+        <aside class="outline">
+          <SiteToc />
+        </aside>
         <JlCommandPalette placeholder="Search components, guides, themes…" commands={searchCommands()} />
       </div>
     );
@@ -96,6 +105,13 @@ export class SiteShell extends JlElement {
     this.on(this._refs.search, 'click', () => this._refs.palette.show());
     this._refs.palette.events.register('select', (id) => this.run(id));
     this.onBus(router.bus, 'change', () => this.toggleNav(false));
+    this.onBus(placesBus, 'change', (places) => this.showOutline(places));
+  }
+
+  /** The outline of the page shown; a page without titles leaves its column to the page. */
+  private showOutline(places: PagePlace[]): void {
+    this._refs.toc.places.set(places);
+    this.reflect('has-outline', places.length > 0);
   }
 
   /** Does what a search result says: open a page, or switch the theme. */

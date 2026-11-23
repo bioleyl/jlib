@@ -3289,6 +3289,54 @@ describe("the table's select-all box", () => {
   });
 });
 
+describe('the page outline', () => {
+  /** The outline's titles, the link lit, and whether the outline shows. */
+  const outline = (page: Page): Promise<{ current: string | null; shown: boolean; titles: string[] }> =>
+    page.evaluate(() => {
+      const toc = document.querySelector('site-shell')?.shadowRoot?.querySelector('site-toc');
+      const root = toc?.shadowRoot;
+      return {
+        current: root?.querySelector('[aria-current]')?.textContent ?? null,
+        shown: toc?.checkVisibility() ?? false,
+        titles: [...(root?.querySelectorAll('.list > li > a') ?? [])].map((link) => link.textContent ?? ''),
+      };
+    });
+
+  it("lists the page's titles beside it, and lights the one a link or the scroll brings", async () => {
+    const page = await open('/components/table');
+    expect(await outline(page)).toEqual({
+      current: null,
+      shown: true,
+      titles: ['Playground', 'Examples', 'Typing', 'API'],
+    });
+    await page.evaluate(() =>
+      document
+        .querySelector('site-shell')
+        ?.shadowRoot?.querySelector('site-toc')
+        ?.shadowRoot?.querySelector<HTMLElement>('a[href="#api-events"]')
+        ?.click()
+    );
+    await page.waitForTimeout(SETTLE_MS);
+    expect(page.url()).toMatch(/#api-events$/);
+    expect((await outline(page)).current).toBe('Events');
+    await page.evaluate(() => window.scrollTo({ top: 0 }));
+    await page.waitForTimeout(SETTLE_MS);
+    expect((await outline(page)).current).toBe(null);
+    expect(state.errors).toEqual([]);
+  });
+
+  it('steps aside in a window too narrow for it', async () => {
+    const page = await open('/components/table');
+    const size = page.viewportSize();
+    await page.setViewportSize({ height: 800, width: 1100 });
+    const narrow = await outline(page);
+    if (size !== null) {
+      await page.setViewportSize(size);
+    }
+    expect(narrow.shown).toBe(false);
+  });
+});
+
 describe("the table's frozen columns", () => {
   it('stay in view at each side while the rows scroll sideways, the checkbox with the start', async () => {
     const page = await open('/components/table');

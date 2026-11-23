@@ -1,0 +1,52 @@
+:host {
+  display: block;
+}
+
+.heading {
+  margin: 0 0 10px;
+  color: var(--jl-text);
+  font-size: var(--jl-font-sm);
+  font-weight: 650;
+}
+
+/* One line runs along the outline; the place being read marks it in the accent. */
+.list {
+  margin: 0;
+  padding: 0;
+  border-left: 1px solid var(--jl-line);
+  list-style: none;
+}
+
+.list ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+a {
+  display: block;
+  margin-left: -1px;
+  padding: 4px 0 4px 14px;
+  border-left: 2px solid transparent;
+  color: var(--jl-muted);
+  font-size: var(--jl-font-sm);
+  line-height: 1.4;
+  text-decoration: none;
+  overflow-wrap: anywhere;
+  transition: color var(--jl-fast) var(--jl-ease);
+}
+
+a.subtitle {
+  padding-left: 26px;
+  font-size: var(--jl-font-xs);
+}
+
+a:hover {
+  color: var(--jl-text);
+}
+
+a[aria-current] {
+  border-left-color: var(--jl-accent);
+  color: var(--jl-accent);
+  font-weight: 600;
+}
