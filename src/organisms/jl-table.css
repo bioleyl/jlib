@@ -58,7 +58,8 @@
   position: absolute;
   top: 0;
   right: var(--scrollbar);
-  z-index: 2;
+  /* Over the headings, frozen ones included. */
+  z-index: 4;
   display: flex;
   align-items: center;
   height: calc(2 * var(--cell-y) + var(--row-line));
@@ -120,7 +121,8 @@ td {
 th {
   position: sticky;
   top: 0;
-  z-index: 1;
+  /* Over the frozen cells of the rows (1); the frozen headings stand over both (3, in their rules). */
+  z-index: 2;
   border-bottom: 1px solid var(--jl-line);
   background: var(--jl-surface-2);
   color: var(--jl-muted);

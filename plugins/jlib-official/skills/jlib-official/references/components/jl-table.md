@@ -2,7 +2,7 @@
 
 # Table: `jl-table`
 
-Rows of records under column headings, with sorting (by the table or the server), selection, columns people choose, rows that open on their details, formats and a sticky header.
+Rows of records under column headings, with sorting (by the table or the server), selection, columns people choose or freeze at the sides, rows that open on their details, formats and a sticky header.
 
 - Class `JlTable`, a organism: `import { JlTable } from '@syware/jlib';`
 - On the site: https://bioleyl.github.io/jlib/components/table
@@ -28,6 +28,10 @@ shows, from its row; expanded holds the keys of the open rows, and each opening 
 The header stays on top while the rows scroll within max-height, and the table scrolls sideways on narrow screens.
 What goes with the rows (the pages, a count) sits in the footer slot, a bar inside the frame that stays under them.
 For a cell that is more than a value (a person with an avatar, a link, a menu), give the column a renderer.
+
+frozen-start and frozen-end keep that many columns in view at each side while the rows scroll sideways: a name
+that tells the rows apart, a status or the row's actions. The checkbox and the chevron stay with the start, and a
+line marks each frozen side while the table scrolls. The counts are of the columns shown.
 
 hidden-columns leaves columns out, by key. column-chooser adds a button at the end of the header row that opens the
 list of columns, a box each, for people to choose those they see; it emits columns with the keys hidden, for the page
@@ -69,6 +73,8 @@ Inputs: a JSX prop sets one, code calls `.set(value)` and `.get()`, HTML writes 
 - `sortMode` (attribute `sort-mode`): `'local' | 'remote'`, default `'local'`. Who orders the rows: the table (local), or the page (remote), as when a server sorts. Remote, a heading's press updates sortKey, sortDirection and the heading's arrow, emits sort, and leaves the rows in the order given.
 - `hiddenColumns` (attribute `hidden-columns`): `Array<keyof Row>`, default `[]`. The keys of the columns not drawn, heading and cells. Changing them keeps the selection, the open rows and the sort, a hidden column's sort included. A column with hideable: false shows whatever they say.
 - `columnChooser` (attribute `column-chooser`): `boolean`, default `false`. A button at the end of the header row opens the list of columns, in their order, the shown ones ticked: a box changed updates hiddenColumns and emits columns. A column with hideable: false is ticked and off, and so is the last column shown.
+- `frozenStart` (attribute `frozen-start`): `number`, default `0`. How many columns stay in view at the start while the rows scroll sideways, among those shown; the checkbox and the chevron stay with them.
+- `frozenEnd` (attribute `frozen-end`): `number`, default `0`. How many columns stay in view at the end while the rows scroll sideways, among those shown. Where the two counts would overlap, the end gives way.
 - `columnsLabel` (attribute `columns-label`): `string`, default `''`. The column chooser's name, on its button and over its list. Empty: jlib's own text, in the language shown.
 - `selectable` (attribute `selectable`): `boolean`, default `false`. Adds a checkbox to each row, and one that selects them all.
 - `selected` (attribute `selected`): `Array<string | number>`, default `[]`. The keys of the selected rows.
@@ -338,6 +344,21 @@ column-chooser lets people choose the columns they see, from the button at the e
 const table = root.querySelector<JlTable<Member>>('jl-table.chosen');
 table.hiddenColumns.set(preferences.hiddenColumns ?? []);
 table.events.register('columns', (hidden) => preferences.save({ hiddenColumns: hidden }));
+```
+
+### Frozen columns
+
+frozen-start and frozen-end keep columns in view at each side while the rows scroll sideways: here the name, with the checkbox, and the status. Scroll the table.
+
+```html
+<div style="max-width: 520px">
+  <jl-table class="wide" selectable frozen-start="1" frozen-end="1" label="Workspace members"
+    columns='[{"key":"name","label":"Name","sortable":true,"width":160},{"key":"email","label":"Email","width":180},{"key":"role","label":"Role","width":110},{"format":"number","key":"projects","label":"Projects","width":100},{"format":"date","key":"joined","label":"Joined","width":140},{"format":"badge","key":"status","label":"Status","tones":{"Active":"ok","Invited":"info","Suspended":"danger"},"width":110}]'></jl-table>
+</div>
+```
+
+```js
+root.querySelector('jl-table.wide').rows.set(members);
 ```
 
 ### Loading and empty

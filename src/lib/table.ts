@@ -7,6 +7,7 @@ import type {
   TableColumn,
   TableColumnChoice,
   TableExpansion,
+  TableFrozen,
   TableRow,
   TableRowKey,
   TableSelectionState,
@@ -294,6 +295,66 @@ export function rowToggles(before: Iterable<TableRowKey>, after: Iterable<TableR
   const closed = [...was].filter((key) => !is.has(key)).map((key) => ({ key, open: false }));
   const opened = [...is].filter((key) => !was.has(key)).map((key) => ({ key, open: true }));
   return [...closed, ...opened];
+}
+
+/** A row of data or of headings: not an open row's detail nor the empty row, whose one cell spans them all. */
+const FROZEN_ROW = 'tr:not(.detail, .empty)';
+
+/**
+ * The cells that stay in view at each side: as many columns as asked among those shown, the end giving way to the
+ * start when they would overlap, and at the start the checkbox and chevron cells before them.
+ */
+export function frozenCells(shown: number, lead: number, asked: TableFrozen): TableFrozen {
+  const start = Math.min(Math.max(asked.start, 0), shown);
+  const end = Math.min(Math.max(asked.end, 0), shown - start);
+  return { end, start: start === 0 ? 0 : lead + start };
+}
+
+/** Where each of some cells side by side stands from their edge: the widths of the cells before it, added up. */
+export const stickyOffsets = (widths: readonly number[]): number[] =>
+  widths.map((_, index) => widths.slice(0, index).reduce((sum, width) => sum + width, 0));
+
+/**
+ * The rules that keep the frozen cells in view, by their place in the row, so that rows drawn later need nothing:
+ * each cell's offset is a custom property the table measures (`--frozen-start-0`…, `--frozen-end-0`…, counted from
+ * the edge), the cells take the surface under the rows' shades, and a line marks each frozen side while the rows
+ * scroll sideways (`scrolls-sideways` on the host).
+ */
+export function frozenCss({ end, start }: TableFrozen): string {
+  const sides = [
+    start > 0 ? `:nth-child(-n + ${start})` : '',
+    end > 0 ? `:nth-last-child(-n + ${end})` : '',
+  ].filter((side) => side !== '');
+  if (sides.length === 0) {
+    return '';
+  }
+  const frozen = `${FROZEN_ROW} > :is(${sides.join(', ')})`;
+  const starts = Array.from(
+    { length: start },
+    (_, index) => `${FROZEN_ROW} > :nth-child(${index + 1}) { left: var(--frozen-start-${index}); }`
+  );
+  const ends = Array.from(
+    { length: end },
+    (_, index) => `${FROZEN_ROW} > :nth-last-child(${index + 1}) { right: var(--frozen-end-${index}); }`
+  );
+  const lines = [
+    start > 0
+      ? `:host([scrolls-sideways]) ${FROZEN_ROW} > :nth-child(${start}) { border-right: 1px solid var(--jl-line); }`
+      : '',
+    end > 0
+      ? `:host([scrolls-sideways]) ${FROZEN_ROW} > :nth-last-child(${end}) { border-left: 1px solid var(--jl-line); }`
+      : '',
+  ].filter((line) => line !== '');
+  return [
+    `${frozen} { position: sticky; }`,
+    `thead ${frozen} { z-index: 3; }`,
+    `tbody ${frozen} { z-index: 1; }`,
+    // No weight: a row's shade (hover, selection, marks, stripes) still wins over it.
+    `:where(tbody ${frozen}) { background: var(--jl-surface); }`,
+    ...starts,
+    ...ends,
+    ...lines,
+  ].join('\n');
 }
 
 /**

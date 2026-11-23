@@ -3289,6 +3289,48 @@ describe("the table's select-all box", () => {
   });
 });
 
+describe("the table's frozen columns", () => {
+  it('stay in view at each side while the rows scroll sideways, the checkbox with the start', async () => {
+    const page = await open('/components/table');
+    const keys = ['name', 'email', 'role', 'status', 'projects', 'joined', 'city', 'country', 'phone', 'notes'];
+    const columns = JSON.stringify(keys.map((key) => ({ key, label: key })));
+    const rows = JSON.stringify(
+      [0, 1, 2].map((id) => Object.fromEntries([['id', id], ...keys.map((key) => [key, `${key} of row ${id}`])]))
+    );
+    await mount(
+      page,
+      `<div style="width: 520px"><jl-table selectable frozen-start="1" frozen-end="1" label="Wide"
+        columns='${columns}' rows='${rows}'></jl-table></div>`
+    );
+    const edges = await page.evaluate(async () => {
+      const table = document.querySelector('#test-area jl-table') as JlTable;
+      const scroll = table.shadowRoot?.querySelector<HTMLElement>('.scroll');
+      const cells = (): Element[] => [...(table.shadowRoot?.querySelectorAll('tbody tr:first-child td') ?? [])];
+      if (scroll === undefined || scroll === null) {
+        throw new Error('The table has no scroller');
+      }
+      const middleBefore = cells()[4]?.getBoundingClientRect().left ?? 0;
+      scroll.scrollLeft = 300;
+      await new Promise((resolve) => setTimeout(resolve, 100));
+      const box = scroll.getBoundingClientRect();
+      const [check, name] = cells();
+      return {
+        checkAtStart: Math.round((check?.getBoundingClientRect().left ?? 0) - box.left),
+        lastAtEnd: Math.round(
+          box.left + scroll.clientWidth - (cells().at(-1)?.getBoundingClientRect().right ?? 0)
+        ),
+        middleMoved: Math.round(middleBefore - (cells()[4]?.getBoundingClientRect().left ?? 0)),
+        nameAfterCheck: Math.round(
+          (name?.getBoundingClientRect().left ?? 0) - (check?.getBoundingClientRect().right ?? 0)
+        ),
+        sideways: table.hasAttribute('scrolls-sideways'),
+      };
+    });
+    expect(edges).toEqual({ checkAtStart: 0, lastAtEnd: 0, middleMoved: 300, nameAfterCheck: 0, sideways: true });
+    expect(state.errors).toEqual([]);
+  });
+});
+
 describe("the table's column chooser", () => {
   it('works from the keyboard, and gives the focus back to its button when Escape closes it', async () => {
     const page = await open('/components/table');

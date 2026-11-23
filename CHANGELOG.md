@@ -17,6 +17,10 @@ and documented on [the documentation site](https://bioleyl.github.io/jlib/).
   always shows, its box ticked and off, and the last column shown cannot be hidden. The button is named by
   `columns-label`, or jlib's own text, in French and German too. Changing the hidden columns keeps the selection,
   the open rows and the sort, a hidden column's included.
+- **`jl-table` keeps columns in view at its sides.** `frozen-start` and `frozen-end` hold that many of the columns
+  shown at the start and at the end while the rows scroll sideways, the checkbox and the chevron with the start; a
+  line marks each frozen side while the table scrolls, and the rows' shades (selection, marks, stripes) go through.
+  The offsets follow the columns' widths as they change.
 - **`jl-combobox` shows the options the server finds.** With `filter="none"` it shows every option given, whatever
   was typed: it filtered the server's answer again by the typed text, hiding what the server found without accents
   or by another field. `loading` says in the open list that options are coming (`aria-busy`, and screen readers hear

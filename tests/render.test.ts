@@ -186,7 +186,7 @@ describe('render budget', () => {
     const table = watch<JlTable>('jl-table');
     table.element.columns.set(JSON.parse(COLUMNS));
     table.element.rows.set(ROWS);
-    expectBuild(await table.measure(), { changes: 22, nodes: 26, renders: 1 });
+    expectBuild(await table.measure(), { changes: 24, nodes: 26, renders: 1 });
     table.remove();
   });
 

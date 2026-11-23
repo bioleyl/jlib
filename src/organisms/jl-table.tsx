@@ -6,7 +6,7 @@ import { JlButton } from '../atoms/jl-button';
 import { JlCheckbox } from '../atoms/jl-checkbox';
 import { JlIcon } from '../atoms/jl-icon';
 import { JlElement } from '../base/jl-element';
-import { jsonOf, oneOf, textListOf, textOf } from '../lib/attributes';
+import { clampedNumber, jsonOf, oneOf, textListOf, textOf } from '../lib/attributes';
 import { setOrRemove } from '../lib/dom';
 import { registerIcons } from '../lib/icons';
 import { PRESS_EVENTS, pressButtonOf, tellPress } from '../lib/press';
@@ -19,6 +19,8 @@ import {
   columnWidth,
   fieldOf,
   formatCell,
+  frozenCells,
+  frozenCss,
   nextSortDirection,
   openRows,
   rowKeyOf,
@@ -26,6 +28,7 @@ import {
   selectionState,
   shownColumns,
   sortBy,
+  stickyOffsets,
   toggleAll,
   toggleKey,
   withRowOpen,
@@ -42,6 +45,7 @@ import type {
   TableDetailRenderer,
   TableExpansion,
   TableField,
+  TableFrozen,
   TablePress,
   TableRenderers,
   TableRow,
@@ -77,6 +81,7 @@ const CHEVRON_SIZE = 16;
 const NO_SORT: TableSortDirection = 'none';
 const LOCAL_SORT: TableSortMode = 'local';
 const NO_EXPANSION: TableExpansion = 'none';
+const NO_FROZEN = 0;
 
 const ARIA_SORT: Record<TableSortDirection, string> = { asc: 'ascending', desc: 'descending', none: '' };
 const SORT_ICONS: Record<TableSortDirection, string> = {
@@ -126,10 +131,10 @@ function detailOf(row: Element): Element | null {
 const isSelectingText = (): boolean => (document.getSelection()?.toString() ?? '') !== '';
 
 /**
- * What a flush draws again: the headings, the rows, only the rows' order, the column chooser's boxes, or only what
- * they show.
+ * What a flush draws again: the headings, the rows, only the rows' order, the column chooser's boxes, only what they
+ * show, or the frozen columns.
  */
-type Part = 'head' | 'body' | 'order' | 'chooser' | 'choices';
+type Part = 'head' | 'body' | 'order' | 'chooser' | 'choices' | 'frozen';
 
 /** A row of data as drawn: its element, whose `data-index` is the row's place in `rows`, its key and its row. */
 interface DrawnRow<Row> {
@@ -231,6 +236,16 @@ export class JlTable<Row extends object = TableRow, Extra extends string = never
   readonly columnChooser = this.useChange(false, (value) => this.renderColumnChooser(value), {
     attribute: 'column-chooser',
   });
+  /** How many columns stay in view at the start while the rows scroll sideways; the checkbox and chevron stay too. */
+  readonly frozenStart = this.useChange(NO_FROZEN, () => this.schedule('frozen'), {
+    attribute: 'frozen-start',
+    parse: clampedNumber(NO_FROZEN, NO_FROZEN, Number.MAX_SAFE_INTEGER),
+  });
+  /** How many columns stay in view at the end while the rows scroll sideways. */
+  readonly frozenEnd = this.useChange(NO_FROZEN, () => this.schedule('frozen'), {
+    attribute: 'frozen-end',
+    parse: clampedNumber(NO_FROZEN, NO_FROZEN, Number.MAX_SAFE_INTEGER),
+  });
   /** The column chooser's name, on its button and over its list; jlib's own text when empty. */
   readonly columnsLabel = this.useChange('', () => this.drawColumnsLabel(), { attribute: 'columns-label' });
   /** Adds a checkbox to each row, and one in the header that selects them all. */
@@ -297,10 +312,13 @@ export class JlTable<Row extends object = TableRow, Extra extends string = never
     body: false,
     choices: false,
     chooser: false,
+    frozen: false,
     head: false,
     order: false,
     queued: false,
   };
+  // What watches the frozen headings, the scroller and the table: a width that changes moves the frozen cells.
+  private readonly _frozen = { sizes: watchSizes(() => this.measureFrozen()) };
   /**
    * The column chooser once drawn, its boxes by column key, changed in place so the focus stays on the box pressed,
    * and what watches the rows' scrollbar, which the chooser stands beside.
@@ -326,7 +344,8 @@ export class JlTable<Row extends object = TableRow, Extra extends string = never
     chooser: ref('.chooser'),
     foot: ref('.foot'),
     footSlot: ref<HTMLSlotElement>('slot[name="footer"]'),
-    head: ref('thead'),
+    frozenRules: ref<HTMLStyleElement>('style.frozen-rules'),
+    head: ref<HTMLTableSectionElement>('thead'),
     scroll: ref('.scroll'),
     table: ref('table'),
   }));
@@ -358,6 +377,7 @@ export class JlTable<Row extends object = TableRow, Extra extends string = never
   templateHtml(): Node {
     return (
       <div class="frame" attrs={{ part: 'base' }}>
+        <style class="frozen-rules" />
         <div class="chooser" hidden />
         <div class="scroll">
           <table>
@@ -395,10 +415,12 @@ export class JlTable<Row extends object = TableRow, Extra extends string = never
       this.on(this._refs.body, type, (event) => this.pressRow(event));
     }
     this.watchScrollbar();
+    this.watchFrozen();
   }
 
   onDisconnect(): void {
     this._chooser.sizes.disconnect();
+    this._frozen.sizes.disconnect();
   }
 
   /** Shows or hides the column chooser, drawn the first time it shows: a table without one builds none. */
@@ -477,11 +499,12 @@ export class JlTable<Row extends object = TableRow, Extra extends string = never
   }
 
   private flush(): void {
-    const { body, choices, chooser, head, order } = this._pending;
+    const { body, choices, chooser, frozen, head, order } = this._pending;
     Object.assign(this._pending, {
       body: false,
       choices: false,
       chooser: false,
+      frozen: false,
       head: false,
       order: false,
       queued: false,
@@ -494,6 +517,9 @@ export class JlTable<Row extends object = TableRow, Extra extends string = never
     }
     if (head) {
       this.renderHead();
+    }
+    if (head || frozen) {
+      this.renderFrozen();
     }
     if (head || order) {
       this.renderSortState();
@@ -633,6 +659,59 @@ export class JlTable<Row extends object = TableRow, Extra extends string = never
   /** The number of cells in a row: the columns, after the checkbox and the chevron when there are. */
   private span(columns: TableColumn<Row, Extra>[]): number {
     return columns.length + Number(this.selectable.get()) + Number(this.isExpandable());
+  }
+
+  /** The cells that stay in view at each side: the frozen columns among those shown, the lead cells with the start. */
+  private frozenCells(): TableFrozen {
+    const lead = Number(this.selectable.get()) + Number(this.isExpandable());
+    return frozenCells(this.shownColumns().length, lead, {
+      end: this.frozenEnd.get(),
+      start: this.frozenStart.get(),
+    });
+  }
+
+  /** The rules that keep the frozen cells in view, by their place in the row: rows drawn later need nothing. */
+  private renderFrozen(): void {
+    const rules = frozenCss(this.frozenCells());
+    if (this._refs.frozenRules.textContent !== rules) {
+      this._refs.frozenRules.textContent = rules;
+    }
+    this.watchFrozen();
+  }
+
+  private watchFrozen(): void {
+    const sizes = this._frozen.sizes;
+    sizes.disconnect();
+    const { end, start } = this.frozenCells();
+    if (!this.isConnected || start + end === 0) {
+      this.reflect('scrolls-sideways', false);
+      return;
+    }
+    const cells = this.headingCells();
+    const frozen = [...cells.slice(0, start), ...cells.slice(cells.length - end)];
+    for (const element of [...frozen, this._refs.scroll, this._refs.table]) {
+      sizes.observe(element);
+    }
+  }
+
+  /** The frozen cells' offsets, from the headings' widths, and whether the rows scroll sideways, which shows the lines. */
+  private measureFrozen(): void {
+    const { end, start } = this.frozenCells();
+    const widths = this.headingCells().map((cell) => cell.getBoundingClientRect().width);
+    this.setFrozenOffsets('start', stickyOffsets(widths.slice(0, start)));
+    this.setFrozenOffsets('end', stickyOffsets(widths.slice(widths.length - end).reverse()));
+    const scroll = this._refs.scroll;
+    this.reflect('scrolls-sideways', scroll.scrollWidth > scroll.clientWidth);
+  }
+
+  private setFrozenOffsets(side: keyof TableFrozen, offsets: number[]): void {
+    offsets.forEach((offset, index) => {
+      this.style.setProperty(`--frozen-${side}-${index}`, `${offset}px`);
+    });
+  }
+
+  private headingCells(): HTMLTableCellElement[] {
+    return [...(this._refs.head.rows[0]?.cells ?? [])];
   }
 
   private renderHead(): void {

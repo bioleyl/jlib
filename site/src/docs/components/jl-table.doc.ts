@@ -157,6 +157,26 @@ const DEPLOYS: TableRow[] = Array.from({ length: DEPLOY_COUNT }, (_, index) => (
 /** The deployments' columns where the server sorts: every one. */
 const SERVER_COLUMNS: TableColumn[] = DEPLOY_COLUMNS.map((column) => ({ ...column, sortable: true }));
 
+/** A wide table of members, its name and its status held at the sides while the rest scrolls sideways. */
+const WIDE_COLUMNS: TableColumn<Member>[] = [
+  { key: 'name', label: 'Name', sortable: true, width: 160 },
+  { key: 'email', label: 'Email', width: 180 },
+  { key: 'role', label: 'Role', width: 110 },
+  { format: 'number', key: 'projects', label: 'Projects', width: 100 },
+  { format: 'date', key: 'joined', label: 'Joined', width: 140 },
+  {
+    format: 'badge',
+    key: 'status',
+    label: 'Status',
+    tones: tonesOf([
+      ['Active', 'ok'],
+      ['Invited', 'info'],
+      ['Suspended', 'danger'],
+    ]),
+    width: 110,
+  },
+];
+
 /** The members' columns people choose from: the name always shows. */
 const CHOSEN_COLUMNS: TableColumn<Member>[] = USER_COLUMNS.map((column) =>
   column.key === 'name' ? { ...column, hideable: false } : column
@@ -392,6 +412,10 @@ The header stays on top while the rows scroll within max-height, and the table s
 What goes with the rows (the pages, a count) sits in the footer slot, a bar inside the frame that stays under them.
 For a cell that is more than a value (a person with an avatar, a link, a menu), give the column a renderer.
 
+frozen-start and frozen-end keep that many columns in view at each side while the rows scroll sideways: a name
+that tells the rows apart, a status or the row's actions. The checkbox and the chevron stay with the start, and a
+line marks each frozen side while the table scrolls. The counts are of the columns shown.
+
 hidden-columns leaves columns out, by key. column-chooser adds a button at the end of the header row that opens the
 list of columns, a box each, for people to choose those they see; it emits columns with the keys hidden, for the page
 to keep. A column with hideable false always shows, and the last column shown cannot be hidden.`,
@@ -594,6 +618,19 @@ to keep. A column with hideable false always shows, and the last column shown ca
       title: 'Columns people choose',
     },
     {
+      description:
+        'frozen-start and frozen-end keep columns in view at each side while the rows scroll sideways: here the name, with the checkbox, and the status. Scroll the table.',
+      html: `
+        <div style="max-width: 520px">
+          <jl-table class="wide" selectable frozen-start="1" frozen-end="1" label="Workspace members"
+            columns='${JSON.stringify(WIDE_COLUMNS)}'></jl-table>
+        </div>`,
+      script: `
+        root.querySelector('jl-table.wide').rows.set(members);`,
+      setup: (root) => root.querySelector<JlTable<Member>>('jl-table.wide')?.rows.set(USERS.slice(0, 5)),
+      title: 'Frozen columns',
+    },
+    {
       description: 'Placeholder rows while the data loads, and a sentence when there is none.',
       html: `
         <div class="stack">
@@ -752,6 +789,24 @@ to keep. A column with hideable false always shows, and the last column shown ca
       type: 'boolean',
     },
     {
+      attribute: 'frozen-start',
+      control: { kind: 'number', min: 0 },
+      default: '0',
+      description:
+        'How many columns stay in view at the start while the rows scroll sideways, among those shown; the checkbox and the chevron stay with them.',
+      name: 'frozenStart',
+      type: 'number',
+    },
+    {
+      attribute: 'frozen-end',
+      control: { kind: 'number', min: 0 },
+      default: '0',
+      description:
+        'How many columns stay in view at the end while the rows scroll sideways, among those shown. Where the two counts would overlap, the end gives way.',
+      name: 'frozenEnd',
+      type: 'number',
+    },
+    {
       attribute: 'columns-label',
       control: { kind: 'text' },
       default: "''",
@@ -881,7 +936,7 @@ to keep. A column with hideable false always shows, and the last column shown ca
     },
   ],
   summary:
-    'Rows of records under column headings, with sorting (by the table or the server), selection, columns people choose, rows that open on their details, formats and a sticky header.',
+    'Rows of records under column headings, with sorting (by the table or the server), selection, columns people choose or freeze at the sides, rows that open on their details, formats and a sticky header.',
   tag: 'jl-table',
   typing: {
     code: tableCode,

@@ -217,6 +217,53 @@ describe('jl-table, hidden columns', () => {
   });
 });
 
+describe('jl-table, frozen columns', () => {
+  afterEach(() => {
+    document.body.replaceChildren();
+  });
+
+  const rulesOf = (table: JlTable<Member>): string =>
+    rootOf(table).querySelector('style.frozen-rules')?.textContent ?? '';
+
+  it('freezes none by default', async () => {
+    const table = await mountTable(() => undefined);
+    expect(table.frozenStart.get()).toBe(0);
+    expect(rulesOf(table)).toBe('');
+  });
+
+  it('reads the counts from its attributes, the checkbox and chevron frozen with the start', async () => {
+    const table = await mountTable((created) => {
+      created.selectable.set(true);
+      created.expandable.set('single');
+      created.setAttribute('frozen-start', '1');
+      created.setAttribute('frozen-end', '1');
+    });
+    expect(table.frozenStart.get()).toBe(1);
+    expect(rulesOf(table)).toContain(':is(:nth-child(-n + 3), :nth-last-child(-n + 1))');
+  });
+
+  it('counts the columns shown, and follows them as they are hidden', async () => {
+    const table = await mountTable((created) => {
+      created.frozenStart.set(2);
+      created.frozenEnd.set(2);
+    });
+    expect(rulesOf(table)).toContain(':is(:nth-child(-n + 2), :nth-last-child(-n + 1))');
+
+    table.hiddenColumns.set(['email', 'role']);
+    await settle();
+    expect(rulesOf(table)).toContain(':is(:nth-child(-n + 1))');
+    expect(rulesOf(table)).not.toContain('nth-last-child');
+  });
+
+  it('frees them all again', async () => {
+    const table = await mountTable((created) => created.frozenStart.set(1));
+    table.frozenStart.set(0);
+    await settle();
+    expect(rulesOf(table)).toBe('');
+    expect(table.hasAttribute('scrolls-sideways')).toBe(false);
+  });
+});
+
 describe('jl-table, the column chooser', () => {
   beforeAll(fillBrowserGaps);
 

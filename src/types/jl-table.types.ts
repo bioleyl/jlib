@@ -105,3 +105,6 @@ export type TablePress<Row extends object = TableRow> = {
   button: PressButton;
   event: MouseEvent;
 };
+
+/** How many cells of each row stay in view at each side while the rows scroll sideways. */
+export type TableFrozen = { start: number; end: number };

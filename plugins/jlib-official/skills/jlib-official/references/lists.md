@@ -142,6 +142,9 @@ MembersTable.register();
   people choose them, and emits `columns` with the hidden keys: keep them as the person's preference (not in the
   address) and set them again as `hiddenColumns`. `hideable: false` keeps a column shown, the one that names the
   row. Never build a menu of checkboxes of your own beside the table.
+- `frozenStart` and `frozenEnd` (counts of the columns shown) keep columns in view at each side while a wide table
+  scrolls sideways: the column that names the row at the start (the checkbox and chevron stay with it), a status or
+  the row's actions at the end. Freeze few: what stays takes the room of what scrolls.
 - `press` says which row was pressed and how: `{ key, row, button, event }`, `button` being `'main'` (a click),
   `'auxiliary'` (a middle click) or `'secondary'` (a right click, the keyboard's menu key, a long press), and `event`
   the browser's own. Check the button before acting: every press arrives here. Cancel the event to refuse the press:

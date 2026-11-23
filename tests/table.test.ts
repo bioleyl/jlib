@@ -7,6 +7,8 @@ import {
   columnWidth,
   compareCells,
   formatCell,
+  frozenCells,
+  frozenCss,
   nextSortDirection,
   openRows,
   rowKeyOf,
@@ -14,6 +16,7 @@ import {
   selectionState,
   shownColumns,
   sortRows,
+  stickyOffsets,
   toggleAll,
   toggleKey,
   withRowOpen,
@@ -224,6 +227,51 @@ describe('the column chooser', () => {
   it('lets the last column that can be hidden go while one that cannot stays shown', () => {
     const columns = [{ hideable: false, key: 'name', label: 'Name' }, ...Columns.slice(1)];
     expect(columnChoices(columns, ['email']).map(({ locked }) => locked)).toEqual([true, false, false]);
+  });
+});
+
+describe('frozen columns', () => {
+  it('freezes nothing when nothing is asked', () => {
+    expect(frozenCells(5, 2, { end: 0, start: 0 })).toEqual({ end: 0, start: 0 });
+    expect(frozenCss({ end: 0, start: 0 })).toBe('');
+  });
+
+  it('freezes the checkbox and chevron cells with the start, never alone', () => {
+    expect(frozenCells(5, 2, { end: 0, start: 1 })).toEqual({ end: 0, start: 3 });
+    expect(frozenCells(5, 2, { end: 1, start: 0 })).toEqual({ end: 1, start: 0 });
+  });
+
+  it('freezes no more columns than are shown, the end giving way to the start', () => {
+    expect(frozenCells(3, 0, { end: 1, start: 9 })).toEqual({ end: 0, start: 3 });
+    expect(frozenCells(3, 0, { end: 2, start: 2 })).toEqual({ end: 1, start: 2 });
+    expect(frozenCells(3, 0, { end: 3, start: 0 })).toEqual({ end: 3, start: 0 });
+    expect(frozenCells(0, 1, { end: 1, start: 1 })).toEqual({ end: 0, start: 0 });
+  });
+
+  it('reads a count below zero as none', () => {
+    expect(frozenCells(3, 1, { end: -2, start: -1 })).toEqual({ end: 0, start: 0 });
+  });
+
+  it('adds up the widths before each cell', () => {
+    expect(stickyOffsets([])).toEqual([]);
+    expect(stickyOffsets([44])).toEqual([0]);
+    expect(stickyOffsets([44, 120.5, 80])).toEqual([0, 44, 164.5]);
+  });
+
+  it('keeps each frozen cell in view by its place in the row, its offset measured', () => {
+    const rules = frozenCss({ end: 1, start: 2 });
+    expect(rules).toContain(':is(:nth-child(-n + 2), :nth-last-child(-n + 1)) { position: sticky; }');
+    expect(rules).toContain('> :nth-child(1) { left: var(--frozen-start-0); }');
+    expect(rules).toContain('> :nth-child(2) { left: var(--frozen-start-1); }');
+    expect(rules).toContain('> :nth-last-child(1) { right: var(--frozen-end-0); }');
+    expect(rules).not.toContain('--frozen-end-1');
+  });
+
+  it("leaves an open row's detail and the empty row alone, and lets the rows' shades win", () => {
+    const rules = frozenCss({ end: 0, start: 1 });
+    expect(rules.split('\n').every((rule) => rule.includes('tr:not(.detail, .empty)'))).toBe(true);
+    expect(rules).toContain(':where(tbody tr:not(.detail, .empty) > :is(:nth-child(-n + 1)))');
+    expect(rules).not.toContain('nth-last-child');
   });
 });
 

@@ -486,7 +486,7 @@
     "className": "JlTable",
     "level": "organism",
     "name": "Table",
-    "summary": "Rows of records under column headings, with sorting (by the table or the server), selection, columns people choose, rows that open on their details, formats and a sticky header.",
+    "summary": "Rows of records under column headings, with sorting (by the table or the server), selection, columns people choose or freeze at the sides, rows that open on their details, formats and a sticky header.",
     "tag": "jl-table"
   },
   {
