@@ -115,6 +115,7 @@ export * from './molecules/jl-list-item';
 export * from './molecules/jl-load-more';
 export * from './molecules/jl-load-state';
 export * from './molecules/jl-menu';
+export * from './molecules/jl-multi-combobox';
 export * from './molecules/jl-number-input';
 export * from './molecules/jl-pagination';
 export * from './molecules/jl-popover';

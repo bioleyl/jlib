@@ -36,6 +36,7 @@ import type { JlInputList } from '../src/molecules/jl-input-list';
 import type { JlListItem } from '../src/molecules/jl-list-item';
 import type { JlLoadState } from '../src/molecules/jl-load-state';
 import type { JlMenu } from '../src/molecules/jl-menu';
+import type { JlMultiCombobox } from '../src/molecules/jl-multi-combobox';
 import type { JlNumberInput } from '../src/molecules/jl-number-input';
 import type { JlPagination } from '../src/molecules/jl-pagination';
 import type { JlSegmented } from '../src/molecules/jl-segmented';
@@ -3105,6 +3106,7 @@ describe('a disabled control', () => {
     'date-picker',
     'file-drop',
     'input',
+    'multi-combobox',
     'number-input',
     'radio-group',
     'rating',
@@ -3327,6 +3329,78 @@ describe("the table's column chooser", () => {
     await page.keyboard.press('Escape');
     await page.waitForTimeout(SETTLE_MS);
     expect(await drawn()).toEqual({ focused: 'jl-button', headings: ['name', 'role'], open: false });
+    expect(state.errors).toEqual([]);
+  });
+});
+
+describe('the multi-combobox', () => {
+  it('adds from the keyboard with the list kept open, and takes the last value out with Backspace', async () => {
+    const page = await open('/components/multi-combobox');
+    await mount(
+      page,
+      `<jl-multi-combobox label="Cities"
+        options='[{"value":"be","label":"Bern"},{"value":"bi","label":"Biel/Bienne"},{"value":"zh","label":"Zürich"}]'></jl-multi-combobox>`
+    );
+    const drawn = (): Promise<{ chips: string[]; open: boolean; text?: string; value: string[] }> =>
+      page.evaluate(() => {
+        const combobox = document.querySelector('#test-area jl-multi-combobox') as JlMultiCombobox;
+        const root = combobox.shadowRoot;
+        return {
+          chips: [...(root?.querySelectorAll<JlChip>('.chips jl-chip') ?? [])].map((chip) => chip.label.get()),
+          open: root?.querySelector('.popup')?.matches(':popover-open') ?? false,
+          text: root?.querySelector('input')?.value,
+          value: combobox.value.get(),
+        };
+      });
+    await page.locator('#test-area jl-multi-combobox input').click();
+    await page.keyboard.type('zü');
+    await page.keyboard.press('Enter');
+    expect(await drawn()).toEqual({ chips: ['Zürich'], open: true, text: '', value: ['zh'] });
+    // The list shows every option again, Zürich active: the next one down, round the end, is Bern.
+    await page.keyboard.press('ArrowDown');
+    await page.keyboard.press('Enter');
+    await page.keyboard.press('Escape');
+    expect(await drawn()).toEqual({ chips: ['Zürich', 'Bern'], open: false, text: '', value: ['zh', 'be'] });
+    await page.keyboard.press('Backspace');
+    expect(await drawn()).toEqual({ chips: ['Zürich'], open: false, text: '', value: ['zh'] });
+    expect(state.errors).toEqual([]);
+  });
+});
+
+describe('the combobox fed by the page', () => {
+  it('shows what the page found as people type, saying it loads meanwhile', async () => {
+    const page = await open('/components/combobox');
+    await mount(page, '<jl-combobox label="City" filter="none" debounce="100"></jl-combobox>');
+    await page.evaluate(() => {
+      const combobox = document.querySelector('#test-area jl-combobox') as JlCombobox;
+      combobox.events.register('input', () => {
+        combobox.loading.set(true);
+        setTimeout(() => {
+          combobox.options.set([
+            { label: 'Zürich', value: 'zh' },
+            { label: 'Bern', value: 'be' },
+          ]);
+          combobox.loading.set(false);
+        }, 300);
+      });
+    });
+    const drawn = (): Promise<{ loading: boolean; shown: string[]; text?: string }> =>
+      page.evaluate(() => {
+        const root = document.querySelector('#test-area jl-combobox')?.shadowRoot;
+        return {
+          loading: root?.querySelector<HTMLElement>('.loading')?.hidden === false,
+          shown: [...(root?.querySelectorAll('.listbox .option-label') ?? [])].map(
+            (label) => label.textContent ?? ''
+          ),
+          text: root?.querySelector('input')?.value,
+        };
+      });
+    await page.locator('#test-area jl-combobox input').click();
+    await page.keyboard.type('zur');
+    await page.waitForTimeout(200);
+    expect(await drawn()).toEqual({ loading: true, shown: [], text: 'zur' });
+    await page.waitForTimeout(400);
+    expect(await drawn()).toEqual({ loading: false, shown: ['Zürich', 'Bern'], text: 'zur' });
     expect(state.errors).toEqual([]);
   });
 });

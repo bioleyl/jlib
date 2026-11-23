@@ -4,6 +4,7 @@ import { afterEach, beforeAll, describe, expect, it } from 'vitest';
 
 import { jlTexts } from '../src/lib/texts';
 import { JlTable } from '../src/organisms/jl-table';
+import { fillBrowserGaps, settle } from './support/jsdom';
 
 import type { JlButton } from '../src/atoms/jl-button';
 import type { JlCheckbox } from '../src/atoms/jl-checkbox';
@@ -29,44 +30,6 @@ const LOCKED_NAME: TableColumn<Member>[] = [
   { hideable: false, key: 'name', label: 'Name', sortable: true },
   ...COLUMNS.slice(1),
 ];
-
-const POPOVER_OPEN = ':popover-open';
-
-/** A popover's toggle event, saying the state it goes to, as a browser sends it. */
-const toggleEvent = (type: string, open: boolean): Event =>
-  Object.assign(new Event(type), { newState: open ? 'open' : 'closed', oldState: open ? 'closed' : 'open' });
-
-/**
- * What jsdom lacks that the chooser uses: the popover API (shown, hidden, `:popover-open`, `beforetoggle` before
- * the change and `toggle` a task after it; no light dismiss) and `checkVisibility`.
- */
-function fillBrowserGaps(): void {
-  const shown = new WeakSet<Element>();
-  const toggle = (popover: HTMLElement, open: boolean): void => {
-    if (shown.has(popover) === open) {
-      return;
-    }
-    popover.dispatchEvent(toggleEvent('beforetoggle', open));
-    open ? shown.add(popover) : shown.delete(popover);
-    setTimeout(() => popover.dispatchEvent(toggleEvent('toggle', open)));
-  };
-  HTMLElement.prototype.matches = function matches(this: HTMLElement, selectors: string) {
-    return selectors === POPOVER_OPEN ? shown.has(this) : Element.prototype.matches.call(this, selectors);
-  } as HTMLElement['matches'];
-  HTMLElement.prototype.showPopover = function showPopover(this: HTMLElement) {
-    toggle(this, true);
-  };
-  HTMLElement.prototype.hidePopover = function hidePopover(this: HTMLElement) {
-    toggle(this, false);
-  };
-  Element.prototype.checkVisibility = () => true;
-}
-
-/** Lets the table draw what it queued: its inputs draw on a microtask, onConnect and the popover's toggle a task later. */
-const settle = async (): Promise<void> => {
-  await new Promise((resolve) => setTimeout(resolve));
-  await new Promise((resolve) => setTimeout(resolve));
-};
 
 async function mountTable(setup: (table: JlTable<Member>) => void): Promise<JlTable<Member>> {
   const table = new JlTable<Member>();

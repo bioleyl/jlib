@@ -2,7 +2,7 @@
 
 # jlib's components
 
-76 components, by level. Each links to its reference: properties, events, slots, methods, styling and
+77 components, by level. Each links to its reference: properties, events, slots, methods, styling and
 examples. In an app, the declarations of the installed version are the last word:
 `node_modules/@syware/jlib/dist/<level>/<tag>.d.ts`. One missing from `dist` is newer than the installed jlib.
 
@@ -42,7 +42,7 @@ examples. In an app, the declarations of the installed version are the last word
 - **Card** ([`JlCard`, `jl-card`](components/jl-card.md)): A flat surface for one subject: heading, content, media, actions and a footer.
 - **Chip group** ([`JlChipGroup`, `jl-chip-group`](components/jl-chip-group.md)): A row of chips to choose from: one, as radios, or several, each turned on and off.
 - **Code block** ([`JlCodeBlock`, `jl-code-block`](components/jl-code-block.md)): Source code, coloured, with a button to copy it.
-- **Combobox** ([`JlCombobox`, `jl-combobox`](components/jl-combobox.md)): A text field with a list of options that narrows as people type.
+- **Combobox** ([`JlCombobox`, `jl-combobox`](components/jl-combobox.md)): A text field with a list of options that narrows as people type, or that the server finds.
 - **Copy button** ([`JlCopyButton`, `jl-copy-button`](components/jl-copy-button.md)): Copies a text to the clipboard, and says so.
 - **Date picker** ([`JlDatePicker`, `jl-date-picker`](components/jl-date-picker.md)): A date field that shows the date for people and opens a calendar to pick it.
 - **Empty state** ([`JlEmpty`, `jl-empty`](components/jl-empty.md)): What a list, a table or a page shows when it has nothing yet, and the way to fill it.
@@ -54,6 +54,7 @@ examples. In an app, the declarations of the installed version are the last word
 - **Load more** ([`JlLoadMore`, `jl-load-more`](components/jl-load-more.md)): The end of a long list: how much shows, and a button for the next page.
 - **Load state** ([`JlLoadState`, `jl-load-state`](components/jl-load-state.md)): What a list shows while its data comes, when there is none, and when it failed to come.
 - **Menu** ([`JlMenu`, `jl-menu`](components/jl-menu.md)): A list of actions that opens from a button, driven by the pointer or entirely by the keyboard.
+- **Multi-combobox** ([`JlMultiCombobox`, `jl-multi-combobox`](components/jl-multi-combobox.md)): A combobox that holds several values as chips, from a list or from what the server finds.
 - **Number input** ([`JlNumberInput`, `jl-number-input`](components/jl-number-input.md)): A number field with − and + buttons, arrow keys and bounds.
 - **Pagination** ([`JlPagination`, `jl-pagination`](components/jl-pagination.md)): Moves through pages of results, with the current page, its neighbours and the ends a click away.
 - **Popover** ([`JlPopover`, `jl-popover`](components/jl-popover.md)): A floating panel that opens from a button: a small form, settings or details, closed by a click outside.

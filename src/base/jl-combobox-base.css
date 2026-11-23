@@ -4,6 +4,16 @@
   min-width: 0;
 }
 
+/* What the field holds before its text (jl-multi-combobox's chips) shares the frame's room with it, wrapping above. */
+.entry {
+  display: flex;
+  flex: 1;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+}
+
 .toggle jl-icon {
   transition: transform var(--jl-fast) var(--jl-ease);
 }
@@ -43,7 +53,7 @@
   user-select: none;
 }
 
-.option[aria-selected="true"] {
+.option.active {
   background: var(--jl-surface-3);
 }
 
@@ -93,4 +103,18 @@ mark {
   padding: 8px 10px;
   color: var(--jl-muted);
   font-size: var(--jl-font-sm);
+}
+
+/* While the page finds options: a line above those the list holds, which stay until the new ones come. */
+.loading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  color: var(--jl-muted);
+  font-size: var(--jl-font-sm);
+}
+
+.spinner {
+  display: inline-flex;
 }

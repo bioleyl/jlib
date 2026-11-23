@@ -23,19 +23,56 @@ inner input lives in a shadow root. A form is a real form of `JlField`s around n
 | A number with bounds | `JlNumberInput` (`min`, `max`, `step`) | `number \| null` |
 | One choice in a list | `JlSelect<Value>` | `Value \| ''` |
 | One choice in a long list, typed to narrow | `JlCombobox` (`allowCustom`) | `string` |
+| One choice the server finds as people type (a record among thousands) | `JlCombobox` with `filter="none"` | `string` |
+| Several choices from a long list, or from the server | `JlMultiCombobox` | `string[]` |
 | One choice among a few, all in view | `JlRadioGroup<Value>` (`variant="cards"`), `JlSegmented<Value>` | `Value` |
 | Several choices at once | `JlChipGroup<Value>` with `multiple` | `Value[]` |
 | On or off, applied at once | `JlSwitch` | `checked` |
 | A box to tick (terms, a choice in a list) | `JlCheckbox` | `checked` |
 | A date | `JlDatePicker` | ISO `yyyy-mm-dd` |
 | Files | `JlFileDrop` (`accept`, `maxSize`, `multiple`) | `File[]` |
-| Short texts as chips | `JlTagInput` (`suggestions`) | `string[]` |
+| Short texts people write, as chips | `JlTagInput` (`suggestions`) | `string[]` |
 | Several values, a row each | `JlInputList` | `string[]` |
 | A score | `JlRating` | `number` |
 | A number by dragging | `JlSlider` | `number` |
 
 Each control's reference has its inputs (`name`, `required`, `disabled`, `invalid`…) and events (`input` as people
 type, `change` once committed).
+
+A combobox whose options come from the server shows them as given with `filter="none"` (it would filter the
+server's answer again by the typed text, hiding what the server found without accents or by another field). Listen to
+`input`, which `debounce` holds back while people type; set `loading` while the answer comes, then the options and
+`loading` back. The combobox shows the options set last: drop an answer for a text typed over since. A chosen
+option keeps its label when the options change, so give the options of a value set from outside once, with it.
+
+```tsx
+<JlCombobox
+  label="Creator"
+  filter="none"
+  debounce={250}
+  emptyText="No agent by that name"
+  onInput={(text) => void this.findAgents(text)}
+  onChange={(id) => this.setCreator(id)}
+/>
+```
+
+```ts
+private async findAgents(text: string): Promise<void> {
+  const ask = ++this._asked.last; // the answer of a text typed over since is dropped
+  this._refs.creator.loading.set(true);
+  const agents = await api.agents({ search: text });
+  if (ask !== this._asked.last) {
+    return;
+  }
+  this._refs.creator.options.set(agents.map((agent) => ({ label: agent.name, value: agent.id })));
+  this._refs.creator.loading.set(false);
+}
+```
+
+`JlMultiCombobox` holds several values, as chips in the field: `value` and `change` are `string[]`. A choice adds
+the option and keeps the list open, choosing it again, its chip's × or Backspace in the empty field takes it out; it
+takes `filter`, `loading` and `debounce` as `JlCombobox` does. `JlTagInput` is for texts people write; values chosen
+among options are a multi-combobox's.
 
 ## A field
 
@@ -60,7 +97,7 @@ type, `change` once committed).
 ## Reading the values
 
 - `new FormData(form)` holds every named control's value, like native fields: a `JlChipGroup multiple`, a
-  `JlTagInput` or a `JlFileDrop` gives several entries of one name (`data.getAll('tags')`).
+  `JlMultiCombobox`, a `JlTagInput` or a `JlFileDrop` gives several entries of one name (`data.getAll('tags')`).
 - Or read each control: `input.value.get()`, `number.value.get()` (a number, or `null`), `chips.value.get()`.
 - `reset` brings back the values written as attributes (see [Traps](#traps)); a disabled `<fieldset>` disables the
   controls in it and leaves them out of the data.

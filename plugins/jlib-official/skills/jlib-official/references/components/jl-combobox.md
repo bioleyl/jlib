@@ -2,7 +2,7 @@
 
 # Combobox: `jl-combobox`
 
-A text field with a list of options that narrows as people type.
+A text field with a list of options that narrows as people type, or that the server finds.
 
 - Class `JlCombobox`, a molecule: `import { JlCombobox } from '@syware/jlib';`
 - On the site: https://bioleyl.github.io/jlib/components/combobox
@@ -13,7 +13,15 @@ shows the option's label, while value and the form hold its value. An Enter that
 nothing typed) submits the form, as from a native field.
 
 Without allow-custom, leaving the field with text no option has brings the chosen label back; with it, that text
-becomes the value. Listen to input to load options from a server as people type, and set them with options.set().
+becomes the value.
+
+Where the server finds the options (among thousands, or by more than their label: without accents, by another
+field), filter="none" shows them as the page gives them, whatever was typed. Listen to input, which debounce holds
+back until people stop typing, set loading while the answer comes (the open list says so, and the typed text stays),
+then set the options and loading back. The page drops an answer for a text typed over since: the combobox shows the
+options it was given last. A chosen option keeps its label when the options change.
+
+For several values, as chips in the field, use jl-multi-combobox.
 
 ## Use
 
@@ -45,6 +53,10 @@ Inputs: a JSX prop sets one, code calls `.set(value)` and `.get()`, HTML writes 
 
 - `options` (attribute `options`): `ComboboxOption[]`, default `[]`. The choices: value, label, and optionally a description and disabled.
 - `value` (attribute `value`): `string`, default `''`. The chosen option's value; with allow-custom, any text.
+- `filter` (attribute `filter`): `'local' | 'none'`, default `'local'`. Who narrows the options to what was typed: the combobox (local), or the page (none), which hears input and gives the options it found, shown as they are.
+- `loading` (attribute `loading`): `boolean`, default `false`. The page is finding options: the open list says so above the options it holds, with aria-busy, and screen readers hear it. An empty answer then shows empty-text.
+- `loadingText` (attribute `loading-text`): `string`, default `''`. What the list says while loading. Empty: jlib's own text, in the language shown.
+- `debounce` (attribute `debounce`): `number`, default `0`. How long people stop typing, in milliseconds, before input fires; 0 fires it at every keystroke. A choice made before cancels it.
 - `placeholder` (attribute `placeholder`): `string`, default `''`. Shown while the field is empty.
 - `allowCustom` (attribute `allow-custom`): `boolean`, default `false`. Text no option has as its label becomes the value.
 - `clearable` (attribute `clearable`): `boolean`, default `false`. A button empties the field while it holds text.
@@ -61,7 +73,7 @@ Inputs: a JSX prop sets one, code calls `.set(value)` and `.get()`, HTML writes 
 In JSX, the `on…` prop, its handler given the detail; in code, `events.register(name, (detail) => …)`. They do not bubble.
 
 - `change` (`onChange` in JSX), detail `string`: An option was chosen, the free text was taken, or the field was cleared.
-- `input` (`onInput` in JSX), detail `string`: Each change of the typed text, to fetch options for it.
+- `input` (`onInput` in JSX), detail `string`: The typed text changed, to find options for it: at each keystroke, or once typing pauses for debounce milliseconds.
 
 ## Methods
 
@@ -119,22 +131,27 @@ combobox.events.register('change', (value) => {
 
 ### Options from a server
 
-The options come from a pretend server, a moment after each keystroke.
+A pretend server finds the languages, by their name or by their file extension: type "js". filter="none" shows what it found, which the combobox would otherwise filter again by the typed text; loading shows while it answers, and debounce asks once typing pauses.
 
 ```html
 <div class="narrow">
-  <jl-combobox class="demo-remote" label="Language" placeholder="Type a language" empty-text="No language by that name"></jl-combobox>
+  <jl-combobox class="demo-remote" label="Language" placeholder="Type a language or an extension"
+    filter="none" debounce="250" empty-text="No language by that name"></jl-combobox>
 </div>
 ```
 
 ```js
-// LANGUAGES: [{ value: 'rust', label: 'Rust' }, …]
-const combobox = root.querySelector('.demo-remote');
-combobox.events.register('input', (text) => {
-  setTimeout(() => {
-    const query = text.toLowerCase();
-    combobox.options.set(LANGUAGES.filter((option) => option.value.includes(query)));
-  }, 250);
+const combobox = root.querySelector<JlCombobox>('.demo-remote');
+const asked = { last: 0 };
+combobox.events.register('input', async (text) => {
+  const ask = ++asked.last;
+  combobox.loading.set(true);
+  const found = await api.languages({ search: text });
+  if (ask !== asked.last) {
+    return; // an answer for a text typed over since
+  }
+  combobox.options.set(found.map((language) => ({ value: language.id, label: language.name })));
+  combobox.loading.set(false);
 });
 ```
 

@@ -93,7 +93,7 @@ tone's icon) and `TONE_ICON_FILLED`, and each component's own lists (`BUTTON_VAR
 ## Types
 
 Every type is exported from `@syware/jlib`: the components' items and options (`TableColumn<Row, Extra>`,
-`TableRenderers`, `SelectOption<Value>`, `ChipGroupOption<Value>`, `RadioOption<Value>`, `SegmentedOption<Value>`,
+`TableRenderers`, `SelectOption<Value>`, `ComboboxOption`, `ChipGroupOption<Value>`, `RadioOption<Value>`, `SegmentedOption<Value>`,
 `MenuItem<Value>`, `SideNavSection<Id>`, `SideNavItem<Id>`, `TabBarItem<Id>`, `BreadcrumbItem<Id>`, `PaletteCommand<Id>`,
 `TreeItem`, `TreeLoader`, `Fact`, `StepItem`), the options of the functions (`ToastOptions`, `ConfirmOptions`,
 `LeaveGuardOptions`, `DownloadOptions`), and the shared ones (`Tone`, `ControlSize`, `Placement`, `StatusLook`).

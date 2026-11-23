@@ -17,10 +17,22 @@ and documented on [the documentation site](https://bioleyl.github.io/jlib/).
   always shows, its box ticked and off, and the last column shown cannot be hidden. The button is named by
   `columns-label`, or jlib's own text, in French and German too. Changing the hidden columns keeps the selection,
   the open rows and the sort, a hidden column's included.
+- **`jl-combobox` shows the options the server finds.** With `filter="none"` it shows every option given, whatever
+  was typed: it filtered the server's answer again by the typed text, hiding what the server found without accents
+  or by another field. `loading` says in the open list that options are coming (`aria-busy`, and screen readers hear
+  it, as they hear how many options came), above the ones it holds, the typed text staying; `loading-text` words it.
+  `debounce` holds `input` back until people stop typing, and a choice made before cancels it. The combobox shows the
+  options set last, and a chosen option keeps its label when they change.
+- **`jl-multi-combobox` holds several values.** A combobox whose values show as chips in the field, `value` and
+  `change` a `string[]`. A choice adds the option and keeps the list open for the next one; choosing it again, its
+  chip's × or Backspace in the empty field takes it out. It narrows its list, or shows what the page found, as
+  `jl-combobox` does (`filter`, `loading`, `debounce`), keeps each value's label when the options change, and gives
+  the form each value under the field's name. `jl-tag-input` stays for texts people write.
 
 ### Changed
 
-- `jsdom` joins the development dependencies: `tests/jl-table.test.ts` runs the table as an app's tests meet it.
+- `jsdom` joins the development dependencies: `tests/jl-table.test.ts`, `tests/jl-combobox.test.ts` and
+  `tests/jl-multi-combobox.test.ts` run those components as an app's tests meet them.
 
 ### Worth a look when you update
 
@@ -28,6 +40,8 @@ and documented on [the documentation site](https://bioleyl.github.io/jlib/).
   in the browser.
 - **A menu of checkboxes built beside a table to show or hide its columns** can go: `column-chooser` and
   `hidden-columns` do it, and the `columns` event says what to keep.
+- **A combobox fed by a server takes `filter="none"`**, and its page sets `loading` while the answer comes: without
+  it, the options the server found otherwise than by their label (without accents, by another field) stay hidden.
 
 ## 0.17.1 (2026-11-18)
 

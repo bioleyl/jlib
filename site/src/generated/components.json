@@ -220,7 +220,7 @@
     "className": "JlCombobox",
     "level": "molecule",
     "name": "Combobox",
-    "summary": "A text field with a list of options that narrows as people type.",
+    "summary": "A text field with a list of options that narrows as people type, or that the server finds.",
     "tag": "jl-combobox"
   },
   {
@@ -299,6 +299,13 @@
     "name": "Menu",
     "summary": "A list of actions that opens from a button, driven by the pointer or entirely by the keyboard.",
     "tag": "jl-menu"
+  },
+  {
+    "className": "JlMultiCombobox",
+    "level": "molecule",
+    "name": "Multi-combobox",
+    "summary": "A combobox that holds several values as chips, from a list or from what the server finds.",
+    "tag": "jl-multi-combobox"
   },
   {
     "className": "JlNumberInput",

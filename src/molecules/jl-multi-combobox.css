@@ -1,0 +1,27 @@
+/* The chips are items of the entry's own flow, so the field follows the last one on its line. */
+.chips {
+  display: contents;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.chip-item {
+  display: inline-flex;
+  max-width: 100%;
+}
+
+.control {
+  padding: 3px 12px 3px 4px;
+}
+
+.native {
+  flex: 1 0 80px;
+  height: calc(var(--height, var(--jl-control-md)) - 8px);
+  padding-left: 6px;
+}
+
+/* A disabled field keeps its chips, quieter, without their × (see drawDisabled). */
+:host(:disabled) jl-chip::part(base) {
+  color: var(--jl-muted);
+}
