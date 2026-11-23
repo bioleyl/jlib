@@ -3,6 +3,32 @@
 What changed in each version of [@syware/jlib](https://www.npmjs.com/package/@syware/jlib). Every component is shown
 and documented on [the documentation site](https://bioleyl.github.io/jlib/).
 
+## Unreleased
+
+### Added
+
+- **`jl-table` can leave sorting to the page.** With `sort-mode="remote"`, a press on a heading updates `sortKey`,
+  `sortDirection`, the heading's arrow and `aria-sort`, emits `sort`, and leaves the rows in the order given. A page
+  of results a server had sorted was sorted again in the browser's collation, which can differ from the database's.
+  `local`, the default, sorts as before; setting `sortKey` from code still emits nothing.
+- **`jl-table` lets people choose its columns.** `hidden-columns` leaves columns out, by key. `column-chooser` adds a
+  button at the end of the header row that opens the list of columns, in their order, a box each: a change updates
+  `hiddenColumns` and emits `columns` with the hidden keys, for the page to keep. A column with `hideable: false`
+  always shows, its box ticked and off, and the last column shown cannot be hidden. The button is named by
+  `columns-label`, or jlib's own text, in French and German too. Changing the hidden columns keeps the selection,
+  the open rows and the sort, a hidden column's included.
+
+### Changed
+
+- `jsdom` joins the development dependencies: `tests/jl-table.test.ts` runs the table as an app's tests meet it.
+
+### Worth a look when you update
+
+- **A table whose server sorts takes `sort-mode="remote"`**: without it, each page the server sorted is sorted again
+  in the browser.
+- **A menu of checkboxes built beside a table to show or hide its columns** can go: `column-chooser` and
+  `hidden-columns` do it, and the `columns` event says what to keep.
+
 ## 0.17.1 (2026-11-18)
 
 ### Fixed

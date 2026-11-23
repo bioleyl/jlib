@@ -9,6 +9,12 @@ export type TableAlign = 'left' | 'center' | 'right';
 /** The order of a sorted column; `none` keeps the rows as they came. */
 export type TableSortDirection = 'asc' | 'desc' | 'none';
 
+/**
+ * Who orders the rows: the table (`local`), or the page (`remote`), which hears of the sort and gives the rows in
+ * that order, as a server sorts a page of results.
+ */
+export type TableSortMode = 'local' | 'remote';
+
 /** A row of a table that does not say its type: any field, of any value. */
 export type TableRow = Record<string, unknown>;
 
@@ -45,6 +51,19 @@ export type TableColumn<Row extends object = TableRow, Extra extends string = ne
    * otherwise.
    */
   wrap?: boolean;
+  /** `false` keeps the column shown, whatever `hiddenColumns` says; the column chooser shows its box ticked and off. */
+  hideable?: boolean;
+};
+
+/**
+ * A column's line in the column chooser: shown or not, and locked when its box cannot change: a column that cannot
+ * be hidden, or the last one shown.
+ */
+export type TableColumnChoice<Key extends string = string> = {
+  key: Key;
+  label: string;
+  shown: boolean;
+  locked: boolean;
 };
 
 /** A row's identity, the value of its `row-key` field. */

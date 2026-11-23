@@ -82,7 +82,7 @@ examples. In an app, the declarations of the installed version are the last word
 - **Page outlet** ([`JlPageOutlet`, `jl-page-outlet`](components/jl-page-outlet.md)): Where the pages show: the next one loads out of sight, under a line, and shows once it has its data.
 - **Side nav** ([`JlSideNav`, `jl-side-nav`](components/jl-side-nav.md)): The navigation down the side of an app, with nested items and a collapsed rail.
 - **Tab bar** ([`JlTabBar`, `jl-tab-bar`](components/jl-tab-bar.md)): The bar along the bottom of a phone: the main places of an app, one tap away.
-- **Table** ([`JlTable`, `jl-table`](components/jl-table.md)): Rows of records under column headings, with sorting, selection, rows that open on their details, formats and a sticky header.
+- **Table** ([`JlTable`, `jl-table`](components/jl-table.md)): Rows of records under column headings, with sorting (by the table or the server), selection, columns people choose, rows that open on their details, formats and a sticky header.
 - **Toaster** ([`JlToaster`, `jl-toaster`](components/jl-toaster.md)): The corner of the window where toasts stack, and toast() to show one from anywhere.
 - **Tree** ([`JlTree`, `jl-tree`](components/jl-tree.md)): Nested items that open and close, as files in folders, with the keyboard of a tree; loaded a page at a time for large ones.
 

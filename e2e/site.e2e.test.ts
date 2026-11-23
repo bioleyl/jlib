@@ -3287,6 +3287,50 @@ describe("the table's select-all box", () => {
   });
 });
 
+describe("the table's column chooser", () => {
+  it('works from the keyboard, and gives the focus back to its button when Escape closes it', async () => {
+    const page = await open('/components/table');
+    await mount(
+      page,
+      `<jl-table column-chooser row-key="id"
+        columns='[{"key":"name","label":"Name","hideable":false},{"key":"email","label":"Email"},{"key":"role","label":"Role"}]'
+        rows='[{"id":1,"name":"Ada","email":"ada@acme.dev","role":"Owner"}]'></jl-table>`
+    );
+    // What has the focus in the table, the chooser's open state and the headings drawn.
+    const drawn = (): Promise<{ focused?: string; open: boolean; headings: string[] }> =>
+      page.evaluate(() => {
+        const root = document.querySelector('#test-area jl-table')?.shadowRoot;
+        const active = root?.activeElement;
+        return {
+          focused: active?.localName === 'jl-checkbox' ? (active as JlCheckbox).label.get() : active?.localName,
+          headings: [...(root?.querySelectorAll<HTMLElement>('thead th[data-key]') ?? [])].map(
+            (cell) => cell.dataset.key ?? ''
+          ),
+          open: root?.querySelector('jl-popover')?.hasAttribute('open') ?? false,
+        };
+      });
+    await page.evaluate(() =>
+      document
+        .querySelector('#test-area jl-table')
+        ?.shadowRoot?.querySelector<HTMLElement>('.chooser jl-button')
+        ?.focus()
+    );
+    await page.keyboard.press('Enter');
+    await page.waitForTimeout(SETTLE_MS);
+    // Name cannot be hidden: its box is off, and the focus goes to the first box that can change.
+    expect(await drawn()).toEqual({ focused: 'Email', headings: ['name', 'email', 'role'], open: true });
+    await page.keyboard.press('Space');
+    await page.waitForTimeout(SETTLE_MS);
+    expect(await drawn()).toEqual({ focused: 'Email', headings: ['name', 'role'], open: true });
+    await page.keyboard.press('Tab');
+    expect((await drawn()).focused).toBe('Role');
+    await page.keyboard.press('Escape');
+    await page.waitForTimeout(SETTLE_MS);
+    expect(await drawn()).toEqual({ focused: 'jl-button', headings: ['name', 'role'], open: false });
+    expect(state.errors).toEqual([]);
+  });
+});
+
 describe('the menu, given its items again while open', () => {
   it('stays open, the focus on the item of the same value', async () => {
     const page = await open('/components/menu');

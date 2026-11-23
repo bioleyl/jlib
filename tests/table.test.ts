@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import {
   cellOf,
   columnAlign,
+  columnChoices,
   columnWidth,
   compareCells,
   formatCell,
@@ -11,6 +12,7 @@ import {
   rowKeyOf,
   rowToggles,
   selectionState,
+  shownColumns,
   sortRows,
   toggleAll,
   toggleKey,
@@ -153,6 +155,75 @@ describe('selection', () => {
     expect(toggleKey([1], 2, true)).toEqual([1, 2]);
     expect(toggleKey([1, 2], 1, false)).toEqual([2]);
     expect(toggleKey([1], 1, true)).toEqual([1]);
+  });
+});
+
+describe('hidden columns', () => {
+  const Columns = [
+    { key: 'name', label: 'Name' },
+    { key: 'email', label: 'Email' },
+    { key: 'role', label: 'Role' },
+  ];
+  const keys = (columns: { key: string }[]): string[] => columns.map(({ key }) => key);
+  const LockedName = [{ hideable: false, key: 'name', label: 'Name' }, ...Columns.slice(1)];
+
+  it('draws every column when none is hidden', () => {
+    expect(keys(shownColumns(Columns, []))).toEqual(['name', 'email', 'role']);
+  });
+
+  it('leaves out the hidden ones, in their order, and ignores keys of no column', () => {
+    expect(keys(shownColumns(Columns, ['role', 'gone', 'name']))).toEqual(['email']);
+  });
+
+  it('draws none when all are hidden', () => {
+    expect(shownColumns(Columns, ['name', 'email', 'role'])).toEqual([]);
+  });
+
+  it('keeps a column that cannot be hidden, whatever hides it', () => {
+    expect(keys(shownColumns(LockedName, ['name', 'email']))).toEqual(['name', 'role']);
+  });
+
+  it('adds and takes out a hidden column', () => {
+    expect(toggleKey(['email'], 'role', true)).toEqual(['email', 'role']);
+    expect(toggleKey(['email', 'role'], 'email', false)).toEqual(['role']);
+  });
+});
+
+describe('the column chooser', () => {
+  const Columns = [
+    { key: 'name', label: 'Name' },
+    { key: 'email', label: 'Email' },
+    { key: 'role', label: 'Role' },
+  ];
+
+  it('lists every column in its order, by label, the shown ones ticked', () => {
+    expect(columnChoices(Columns, ['email'])).toEqual([
+      { key: 'name', label: 'Name', locked: false, shown: true },
+      { key: 'email', label: 'Email', locked: false, shown: false },
+      { key: 'role', label: 'Role', locked: false, shown: true },
+    ]);
+  });
+
+  it('locks the last column shown, so the chooser cannot hide them all', () => {
+    expect(columnChoices(Columns, ['email', 'role']).map(({ locked }) => locked)).toEqual([true, false, false]);
+  });
+
+  it('locks none of the two last columns shown', () => {
+    expect(columnChoices(Columns, ['role']).some(({ locked }) => locked)).toBe(false);
+  });
+
+  it('locks nothing when every column is hidden, so one can be shown again', () => {
+    expect(columnChoices(Columns, ['name', 'email', 'role']).some(({ locked }) => locked)).toBe(false);
+  });
+
+  it('shows a column that cannot be hidden ticked and locked, even when listed as hidden', () => {
+    const columns = [{ hideable: false, key: 'name', label: 'Name' }, ...Columns.slice(1)];
+    expect(columnChoices(columns, ['name'])[0]).toEqual({ key: 'name', label: 'Name', locked: true, shown: true });
+  });
+
+  it('lets the last column that can be hidden go while one that cannot stays shown', () => {
+    const columns = [{ hideable: false, key: 'name', label: 'Name' }, ...Columns.slice(1)];
+    expect(columnChoices(columns, ['email']).map(({ locked }) => locked)).toEqual([true, false, false]);
   });
 });
 

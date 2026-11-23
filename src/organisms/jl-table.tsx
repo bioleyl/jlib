@@ -1,17 +1,21 @@
 import { css } from '@jadis/core';
-import { ArrowDown, ArrowUp, ChevronRight, ChevronsUpDown, Inbox } from 'lucide';
+import { ArrowDown, ArrowUp, ChevronRight, ChevronsUpDown, Columns3, Inbox } from 'lucide';
 
 import { JlBadge } from '../atoms/jl-badge';
+import { JlButton } from '../atoms/jl-button';
+import { JlCheckbox } from '../atoms/jl-checkbox';
 import { JlIcon } from '../atoms/jl-icon';
 import { JlElement } from '../base/jl-element';
-import { jsonOf, oneOf, textOf } from '../lib/attributes';
+import { jsonOf, oneOf, textListOf, textOf } from '../lib/attributes';
 import { setOrRemove } from '../lib/dom';
 import { registerIcons } from '../lib/icons';
 import { PRESS_EVENTS, pressButtonOf, tellPress } from '../lib/press';
+import { watchSizes } from '../lib/resize';
 import { hasSlotted } from '../lib/slots';
 import { startedOnControl } from '../lib/surface';
 import {
   columnAlign,
+  columnChoices,
   columnWidth,
   fieldOf,
   formatCell,
@@ -20,12 +24,14 @@ import {
   rowKeyOf,
   rowToggles,
   selectionState,
+  shownColumns,
   sortBy,
   toggleAll,
   toggleKey,
   withRowOpen,
 } from '../lib/table';
 import { jlText } from '../lib/texts';
+import { JlPopover } from '../molecules/jl-popover';
 import { BASE_STYLES } from '../styles/shared';
 import styles from './jl-table.css?inline';
 
@@ -42,6 +48,7 @@ import type {
   TableRowKey,
   TableSort,
   TableSortDirection,
+  TableSortMode,
   TableToggle,
 } from '../types/jl-table.types';
 
@@ -51,10 +58,12 @@ registerIcons({
   'arrow-up': ArrowUp,
   'chevron-right': ChevronRight,
   'chevrons-up-down': ChevronsUpDown,
+  'columns-3': Columns3,
   inbox: Inbox,
 });
 
 export const TABLE_SORT_DIRECTIONS: readonly TableSortDirection[] = ['none', 'asc', 'desc'];
+export const TABLE_SORT_MODES: readonly TableSortMode[] = ['local', 'remote'];
 export const TABLE_EXPANSIONS: readonly TableExpansion[] = ['none', 'single', 'multiple'];
 
 const MARKED_ATTRIBUTE = 'data-marked';
@@ -66,6 +75,7 @@ const SORT_ICON_SIZE = 14;
 const EMPTY_ICON_SIZE = 18;
 const CHEVRON_SIZE = 16;
 const NO_SORT: TableSortDirection = 'none';
+const LOCAL_SORT: TableSortMode = 'local';
 const NO_EXPANSION: TableExpansion = 'none';
 
 const ARIA_SORT: Record<TableSortDirection, string> = { asc: 'ascending', desc: 'descending', none: '' };
@@ -115,14 +125,24 @@ function detailOf(row: Element): Element | null {
 /** Whether a press ends a drag that selected text, which leaves the row as it was. */
 const isSelectingText = (): boolean => (document.getSelection()?.toString() ?? '') !== '';
 
-/** What a flush draws again: the headings, the rows, or only the rows' order. */
-type Part = 'head' | 'body' | 'order';
+/**
+ * What a flush draws again: the headings, the rows, only the rows' order, the column chooser's boxes, or only what
+ * they show.
+ */
+type Part = 'head' | 'body' | 'order' | 'chooser' | 'choices';
 
 /** A row of data as drawn: its element, whose `data-index` is the row's place in `rows`, its key and its row. */
 interface DrawnRow<Row> {
   element: HTMLElement;
   key: TableRowKey;
   row: Row;
+}
+
+/** The column chooser, drawn the first time it shows: its button, the popover it opens, and the list in it. */
+interface ChooserParts {
+  button: JlButton;
+  list: HTMLFieldSetElement;
+  popover: JlPopover;
 }
 
 /** A state the table draws on rows by their keys. */
@@ -144,9 +164,10 @@ const isOpen = (row: Element): boolean =>
 /**
  * Rows of data under column headings. `columns` say what each column shows and how (`format`: text, number, date,
  * badge, code); `rows` are plain objects. Sortable headings cycle ascending, descending and unsorted, and sort the
- * rows in place; `selectable` adds a checkbox column. The header stays on top while the rows scroll within
- * `max-height`, and the table scrolls sideways on narrow screens. Cells of a column can be drawn by code with
- * `renderers`. `expandable` rows open on a press to show their `detail` under them, the row staying as it is: one at
+ * rows in place, or leave the order to the page (`sort-mode="remote"`); `selectable` adds a checkbox column.
+ * `hidden-columns` leaves columns out, and `column-chooser` lets people choose them. The header stays on top while the
+ * rows scroll within `max-height`, and the table scrolls sideways on narrow screens. Cells of a column can be drawn by
+ * code with `renderers`. `expandable` rows open on a press to show their `detail` under them, the row staying as it is: one at
  * a time (`single`) or any number (`multiple`). A press on a row fires `press` with the row, the button and the
  * browser's event, which a page cancels to refuse it: to open a record on a click, its own menu on a right click.
  *
@@ -161,12 +182,17 @@ export class JlTable<Row extends object = TableRow, Extra extends string = never
     selection: TableRowKey[];
     toggle: TableToggle;
     press: TablePress<Row>;
+    columns: TableColumnKey<Row, Extra>[];
   }>();
 
-  readonly columns = this.useChange<TableColumn<Row, Extra>[]>([], () => this.schedule('head', 'body'), {
-    attribute: 'columns',
-    parse: jsonOf<TableColumn<Row, Extra>[]>([]),
-  });
+  readonly columns = this.useChange<TableColumn<Row, Extra>[]>(
+    [],
+    () => this.schedule('head', 'body', 'chooser'),
+    {
+      attribute: 'columns',
+      parse: jsonOf<TableColumn<Row, Extra>[]>([]),
+    }
+  );
   readonly rows = this.useChange<Row[]>([], () => this.schedule('body'), {
     attribute: 'rows',
     parse: jsonOf<Row[]>([]),
@@ -187,6 +213,26 @@ export class JlTable<Row extends object = TableRow, Extra extends string = never
     attribute: 'sort-direction',
     parse: oneOf(TABLE_SORT_DIRECTIONS, NO_SORT),
   });
+  /**
+   * Who orders the rows: the table (`local`), or the page (`remote`): a heading's press then shows the sort and
+   * emits `sort`, and the rows stay in the order given, as a server sorted them.
+   */
+  readonly sortMode = this.useChange<TableSortMode>(LOCAL_SORT, () => this.schedule('order'), {
+    attribute: 'sort-mode',
+    parse: oneOf(TABLE_SORT_MODES, LOCAL_SORT),
+  });
+  /** The keys of the columns not drawn; a column with `hideable: false` shows whatever it says. */
+  readonly hiddenColumns = this.useChange<TableColumnKey<Row, Extra>[]>(
+    [],
+    () => this.schedule('head', 'body', 'choices'),
+    { attribute: 'hidden-columns', parse: textListOf<TableColumnKey<Row, Extra>> }
+  );
+  /** A button at the end of the header row opens the list of columns, whose boxes show or hide them. */
+  readonly columnChooser = this.useChange(false, (value) => this.renderColumnChooser(value), {
+    attribute: 'column-chooser',
+  });
+  /** The column chooser's name, on its button and over its list; jlib's own text when empty. */
+  readonly columnsLabel = this.useChange('', () => this.drawColumnsLabel(), { attribute: 'columns-label' });
   /** Adds a checkbox to each row, and one in the header that selects them all. */
   readonly selectable = this.useChange(
     false,
@@ -247,7 +293,23 @@ export class JlTable<Row extends object = TableRow, Extra extends string = never
 
   // A function cannot be a useChange input: its set() would call it as an updater.
   private readonly _source: { detail: TableDetailRenderer<Row> | null } = { detail: null };
-  private readonly _pending = { body: false, head: false, order: false, queued: false };
+  private readonly _pending = {
+    body: false,
+    choices: false,
+    chooser: false,
+    head: false,
+    order: false,
+    queued: false,
+  };
+  /**
+   * The column chooser once drawn, its boxes by column key, changed in place so the focus stays on the box pressed,
+   * and what watches the rows' scrollbar, which the chooser stands beside.
+   */
+  private readonly _chooser: {
+    boxes: Map<string, JlCheckbox>;
+    parts: ChooserParts | null;
+    sizes: ResizeObserver;
+  } = { boxes: new Map(), parts: null, sizes: watchSizes(() => this.placeChooser()) };
   /**
    * The rows as drawn in the order of `rows` (the rows and their checkboxes carry their place), by key, and their
    * keys in the order shown; the keys each state was last drawn for, so a change redraws only the rows it concerns.
@@ -261,9 +323,11 @@ export class JlTable<Row extends object = TableRow, Extra extends string = never
 
   private readonly _refs = this.useRefs((ref) => ({
     body: ref('tbody'),
+    chooser: ref('.chooser'),
     foot: ref('.foot'),
     footSlot: ref<HTMLSlotElement>('slot[name="footer"]'),
     head: ref('thead'),
+    scroll: ref('.scroll'),
     table: ref('table'),
   }));
 
@@ -294,6 +358,7 @@ export class JlTable<Row extends object = TableRow, Extra extends string = never
   templateHtml(): Node {
     return (
       <div class="frame" attrs={{ part: 'base' }}>
+        <div class="chooser" hidden />
         <div class="scroll">
           <table>
             <thead />
@@ -329,6 +394,50 @@ export class JlTable<Row extends object = TableRow, Extra extends string = never
     for (const type of PRESS_EVENTS) {
       this.on(this._refs.body, type, (event) => this.pressRow(event));
     }
+    this.watchScrollbar();
+  }
+
+  onDisconnect(): void {
+    this._chooser.sizes.disconnect();
+  }
+
+  /** Shows or hides the column chooser, drawn the first time it shows: a table without one builds none. */
+  private renderColumnChooser(shown: boolean): void {
+    this.reflect('column-chooser', shown);
+    this._refs.chooser.hidden = !shown;
+    if (shown && this._chooser.parts === null) {
+      this.drawChooser();
+    }
+    this.watchScrollbar();
+  }
+
+  private drawChooser(): void {
+    const button: JlButton = <JlButton slot="trigger" icon="columns-3" variant="ghost" size="sm" />;
+    const list: HTMLFieldSetElement = <fieldset class="column-list" />;
+    const popover: JlPopover = (
+      <JlPopover placement="bottom-end">
+        {button}
+        {list}
+      </JlPopover>
+    );
+    this._chooser.parts = { button, list, popover };
+    this._refs.chooser.replaceChildren(popover);
+    this.drawColumnsLabel();
+    this.schedule('chooser');
+  }
+
+  /** The rows' scrollbar is watched while the chooser shows, so it stands beside the bar, not over it. */
+  private watchScrollbar(): void {
+    this._chooser.sizes.disconnect();
+    if (this.isConnected && this.columnChooser.get()) {
+      this._chooser.sizes.observe(this._refs.scroll);
+    }
+  }
+
+  /** The scroller's width counts its scrollbar and its client width does not: the chooser moves left by the bar. */
+  private placeChooser(): void {
+    const scroll = this._refs.scroll;
+    this.style.setProperty('--scrollbar', `${scroll.offsetWidth - scroll.clientWidth}px`);
   }
 
   /** The bar under the rows shows when the page put something in it; what stands there alone goes to its end. */
@@ -340,7 +449,20 @@ export class JlTable<Row extends object = TableRow, Extra extends string = never
 
   /** Draws on the next microtask: the inputs set while connecting give one drawing, not one each. */
   protected drawTexts(): void {
+    this.drawColumnsLabel();
     this.schedule('head', 'body');
+  }
+
+  /** The chooser's name: its button's, its list's and the heading over the list. */
+  private drawColumnsLabel(): void {
+    const parts = this._chooser.parts;
+    if (parts === null) {
+      return;
+    }
+    const label = this.columnsLabel.get() || jlText('columns');
+    parts.button.hint.set(label);
+    parts.popover.heading.set(label);
+    parts.list.setAttribute('aria-label', label);
   }
 
   private schedule(...parts: Part[]): void {
@@ -355,8 +477,21 @@ export class JlTable<Row extends object = TableRow, Extra extends string = never
   }
 
   private flush(): void {
-    const { body, head, order } = this._pending;
-    Object.assign(this._pending, { body: false, head: false, order: false, queued: false });
+    const { body, choices, chooser, head, order } = this._pending;
+    Object.assign(this._pending, {
+      body: false,
+      choices: false,
+      chooser: false,
+      head: false,
+      order: false,
+      queued: false,
+    });
+    if (chooser) {
+      this.renderChooser();
+    }
+    if (choices && !chooser) {
+      this.renderChoices();
+    }
     if (head) {
       this.renderHead();
     }
@@ -372,6 +507,44 @@ export class JlTable<Row extends object = TableRow, Extra extends string = never
     this.renderMarks();
     this.renderSelection();
     this.renderExpansion();
+  }
+
+  /** The columns drawn: all but the hidden ones, a column that cannot be hidden staying. */
+  private shownColumns(): TableColumn<Row, Extra>[] {
+    return shownColumns(this.columns.get(), this.hiddenColumns.get());
+  }
+
+  /** One box per column, in their order, drawn again when the columns change. */
+  private renderChooser(): void {
+    const list = this._chooser.parts?.list;
+    if (list === undefined) {
+      return;
+    }
+    const boxes = this.columns
+      .get()
+      .map(({ key, label }): [string, JlCheckbox] => [
+        key,
+        <JlCheckbox label={label} onChange={(shown) => this.chooseColumn(key, shown)} />,
+      ]);
+    this._chooser.boxes = new Map(boxes);
+    list.replaceChildren(...this._chooser.boxes.values());
+    this.renderChoices();
+  }
+
+  /** Ticks the boxes of the columns shown and turns off those that cannot change, in place. */
+  private renderChoices(): void {
+    for (const { key, locked, shown } of columnChoices(this.columns.get(), this.hiddenColumns.get())) {
+      const box = this._chooser.boxes.get(key);
+      box?.checked.set(shown);
+      box?.disabled.set(locked);
+    }
+  }
+
+  /** A box of the chooser was ticked or cleared: the column shows or hides, and the page hears which are hidden. */
+  private chooseColumn(key: TableColumnKey<Row, Extra>, shown: boolean): void {
+    const hidden = toggleKey(this.hiddenColumns.get(), key, !shown);
+    this.hiddenColumns.set(hidden);
+    this.events.emit('columns', hidden);
   }
 
   private sortBy(name: string): void {
@@ -477,7 +650,7 @@ export class JlTable<Row extends object = TableRow, Extra extends string = never
       <tr>
         {selectAll}
         {details}
-        {this.columns.get().map((column) => this.headerCell(column))}
+        {this.shownColumns().map((column) => this.headerCell(column))}
       </tr>
     );
   }
@@ -510,10 +683,13 @@ export class JlTable<Row extends object = TableRow, Extra extends string = never
     }
   }
 
-  /** The drawn rows in the order of the sort; each row's sort value is read once, not at every comparison. */
+  /**
+   * The drawn rows in the order of the sort; each row's sort value is read once, not at every comparison. Sorted by
+   * the page, they stay in the order given.
+   */
   private sortedView(): DrawnRow<Row>[] {
     const key = this.sortKey.get();
-    if (key === NO_SORT_KEY) {
+    if (key === NO_SORT_KEY || this.sortMode.get() === 'remote') {
       return [...this._view.drawn];
     }
     const format = this.columns.get().find((column) => column.key === key)?.format;
@@ -524,7 +700,7 @@ export class JlTable<Row extends object = TableRow, Extra extends string = never
   }
 
   private renderBody(): void {
-    const columns = this.columns.get();
+    const columns = this.shownColumns();
     if (this.loading.get()) {
       this.setView([]);
       this._refs.body.replaceChildren(...this.skeletonRows(columns));
@@ -716,7 +892,7 @@ export class JlTable<Row extends object = TableRow, Extra extends string = never
     const draw = this._source.detail;
     return (
       <tr class="detail" id={id}>
-        <td colSpan={this.span(this.columns.get())}>
+        <td colSpan={this.span(this.shownColumns())}>
           <div class="detail-body">{data === undefined || draw === null ? '' : draw(data)}</div>
         </td>
       </tr>

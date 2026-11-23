@@ -54,7 +54,7 @@ installed declarations are the last word: `node_modules/@syware/jlib/dist/index.
 | Export | Signature | Does |
 |---|---|---|
 | `cellOf` | `cellOf<Row>(draw: (row: Row) => Node): TableCellRenderer` | Types a renderer of a table that does not say its type |
-| `TABLE_SORT_DIRECTIONS`, `TABLE_EXPANSIONS` | `readonly` lists | The values of `sortDirection` and `expandable` |
+| `TABLE_SORT_DIRECTIONS`, `TABLE_SORT_MODES`, `TABLE_EXPANSIONS` | `readonly` lists | The values of `sortDirection`, `sortMode` and `expandable` |
 
 ## The app's icon
 

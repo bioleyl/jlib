@@ -27,6 +27,7 @@ export default defineTranslations(DEFAULT_TEXTS, {
   close: 'Schließen',
   closeMenu: 'Menü schließen',
   collapseMenu: 'Menü einklappen',
+  columns: 'Spalten',
   commandClose: 'zum Schließen',
   commandMove: 'zum Navigieren',
   commandPalette: 'Befehlspalette',

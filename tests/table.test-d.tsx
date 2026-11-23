@@ -65,6 +65,14 @@ describe('a table typed by its rows', () => {
     typed.sortKey.set('totl');
   });
 
+  it('names columns of the table as the hidden ones, and says which are hidden', () => {
+    typed.hiddenColumns.set(['note', 'total']);
+    withActions.hiddenColumns.set(['actions']);
+    // @ts-expect-error: not a column of the table
+    typed.hiddenColumns.set(['nte']);
+    typed.events.register('columns', (hidden) => expectTypeOf(hidden).toEqualTypeOf<OrderField[]>());
+  });
+
   it('adds a column that is not a field only when it is named', () => {
     withActions.columns.set([{ key: 'actions', label: '' }]);
     withActions.renderers.set({ actions: (order) => text(String(order.id)) });

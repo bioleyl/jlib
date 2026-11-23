@@ -50,6 +50,7 @@ export const DEFAULT_TEXTS = defineTranslations({
   close: 'Close',
   closeMenu: 'Close the menu',
   collapseMenu: 'Collapse the menu',
+  columns: 'Columns',
   commandClose: 'to close',
   commandMove: 'to move',
   commandPalette: 'Command palette',

@@ -5,6 +5,7 @@ import type {
   TableCellFormat,
   TableCellRenderer,
   TableColumn,
+  TableColumnChoice,
   TableExpansion,
   TableRow,
   TableRowKey,
@@ -226,10 +227,36 @@ export function toggleAll(keys: readonly TableRowKey[], selected: ReadonlySet<Ta
   return selectionState(keys, selected) === 'all' ? others : [...others, ...keys];
 }
 
-/** The selection with one row added or taken out. */
-export function toggleKey(selected: readonly TableRowKey[], key: TableRowKey, on: boolean): TableRowKey[] {
+/** The selection with one row added or taken out; the hidden columns with one column added or taken out. */
+export function toggleKey<Key extends TableRowKey>(selected: readonly Key[], key: Key, on: boolean): Key[] {
   const without = selected.filter((candidate) => candidate !== key);
   return on ? [...without, key] : without;
+}
+
+/** The columns drawn: those `hidden` does not name, and every column that cannot be hidden. */
+export function shownColumns<Column extends Pick<TableColumn, 'hideable' | 'key'>>(
+  columns: readonly Column[],
+  hidden: readonly string[]
+): Column[] {
+  const hiddenKeys = new Set(hidden);
+  return columns.filter((column) => column.hideable === false || !hiddenKeys.has(column.key));
+}
+
+/**
+ * The column chooser's lines, in the columns' order: each column shown or not, and locked when it cannot be hidden
+ * or is the last one shown, so a table never hides all its columns from its chooser.
+ */
+export function columnChoices<Column extends Pick<TableColumn, 'hideable' | 'key' | 'label'>>(
+  columns: readonly Column[],
+  hidden: readonly string[]
+): TableColumnChoice<Column['key']>[] {
+  const shown = new Set(shownColumns(columns, hidden).map((column) => column.key));
+  return columns.map((column) => ({
+    key: column.key,
+    label: column.label,
+    locked: column.hideable === false || (shown.size === 1 && shown.has(column.key)),
+    shown: shown.has(column.key),
+  }));
 }
 
 const OPEN_ROWS: Record<TableExpansion, (expanded: readonly TableRowKey[]) => TableRowKey[]> = {

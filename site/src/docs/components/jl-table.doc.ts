@@ -13,6 +13,8 @@ import type {
   PressButton,
   TableColumn,
   TableRow,
+  TableSort,
+  TableSortDirection,
   Tone,
 } from '@syware/jlib';
 import type { ComponentDoc } from '../../types/docs.types';
@@ -152,6 +154,14 @@ const DEPLOYS: TableRow[] = Array.from({ length: DEPLOY_COUNT }, (_, index) => (
   state: STATES[index % STATES.length],
 }));
 
+/** The deployments' columns where the server sorts: every one. */
+const SERVER_COLUMNS: TableColumn[] = DEPLOY_COLUMNS.map((column) => ({ ...column, sortable: true }));
+
+/** The members' columns people choose from: the name always shows. */
+const CHOSEN_COLUMNS: TableColumn<Member>[] = USER_COLUMNS.map((column) =>
+  column.key === 'name' ? { ...column, hideable: false } : column
+);
+
 const ORDER_COLUMNS: TableColumn<Order>[] = [
   { format: 'code', key: 'number', label: 'Order', width: 100 },
   { key: 'customer', label: 'Customer', sortable: true },
@@ -237,7 +247,6 @@ function wireOrders(root: HTMLElement): void {
   mode.events.register('change', (value) => table.expandable.set(oneOf(TABLE_EXPANSIONS, 'single')(value)));
 }
 
-/** The users table and its toolbar: the selection count and a button that acts on it. */
 /** What a press on a row says to people: the member, and the button that pressed. */
 const BUTTON_WORDS: Record<PressButton, string> = {
   auxiliary: 'the middle button',
@@ -263,6 +272,55 @@ function wirePages(root: HTMLElement): void {
   };
   pagination?.events.register('change', show);
   show(1);
+}
+
+const SERVER_DELAY_MS = 400;
+const SORT_SIGNS: Record<TableSortDirection, number> = { asc: 1, desc: -1, none: 0 };
+
+/** A server's page of deployments in the order asked, compared as the server does: code points, not a language. */
+function serverPage({ direction, key }: TableSort): TableRow[] {
+  const sign = SORT_SIGNS[direction];
+  const value = (row: TableRow): string | number => {
+    const field = row[key];
+    return typeof field === 'number' ? field : String(field);
+  };
+  const sorted = [...DEPLOYS].sort((a, b) => {
+    const [left, right] = [value(a), value(b)];
+    return left === right ? 0 : sign * (left < right ? -1 : 1);
+  });
+  return sorted.slice(0, PAGE_SIZE);
+}
+
+/** A table whose server sorts: a heading's press asks for the first page again, in that order. */
+function wireServerSort(root: HTMLElement): void {
+  const table = root.querySelector<JlTable>('jl-table.server');
+  const asked = root.querySelector('.server-request');
+  const load = (sort: TableSort): void => {
+    if (table === null || asked === null) {
+      return;
+    }
+    asked.textContent = `GET /deployments?sort=${sort.key}&order=${sort.direction}`;
+    table.loading.set(true);
+    setTimeout(() => {
+      table.rows.set(serverPage(sort));
+      table.loading.set(false);
+    }, SERVER_DELAY_MS);
+  };
+  table?.events.register('sort', load);
+  table?.rows.set(serverPage({ direction: 'desc', key: 'at' }));
+}
+
+/** The members table whose columns people choose; the page says what it would keep. */
+function wireChosenColumns(root: HTMLElement): void {
+  const table = root.querySelector<JlTable<Member>>('jl-table.chosen');
+  const kept = root.querySelector('.kept-columns');
+  table?.rows.set(USERS.slice(0, 5));
+  table?.events.register('columns', (hidden) => {
+    if (kept !== null) {
+      kept.textContent =
+        hidden.length === 0 ? 'Every column shows.' : `Hidden, kept for next time: ${hidden.join(', ')}`;
+    }
+  });
 }
 
 function wirePresses(root: HTMLElement): void {
@@ -317,7 +375,9 @@ format, whether it sorts) and give the rows as plain objects; the table formats 
 language, draws badges and code, and right-aligns numbers.
 
 A press on a sortable heading sorts the rows ascending, then descending, then back to their order, and emits sort.
-Numbers sort by value, dates by time, text in the language's order; empty values stay at the end. selectable adds a
+Numbers sort by value, dates by time, text in the language's order; empty values stay at the end. Where the server
+sorts, as for results shown a page at a time, sort-mode="remote" leaves the order to the page: the heading shows the
+sort and emits it, and the rows stay in the order the page gives. selectable adds a
 checkbox to each row and one in the header that selects them all (a dash when only some are), and emits selection
 with the keys of the selected rows, read from row-key.
 
@@ -330,7 +390,11 @@ shows, from its row; expanded holds the keys of the open rows, and each opening 
 
 The header stays on top while the rows scroll within max-height, and the table scrolls sideways on narrow screens.
 What goes with the rows (the pages, a count) sits in the footer slot, a bar inside the frame that stays under them.
-For a cell that is more than a value (a person with an avatar, a link, a menu), give the column a renderer.`,
+For a cell that is more than a value (a person with an avatar, a link, a menu), give the column a renderer.
+
+hidden-columns leaves columns out, by key. column-chooser adds a button at the end of the header row that opens the
+list of columns, a box each, for people to choose those they see; it emits columns with the keys hidden, for the page
+to keep. A column with hideable false always shows, and the last column shown cannot be hidden.`,
   events: [
     {
       description: 'A heading was pressed: the column and its new order.',
@@ -353,6 +417,12 @@ For a cell that is more than a value (a person with an avatar, a link, a menu), 
         'A row opened or closed: its key and whether it is open now. When rows open one at a time, opening a row emits the close of the other first.',
       detail: '{ key: string | number; open: boolean }',
       name: 'toggle',
+    },
+    {
+      description:
+        'A box of the column chooser was ticked or cleared: the keys of the columns now hidden, as hiddenColumns holds them, for the page to keep.',
+      detail: 'Array<keyof Row>',
+      name: 'columns',
     },
   ],
   examples: [
@@ -488,6 +558,42 @@ For a cell that is more than a value (a person with an avatar, a link, a menu), 
       title: 'Pages, in the footer',
     },
     {
+      description:
+        'Where the server sorts, sort-mode="remote" leaves the order to the page: a heading\'s press shows the sort and emits it, and the rows stay as the server gave them. Here it orders text by code points, as a database may, where the table would follow the language.',
+      html: `
+        <div class="stack">
+          <span class="muted server-request" aria-live="polite">GET /deployments?sort=at&amp;order=desc</span>
+          <jl-table class="server" sort-mode="remote" sort-key="at" sort-direction="desc" label="Deployments"
+            columns='${JSON.stringify(SERVER_COLUMNS)}'></jl-table>
+        </div>`,
+      script: `
+        const table = root.querySelector<JlTable<Deployment>>('jl-table.server');
+        table.events.register('sort', async ({ key, direction }) => {
+          table.loading.set(true);
+          const page = await api.deployments({ sort: key, order: direction });
+          table.rows.set(page.items);
+          table.loading.set(false);
+        });`,
+      setup: wireServerSort,
+      title: 'Sorted by the server',
+    },
+    {
+      description:
+        'column-chooser lets people choose the columns they see, from the button at the end of the header row. The page keeps the hidden keys the columns event gives, and sets them again as hidden-columns. The name always shows (hideable: false).',
+      html: `
+        <div class="stack">
+          <jl-table class="chosen" column-chooser hidden-columns='["email","joined"]' label="Workspace members"
+            columns='${JSON.stringify(CHOSEN_COLUMNS)}'></jl-table>
+          <span class="muted kept-columns" aria-live="polite">Hidden, kept for next time: email, joined</span>
+        </div>`,
+      script: `
+        const table = root.querySelector<JlTable<Member>>('jl-table.chosen');
+        table.hiddenColumns.set(preferences.hiddenColumns ?? []);
+        table.events.register('columns', (hidden) => preferences.save({ hiddenColumns: hidden }));`,
+      setup: wireChosenColumns,
+      title: 'Columns people choose',
+    },
+    {
       description: 'Placeholder rows while the data loads, and a sentence when there is none.',
       html: `
         <div class="stack">
@@ -581,7 +687,7 @@ For a cell that is more than a value (a person with an avatar, a link, a menu), 
       control: { kind: 'json' },
       default: '[]',
       description:
-        'The columns: key (the field shown), label, and optionally align, sortable, width, format (text, number, date, datetime, badge, code), tones (a badge tone per value), description (a field shown as a quieter line under the value) and wrap (long text breaks over lines instead of widening the table). Typed by the rows, key and description are fields of a row.',
+        'The columns: key (the field shown), label, and optionally align, sortable, width, format (text, number, date, datetime, badge, code), tones (a badge tone per value), description (a field shown as a quieter line under the value), wrap (long text breaks over lines instead of widening the table) and hideable (false keeps the column shown, whatever hiddenColumns says). Typed by the rows, key and description are fields of a row.',
       name: 'columns',
       type: 'TableColumn<Row>[]',
     },
@@ -617,6 +723,42 @@ For a cell that is more than a value (a person with an avatar, a link, a menu), 
       description: 'The order of that column.',
       name: 'sortDirection',
       type: "'none' | 'asc' | 'desc'",
+    },
+    {
+      attribute: 'sort-mode',
+      control: { kind: 'select', options: ['local', 'remote'] },
+      default: "'local'",
+      description:
+        "Who orders the rows: the table (local), or the page (remote), as when a server sorts. Remote, a heading's press updates sortKey, sortDirection and the heading's arrow, emits sort, and leaves the rows in the order given.",
+      name: 'sortMode',
+      type: "'local' | 'remote'",
+    },
+    {
+      attribute: 'hidden-columns',
+      control: { kind: 'json' },
+      default: '[]',
+      description:
+        "The keys of the columns not drawn, heading and cells. Changing them keeps the selection, the open rows and the sort, a hidden column's sort included. A column with hideable: false shows whatever they say.",
+      name: 'hiddenColumns',
+      type: 'Array<keyof Row>',
+    },
+    {
+      attribute: 'column-chooser',
+      control: { kind: 'boolean' },
+      default: 'false',
+      description:
+        'A button at the end of the header row opens the list of columns, in their order, the shown ones ticked: a box changed updates hiddenColumns and emits columns. A column with hideable: false is ticked and off, and so is the last column shown.',
+      name: 'columnChooser',
+      type: 'boolean',
+    },
+    {
+      attribute: 'columns-label',
+      control: { kind: 'text' },
+      default: "''",
+      description:
+        "The column chooser's name, on its button and over its list. Empty: jlib's own text, in the language shown.",
+      name: 'columnsLabel',
+      type: 'string',
     },
     {
       attribute: 'selectable',
@@ -739,12 +881,12 @@ For a cell that is more than a value (a person with an avatar, a link, a menu), 
     },
   ],
   summary:
-    'Rows of records under column headings, with sorting, selection, rows that open on their details, formats and a sticky header.',
+    'Rows of records under column headings, with sorting (by the table or the server), selection, columns people choose, rows that open on their details, formats and a sticky header.',
   tag: 'jl-table',
   typing: {
     code: tableCode,
     description:
-      "Typed by its rows, JlTable<Order> takes rows of the page's own type, an interface included. Its columns (TableColumn<Order>) name fields of an order, and so do rowKey and sortKey: the editor completes them and refuses a misspelt one. Its renderers, its detail and its sort and press events read an order. In JSX, <JlTable rows={orders} /> reads the type from the rows. A column that is not a field, such as one of actions a renderer draws, is named: JlTable<Order, 'actions'>. Rows and columns written as JSON in HTML are not checked.",
+      "Typed by its rows, JlTable<Order> takes rows of the page's own type, an interface included. Its columns (TableColumn<Order>) name fields of an order, and so do rowKey, sortKey and hiddenColumns: the editor completes them and refuses a misspelt one. Its renderers, its detail and its sort and press events read an order. In JSX, <JlTable rows={orders} /> reads the type from the rows. A column that is not a field, such as one of actions a renderer draws, is named: JlTable<Order, 'actions'>. Rows and columns written as JSON in HTML are not checked.",
     jsx: tableJsx,
   },
 };

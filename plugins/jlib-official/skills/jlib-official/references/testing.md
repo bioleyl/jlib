@@ -192,6 +192,9 @@ vi.mock('@syware/jlib', async (importOriginal) => ({
   the controls (`input.value.get()`), and the submission with `FormData` in a browser.
 - **jlib's language** is module state: a test that needs French sets it (`await jlTexts.setLocale('fr')`) and puts
   it back.
+- **`:disabled` matches every jl-* control** (jsdom reads the element's `disabled` property, which is the control's
+  input, an object): a popover or a menu opened in jsdom focuses its panel, not its first control. Test the focus in
+  a browser.
 
 ## Firing a component's events
 

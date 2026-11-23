@@ -134,8 +134,14 @@ MembersTable.register();
 - `selectable` adds a checkbox per row and one for all; `selected` holds the keys; `selection` emits them. Actions on
   the selection go in a bar above the table that shows while something is selected.
 - `sortable` on a column lets people sort by it; `sortKey` and `sortDirection` set the order. The table sorts the
-  rows it holds; a list loaded page by page sorts on the server: listen to `sort` (`{ key, direction }`), load the
-  first page again in that order, and keep the order in the address.
+  rows it holds; a list loaded page by page sorts on the server: give it `sortMode="remote"`, listen to `sort`
+  (`{ key, direction }`), load the first page again in that order, and keep the order in the address. Remote, the
+  heading shows the sort and the rows stay in the order given; without it, the table sorts each page again in the
+  browser's collation, which can differ from the database's. Setting `sortKey` from code emits nothing.
+- `hiddenColumns` (keys) leaves columns out; `columnChooser` adds a button at the end of the header row that lets
+  people choose them, and emits `columns` with the hidden keys: keep them as the person's preference (not in the
+  address) and set them again as `hiddenColumns`. `hideable: false` keeps a column shown, the one that names the
+  row. Never build a menu of checkboxes of your own beside the table.
 - `press` says which row was pressed and how: `{ key, row, button, event }`, `button` being `'main'` (a click),
   `'auxiliary'` (a middle click) or `'secondary'` (a right click, the keyboard's menu key, a long press), and `event`
   the browser's own. Check the button before acting: every press arrives here. Cancel the event to refuse the press:

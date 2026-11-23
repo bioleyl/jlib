@@ -5,11 +5,16 @@
   --max-height: none;
   --cell-y: 10px;
   --cell-x: 14px;
+  --row-line: 20px;
   --foot-y: 8px;
   --select-width: 44px;
   --expand-width: 36px;
   /* The width of the checkbox and chevron cells, after which the details of open rows start. */
   --lead: 0px;
+  --chooser-x: 6px;
+  --chooser-width: calc(var(--jl-control-sm) + 2 * var(--chooser-x));
+  /* The width of the rows' scrollbar, measured while the column chooser shows. */
+  --scrollbar: 0px;
 }
 
 :host([expandable]) {
@@ -29,6 +34,7 @@
 
 /* The frame holds the rows, which scroll, and the bar under them, which stays. */
 .frame {
+  position: relative;
   overflow: hidden;
   border: 1px solid var(--jl-line);
   border-radius: var(--jl-radius);
@@ -42,6 +48,35 @@
   max-height: var(--max-height);
   overflow: auto;
   overscroll-behavior-x: contain;
+}
+
+/*
+ * The column chooser stands over the end of the header row, beside the rows' scrollbar, and stays there while the
+ * table scrolls sideways: it is not a column, whose cells would be empty. The last heading keeps room for it.
+ */
+.chooser {
+  position: absolute;
+  top: 0;
+  right: var(--scrollbar);
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  height: calc(2 * var(--cell-y) + var(--row-line));
+  padding: 0 var(--chooser-x);
+  background: var(--jl-surface-2);
+}
+
+:host([column-chooser]) thead tr > :last-child {
+  padding-right: calc(var(--cell-x) + var(--chooser-width));
+}
+
+.column-list {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: none;
 }
 
 /* What goes with the rows: the pages, a count, a "load more". A count and the pages take the two ends. */
@@ -72,7 +107,7 @@ table {
   border-spacing: 0;
   color: var(--jl-text);
   font-size: var(--jl-font-md);
-  line-height: 20px;
+  line-height: var(--row-line);
 }
 
 th,
