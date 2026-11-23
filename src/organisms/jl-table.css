@@ -266,8 +266,13 @@ code {
   font-size: var(--jl-font-xs);
 }
 
+/*
+ * Never narrower than their width: a table squeezed by its box would bring the checkbox against the chevron, closer
+ * than people can press one without the other (WCAG's 24 pixels between targets).
+ */
 .select-cell {
   width: var(--select-width);
+  min-width: var(--select-width);
   padding-right: 0;
   line-height: 0;
 }
@@ -275,6 +280,7 @@ code {
 /* The chevron's icon starts where the cells' text does, its button around it; after a checkbox, close to it. */
 .expand-cell {
   width: var(--expand-width);
+  min-width: var(--expand-width);
   padding-right: 0;
   padding-left: calc(var(--cell-x) - 4px);
   line-height: 0;

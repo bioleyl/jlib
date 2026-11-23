@@ -459,6 +459,9 @@ describe('the flow editor', () => {
     await flow.scrollIntoViewIfNeeded();
     const edges = (): Promise<number> => flow.evaluate((element) => (element as JlFlow).graph.get().edges.length);
     const before = await edges();
+    // A narrow page shows part of the example's canvas, its far exit cut at the edge: every node comes into view.
+    await flow.evaluate((element) => (element as JlFlow).fit());
+    await page.waitForTimeout(SETTLE_MS);
     const from = await flow.locator('[data-node="pay"] .dot').boundingBox();
     const to = await flow.locator('[data-node="tell"] .label').boundingBox();
     if (from === null || to === null) {
