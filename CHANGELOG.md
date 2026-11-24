@@ -3,6 +3,16 @@
 What changed in each version of [@syware/jlib](https://www.npmjs.com/package/@syware/jlib). Every component is shown
 and documented on [the documentation site](https://bioleyl.github.io/jlib/).
 
+## 0.18.1 (2026-11-24)
+
+### Fixed
+
+- **The comboboxes highlight each word typed.** `jl-combobox`, `jl-multi-combobox` and `jl-tag-input`'s suggestions
+  marked the typed text only where it occurred whole in a label: options a page found by words (`filter="none"`, a
+  full-text search) showed no mark at all once two words were typed, `arch com` in "Archives communales". Each word
+  is marked now where it occurs, at the start of one of the label's words rather than inside another, and marks that
+  touch are one. The local filter still keeps the labels that hold the typed text whole.
+
 ## 0.18.0 (2026-11-23)
 
 Tables and comboboxes for data a server holds. A table can leave its sort to the server, let people choose its

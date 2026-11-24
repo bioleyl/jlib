@@ -1,7 +1,7 @@
 {
   "all": {
-    "gzip": 122614,
-    "raw": 483314
+    "gzip": 122752,
+    "raw": 483763
   },
   "baseline": {
     "gzip": 9076,
@@ -702,12 +702,12 @@
       "level": "molecules",
       "tag": "jl-tag-input",
       "added": {
-        "gzip": 8571,
-        "raw": 25006
+        "gzip": 8732,
+        "raw": 25457
       },
       "total": {
-        "gzip": 17647,
-        "raw": 50968
+        "gzip": 17808,
+        "raw": 51419
       }
     },
     {
