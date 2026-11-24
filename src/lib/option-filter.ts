@@ -5,6 +5,7 @@ const RANK = { anywhere: 2, labelStart: 0, wordStart: 1 } as const;
 
 const DIACRITICS = /\p{Diacritic}/gu;
 const WORD_CHARACTER = /[\p{L}\p{N}]/u;
+const SPACES = /\s+/u;
 
 /** One character as matching sees it: lower case, without its accents ("É" gives "e"). */
 export const foldCharacter = (character: string): string =>
@@ -33,46 +34,81 @@ function foldPieces(text: string): FoldedPiece[] {
   return pieces;
 }
 
-/**
- * Where a search first occurs in a text, ignoring case and accents, in the text's own indexes; null when it does
- * not, or when the search is empty.
- */
-export function findMatch(text: string, query: string): TextMatch | null {
-  const needle = foldText(query.trim());
-  if (needle === '') {
-    return null;
-  }
-  const at = foldText(text).indexOf(needle);
-  if (at < 0) {
-    return null;
-  }
-  const end = at + needle.length;
-  const pieces = foldPieces(text);
-  const first = pieces.find((piece) => piece.foldedEnd > at);
-  // Accents written as separate marks fold to nothing: they belong to the letter before them.
-  const last = pieces.findLast((piece) => piece.foldedStart < end || piece.foldedEnd === end);
+/** The search's words as matching sees them: what was typed, folded, cut at its spaces. */
+const searchWords = (query: string): string[] =>
+  foldText(query)
+    .split(SPACES)
+    .filter((word) => word !== '');
+
+/** A range of a text's folded form in the text's own indexes; an accent written as a mark goes with its letter. */
+function originalRange(pieces: readonly FoldedPiece[], foldedStart: number, foldedEnd: number): TextMatch | null {
+  const first = pieces.find((piece) => piece.foldedEnd > foldedStart);
+  const last = pieces.findLast((piece) => piece.foldedStart < foldedEnd || piece.foldedEnd === foldedEnd);
   if (first === undefined || last === undefined) {
     return null;
   }
   return { end: last.end, start: first.start };
 }
 
-/** A text cut around its match, so the matched piece can be drawn highlighted. */
-export function matchParts(text: string, query: string): TextMatchPart[] {
-  const match = findMatch(text, query);
-  if (match === null) {
-    return text === '' ? [] : [{ matched: false, text }];
+/** Ranges in order, those that overlap or touch made one. */
+function mergedRanges(ranges: readonly TextMatch[]): TextMatch[] {
+  const merged: TextMatch[] = [];
+  for (const range of [...ranges].sort((a, b) => a.start - b.start)) {
+    const last = merged.at(-1);
+    if (last !== undefined && range.start <= last.end) {
+      merged[merged.length - 1] = { end: Math.max(last.end, range.end), start: last.start };
+      continue;
+    }
+    merged.push(range);
   }
-  const parts: TextMatchPart[] = [
-    { matched: false, text: text.slice(0, match.start) },
+  return merged;
+}
+
+/**
+ * Where each word of a search occurs in a text, ignoring case and accents, in the text's own indexes: at the start of
+ * one of the text's words when it is there, else where it first occurs. In order, those that overlap or touch made
+ * one; empty when no word occurs, or the search has none. A page that finds options by words (`filter="none"`) gets
+ * each of them marked, wherever they are in the label.
+ */
+export function findMatches(text: string, query: string): TextMatch[] {
+  const folded = foldText(text);
+  const pieces = foldPieces(text);
+  const ranges = searchWords(query).flatMap((word) => {
+    const at = wordIndex(folded, word);
+    const range = at < 0 ? null : originalRange(pieces, at, at + word.length);
+    return range === null ? [] : [range];
+  });
+  return mergedRanges(ranges);
+}
+
+/** A text cut around the words of a search it holds, so that they can be drawn highlighted. */
+export function matchParts(text: string, query: string): TextMatchPart[] {
+  const matches = findMatches(text, query);
+  const parts = matches.flatMap((match, index) => [
+    { matched: false, text: text.slice(matches[index - 1]?.end ?? 0, match.start) },
     { matched: true, text: text.slice(match.start, match.end) },
-    { matched: false, text: text.slice(match.end) },
-  ];
-  return parts.filter((part) => part.text !== '');
+  ]);
+  const rest = { matched: false, text: text.slice(matches.at(-1)?.end ?? 0) };
+  return [...parts, rest].filter((part) => part.text !== '');
 }
 
 const startsAWord = (folded: string, index: number): boolean =>
   index === 0 || !WORD_CHARACTER.test(folded.charAt(index - 1));
+
+/** Every place a folded word occurs in a folded text, in order. */
+function occurrences(folded: string, word: string): number[] {
+  const found: number[] = [];
+  for (let at = folded.indexOf(word); at >= 0; at = folded.indexOf(word, at + 1)) {
+    found.push(at);
+  }
+  return found;
+}
+
+/** Where a folded word occurs in a folded text: at the start of one of its words if it can, else first; -1 if not. */
+function wordIndex(folded: string, word: string): number {
+  const found = occurrences(folded, word);
+  return found.find((index) => startsAWord(folded, index)) ?? found[0] ?? -1;
+}
 
 /** How well a label matches a folded search, or null when it does not contain it. */
 function rankOf(label: string, needle: string): number | null {

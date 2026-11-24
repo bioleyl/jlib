@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import {
   edgeEnabledIndex,
   filterOptions,
-  findMatch,
+  findMatches,
   foldText,
   matchParts,
   nextEnabledIndex,
@@ -19,21 +19,47 @@ describe('foldText', () => {
   });
 });
 
-describe('findMatch', () => {
+describe('findMatches', () => {
   it('finds the search in the text whatever the case and accents', () => {
-    expect(findMatch('Genève', 'gene')).toEqual({ end: 4, start: 0 });
-    expect(findMatch('Genève', 'EVE')).toEqual({ end: 6, start: 3 });
+    expect(findMatches('Genève', 'gene')).toEqual([{ end: 4, start: 0 }]);
+    expect(findMatches('Genève', 'EVE')).toEqual([{ end: 6, start: 3 }]);
   });
 
   it('keeps an accent written as a separate mark with its letter', () => {
-    const decomposed = 'Genève';
-    expect(findMatch(decomposed, 'gene')).toEqual({ end: 5, start: 0 });
+    const decomposed = 'Gene\u0300ve';
+    expect(findMatches(decomposed, 'gene')).toEqual([{ end: 5, start: 0 }]);
   });
 
-  it('gives null for an empty search or no match', () => {
-    expect(findMatch('Lausanne', '')).toBeNull();
-    expect(findMatch('Lausanne', '   ')).toBeNull();
-    expect(findMatch('Lausanne', 'bern')).toBeNull();
+  it('finds each word of the search, wherever it is in the text', () => {
+    expect(findMatches('Archives communales de Briningen', 'arch com')).toEqual([
+      { end: 4, start: 0 },
+      { end: 12, start: 9 },
+    ]);
+    expect(findMatches('Commune de Laudorf, archives', 'arch com')).toEqual([
+      { end: 3, start: 0 },
+      { end: 24, start: 20 },
+    ]);
+  });
+
+  it('marks a word where one of the text’s words starts with it, rather than inside another', () => {
+    expect(findMatches('Recommandé, commune', 'com')).toEqual([{ end: 15, start: 12 }]);
+    expect(findMatches('Recommandé', 'com')).toEqual([{ end: 5, start: 2 }]);
+  });
+
+  it('makes one range of words that overlap or touch, and of a word typed twice', () => {
+    expect(findMatches('Archives', 'arch archives')).toEqual([{ end: 8, start: 0 }]);
+    expect(findMatches('Archives', 'arc hives')).toEqual([{ end: 8, start: 0 }]);
+    expect(findMatches('Archives', 'arch arch')).toEqual([{ end: 4, start: 0 }]);
+  });
+
+  it('marks the words it holds and leaves out those it does not', () => {
+    expect(findMatches('Archives communales', 'arch paroisse')).toEqual([{ end: 4, start: 0 }]);
+  });
+
+  it('gives nothing for an empty search or no match', () => {
+    expect(findMatches('Lausanne', '')).toEqual([]);
+    expect(findMatches('Lausanne', '   ')).toEqual([]);
+    expect(findMatches('Lausanne', 'bern')).toEqual([]);
   });
 });
 
@@ -43,6 +69,15 @@ describe('matchParts', () => {
       { matched: false, text: 'San ' },
       { matched: true, text: 'Fran' },
       { matched: false, text: 'cisco' },
+    ]);
+  });
+
+  it('cuts the text around each word of the search', () => {
+    expect(matchParts('Archives communales de Briningen', ' arch  com ')).toEqual([
+      { matched: true, text: 'Arch' },
+      { matched: false, text: 'ives ' },
+      { matched: true, text: 'com' },
+      { matched: false, text: 'munales de Briningen' },
     ]);
   });
 

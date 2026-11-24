@@ -55,6 +55,23 @@ describe('jl-combobox, options the page finds', () => {
     expect(isOpen(combobox)).toBe(true);
   });
 
+  it('highlights each word typed in the options the page found', async () => {
+    const combobox = await mountCombobox((created) => created.filter.set('none'));
+    await type(combobox, 'arch com');
+    combobox.options.set([
+      { label: 'Archives communales de Briningen', value: '1' },
+      { label: 'Commune de Laudorf, archives', value: '2' },
+    ]);
+    await settle();
+    const marks = [...rootOf(combobox).querySelectorAll('[role="option"]')].map((option) =>
+      [...option.querySelectorAll('mark')].map((mark) => mark.textContent)
+    );
+    expect(marks).toEqual([
+      ['Arch', 'com'],
+      ['Com', 'arch'],
+    ]);
+  });
+
   it('narrows the options itself in local mode, the default', async () => {
     const combobox = await mountCombobox((created) => created.options.set(CITIES));
     await type(combobox, 'bi');

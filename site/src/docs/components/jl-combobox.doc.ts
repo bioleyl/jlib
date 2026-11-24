@@ -107,7 +107,8 @@ Where the server finds the options (among thousands, or by more than their label
 field), filter="none" shows them as the page gives them, whatever was typed. Listen to input, which debounce holds
 back until people stop typing, set loading while the answer comes (the open list says so, and the typed text stays),
 then set the options and loading back. The page drops an answer for a text typed over since: the combobox shows the
-options it was given last. A chosen option keeps its label when the options change.
+options it was given last. A chosen option keeps its label when the options change. Each word typed is highlighted
+where it occurs in a label, so options found by words show why they came.
 
 For several values, as chips in the field, use jl-multi-combobox.`,
   events: [
