@@ -42,7 +42,7 @@ import { JlSegmented } from '@syware/jlib';
 Inputs: a JSX prop sets one, code calls `.set(value)` and `.get()`, HTML writes the attribute (lists and objects as JSON).
 
 - `options` (attribute `options`): `SegmentedOption<Value>[]`, default `[]`. The choices: { value, label?, icon?, badge?, disabled? }. badge is a count or a short word after the label.
-- `value` (attribute `value`): `Value | ''`, default `''`. The chosen option’s value; the first option that can be chosen when it names none.
+- `value` (attribute `value`): `Value | ''`, default `''`. The chosen option’s value; the first option that can be chosen when it names none. Options set while the value names none of them set it to that first one: read the value before giving other options.
 - `name` (attribute `name`): `string`, default `''`. The field’s name in the form’s data.
 - `label` (attribute `label`): `string`, default `''`. The group’s name for screen readers, when no visible label names it.
 - `size` (attribute `size`): `'sm' | 'md' | 'lg'`, default `'md'`. The height: 30, 36 or 44 pixels.

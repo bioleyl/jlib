@@ -42,8 +42,10 @@ type, `change` once committed).
 A combobox whose options come from the server shows them as given with `filter="none"` (it would filter the
 server's answer again by the typed text, hiding what the server found without accents or by another field). Listen to
 `input`, which `debounce` holds back while people type; set `loading` while the answer comes, then the options and
-`loading` back. The combobox shows the options set last: drop an answer for a text typed over since. A chosen
-option keeps its label when the options change, so give the options of a value set from outside once, with it.
+`loading` back. The combobox shows the options set last: an answer for a text typed over since sets nothing on the
+box, neither `options`, nor `emptyText`, nor `loading` (a `finally` checks too), or it clears the newer results and
+stops their spinner. A chosen option keeps its label when the options change, so give the options of a value set
+from outside once, with it.
 
 ```tsx
 <JlCombobox
@@ -60,12 +62,16 @@ option keeps its label when the options change, so give the options of a value s
 private async findAgents(text: string): Promise<void> {
   const ask = ++this._asked.last; // the answer of a text typed over since is dropped
   this._refs.creator.loading.set(true);
-  const agents = await api.agents({ search: text });
-  if (ask !== this._asked.last) {
-    return;
+  try {
+    const agents = await api.agents({ search: text });
+    if (ask === this._asked.last) {
+      this._refs.creator.options.set(agents.map((agent) => ({ label: agent.name, value: agent.id })));
+    }
+  } finally {
+    if (ask === this._asked.last) {
+      this._refs.creator.loading.set(false);
+    }
   }
-  this._refs.creator.options.set(agents.map((agent) => ({ label: agent.name, value: agent.id })));
-  this._refs.creator.loading.set(false);
 }
 ```
 

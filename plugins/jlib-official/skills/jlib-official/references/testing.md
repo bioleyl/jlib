@@ -202,6 +202,9 @@ The component's own events go through its `events`: `button.events.emit('press')
 `input.events.emit('enter', '')`. A form submits with `form.requestSubmit()`; keys are `KeyboardEvent`s with
 `bubbles: true, composed: true` so they cross shadow roots.
 
+A control listens to its native element only from its `onConnect`: a test that types into one a view has just drawn
+(the native input's `value`, then an `input` event on it) awaits `settle()` first, or `value` and `input` do not follow.
+
 ## In a browser
 
 Playwright (or `@vitest/browser`) checks what jsdom cannot: the page outlet's swap, popovers, dialogs, focus, layout

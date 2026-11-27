@@ -33,7 +33,7 @@ import { JlInputList } from '@syware/jlib';
 
 Inputs: a JSX prop sets one, code calls `.set(value)` and `.get()`, HTML writes the attribute (lists and objects as JSON).
 
-- `values` (attribute `values`): `string[]`, default `[]`. The values filled in, in their order; rows left empty are not among them.
+- `values` (attribute `values`): `string[]`, default `[]`. The values filled in, in their order; rows left empty are not among them. Blank values set before the list is connected stay in values until it connects.
 - `type` (attribute `type`): `InputType`, default `'text'`. The input of each row, as a jl-input takes it.
 - `multiline` (attribute `multiline`): `boolean`, default `false`. Each value on several lines, in a text area that grows with it.
 - `options` (attribute `options`): `SelectOption[]`, default `[]`. The values to pick from: each row is a select. None lets people type.

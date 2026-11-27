@@ -272,6 +272,7 @@ there on a component alone: `mount(page, html)` puts it in the page of its own d
 - `gh` was not installed here; installed 2.63.2 into ~/.local/bin and ran `gh auth setup-git` once so `git push` to the https remote authenticates (no credential helper configured).
 - Skills are refreshed by the package's `prepare` (`scripts/refresh-skills.mjs`: `npx skills update -p -y`, skipped when `CI` is set), never a `postinstall`: npm runs that one in every app that installs the package too. `.claude/` and `.agents/` stay out of git (both in .gitignore); `.claude-plugin/marketplace.json` is tracked.
 - A fresh clone needs `npm install` before `npm run check`: with node_modules missing, typecheck fails on `axe-core` (used by the e2e suite) while lint and the unit tests pass.
+- `npm stage approve <id>` authenticates through the browser (npm's CLI login page): run it in a terminal and press ENTER to open it. The first attempt often dies on the auth page's `/-/v1/done` poll (E404) after the login; `npm stage list` then shows the stage moving from validating to staged — running the approve again in the same terminal goes through without asking twice.
 
 ## Traps
 

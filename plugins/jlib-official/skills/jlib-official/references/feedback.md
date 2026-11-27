@@ -56,8 +56,10 @@ void this._refs.state.load({
 
 - `fetch` returns a promise; a rejection shows the error, and **Try again** runs the same task again (the `retry`
   event says so). `draw` gets the value; `isEmpty` decides the empty slot.
-- A second `load()` while one runs wins over it; a refresh keeps the content shown (no skeleton) and shows an error
-  only if nothing is shown yet. `load()` resolves `true` once drawn, `false` when it failed.
+- A second `load()` while one runs wins over it: the first one's `draw` is dropped, but its `fetch` runs to its end,
+  so a `fetch` that changes the page itself paints a stale answer. Draw in `draw`. A refresh keeps the content shown
+  (no skeleton) and shows an error only if nothing is shown yet. `load()` resolves `true` once drawn, `false` when
+  it failed.
 - `skeleton` is `rows`, `cards` or `lines`; `slot="loading"` takes a skeleton of your own made of `JlSkeleton`s.
 - The page outlet waits for every load state of the next page before showing it (`max-wait`, 3 s), so a page loads
   its data in load states rather than with its own spinner. `JlLoadState.whenSettled(root, signal)` waits the same

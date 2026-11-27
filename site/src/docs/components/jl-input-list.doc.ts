@@ -108,7 +108,8 @@ list?.addEventListener('change', () => {
       attribute: 'values',
       control: { kind: 'json' },
       default: '[]',
-      description: 'The values filled in, in their order; rows left empty are not among them.',
+      description:
+        'The values filled in, in their order; rows left empty are not among them. Blank values set before the list is connected stay in values until it connects.',
       name: 'values',
       type: 'string[]',
     },
