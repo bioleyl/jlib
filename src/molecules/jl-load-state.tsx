@@ -1,4 +1,4 @@
-import { css } from '@jadis/core';
+import { css, Jadis } from '@jadis/core';
 import { CircleAlert, RefreshCw } from 'lucide';
 
 import { JlButton } from '../atoms/jl-button';
@@ -89,9 +89,6 @@ function leftLoading(state: JlLoadState, signal: AbortSignal): Promise<void> {
   });
 }
 
-/** Waits for the components connected meanwhile to run their `onConnect`, a task after connecting. */
-const nextTask = (): Promise<void> => new Promise((resolve) => setTimeout(resolve));
-
 /** Runs a load's fetch. Only its failure is a load that failed: what `draw` throws afterwards is not caught here. */
 async function fetchOf<Value>(task: LoadTask<Value>): Promise<Fetched<Value>> {
   try {
@@ -116,7 +113,8 @@ export class JlLoadState extends JlElement {
    * it has its data waits for it (see `jl-page-outlet`).
    */
   static async whenSettled(root: ParentNode, signal: AbortSignal = new AbortController().signal): Promise<void> {
-    await nextTask();
+    // The components connected meanwhile start their loads from their `onConnect`, a task after connecting.
+    await Jadis.settled();
     const waiting = loadStatesIn(root).filter(isWaiting);
     if (waiting.length === 0 || signal.aborted) {
       return;
