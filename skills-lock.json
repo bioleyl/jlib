@@ -5,15 +5,15 @@
       "source": "bioleyl/jadis",
       "sourceType": "github",
       "skillPath": "plugins/jadis-official/skills/jadis-official/SKILL.md",
-      "computedHash": "12f293826530a21ed0c83c066affe6e10c22f2681bb4b09e7531b3b0088139fd",
-      "commit": "9b1db2a59b4fe9480042b3a723d7d56cb4b56fca"
+      "computedHash": "a298abd737dce04df92e696ab418fca2c8f82d40c46b9f00d93f2a6e6ae04678",
+      "commit": "e4dd49094ec282f389ab513e29be3b4f0a53a955"
     },
     "swcode-base": {
       "source": "bioleyl/swcode",
       "sourceType": "github",
       "skillPath": "plugins/swcode-base/skills/swcode-base/SKILL.md",
-      "computedHash": "c064f15537a5a16bcadd98456aaf62830f51eff2811e6990829ca737d5f57234",
-      "commit": "3777616f9b2e1311ba1f99c1d9d87767feb9fc5c"
+      "computedHash": "95e3c29daf5a160fb43d0c9244d88bf2cd3b84f42e5d85a90e7814eeab4e747e",
+      "commit": "419949534bf526fbcb49b39f7873eacfadca2ab0"
     }
   }
 }

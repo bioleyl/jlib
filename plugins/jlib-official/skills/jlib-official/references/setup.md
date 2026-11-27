@@ -31,7 +31,7 @@ styles, the navigation, the router and the frame. An app on SyWare's UX also loa
 npm install @syware/jlib lucide
 ```
 
-- `@jadis/core` is a peer dependency (1.6 or later; this skill describes jlib on 1.8): the app and jlib share one
+- `@jadis/core` is a peer dependency (1.10 or later): the app and jlib share one
   copy. Two copies (a linked jlib, a bundler that duplicates it) break `instanceof` and the JSX types: dedupe it
   (`resolve: { dedupe: ['@jadis/core'] }` in Vite).
 - `lucide` gives the icons the app registers by name.
@@ -114,8 +114,8 @@ an import map. `@syware/jlib/all` defines every component and registers the comm
 <script type="importmap">
   {
     "imports": {
-      "@jadis/core": "https://esm.sh/@jadis/core@1.9.0",
-      "@jadis/core/": "https://esm.sh/@jadis/core@1.9.0/",
+      "@jadis/core": "https://esm.sh/@jadis/core@1.10.0",
+      "@jadis/core/": "https://esm.sh/@jadis/core@1.10.0/",
       "lucide": "https://esm.sh/lucide@1.61.0",
       "@syware/jlib/all": "https://esm.sh/@syware/jlib@0.18.1/all?external=@jadis/core,lucide"
     }
