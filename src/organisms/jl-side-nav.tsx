@@ -583,9 +583,11 @@ export class JlSideNav<Id extends string = string> extends JlElement {
     if (opened.length > 0) {
       this.renderOpen();
     }
+    // The rail shows the top rows only: the one above the active item stands for it there.
+    const current = this.isRail() ? path[0] : value;
     for (const row of this._refs.sections.querySelectorAll<HTMLElement>(ROW_SELECTOR)) {
       const id = row.dataset.id ?? '';
-      const active = id === value || (this.isRail() && row.dataset.target === value);
+      const active = id === current;
       setOrRemove(row, 'aria-current', active ? 'page' : '');
       row.classList.toggle('holds-active', !active && path.includes(id));
     }

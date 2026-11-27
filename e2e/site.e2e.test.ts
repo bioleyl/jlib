@@ -4604,3 +4604,42 @@ describe("a popover holding a page's component", () => {
     expect(state.errors).toEqual([]);
   });
 });
+
+describe("a side nav's rail and an item under a parent", () => {
+  const Sections = JSON.stringify([
+    {
+      items: [
+        { icon: 'house', id: 'home', label: 'Home' },
+        {
+          children: [
+            { id: 'website', label: 'Website' },
+            { id: 'mobile', label: 'Mobile' },
+          ],
+          icon: 'inbox',
+          id: 'projects',
+          label: 'Projects',
+        },
+      ],
+    },
+  ]);
+  /** The ids of the rows drawn as the current page. */
+  const current = (page: Page): Promise<(string | undefined)[]> =>
+    page.evaluate(() => {
+      const root = document.querySelector('#test-area jl-side-nav')?.shadowRoot;
+      return [...(root?.querySelectorAll<HTMLElement>('[aria-current="page"]') ?? [])].map(
+        (row) => row.dataset.id
+      );
+    });
+
+  it('lights the parent for any of its children, and the child once unfolded', async () => {
+    const page = await open('/components/side-nav');
+    await mount(page, `<jl-side-nav collapsed value="mobile" sections='${Sections}'></jl-side-nav>`);
+    expect(await current(page)).toEqual(['projects']);
+    await page.evaluate(() =>
+      (document.querySelector('#test-area jl-side-nav') as JlSideNav).collapsed.set(false)
+    );
+    await page.waitForTimeout(SETTLE_MS);
+    expect(await current(page)).toEqual(['mobile']);
+    expect(state.errors).toEqual([]);
+  });
+});
