@@ -48,8 +48,21 @@ const canFocus = (element: Element): element is HTMLElement =>
   && !element.matches(':disabled')
   && element.checkVisibility();
 
-/** The first control people can focus among some elements and everything inside them, in document order. */
+/** What stands under an element in the page: a slot's assigned elements, a shadow root's, or else its children. */
+function shownChildren(element: Element): Element[] {
+  if (element instanceof HTMLSlotElement && element.assignedElements().length > 0) {
+    return element.assignedElements();
+  }
+  return [...(element.shadowRoot ?? element).children];
+}
+
+/** An element and everything under it as the page shows them, open shadow roots included, in the page's order. */
+const shownTree = (element: Element): Element[] => [element, ...shownChildren(element).flatMap(shownTree)];
+
+/**
+ * The first control people can focus among some elements and everything inside them, in the page's order: a
+ * component of the page whose fields are in its shadow root gives its first one.
+ */
 export function firstFocusable(elements: readonly Element[]): HTMLElement | null {
-  const candidates = elements.flatMap((element) => [element, ...element.querySelectorAll('*')]);
-  return candidates.find(canFocus) ?? null;
+  return elements.flatMap(shownTree).find(canFocus) ?? null;
 }

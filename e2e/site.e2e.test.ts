@@ -4574,3 +4574,33 @@ describe("a table's footer and what the page keeps hidden", () => {
     expect(state.errors).toEqual([]);
   });
 });
+
+describe("a popover holding a page's component", () => {
+  it('moves the focus to the first field in that component’s shadow root', async () => {
+    const page = await open('/components/popover');
+    await page.evaluate(() => {
+      class PageFields extends HTMLElement {
+        constructor() {
+          super();
+          this.attachShadow({ mode: 'open' }).innerHTML =
+            '<p>Display</p><div><input id="first" aria-label="First"><input aria-label="Second"></div>';
+        }
+      }
+      customElements.define('page-fields', PageFields);
+    });
+    await mount(
+      page,
+      `<jl-popover heading="Display">
+        <jl-button slot="trigger" label="Open"></jl-button>
+        <page-fields></page-fields>
+      </jl-popover>`
+    );
+    await page.locator('#test-area jl-button').click();
+    await page.waitForTimeout(SETTLE_MS);
+    const focused = await page.evaluate(
+      () => document.querySelector('#test-area page-fields')?.shadowRoot?.activeElement?.id
+    );
+    expect(focused).toBe('first');
+    expect(state.errors).toEqual([]);
+  });
+});

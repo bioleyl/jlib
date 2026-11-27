@@ -11,7 +11,8 @@ A panel of content that opens by its trigger: put a button in slot="trigger" and
 default slot. A click on the trigger opens and closes it; a click outside or Escape closes it too (the browser's
 popover light dismiss).
 
-When it opens, the focus moves to the first field or button inside, or to the panel itself; Escape sends it back to
+When it opens, the focus moves to the first field or button inside, in the shadow root of a component of the page
+too, or to the panel itself; Escape sends it back to
 the trigger. A heading names the panel for screen readers (the trigger does otherwise). Unlike a dialog, the page
 around stays usable: keep a popover for small things, a form of a few fields or a handful of details.
 
