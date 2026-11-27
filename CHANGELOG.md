@@ -3,6 +3,45 @@
 What changed in each version of [@syware/jlib](https://www.npmjs.com/package/@syware/jlib). Every component is shown
 and documented on [the documentation site](https://bioleyl.github.io/jlib/).
 
+## 0.19.0 (2026-11-27)
+
+Jadis 1.10, and four fixes. The `@jadis/core` peer moves with it, which is why this is a minor version: update Jadis
+with jlib. Nothing in jlib's own API changed.
+
+### Changed
+
+- **The `@jadis/core` peer is `^1.10.0`** (was `^1.9.0`). Update Jadis with jlib:
+  `npm install @jadis/core@^1.10.0 @syware/jlib@^0.19.0`. Jadis 1.10 brings a wait for `onConnect`
+  (`await component.connected`, `await Jadis.settled()` in a test) and a route's `hash`, kept in the address by a
+  followed link.
+
+### Fixed
+
+- **`jl-checkbox`, `jl-select` and `jl-switch` keep their native `input` event to themselves.** It left the shadow
+  root as a bare event of the host: an `input` listener around them, or an `onInput` prop on a component that holds
+  them, was called without a value, beside the `input` of the other controls, which carries one. `jl-file-drop`'s
+  picker and `jl-table`'s checkboxes let theirs out the same way, and stop it too (#21).
+- **`jl-table` shows its footer bar only for what shows.** An element the page keeps in the footer slot with
+  `hidden` (the pages until there are several, a "Show more" button) left an empty bar with its line and its
+  padding, and counted against the one that stands alone at the bar's end. Hidden elements are left out, and the bar
+  follows the attribute as the page sets and removes it (#18).
+- **`jl-popover` finds the first field inside a component of the page.** When its content was a component whose
+  fields are in its own shadow root, the focus went to the panel. The first control is now looked for as the page
+  shows it, open shadow roots and slots included (#19).
+- **`jl-side-nav`'s rail lights a parent for any of its children.** The rail hides the children, so the parent's
+  icon stands for the page that shows: it was drawn active for its first child only, and the nav looked as if
+  nothing were chosen for the others (#20).
+
+### Worth a look when you update
+
+- **Read Jadis 1.10's own notes**: `connected` is now a member of every component (rename a field or a method of that
+  name), an `ActiveRoute` built by hand needs `hash: ''`, and a path with a `#` given to `gotoPath`, `replacePath`
+  or `match` in history mode is split at it.
+- **Drop the workarounds**: a footer element taken out of its slot instead of hidden, and a side nav given its
+  parent's id while it carries `rail`.
+- **A listener of `input` around a `jl-checkbox`, a `jl-switch` or a `jl-select`** no longer hears them: listen to
+  their `change`, which carries the value.
+
 ## 0.18.1 (2026-11-24)
 
 ### Fixed

@@ -1,11 +1,11 @@
 {
   "all": {
-    "gzip": 122752,
-    "raw": 483763
+    "gzip": 123203,
+    "raw": 485240
   },
   "baseline": {
-    "gzip": 9076,
-    "raw": 25962
+    "gzip": 9308,
+    "raw": 26705
   },
   "components": [
     {
@@ -13,12 +13,12 @@
       "level": "atoms",
       "tag": "jl-app-icon",
       "added": {
-        "gzip": 2368,
-        "raw": 6794
+        "gzip": 2352,
+        "raw": 6778
       },
       "total": {
-        "gzip": 11444,
-        "raw": 32756
+        "gzip": 11660,
+        "raw": 33483
       }
     },
     {
@@ -26,12 +26,12 @@
       "level": "atoms",
       "tag": "jl-avatar",
       "added": {
-        "gzip": 3626,
-        "raw": 10758
+        "gzip": 3614,
+        "raw": 10756
       },
       "total": {
-        "gzip": 12702,
-        "raw": 36720
+        "gzip": 12922,
+        "raw": 37461
       }
     },
     {
@@ -39,12 +39,12 @@
       "level": "atoms",
       "tag": "jl-badge",
       "added": {
-        "gzip": 2696,
-        "raw": 7846
+        "gzip": 2678,
+        "raw": 7803
       },
       "total": {
-        "gzip": 11772,
-        "raw": 33808
+        "gzip": 11986,
+        "raw": 34508
       }
     },
     {
@@ -52,12 +52,12 @@
       "level": "atoms",
       "tag": "jl-button",
       "added": {
-        "gzip": 3989,
-        "raw": 12360
+        "gzip": 3979,
+        "raw": 12317
       },
       "total": {
-        "gzip": 13065,
-        "raw": 38322
+        "gzip": 13287,
+        "raw": 39022
       }
     },
     {
@@ -65,12 +65,12 @@
       "level": "atoms",
       "tag": "jl-checkbox",
       "added": {
-        "gzip": 3747,
-        "raw": 11700
+        "gzip": 3741,
+        "raw": 11699
       },
       "total": {
-        "gzip": 12823,
-        "raw": 37662
+        "gzip": 13049,
+        "raw": 38404
       }
     },
     {
@@ -78,12 +78,12 @@
       "level": "atoms",
       "tag": "jl-chip",
       "added": {
-        "gzip": 3450,
-        "raw": 11005
+        "gzip": 3436,
+        "raw": 10962
       },
       "total": {
-        "gzip": 12526,
-        "raw": 36967
+        "gzip": 12744,
+        "raw": 37667
       }
     },
     {
@@ -91,12 +91,12 @@
       "level": "atoms",
       "tag": "jl-divider",
       "added": {
-        "gzip": 1625,
-        "raw": 4420
+        "gzip": 1614,
+        "raw": 4377
       },
       "total": {
-        "gzip": 10701,
-        "raw": 30382
+        "gzip": 10922,
+        "raw": 31082
       }
     },
     {
@@ -104,12 +104,12 @@
       "level": "atoms",
       "tag": "jl-icon",
       "added": {
-        "gzip": 2004,
-        "raw": 5430
+        "gzip": 1984,
+        "raw": 5414
       },
       "total": {
-        "gzip": 11080,
-        "raw": 31392
+        "gzip": 11292,
+        "raw": 32119
       }
     },
     {
@@ -117,12 +117,12 @@
       "level": "atoms",
       "tag": "jl-input",
       "added": {
-        "gzip": 4569,
-        "raw": 14847
+        "gzip": 4551,
+        "raw": 14804
       },
       "total": {
-        "gzip": 13645,
-        "raw": 40809
+        "gzip": 13859,
+        "raw": 41509
       }
     },
     {
@@ -130,12 +130,12 @@
       "level": "atoms",
       "tag": "jl-kbd",
       "added": {
-        "gzip": 2127,
-        "raw": 5681
+        "gzip": 2107,
+        "raw": 5638
       },
       "total": {
-        "gzip": 11203,
-        "raw": 31643
+        "gzip": 11415,
+        "raw": 32343
       }
     },
     {
@@ -143,12 +143,12 @@
       "level": "atoms",
       "tag": "jl-link",
       "added": {
-        "gzip": 2964,
-        "raw": 8674
+        "gzip": 2947,
+        "raw": 8631
       },
       "total": {
-        "gzip": 12040,
-        "raw": 34636
+        "gzip": 12255,
+        "raw": 35336
       }
     },
     {
@@ -156,12 +156,12 @@
       "level": "atoms",
       "tag": "jl-loading-bar",
       "added": {
-        "gzip": 1759,
-        "raw": 4897
+        "gzip": 1740,
+        "raw": 4881
       },
       "total": {
-        "gzip": 10835,
-        "raw": 30859
+        "gzip": 11048,
+        "raw": 31586
       }
     },
     {
@@ -169,12 +169,12 @@
       "level": "atoms",
       "tag": "jl-progress-ring",
       "added": {
-        "gzip": 3000,
-        "raw": 9731
+        "gzip": 2980,
+        "raw": 9688
       },
       "total": {
-        "gzip": 12076,
-        "raw": 35693
+        "gzip": 12288,
+        "raw": 36393
       }
     },
     {
@@ -182,12 +182,12 @@
       "level": "atoms",
       "tag": "jl-progress",
       "added": {
-        "gzip": 2101,
-        "raw": 6062
+        "gzip": 2092,
+        "raw": 6019
       },
       "total": {
-        "gzip": 11177,
-        "raw": 32024
+        "gzip": 11400,
+        "raw": 32724
       }
     },
     {
@@ -195,12 +195,12 @@
       "level": "atoms",
       "tag": "jl-rating",
       "added": {
-        "gzip": 3941,
-        "raw": 11446
+        "gzip": 3923,
+        "raw": 11430
       },
       "total": {
-        "gzip": 13017,
-        "raw": 37408
+        "gzip": 13231,
+        "raw": 38135
       }
     },
     {
@@ -208,12 +208,12 @@
       "level": "atoms",
       "tag": "jl-select",
       "added": {
-        "gzip": 5386,
-        "raw": 17101
+        "gzip": 5374,
+        "raw": 17100
       },
       "total": {
-        "gzip": 14462,
-        "raw": 43063
+        "gzip": 14682,
+        "raw": 43805
       }
     },
     {
@@ -221,12 +221,12 @@
       "level": "atoms",
       "tag": "jl-skeleton",
       "added": {
-        "gzip": 1758,
-        "raw": 4705
+        "gzip": 1739,
+        "raw": 4689
       },
       "total": {
-        "gzip": 10834,
-        "raw": 30667
+        "gzip": 11047,
+        "raw": 31394
       }
     },
     {
@@ -234,12 +234,12 @@
       "level": "atoms",
       "tag": "jl-slider",
       "added": {
-        "gzip": 3306,
-        "raw": 10182
+        "gzip": 3301,
+        "raw": 10139
       },
       "total": {
-        "gzip": 12382,
-        "raw": 36144
+        "gzip": 12609,
+        "raw": 36844
       }
     },
     {
@@ -247,12 +247,12 @@
       "level": "atoms",
       "tag": "jl-spinner",
       "added": {
-        "gzip": 1306,
-        "raw": 3576
+        "gzip": 1296,
+        "raw": 3560
       },
       "total": {
-        "gzip": 10382,
-        "raw": 29538
+        "gzip": 10604,
+        "raw": 30265
       }
     },
     {
@@ -260,12 +260,12 @@
       "level": "atoms",
       "tag": "jl-switch",
       "added": {
-        "gzip": 2802,
-        "raw": 8686
+        "gzip": 2807,
+        "raw": 8685
       },
       "total": {
-        "gzip": 11878,
-        "raw": 34648
+        "gzip": 12115,
+        "raw": 35390
       }
     },
     {
@@ -273,12 +273,12 @@
       "level": "atoms",
       "tag": "jl-textarea",
       "added": {
-        "gzip": 2928,
-        "raw": 9209
+        "gzip": 2911,
+        "raw": 9166
       },
       "total": {
-        "gzip": 12004,
-        "raw": 35171
+        "gzip": 12219,
+        "raw": 35871
       }
     },
     {
@@ -286,12 +286,12 @@
       "level": "molecules",
       "tag": "jl-accordion-item",
       "added": {
-        "gzip": 2993,
-        "raw": 8895
+        "gzip": 2971,
+        "raw": 8852
       },
       "total": {
-        "gzip": 12069,
-        "raw": 34857
+        "gzip": 12279,
+        "raw": 35557
       }
     },
     {
@@ -299,12 +299,12 @@
       "level": "molecules",
       "tag": "jl-accordion",
       "added": {
-        "gzip": 3376,
-        "raw": 10187
+        "gzip": 3362,
+        "raw": 10144
       },
       "total": {
-        "gzip": 12452,
-        "raw": 36149
+        "gzip": 12670,
+        "raw": 36849
       }
     },
     {
@@ -312,12 +312,12 @@
       "level": "molecules",
       "tag": "jl-account-button",
       "added": {
-        "gzip": 4380,
-        "raw": 13731
+        "gzip": 4372,
+        "raw": 13729
       },
       "total": {
-        "gzip": 13456,
-        "raw": 39693
+        "gzip": 13680,
+        "raw": 40434
       }
     },
     {
@@ -325,12 +325,12 @@
       "level": "molecules",
       "tag": "jl-alert",
       "added": {
-        "gzip": 5402,
-        "raw": 17999
+        "gzip": 5396,
+        "raw": 17997
       },
       "total": {
-        "gzip": 14478,
-        "raw": 43961
+        "gzip": 14704,
+        "raw": 44702
       }
     },
     {
@@ -338,12 +338,12 @@
       "level": "molecules",
       "tag": "jl-avatar-group",
       "added": {
-        "gzip": 4174,
-        "raw": 12577
+        "gzip": 4165,
+        "raw": 12575
       },
       "total": {
-        "gzip": 13250,
-        "raw": 38539
+        "gzip": 13473,
+        "raw": 39280
       }
     },
     {
@@ -351,12 +351,12 @@
       "level": "molecules",
       "tag": "jl-breadcrumb",
       "added": {
-        "gzip": 3335,
-        "raw": 9839
+        "gzip": 3318,
+        "raw": 9796
       },
       "total": {
-        "gzip": 12411,
-        "raw": 35801
+        "gzip": 12626,
+        "raw": 36501
       }
     },
     {
@@ -364,12 +364,12 @@
       "level": "molecules",
       "tag": "jl-calendar",
       "added": {
-        "gzip": 6367,
-        "raw": 19006
+        "gzip": 6360,
+        "raw": 18962
       },
       "total": {
-        "gzip": 15443,
-        "raw": 44968
+        "gzip": 15668,
+        "raw": 45667
       }
     },
     {
@@ -378,11 +378,11 @@
       "tag": "jl-card",
       "added": {
         "gzip": 2781,
-        "raw": 8296
+        "raw": 8294
       },
       "total": {
-        "gzip": 11857,
-        "raw": 34258
+        "gzip": 12089,
+        "raw": 34999
       }
     },
     {
@@ -390,12 +390,12 @@
       "level": "molecules",
       "tag": "jl-chip-group",
       "added": {
-        "gzip": 4716,
-        "raw": 14278
+        "gzip": 4705,
+        "raw": 14235
       },
       "total": {
-        "gzip": 13792,
-        "raw": 40240
+        "gzip": 14013,
+        "raw": 40940
       }
     },
     {
@@ -403,12 +403,12 @@
       "level": "molecules",
       "tag": "jl-code-block",
       "added": {
-        "gzip": 7433,
-        "raw": 22017
+        "gzip": 7388,
+        "raw": 21974
       },
       "total": {
-        "gzip": 16509,
-        "raw": 47979
+        "gzip": 16696,
+        "raw": 48679
       }
     },
     {
@@ -416,12 +416,12 @@
       "level": "molecules",
       "tag": "jl-copy-button",
       "added": {
-        "gzip": 4600,
-        "raw": 14654
+        "gzip": 4583,
+        "raw": 14611
       },
       "total": {
-        "gzip": 13676,
-        "raw": 40616
+        "gzip": 13891,
+        "raw": 41316
       }
     },
     {
@@ -429,12 +429,12 @@
       "level": "molecules",
       "tag": "jl-date-picker",
       "added": {
-        "gzip": 10215,
-        "raw": 32004
+        "gzip": 10187,
+        "raw": 31960
       },
       "total": {
-        "gzip": 19291,
-        "raw": 57966
+        "gzip": 19495,
+        "raw": 58665
       }
     },
     {
@@ -442,12 +442,12 @@
       "level": "molecules",
       "tag": "jl-empty",
       "added": {
-        "gzip": 2896,
-        "raw": 8299
+        "gzip": 2900,
+        "raw": 8297
       },
       "total": {
-        "gzip": 11972,
-        "raw": 34261
+        "gzip": 12208,
+        "raw": 35002
       }
     },
     {
@@ -455,12 +455,12 @@
       "level": "molecules",
       "tag": "jl-facts",
       "added": {
-        "gzip": 1923,
-        "raw": 5314
+        "gzip": 1912,
+        "raw": 5271
       },
       "total": {
-        "gzip": 10999,
-        "raw": 31276
+        "gzip": 11220,
+        "raw": 31976
       }
     },
     {
@@ -468,12 +468,12 @@
       "level": "molecules",
       "tag": "jl-field",
       "added": {
-        "gzip": 3175,
-        "raw": 9310
+        "gzip": 3161,
+        "raw": 9267
       },
       "total": {
-        "gzip": 12251,
-        "raw": 35272
+        "gzip": 12469,
+        "raw": 35972
       }
     },
     {
@@ -481,12 +481,12 @@
       "level": "molecules",
       "tag": "jl-file-drop",
       "added": {
-        "gzip": 6176,
-        "raw": 19326
+        "gzip": 6174,
+        "raw": 19341
       },
       "total": {
-        "gzip": 15252,
-        "raw": 45288
+        "gzip": 15482,
+        "raw": 46046
       }
     },
     {
@@ -494,12 +494,12 @@
       "level": "molecules",
       "tag": "jl-input-list",
       "added": {
-        "gzip": 10488,
-        "raw": 38042
+        "gzip": 10477,
+        "raw": 38039
       },
       "total": {
-        "gzip": 19564,
-        "raw": 64004
+        "gzip": 19785,
+        "raw": 64744
       }
     },
     {
@@ -507,12 +507,12 @@
       "level": "molecules",
       "tag": "jl-list-item",
       "added": {
-        "gzip": 3656,
-        "raw": 11223
+        "gzip": 3650,
+        "raw": 11221
       },
       "total": {
-        "gzip": 12732,
-        "raw": 37185
+        "gzip": 12958,
+        "raw": 37926
       }
     },
     {
@@ -520,12 +520,12 @@
       "level": "molecules",
       "tag": "jl-load-more",
       "added": {
-        "gzip": 4358,
-        "raw": 13800
+        "gzip": 4331,
+        "raw": 13757
       },
       "total": {
-        "gzip": 13434,
-        "raw": 39762
+        "gzip": 13639,
+        "raw": 40462
       }
     },
     {
@@ -533,12 +533,12 @@
       "level": "molecules",
       "tag": "jl-load-state",
       "added": {
-        "gzip": 7257,
-        "raw": 22458
+        "gzip": 7238,
+        "raw": 22455
       },
       "total": {
-        "gzip": 16333,
-        "raw": 48420
+        "gzip": 16546,
+        "raw": 49160
       }
     },
     {
@@ -546,12 +546,12 @@
       "level": "molecules",
       "tag": "jl-menu",
       "added": {
-        "gzip": 5829,
-        "raw": 16935
+        "gzip": 5807,
+        "raw": 16891
       },
       "total": {
-        "gzip": 14905,
-        "raw": 42897
+        "gzip": 15115,
+        "raw": 43596
       }
     },
     {
@@ -559,12 +559,12 @@
       "level": "molecules",
       "tag": "jl-number-input",
       "added": {
-        "gzip": 4590,
-        "raw": 14302
+        "gzip": 4551,
+        "raw": 14259
       },
       "total": {
-        "gzip": 13666,
-        "raw": 40264
+        "gzip": 13859,
+        "raw": 40964
       }
     },
     {
@@ -572,12 +572,12 @@
       "level": "molecules",
       "tag": "jl-pagination",
       "added": {
-        "gzip": 4040,
-        "raw": 12201
+        "gzip": 4028,
+        "raw": 12158
       },
       "total": {
-        "gzip": 13116,
-        "raw": 38163
+        "gzip": 13336,
+        "raw": 38863
       }
     },
     {
@@ -585,12 +585,12 @@
       "level": "molecules",
       "tag": "jl-popover",
       "added": {
-        "gzip": 3561,
-        "raw": 9645
+        "gzip": 3589,
+        "raw": 9740
       },
       "total": {
-        "gzip": 12637,
-        "raw": 35607
+        "gzip": 12897,
+        "raw": 36445
       }
     },
     {
@@ -598,12 +598,12 @@
       "level": "molecules",
       "tag": "jl-radio-group",
       "added": {
-        "gzip": 3558,
-        "raw": 10988
+        "gzip": 3540,
+        "raw": 10945
       },
       "total": {
-        "gzip": 12634,
-        "raw": 36950
+        "gzip": 12848,
+        "raw": 37650
       }
     },
     {
@@ -611,12 +611,12 @@
       "level": "molecules",
       "tag": "jl-search-button",
       "added": {
-        "gzip": 4081,
-        "raw": 11879
+        "gzip": 4056,
+        "raw": 11836
       },
       "total": {
-        "gzip": 13157,
-        "raw": 37841
+        "gzip": 13364,
+        "raw": 38541
       }
     },
     {
@@ -624,12 +624,12 @@
       "level": "molecules",
       "tag": "jl-search",
       "added": {
-        "gzip": 5244,
-        "raw": 16269
+        "gzip": 5216,
+        "raw": 16226
       },
       "total": {
-        "gzip": 14320,
-        "raw": 42231
+        "gzip": 14524,
+        "raw": 42931
       }
     },
     {
@@ -637,12 +637,12 @@
       "level": "molecules",
       "tag": "jl-segmented",
       "added": {
-        "gzip": 4587,
-        "raw": 13732
+        "gzip": 4563,
+        "raw": 13689
       },
       "total": {
-        "gzip": 13663,
-        "raw": 39694
+        "gzip": 13871,
+        "raw": 40394
       }
     },
     {
@@ -650,12 +650,12 @@
       "level": "molecules",
       "tag": "jl-stat",
       "added": {
-        "gzip": 3813,
-        "raw": 11287
+        "gzip": 3784,
+        "raw": 11244
       },
       "total": {
-        "gzip": 12889,
-        "raw": 37249
+        "gzip": 13092,
+        "raw": 37949
       }
     },
     {
@@ -663,12 +663,12 @@
       "level": "molecules",
       "tag": "jl-steps",
       "added": {
-        "gzip": 3908,
-        "raw": 12249
+        "gzip": 3888,
+        "raw": 12206
       },
       "total": {
-        "gzip": 12984,
-        "raw": 38211
+        "gzip": 13196,
+        "raw": 38911
       }
     },
     {
@@ -676,12 +676,12 @@
       "level": "molecules",
       "tag": "jl-tab-panel",
       "added": {
-        "gzip": 1260,
-        "raw": 3557
+        "gzip": 1247,
+        "raw": 3541
       },
       "total": {
-        "gzip": 10336,
-        "raw": 29519
+        "gzip": 10555,
+        "raw": 30246
       }
     },
     {
@@ -689,12 +689,12 @@
       "level": "molecules",
       "tag": "jl-tabs",
       "added": {
-        "gzip": 4419,
-        "raw": 13164
+        "gzip": 4392,
+        "raw": 13121
       },
       "total": {
-        "gzip": 13495,
-        "raw": 39126
+        "gzip": 13700,
+        "raw": 39826
       }
     },
     {
@@ -702,12 +702,12 @@
       "level": "molecules",
       "tag": "jl-tag-input",
       "added": {
-        "gzip": 8732,
-        "raw": 25457
+        "gzip": 8718,
+        "raw": 25412
       },
       "total": {
-        "gzip": 17808,
-        "raw": 51419
+        "gzip": 18026,
+        "raw": 52117
       }
     },
     {
@@ -715,12 +715,12 @@
       "level": "molecules",
       "tag": "jl-timeline",
       "added": {
-        "gzip": 2982,
-        "raw": 9061
+        "gzip": 2957,
+        "raw": 9018
       },
       "total": {
-        "gzip": 12058,
-        "raw": 35023
+        "gzip": 12265,
+        "raw": 35723
       }
     },
     {
@@ -728,12 +728,12 @@
       "level": "molecules",
       "tag": "jl-toast",
       "added": {
-        "gzip": 7431,
-        "raw": 23954
+        "gzip": 7422,
+        "raw": 23911
       },
       "total": {
-        "gzip": 16507,
-        "raw": 49916
+        "gzip": 16730,
+        "raw": 50616
       }
     },
     {
@@ -741,12 +741,12 @@
       "level": "molecules",
       "tag": "jl-tooltip",
       "added": {
-        "gzip": 4116,
-        "raw": 11950
+        "gzip": 4091,
+        "raw": 11907
       },
       "total": {
-        "gzip": 13192,
-        "raw": 37912
+        "gzip": 13399,
+        "raw": 38612
       }
     },
     {
@@ -754,12 +754,12 @@
       "level": "organisms",
       "tag": "jl-command-palette",
       "added": {
-        "gzip": 6944,
-        "raw": 20858
+        "gzip": 6934,
+        "raw": 20822
       },
       "total": {
-        "gzip": 16020,
-        "raw": 46820
+        "gzip": 16242,
+        "raw": 47527
       }
     },
     {
@@ -767,12 +767,12 @@
       "level": "organisms",
       "tag": "jl-confirm",
       "added": {
-        "gzip": 5711,
-        "raw": 18623
+        "gzip": 5686,
+        "raw": 18580
       },
       "total": {
-        "gzip": 14787,
-        "raw": 44585
+        "gzip": 14994,
+        "raw": 45285
       }
     },
     {
@@ -780,12 +780,12 @@
       "level": "organisms",
       "tag": "jl-dialog",
       "added": {
-        "gzip": 5173,
-        "raw": 16542
+        "gzip": 5152,
+        "raw": 16499
       },
       "total": {
-        "gzip": 14249,
-        "raw": 42504
+        "gzip": 14460,
+        "raw": 43204
       }
     },
     {
@@ -793,12 +793,12 @@
       "level": "organisms",
       "tag": "jl-drawer",
       "added": {
-        "gzip": 5585,
-        "raw": 18215
+        "gzip": 5562,
+        "raw": 18172
       },
       "total": {
-        "gzip": 14661,
-        "raw": 44177
+        "gzip": 14870,
+        "raw": 44877
       }
     },
     {
@@ -806,12 +806,12 @@
       "level": "organisms",
       "tag": "jl-flow",
       "added": {
-        "gzip": 11055,
-        "raw": 34439
+        "gzip": 11039,
+        "raw": 34394
       },
       "total": {
-        "gzip": 20131,
-        "raw": 60401
+        "gzip": 20347,
+        "raw": 61099
       }
     },
     {
@@ -819,12 +819,12 @@
       "level": "organisms",
       "tag": "jl-navbar",
       "added": {
-        "gzip": 3376,
-        "raw": 10350
+        "gzip": 3354,
+        "raw": 10307
       },
       "total": {
-        "gzip": 12452,
-        "raw": 36312
+        "gzip": 12662,
+        "raw": 37012
       }
     },
     {
@@ -832,12 +832,12 @@
       "level": "organisms",
       "tag": "jl-page-header",
       "added": {
-        "gzip": 1713,
-        "raw": 5073
+        "gzip": 1704,
+        "raw": 5071
       },
       "total": {
-        "gzip": 10789,
-        "raw": 31035
+        "gzip": 11012,
+        "raw": 31776
       }
     },
     {
@@ -845,12 +845,12 @@
       "level": "organisms",
       "tag": "jl-page-outlet",
       "added": {
-        "gzip": 8389,
-        "raw": 26365
+        "gzip": 8384,
+        "raw": 26362
       },
       "total": {
-        "gzip": 17465,
-        "raw": 52327
+        "gzip": 17692,
+        "raw": 53067
       }
     },
     {
@@ -858,12 +858,12 @@
       "level": "organisms",
       "tag": "jl-side-nav",
       "added": {
-        "gzip": 9362,
-        "raw": 30202
+        "gzip": 9335,
+        "raw": 30148
       },
       "total": {
-        "gzip": 18438,
-        "raw": 56164
+        "gzip": 18643,
+        "raw": 56853
       }
     },
     {
@@ -871,12 +871,12 @@
       "level": "organisms",
       "tag": "jl-tab-bar",
       "added": {
-        "gzip": 3247,
-        "raw": 9535
+        "gzip": 3214,
+        "raw": 9492
       },
       "total": {
-        "gzip": 12323,
-        "raw": 35497
+        "gzip": 12522,
+        "raw": 36197
       }
     },
     {
@@ -884,12 +884,12 @@
       "level": "organisms",
       "tag": "jl-table",
       "added": {
-        "gzip": 16266,
-        "raw": 55866
+        "gzip": 16419,
+        "raw": 56370
       },
       "total": {
-        "gzip": 25342,
-        "raw": 81828
+        "gzip": 25727,
+        "raw": 83075
       }
     },
     {
@@ -897,12 +897,12 @@
       "level": "organisms",
       "tag": "jl-toaster",
       "added": {
-        "gzip": 8797,
-        "raw": 28479
+        "gzip": 8763,
+        "raw": 28435
       },
       "total": {
-        "gzip": 17873,
-        "raw": 54441
+        "gzip": 18071,
+        "raw": 55140
       }
     },
     {
@@ -910,12 +910,12 @@
       "level": "organisms",
       "tag": "jl-tree",
       "added": {
-        "gzip": 7476,
-        "raw": 22902
+        "gzip": 7456,
+        "raw": 22858
       },
       "total": {
-        "gzip": 16552,
-        "raw": 48864
+        "gzip": 16764,
+        "raw": 49563
       }
     },
     {
@@ -923,12 +923,12 @@
       "level": "templates",
       "tag": "jl-app-shell",
       "added": {
-        "gzip": 4053,
-        "raw": 12735
+        "gzip": 4040,
+        "raw": 12692
       },
       "total": {
-        "gzip": 13129,
-        "raw": 38697
+        "gzip": 13348,
+        "raw": 39397
       }
     },
     {
@@ -936,12 +936,12 @@
       "level": "templates",
       "tag": "jl-auth-layout",
       "added": {
-        "gzip": 4237,
-        "raw": 11135
+        "gzip": 4215,
+        "raw": 11092
       },
       "total": {
-        "gzip": 13313,
-        "raw": 37097
+        "gzip": 13523,
+        "raw": 37797
       }
     },
     {
@@ -949,12 +949,12 @@
       "level": "templates",
       "tag": "jl-page",
       "added": {
-        "gzip": 5230,
-        "raw": 17324
+        "gzip": 5226,
+        "raw": 17322
       },
       "total": {
-        "gzip": 14306,
-        "raw": 43286
+        "gzip": 14534,
+        "raw": 44027
       }
     },
     {
@@ -962,12 +962,12 @@
       "level": "templates",
       "tag": "jl-split-view",
       "added": {
-        "gzip": 2880,
-        "raw": 8551
+        "gzip": 2848,
+        "raw": 8508
       },
       "total": {
-        "gzip": 11956,
-        "raw": 34513
+        "gzip": 12156,
+        "raw": 35213
       }
     },
     {
@@ -975,12 +975,12 @@
       "level": "templates",
       "tag": "jl-stack",
       "added": {
-        "gzip": 1201,
-        "raw": 3209
+        "gzip": 1191,
+        "raw": 3193
       },
       "total": {
-        "gzip": 10277,
-        "raw": 29171
+        "gzip": 10499,
+        "raw": 29898
       }
     }
   ]
