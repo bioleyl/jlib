@@ -73,6 +73,15 @@ describe('a list of values', () => {
     return element;
   };
 
+  /** The element a selector finds under a root: a test that reads on from a missing one would fail far from why. */
+  const found = <Found extends Element>(root: ParentNode | null | undefined, selector: string): Found => {
+    const element = root?.querySelector<Found>(selector);
+    if (element === null || element === undefined) {
+      throw new Error(`Nothing matches ${selector}`);
+    }
+    return element;
+  };
+
   const rowTexts = (element: JlInputList): string[] =>
     Array.from(element.shadowRoot?.querySelectorAll('.rows .row') ?? []).map((row) => {
       const control = row.firstElementChild;
@@ -100,10 +109,10 @@ describe('a list of values', () => {
   it('keeps its rows as it publishes them, and their origins as the page sets them', () => {
     const element = list();
     element.values.set(['A', 'B', 'C']);
-    const rows = element.shadowRoot!.querySelector('.rows')!;
-    const control = rows.firstElementChild!.firstElementChild as JlInput;
+    const rows = found(element.shadowRoot, '.rows');
+    const control = found<JlInput>(rows, '.row > :first-child');
     // happy-dom does not bubble the native input's event to the host: the test sends it there, as a browser does.
-    control.shadowRoot!.querySelector('input')!.value = 'A 2';
+    found<HTMLInputElement>(control.shadowRoot, 'input').value = 'A 2';
     control.dispatchEvent(new CustomEvent('input', { bubbles: true, detail: 'A 2' }));
     expect(element.values.get()).toEqual(['A 2', 'B', 'C']);
     expect(element.origins()).toEqual([0, 1, 2]);
