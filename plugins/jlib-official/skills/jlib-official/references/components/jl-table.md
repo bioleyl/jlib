@@ -102,7 +102,7 @@ In JSX, the `on…` prop, its handler given the detail; in code, `events.registe
 
 ## Slots
 
-- `footer`: What goes with the rows, in a bar under them inside the frame: a jl-pagination, a count, a jl-load-more. One element goes to the end of the bar; several spread from its start to its end. The bar stays while the rows scroll.
+- `footer`: What goes with the rows, in a bar under them inside the frame: a jl-pagination, a count, a jl-load-more. One element goes to the end of the bar; several spread from its start to its end. The bar stays while the rows scroll. An element the page keeps hidden is not counted, and the bar closes while none shows.
 
 ## Methods
 

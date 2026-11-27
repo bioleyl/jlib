@@ -4537,3 +4537,40 @@ describe('what floats, taller than the room around its anchor', () => {
     }
   );
 });
+
+describe("a table's footer and what the page keeps hidden", () => {
+  /** Whether the bar under the rows shows, and whether what it holds stands at its end alone. */
+  const footOf = (page: Page): Promise<{ alone: boolean; shown: boolean }> =>
+    page.evaluate(() => {
+      const table = document.querySelector('#test-area jl-table') as JlTable;
+      const foot = table.shadowRoot?.querySelector('.foot') as HTMLElement;
+      return { alone: foot.classList.contains('alone'), shown: foot.getBoundingClientRect().height > 0 };
+    });
+  const setHidden = async (page: Page, selector: string, hidden: boolean): Promise<void> => {
+    await page.evaluate(
+      ([held, off]) => document.querySelector(`#test-area ${held}`)?.toggleAttribute('hidden', off),
+      [selector, hidden] as const
+    );
+    await page.waitForTimeout(SETTLE_MS);
+  };
+
+  it('shows the bar only while something in it shows, and follows the attribute', async () => {
+    const page = await open('/components/table');
+    await mount(
+      page,
+      `<jl-table columns='[{"key":"name","label":"Name"}]' rows='[{"id":1,"name":"Ada"}]'>
+        <span slot="footer" hidden>1 of 4</span>
+        <jl-pagination slot="footer" size="sm" pages="4" hidden></jl-pagination>
+      </jl-table>`
+    );
+    expect(await footOf(page)).toEqual({ alone: false, shown: false });
+    await setHidden(page, 'jl-pagination', false);
+    expect(await footOf(page)).toEqual({ alone: true, shown: true });
+    await setHidden(page, 'span', false);
+    expect(await footOf(page)).toEqual({ alone: false, shown: true });
+    await setHidden(page, 'span', true);
+    await setHidden(page, 'jl-pagination', true);
+    expect(await footOf(page)).toEqual({ alone: false, shown: false });
+    expect(state.errors).toEqual([]);
+  });
+});

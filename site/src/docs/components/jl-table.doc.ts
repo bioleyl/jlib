@@ -923,7 +923,7 @@ to keep. A column with hideable false always shows, and the last column shown ca
   slots: [
     {
       description:
-        'What goes with the rows, in a bar under them inside the frame: a jl-pagination, a count, a jl-load-more. One element goes to the end of the bar; several spread from its start to its end. The bar stays while the rows scroll.',
+        'What goes with the rows, in a bar under them inside the frame: a jl-pagination, a count, a jl-load-more. One element goes to the end of the bar; several spread from its start to its end. The bar stays while the rows scroll. An element the page keeps hidden is not counted, and the bar closes while none shows.',
       name: 'footer',
     },
   ],

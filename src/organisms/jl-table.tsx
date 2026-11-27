@@ -11,7 +11,7 @@ import { setOrRemove } from '../lib/dom';
 import { registerIcons } from '../lib/icons';
 import { PRESS_EVENTS, pressButtonOf, tellPress } from '../lib/press';
 import { watchSizes } from '../lib/resize';
-import { hasSlotted } from '../lib/slots';
+import { shownSlotted, showsSlotted } from '../lib/slots';
 import { startedOnControl } from '../lib/surface';
 import {
   columnAlign,
@@ -317,6 +317,12 @@ export class JlTable<Row extends object = TableRow, Extra extends string = never
     order: false,
     queued: false,
   };
+  // What watches `hidden` on the page's elements in the table: the bar under the rows follows those it holds.
+  private readonly _footWatch = new MutationObserver((records) => {
+    if (records.some((record) => record.target.parentNode === this)) {
+      this.drawFoot();
+    }
+  });
   // What watches the frozen headings, the scroller and the table: a width that changes moves the frozen cells.
   private readonly _frozen = { sizes: watchSizes(() => this.measureFrozen()) };
   /**
@@ -400,6 +406,8 @@ export class JlTable<Row extends object = TableRow, Extra extends string = never
     // The first slotchange can come before onConnect: draw the bar now, then follow the changes.
     this.drawFoot();
     this.on(this._refs.footSlot, 'slotchange', () => this.drawFoot());
+    // Hiding or showing what the bar holds changes no slot: the attribute is watched on the page's own elements.
+    this._footWatch.observe(this, { attributeFilter: ['hidden'], subtree: true });
     this.on(this._refs.head, 'click', (event) => {
       const key = (event.target as Element).closest<HTMLElement>('button.sort')?.dataset.key;
       if (key !== undefined) {
@@ -419,6 +427,7 @@ export class JlTable<Row extends object = TableRow, Extra extends string = never
   }
 
   onDisconnect(): void {
+    this._footWatch.disconnect();
     this._chooser.sizes.disconnect();
     this._frozen.sizes.disconnect();
   }
@@ -462,11 +471,14 @@ export class JlTable<Row extends object = TableRow, Extra extends string = never
     this.style.setProperty('--scrollbar', `${scroll.offsetWidth - scroll.clientWidth}px`);
   }
 
-  /** The bar under the rows shows when the page put something in it; what stands there alone goes to its end. */
+  /**
+   * The bar under the rows shows when the page put something in it that shows; what stands there alone goes to its
+   * end. What the page keeps `hidden` (pages until there are several) is not there.
+   */
   private drawFoot(): void {
     const foot = this._refs.foot;
-    foot.hidden = !hasSlotted(this._refs.footSlot);
-    foot.classList.toggle('alone', this._refs.footSlot.assignedElements({ flatten: true }).length === 1);
+    foot.hidden = !showsSlotted(this._refs.footSlot);
+    foot.classList.toggle('alone', shownSlotted(this._refs.footSlot).length === 1);
   }
 
   /** Draws on the next microtask: the inputs set while connecting give one drawing, not one each. */
