@@ -414,6 +414,12 @@ export class JlTable<Row extends object = TableRow, Extra extends string = never
         this.sortBy(key);
       }
     });
+    // A box's native input event crosses the shadow root: stop it, or the listeners around would hear it, without a value.
+    this.on(this._refs.table, 'input', (event) => {
+      if (isTableCheckbox(event.target)) {
+        event.stopPropagation();
+      }
+    });
     this.on(this._refs.table, 'change', (event) => {
       if (isTableCheckbox(event.target)) {
         this.changeSelection(event.target);

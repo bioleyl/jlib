@@ -111,6 +111,8 @@ export class JlSwitch extends JlFormControl {
 
   onConnect(): void {
     const native = this._refs.native;
+    // The native input event crosses the shadow root: stop it, or the listeners around would hear it, without a value.
+    this.on(native, 'input', (event) => event.stopPropagation());
     this.on(native, 'change', () => this.commit(native.checked));
     // The first slotchange can come before onConnect: draw the text now, then follow the changes.
     this.renderText();

@@ -4643,3 +4643,33 @@ describe("a side nav's rail and an item under a parent", () => {
     expect(state.errors).toEqual([]);
   });
 });
+
+describe('a control with a native box, list or picker', () => {
+  const Table = `<jl-table selectable columns='[{"key":"name","label":"Name"}]' rows='[{"id":1,"name":"Ada"}]'></jl-table>`;
+  const Controls: [route: string, html: string, tag: string, native: string][] = [
+    ['/components/checkbox', '<jl-checkbox label="Terms"></jl-checkbox>', 'jl-checkbox', 'input'],
+    ['/components/switch', '<jl-switch label="Alerts"></jl-switch>', 'jl-switch', 'input'],
+    ['/components/select', `<jl-select options='[{"label":"A","value":"a"}]'></jl-select>`, 'jl-select', 'select'],
+    ['/components/file-drop', '<jl-file-drop></jl-file-drop>', 'jl-file-drop', 'input'],
+    ['/components/table', Table, 'jl-table', 'tbody input'],
+  ];
+
+  it.each(Controls)('%s keeps its native input event to itself', async (route, html, tag, native) => {
+    const page = await open(route);
+    await mount(page, html);
+    const heard = await page.evaluate(
+      ([host, inner]) => {
+        const types: string[] = [];
+        document.querySelector('#test-area')?.addEventListener('input', (event) => types.push(event.type));
+        document
+          .querySelector(`#test-area ${host}`)
+          ?.shadowRoot?.querySelector(inner)
+          ?.dispatchEvent(new Event('input', { bubbles: true, composed: true }));
+        return types;
+      },
+      [tag, native] as const
+    );
+    expect(heard).toEqual([]);
+    expect(state.errors).toEqual([]);
+  });
+});

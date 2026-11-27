@@ -186,6 +186,8 @@ export class JlFileDrop extends JlFormControl {
     this.on(zone, 'dragover', (event) => this.onDragOver(event));
     this.on(zone, 'dragleave', () => this.onDragLeave());
     this.on(zone, 'drop', (event) => this.onDrop(event));
+    // The native input event crosses the shadow root: stop it, or the listeners around would hear it, without the files.
+    this.on(this._refs.picker, 'input', (event) => event.stopPropagation());
     this.on(this._refs.picker, 'change', () => this.onPicked());
     this.on(this._refs.files, 'click', (event) => this.onFilesClick(event));
   }

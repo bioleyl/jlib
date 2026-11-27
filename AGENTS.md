@@ -277,6 +277,7 @@ there on a component alone: `mount(page, html)` puts it in the page of its own d
 ## Traps
 
 - What a page slots and keeps `hidden` is still assigned to the slot, and toggling `hidden` fires no `slotchange`: a bar that shows only for what it holds asks `showsSlotted` (`lib/slots.ts`) and watches the attribute on the host's children (`jl-table`'s `_footWatch`).
+- A native `input` event is composed: every native field, box or picker in a shadow root gets a listener that stops it, even in a component that tells only `change` (the e2e test "a control with a native box, list or picker" lists them: add a new one).
 - A scroll area that is a flex item needs `align-content: start` as well as `flex: 1; min-height: 0`: a grid scroller with free space (a short list) otherwise spreads its rows over the room it took (jl-side-nav's `.sections`).
 
 ## Conventions
