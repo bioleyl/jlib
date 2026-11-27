@@ -3,6 +3,16 @@
 What changed in each version of [@syware/jlib](https://www.npmjs.com/package/@syware/jlib). Every component is shown
 and documented on [the documentation site](https://bioleyl.github.io/jlib/).
 
+## 0.19.1 (2026-11-27)
+
+0.19.0 was not published to npm: this version is the one to install, with all that 0.19.0 lists below.
+
+### Changed
+
+- **`JlLoadState.whenSettled()` waits with Jadis's own `Jadis.settled()`**, for every `onConnect` left to call, those
+  an `onConnect` connected included; it waited one task. A page outlet shows a page once its load states have their
+  data, as before.
+
 ## 0.19.0 (2026-11-27)
 
 Jadis 1.10, and four fixes. The `@jadis/core` peer moves with it, which is why this is a minor version: update Jadis

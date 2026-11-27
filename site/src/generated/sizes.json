@@ -1,7 +1,7 @@
 {
   "all": {
-    "gzip": 123203,
-    "raw": 485240
+    "gzip": 123189,
+    "raw": 485207
   },
   "baseline": {
     "gzip": 9308,
@@ -533,12 +533,12 @@
       "level": "molecules",
       "tag": "jl-load-state",
       "added": {
-        "gzip": 7238,
-        "raw": 22455
+        "gzip": 7229,
+        "raw": 22422
       },
       "total": {
-        "gzip": 16546,
-        "raw": 49160
+        "gzip": 16537,
+        "raw": 49127
       }
     },
     {
@@ -845,12 +845,12 @@
       "level": "organisms",
       "tag": "jl-page-outlet",
       "added": {
-        "gzip": 8384,
-        "raw": 26362
+        "gzip": 8371,
+        "raw": 26329
       },
       "total": {
-        "gzip": 17692,
-        "raw": 53067
+        "gzip": 17679,
+        "raw": 53034
       }
     },
     {
